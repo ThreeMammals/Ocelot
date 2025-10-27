@@ -164,17 +164,10 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
 
     private void GivenTheRoutes(Route route, ServiceProviderConfiguration config = null)
     {
-        _config = new InternalConfiguration(
-            route == null ? new() : new() { route },
-            string.Empty,
-            config,
-            string.Empty,
-            new LoadBalancerOptions(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower,
-            default, default, default);
+        Route[] routes = route == null ? Array.Empty<Route>() : [route];
+        _config = new InternalConfiguration(routes)
+        {
+            ServiceProviderConfiguration = config,
+        };
     }
 }

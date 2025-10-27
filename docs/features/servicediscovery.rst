@@ -391,9 +391,9 @@ Ocelot will append any query string to the downstream URL as usual.
 
   In addition to the global ``ServiceDiscoveryProvider`` section, the :ref:`config-global-configuration-schema` includes configurable options such as ``CacheOptions``, ``RateLimitOptions``, ``QoSOptions``, ``LoadBalancerOptions``, ``HttpHandlerOptions``, and ``DownstreamScheme``.
   These options are applicable to all dynamic routes, globally.
-  However, since the :ref:`config-dynamic-route-schema` does not support these options (except for ``LoadBalancerOptions`` and ``RateLimitOptions``), they are not applied in *dynamic routing* mode.
+  However, since the :ref:`config-dynamic-route-schema` does not support these options (except for ``CacheOptions``, ``LoadBalancerOptions`` and ``RateLimitOptions``), they are not applied in *dynamic routing* mode.
   Therefore, it is not possible to override global options using dynamic route-level settings.
-  To reiterate, the only options fully supported by both static and dynamic routes are ``LoadBalancerOptions`` and ``RateLimitOptions``.
+  To reiterate, the only options fully supported by both static and dynamic routes are ``CacheOptions``, ``LoadBalancerOptions`` and ``RateLimitOptions``.
 
 For instance, when exposing Ocelot publicly over HTTPS while routing to internal services over HTTP, your configuration may resemble the following:
 
@@ -413,6 +413,12 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
           "Type": "Consul",
           "Namespace": "" // not supported for Consul, but supported for Kubernetes
         },
+        "CacheOptions": {
+          "TtlSeconds": 300 // 5 minutes
+        },
+        "LoadBalancerOptions": {
+          "Type": "LeastConnection"
+        },
         "RateLimitOptions": {
           "ClientIdHeader": "Oc-DynamicRouting-Client",
           "QuotaMessage": "No Quota!",
@@ -422,9 +428,6 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
           "ExceptionsAllowedBeforeBreaking": 2,
           "DurationOfBreak": 333,
           "TimeoutValue": 3000 // ms
-        },
-        "LoadBalancerOptions": {
-          "Type": "LeastConnection"
         },
         "HttpHandlerOptions": {
           "AllowAutoRedirect": false,
@@ -459,11 +462,14 @@ The final configuration looks like:
         },
         {
           "ServiceName": "notification",
-          "RateLimitOptions": {
-            "EnableRateLimiting": false // notification service is unlimited!
+          "CacheOptions": {
+            "TtlSeconds": 0 // disable cache for notifying
           },
           "LoadBalancerOptions": {
             "Type": "LeastConnection" // switch from RoundRobin to LeastConnection
+          },
+          "RateLimitOptions": {
+            "EnableRateLimiting": false // notification service is unlimited!
           }
         }
       ],
@@ -476,6 +482,12 @@ The final configuration looks like:
           "Type": "Consul",
           "Namespace": "" // not supported for Consul, but supported for Kubernetes
         },
+        "CacheOptions": {
+          "TtlSeconds": 300 // 5 minutes
+        },
+        "LoadBalancerOptions": {
+          "Type": "RoundRobin"
+        },
         "RateLimitOptions": {
           "ClientIdHeader": "Oc-DynamicRouting-Client",
           "ClientWhitelist": ["ocelot-client1-preshared-key"],
@@ -483,15 +495,13 @@ The final configuration looks like:
           "Period": "10s", // fixed window
           "QuotaExceededMessage": "No Quota!",
           "HttpStatusCode": 499 // special shared status
-        },
-        "LoadBalancerOptions": {
-          "Type": "RoundRobin"
         }
       }
     }
 
 This configuration means that when a request is sent to Ocelot at ``/product/*``, *dynamic routing* is activated, and Ocelot applies the rate limiting rules defined for the 'product' service in the ``DynamicRoutes`` section, as described in the :doc:`../features/ratelimiting` documentation.
-The 'notification' service is unlimited because rate limiting is disabled. All other services use the global ``RateLimitOptions``.
+The 'notification' service is unlimited because both rate limiting and caching are disabled.
+All other services use the global ``RateLimitOptions``.
 
 .. warning::
   Dynamic route ``RateLimitRule`` option is deprecated!

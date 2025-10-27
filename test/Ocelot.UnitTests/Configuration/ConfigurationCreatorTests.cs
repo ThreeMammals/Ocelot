@@ -19,8 +19,9 @@ public class ConfigurationCreatorTests : UnitTest
     private readonly Mock<IVersionPolicyCreator> _vpCreator;
     private readonly Mock<IMetadataCreator> _mdCreator;
     private readonly Mock<IRateLimitOptionsCreator> _rlCreator;
+    private readonly Mock<ICacheOptionsCreator> _coCreator;
     private FileConfiguration _fileConfig;
-    private List<Route> _routes;
+    private Route[] _routes;
     private ServiceProviderConfiguration _spc;
     private LoadBalancerOptions _lbo;
     private QoSOptions _qoso;
@@ -38,6 +39,7 @@ public class ConfigurationCreatorTests : UnitTest
         _spcCreator = new Mock<IServiceProviderConfigurationCreator>();
         _mdCreator = new Mock<IMetadataCreator>();
         _rlCreator = new Mock<IRateLimitOptionsCreator>();
+        _coCreator = new Mock<ICacheOptionsCreator>();
         _serviceCollection = new ServiceCollection();
     }
 
@@ -130,7 +132,7 @@ public class ConfigurationCreatorTests : UnitTest
         {
             GlobalConfiguration = new FileGlobalConfiguration(),
         };
-        _routes = new List<Route>();
+        _routes = Array.Empty<Route>();
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
         _lbo = new();
         _qoso = new QoSOptionsBuilder().Build();
@@ -145,7 +147,17 @@ public class ConfigurationCreatorTests : UnitTest
     private void WhenICreate()
     {
         var serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _vpCreator.Object, _mdCreator.Object, _rlCreator.Object);
+        _creator = new ConfigurationCreator(
+            _spcCreator.Object,
+            _qosCreator.Object,
+            _hhoCreator.Object,
+            serviceProvider,
+            _lboCreator.Object,
+            _vCreator.Object,
+            _vpCreator.Object,
+            _mdCreator.Object,
+            _rlCreator.Object,
+            _coCreator.Object);
         _result = _creator.Create(_fileConfig, _routes);
     }
 }

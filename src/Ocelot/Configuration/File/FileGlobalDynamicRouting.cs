@@ -9,6 +9,8 @@ namespace Ocelot.Configuration.File;
 
 public class FileGlobalDynamicRouting
 {
+    public FileCacheOptions CacheOptions { get; set; }
+
     /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
     /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
     /// <remarks>

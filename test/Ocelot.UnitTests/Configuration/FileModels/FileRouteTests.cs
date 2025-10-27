@@ -126,7 +126,8 @@ public class FileRouteTests : UnitTest
         expected.DownstreamHttpVersionPolicy = "value11";
         expected.DownstreamPathTemplate = "value12";
         expected.DownstreamScheme = "value13";
-        expected.FileCacheOptions.Header = "value14";
+        expected.CacheOptions = new() { Header = "value14" };
+        expected.FileCacheOptions = new() { TtlSeconds = 14 };
         expected.HttpHandlerOptions.MaxConnectionsPerServer = 15;
         expected.Key = "value16";
         expected.LoadBalancerOptions ??= new("value17");
@@ -165,6 +166,7 @@ public class FileRouteTests : UnitTest
         Assert.Equal(expected.DownstreamHttpVersionPolicy, actual.DownstreamHttpVersionPolicy);
         Assert.Equal(expected.DownstreamPathTemplate, actual.DownstreamPathTemplate);
         Assert.Equal(expected.DownstreamScheme, actual.DownstreamScheme);
+        Assert.Equivalent(expected.CacheOptions, actual.CacheOptions); // FileCacheOptions requires Equals overriding
         Assert.Equivalent(expected.FileCacheOptions, actual.FileCacheOptions); // FileCacheOptions requires Equals overriding
         Assert.Equivalent(expected.HttpHandlerOptions, actual.HttpHandlerOptions); // FileHttpHandlerOptions requires Equals overriding
         Assert.Equal(expected.Key, actual.Key);

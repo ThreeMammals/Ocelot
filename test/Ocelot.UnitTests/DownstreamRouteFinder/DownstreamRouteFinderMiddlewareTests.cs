@@ -40,18 +40,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
     public async Task Should_call_scoped_data_repository_correctly()
     {
         // Arrange
-        var config = new InternalConfiguration(
-            null,
-            null,
-            new ServiceProviderConfigurationBuilder().Build(),
-            string.Empty,
-            new LoadBalancerOptions(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower,
-            default, default, default);
+        var config = new InternalConfiguration();
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
             .WithUpstreamHttpMethod(new List<string> { "Get" })

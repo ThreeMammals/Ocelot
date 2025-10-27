@@ -398,20 +398,20 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private void GivenInternalConfiguration(Route route = null, int index = 0)
     {
         var dr = route?.DownstreamRoute[index];
-        _configuration = new InternalConfiguration(
-            route is null ? null : new() { route },
-            "/AdminPath",
-            null,
-            "requestID",
-            dr?.LoadBalancerOptions ?? _loadBalancerOptions,
-            (dr?.DownstreamScheme).IfEmpty(Uri.UriSchemeHttp),
-            dr?.QosOptions ?? _qoSOptions,
-            dr?.HttpHandlerOptions ?? _handlerOptions,
-            dr?.DownstreamHttpVersion ?? new Version("1.1"),
-            dr?.DownstreamHttpVersionPolicy ?? HttpVersionPolicy.RequestVersionOrLower,
-            dr?.MetadataOptions ?? _metadataOptions,
-            dr?.RateLimitOptions ?? _rateLimitOptions,
-            dr?.Timeout ?? 111);
+        _configuration = new InternalConfiguration(route is null ? null : [route])
+        {
+            AdministrationPath = "/AdminPath",
+            RequestId = "requestID",
+            LoadBalancerOptions = dr?.LoadBalancerOptions ?? _loadBalancerOptions,
+            DownstreamScheme = (dr?.DownstreamScheme).IfEmpty(Uri.UriSchemeHttp),
+            QoSOptions = dr?.QosOptions ?? _qoSOptions,
+            HttpHandlerOptions = dr?.HttpHandlerOptions ?? _handlerOptions,
+            DownstreamHttpVersion = dr?.DownstreamHttpVersion ?? new Version("1.1"),
+            DownstreamHttpVersionPolicy = dr?.DownstreamHttpVersionPolicy ?? HttpVersionPolicy.RequestVersionOrLower,
+            MetadataOptions = dr?.MetadataOptions ?? _metadataOptions,
+            RateLimitOptions = dr?.RateLimitOptions ?? _rateLimitOptions,
+            Timeout = dr?.Timeout ?? 111,
+        };
     }
 
     private void WhenICreate()

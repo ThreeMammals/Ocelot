@@ -19,7 +19,7 @@ public class DownstreamRouteProviderFactory : IDownstreamRouteProviderFactory
     {
         //todo - this is a bit hacky we are saying there are no routes or there are routes but none of them have
         //an upstream path template which means they are dyanmic and service discovery is on...
-        if ((config.Routes.Count == 0 || config.Routes.All(x => string.IsNullOrEmpty(x.UpstreamTemplatePattern?.OriginalValue))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
+        if ((config.Routes.Length == 0 || config.Routes.All(x => string.IsNullOrEmpty(x.UpstreamTemplatePattern?.OriginalValue))) && IsServiceDiscovery(config.ServiceProviderConfiguration))
         {
             _logger.LogInformation($"Selected {nameof(DiscoveryDownstreamRouteFinder)} as {nameof(IDownstreamRouteProvider)} for this request");
 

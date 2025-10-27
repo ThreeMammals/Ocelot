@@ -28,7 +28,6 @@ public class DownstreamRouteExtensionsTests
             new QoSOptionsBuilder().Build(),
             null,
             null,
-            default,
             new CacheOptions(0, null, null, null),
             new LoadBalancerOptions(null, null, 0),
             new RateLimitOptions(false),

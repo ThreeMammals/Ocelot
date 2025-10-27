@@ -14,6 +14,7 @@ public class DynamicRoutesCreatorTests : UnitTest
     private readonly Mock<IVersionCreator> _versionCreator = new();
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator = new();
     private readonly Mock<IMetadataCreator> _metadataCreator = new();
+    private readonly Mock<ICacheOptionsCreator> _cacheCreator = new();
     private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
     private RateLimitOptions[] _rlo;
@@ -24,6 +25,7 @@ public class DynamicRoutesCreatorTests : UnitTest
     public DynamicRoutesCreatorTests()
     {
         _creator = new DynamicRoutesCreator(
+            _cacheCreator.Object,
             _lbKeyCreator.Object,
             _lboCreator.Object,
             _metadataCreator.Object, _qosCreator.Object,

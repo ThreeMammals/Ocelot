@@ -59,7 +59,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             .When(_ => GivenWatchReceivedEvent())
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(_ => ThenTheResponseBodyShouldBe($"1^:^{downstreamResponse}"))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();
@@ -99,7 +99,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             .When(_ => WhenIGetUrlOnTheApiGateway("/api/example/1"))
             .Then(_ => ThenTheStatusCodeShouldBe(statusCode))
             .And(_ => ThenTheResponseBodyShouldBe(downstreamScheme == "http"
-                    ? "1:" + nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)
+                    ? "1^:^" + nameof(ShouldReturnServicesByPortNameAsDownstreamScheme)
                     : string.Empty))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(downstreamScheme == "http" ? 1 : 0))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
@@ -179,7 +179,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             .When(_ => GivenWatchReceivedEvent())
             .When(_ => WhenIGetUrlOnTheApiGateway("/"))
             .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe($"1:{downstreamResponse}"))
+            .And(_ => ThenTheResponseBodyShouldBe($"1^:^{downstreamResponse}"))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
             .And(x => x.ThenTheTokenIs("Bearer txpc696iUhbVoudg164r93CxDTrKRVWG"))
             .BDDfy();

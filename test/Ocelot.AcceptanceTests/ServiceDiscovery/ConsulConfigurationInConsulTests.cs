@@ -409,10 +409,10 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
     private class FakeCache : IOcelotCache<FileConfiguration>
     {
-        public void Add(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         public FileConfiguration Get(string key, string region) => throw new NotImplementedException();
         public void ClearRegion(string region) => throw new NotImplementedException();
-        public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         public bool TryGetValue(string key, string region, out FileConfiguration value) => throw new NotImplementedException();
+        public bool Add(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
+        public FileConfiguration AddOrUpdate(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
     }
 }

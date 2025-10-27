@@ -32,7 +32,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
-        var dynamicRoute = configuration.Routes?
+        var dynamicRoute = configuration.Routes
             .Where(r => r.IsDynamic) // process dynamic routes only
             .SelectMany(r => r.DownstreamRoute)
             .FirstOrDefault(dr => dr.ServiceName == serviceName && (serviceNamespace.IsEmpty() || dr.ServiceNamespace == serviceNamespace));
@@ -52,6 +52,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .WithUseServiceDiscovery(true)
             .WithServiceName(serviceName)
             .WithServiceNamespace(serviceNamespace)
+            .WithCacheOptions(configuration.CacheOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
             .WithDownstreamHttpVersionPolicy(configuration.DownstreamHttpVersionPolicy)
             .WithDownstreamPathTemplate(downstreamPath)
@@ -69,6 +70,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
             routeBuilder
+                .WithCacheOptions(dynamicRoute.CacheOptions)
                 .WithDownstreamHttpVersion(dynamicRoute.DownstreamHttpVersion)
                 .WithDownstreamHttpVersionPolicy(dynamicRoute.DownstreamHttpVersionPolicy)
                 .WithDownstreamScheme(dynamicRoute.DownstreamScheme)

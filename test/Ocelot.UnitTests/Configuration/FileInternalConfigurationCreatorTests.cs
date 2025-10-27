@@ -73,9 +73,9 @@ public class FileInternalConfigurationCreatorTests : UnitTest
         var mergedRoutes = _routes
             .Union(_aggregates)
             .Union(_dynamics)
-            .ToList();
+            .ToArray();
 
-        _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<List<Route>>(y => y.Count == mergedRoutes.Count)), Times.Once);
+        _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<Route[]>(y => y.Length == mergedRoutes.Length)), Times.Once);
     }
 
     private void GivenTheDependenciesAreSetUp()
@@ -88,7 +88,7 @@ public class FileInternalConfigurationCreatorTests : UnitTest
         _routesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_routes);
         _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_aggregates);
         _dynamicsCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_dynamics);
-        _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_internalConfig);
+        _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<Route[]>())).Returns(_internalConfig);
     }
 
     private void GivenTheValidationSucceeds()
