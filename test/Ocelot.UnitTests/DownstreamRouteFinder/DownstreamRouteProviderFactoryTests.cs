@@ -27,8 +27,9 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
         services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
         services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
+        services.AddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
-        services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
+        services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Features.AddHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         var provider = services.BuildServiceProvider(true);
         _logger = new Mock<IOcelotLogger>();
@@ -41,7 +42,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     public void Should_return_downstream_route_finder()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         GivenTheRoutes(route);
 
         // Act
@@ -55,9 +56,10 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
     public void Should_return_downstream_route_finder_when_not_dynamic_re_route_and_service_discovery_on()
     {
         // Arrange
-        var route = new RouteBuilder()
-            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build())
-            .Build();
+        var route = new Route()
+        {
+            UpstreamTemplatePattern = new UpstreamPathTemplateBuilder().WithOriginalValue("woot").Build(),
+        };
         var spConfig = new ServiceProviderConfigurationBuilder()
             .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
         GivenTheRoutes(route, spConfig);
@@ -141,14 +143,14 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteCreator>();
+        _result.ShouldBeOfType<DiscoveryDownstreamRouteFinder>();
     }
 
     [Fact]
     public void Should_return_downstream_route_creator_with_dynamic_re_route()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         var spConfig = new ServiceProviderConfigurationBuilder()
             .WithScheme("http").WithHost("test").WithPort(50).WithType("test").Build();
         GivenTheRoutes(route, spConfig);
@@ -157,21 +159,15 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteCreator>();
+        _result.ShouldBeOfType<DiscoveryDownstreamRouteFinder>();
     }
 
     private void GivenTheRoutes(Route route, ServiceProviderConfiguration config = null)
     {
-        _config = new InternalConfiguration(
-            route == null ? new() : new() { route },
-            string.Empty,
-            config,
-            string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+        Route[] routes = route == null ? Array.Empty<Route>() : [route];
+        _config = new InternalConfiguration(routes)
+        {
+            ServiceProviderConfiguration = config,
+        };
     }
 }

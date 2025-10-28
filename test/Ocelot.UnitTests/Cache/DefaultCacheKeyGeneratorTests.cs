@@ -35,7 +35,7 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
         // Arrange
         const string noHeader = null;
         const string content = nameof(Should_generate_cache_key_with_request_content);
-        var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-{content}");
+        var cachekey = MD5Helper.GenerateMd5($"{verb}-{url}--{content}");
         var options = new CacheOptions(100, "region", noHeader, true);
         var route = GivenDownstreamRoute(options);
         _request.Content = new StringContent(content);
@@ -75,6 +75,12 @@ public sealed class DefaultCacheKeyGeneratorTests : UnitTest, IDisposable
 
         // Assert
         generatedCacheKey.ShouldBe(cachekey);
+
+        // Scenario 2: No header
+        _request.Headers.Clear();
+        cachekey = MD5Helper.GenerateMd5($"{verb}-{url}-");
+        generatedCacheKey = await WhenGenerateRequestCacheKey(route);
+        Assert.Equal(cachekey, generatedCacheKey);
     }
 
     [Fact]

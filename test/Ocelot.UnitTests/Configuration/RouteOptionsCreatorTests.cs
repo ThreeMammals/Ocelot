@@ -109,7 +109,6 @@ public class RouteOptionsCreatorTests : UnitTest
         var expected = new RouteOptionsBuilder()
             .WithIsAuthenticated(true)
             .WithIsAuthorized(true)
-            .WithIsCached(true)
             .WithUseServiceDiscovery(true)
             .Build();
 
@@ -119,7 +118,6 @@ public class RouteOptionsCreatorTests : UnitTest
         // Assert
         actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
         actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
-        actual.IsCached.ShouldBe(expected.IsCached);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 
@@ -139,7 +137,6 @@ public class RouteOptionsCreatorTests : UnitTest
         var expected = new RouteOptionsBuilder()
                 .WithIsAuthenticated(!allowAnonymous)
                 .WithIsAuthorized(true)
-                .WithIsCached(true)
                 .WithUseServiceDiscovery(true)
                 .Build();
 
@@ -149,7 +146,6 @@ public class RouteOptionsCreatorTests : UnitTest
         // Assert
         actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
         actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
-        actual.IsCached.ShouldBe(expected.IsCached);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 

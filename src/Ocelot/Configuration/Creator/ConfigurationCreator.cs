@@ -13,6 +13,9 @@ public class ConfigurationCreator : IConfigurationCreator
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
+    private readonly IMetadataCreator _metadataCreator;
+    private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+    private readonly ICacheOptionsCreator _cacheOptionsCreator;
 
     public ConfigurationCreator(
         IServiceProviderConfigurationCreator serviceProviderConfigCreator,
@@ -21,8 +24,10 @@ public class ConfigurationCreator : IConfigurationCreator
         IServiceProvider serviceProvider,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IVersionCreator versionCreator,
-        IVersionPolicyCreator versionPolicyCreator
-        )
+        IVersionPolicyCreator versionPolicyCreator,
+        IMetadataCreator metadataCreator,
+        IRateLimitOptionsCreator rateLimitOptionsCreator,
+        ICacheOptionsCreator cacheOptionsCreator)
     {
         _adminPath = serviceProvider.GetService<IAdministrationPath>();
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -31,34 +36,40 @@ public class ConfigurationCreator : IConfigurationCreator
         _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         _versionCreator = versionCreator;
         _versionPolicyCreator = versionPolicyCreator;
+        _metadataCreator = metadataCreator;
+        _rateLimitOptionsCreator = rateLimitOptionsCreator;
+        _cacheOptionsCreator = cacheOptionsCreator;
     }
 
-    public InternalConfiguration Create(FileConfiguration fileConfiguration, List<Route> routes)
+    public InternalConfiguration Create(FileConfiguration configuration, Route[] routes)
     {
-        var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
-
-        var lbOptions = _loadBalancerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.LoadBalancerOptions);
-
-        var qosOptions = _qosOptionsCreator.Create(fileConfiguration.GlobalConfiguration.QoSOptions);
-
-        var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileConfiguration.GlobalConfiguration.HttpHandlerOptions);
-
         var adminPath = _adminPath?.Path;
+        var globalConfiguration = configuration.GlobalConfiguration ?? new();
+        var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(globalConfiguration);
+        var lbOptions = _loadBalancerOptionsCreator.Create(globalConfiguration.LoadBalancerOptions);
+        var qosOptions = _qosOptionsCreator.Create(globalConfiguration.QoSOptions);
+        var httpHandlerOptions = _httpHandlerOptionsCreator.Create(globalConfiguration.HttpHandlerOptions);
+        var version = _versionCreator.Create(globalConfiguration.DownstreamHttpVersion);
+        var versionPolicy = _versionPolicyCreator.Create(globalConfiguration.DownstreamHttpVersionPolicy);
+        var metadataOptions = _metadataCreator.Create(null, globalConfiguration);
+        var rateLimitOptions = _rateLimitOptionsCreator.Create(globalConfiguration);
+        var cacheOptions = _cacheOptionsCreator.Create(globalConfiguration.CacheOptions);
 
-        var version = _versionCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersion);
-
-        var versionPolicy = _versionPolicyCreator.Create(fileConfiguration.GlobalConfiguration.DownstreamHttpVersionPolicy);
-
-        return new InternalConfiguration(routes,
-            adminPath,
-            serviceProviderConfiguration,
-            fileConfiguration.GlobalConfiguration.RequestIdKey,
-            lbOptions,
-            fileConfiguration.GlobalConfiguration.DownstreamScheme,
-            qosOptions,
-            httpHandlerOptions,
-            version,
-            versionPolicy
-            );
+        return new InternalConfiguration(routes)
+        {
+            AdministrationPath = adminPath,
+            CacheOptions = cacheOptions,
+            DownstreamHttpVersion = version,
+            DownstreamHttpVersionPolicy = versionPolicy,
+            DownstreamScheme = globalConfiguration.DownstreamScheme,
+            HttpHandlerOptions = httpHandlerOptions,
+            LoadBalancerOptions = lbOptions,
+            MetadataOptions = metadataOptions,
+            QoSOptions = qosOptions,
+            RateLimitOptions = rateLimitOptions,
+            RequestId = globalConfiguration.RequestIdKey,
+            ServiceProviderConfiguration = serviceProviderConfiguration,
+            Timeout = globalConfiguration.Timeout,
+        };
     }
 }

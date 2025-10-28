@@ -82,12 +82,12 @@ jobs:
   build-cake:
     needs: build
     runs-on: ubuntu-latest
-    environment: build.cake
-    env:
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      GITHUB_SHA: ${{ github.sha }}
-      GITHUB_REF: ${{ github.ref }}
-      GITHUB_REF_NAME: ${{ github.ref_name }}
+    # environment: Pull-Request
+    # env:
+    #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    #   GITHUB_SHA: ${{ github.sha }}
+    #   GITHUB_REF: ${{ github.ref }}
+    #   GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Info
       run: |

@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Builder;
@@ -9,7 +10,7 @@ public class DownstreamRouteBuilder
     private string _loadBalancerKey;
     private string _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
-    private List<HttpMethod> _upstreamHttpMethod;
+    private HashSet<HttpMethod> _upstreamHttpMethod;
     private bool _isAuthenticated;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
@@ -18,7 +19,6 @@ public class DownstreamRouteBuilder
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
-    private bool _isCached;
     private CacheOptions _cacheOptions;
     private string _downstreamScheme;
     private LoadBalancerOptions _loadBalancerOptions;
@@ -88,11 +88,9 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
+    public DownstreamRouteBuilder WithUpstreamHttpMethod(IEnumerable<string> methods)
     {
-        _upstreamHttpMethod = input.Count > 0
-            ? input.Select(x => new HttpMethod(x.Trim())).ToList()
-            : new();
+        _upstreamHttpMethod = methods.ToHttpMethods();
         return this;
     }
 
@@ -141,12 +139,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithClaimsToDownstreamPath(List<ClaimToThing> input)
     {
         _claimToDownstreamPath = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsCached(bool input)
-    {
-        _isCached = input;
         return this;
     }
 
@@ -297,7 +289,6 @@ public class DownstreamRouteBuilder
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,
-            _isCached,
             _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,

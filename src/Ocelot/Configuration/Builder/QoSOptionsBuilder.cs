@@ -20,12 +20,6 @@ public class QoSOptionsBuilder : QoSOptions
         return this;
     }
 
-    public QoSOptionsBuilder WithKey(string value)
-    {
-        Key = value;
-        return this;
-    }
-
     public QoSOptionsBuilder WithFailureRatio(double? value)
     {
         FailureRatio = value;

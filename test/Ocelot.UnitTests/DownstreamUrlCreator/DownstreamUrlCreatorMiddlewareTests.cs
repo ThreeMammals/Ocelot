@@ -5,7 +5,6 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -52,11 +51,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123");
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("/api/products/1");
@@ -87,11 +82,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{subscriptionId}", "1"),
                 new("{unitId}", "2"),
             },
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2");
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
@@ -122,11 +113,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{subscriptionId}", "1"),
                 new("{unitId}", "2"),
             },
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2&productId=2"); // unitId is the first
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
@@ -157,11 +144,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{subscriptionId}", "1"),
                 new("{unitId}", "2"),
             },
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?productId=2&unitId=2"); // unitId is the second
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
@@ -193,11 +176,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{unitId}", "2"),
                 new("{unitIdIty}", "3"),
             },
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://localhost:5000/api/subscriptions/1/updates?unitId=2?unitIdIty=3");
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3");
@@ -226,11 +205,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-        ));
+            new Route(downstreamRoute, HttpMethod.Get)));
         GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123");
         GivenTheServiceProviderConfigIs(config);
         GivenTheUrlReplacerWillReturn("/api/products/1");
@@ -253,7 +228,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute).Build());
+            new Route(downstreamRoute));
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -282,7 +257,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute).Build());
+            new Route(downstreamRoute));
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -311,7 +286,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute).Build());
+            new Route(downstreamRoute));
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -340,7 +315,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var routeHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder().WithDownstreamRoute(route).Build());
+            new Route(route));
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -377,10 +352,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{action}", "1"),
                 new("{servak}", "2"),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
-        ));
+            new Route(downstreamRoute)));
         GivenTheDownstreamRequestUriIs("http://localhost:5000/uc/Authorized/2/1/refresh?refreshToken=123456789");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
         GivenTheUrlReplacerWillReturn("/Authorized/1?server=2");
@@ -404,9 +376,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .Build());
+            new Route(downstreamRoute));
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -442,9 +412,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             {
                 new("{userId}", "webley"),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(methods) }
         ));
         GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -476,9 +444,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             {
                 new("{uid}", "webley"),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(methods) }
         ));
         GivenTheDownstreamRequestUriIs($"http://localhost:5000/users?userId=webley");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -512,9 +478,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             {
                 new("{everythingelse}", everythingelse),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(methods)
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(methods) }
         ));
         GivenTheDownstreamRequestUriIs($"http://localhost:5000//contracts?{everythingelse}");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -554,10 +518,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new(placeholderName, placeholderValue),
                 new("{version}", "v1"),
             },
-            new RouteBuilder()
-                .WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(methods) }
         ));
         GivenTheDownstreamRequestUriIs("http://localhost:5000" + requestURL);
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -597,9 +558,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
                 new("{roleid}", roleid),
                 new("{everything}", everything),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(withGetMethod)
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(withGetMethod) }
         ));
         GivenTheDownstreamRequestUriIs($"http://localhost:5000/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -634,9 +593,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             {
                 new("{path}", urlPath),
             },
-            new RouteBuilder().WithDownstreamRoute(downstreamRoute)
-                .WithUpstreamHttpMethod(withGetMethod)
-                .Build()
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(withGetMethod) }
         ));
         GivenTheDownstreamRequestUriIs($"http://localhost:5000/{urlPath}");
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
@@ -650,9 +607,15 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
+    private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
+    private static HttpMethod AsHttpMethod(string method) => new(method);
+
     private void GivenTheServiceProviderConfigIs(ServiceProviderConfiguration config)
     {
-        var configuration = new InternalConfiguration(null, null, config, null, null, null, null, null, null, null);
+        var configuration = new InternalConfiguration()
+        {
+            ServiceProviderConfiguration = config,
+        };
         _httpContext.Items.SetIInternalConfiguration(configuration);
     }
 

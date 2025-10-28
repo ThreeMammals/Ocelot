@@ -1,36 +1,39 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Cache;
-using Ocelot.Cache.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
+using Ocelot.Requester;
 
 namespace Ocelot.UnitTests.Cache;
 
 public class OutputCacheMiddlewareTests : UnitTest
 {
-    private readonly Mock<IOcelotCache<CachedResponse>> _cache;
-    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-    private readonly Mock<IOcelotLogger> _logger;
+    private readonly Mock<IOcelotCache<CachedResponse>> _cache = new();
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory = new();
+    private readonly Mock<IOcelotLogger> _logger = new();
+    private readonly Mock<ICacheKeyGenerator> _cacheGenerator = new();
     private OutputCacheMiddleware _middleware;
-    private readonly RequestDelegate _next;
+    private RequestDelegate _next;
     private readonly ICacheKeyGenerator _cacheKeyGenerator;
     private CachedResponse _response;
     private readonly DefaultHttpContext _httpContext;
+    Func<string> _message;
 
     public OutputCacheMiddlewareTests()
     {
         _httpContext = new DefaultHttpContext();
-        _cache = new Mock<IOcelotCache<CachedResponse>>();
-        _loggerFactory = new Mock<IOcelotLoggerFactory>();
-        _logger = new Mock<IOcelotLogger>();
         _cacheKeyGenerator = new DefaultCacheKeyGenerator();
         _loggerFactory.Setup(x => x.CreateLogger<OutputCacheMiddleware>()).Returns(_logger.Object);
+        _logger.Setup(x => x.LogDebug(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(m => _message = m);
+        _cacheGenerator.Setup(x => x.GenerateRequestCacheKey(It.IsAny<DownstreamRequest>(), It.IsAny<DownstreamRoute>()))
+            .Returns<DownstreamRequest, DownstreamRoute>((req, rou) => _cacheKeyGenerator.GenerateRequestCacheKey(req, rou));
         _next = context => Task.CompletedTask;
-        _httpContext.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
+        _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
     }
 
     [Fact]
@@ -86,12 +89,70 @@ public class OutputCacheMiddlewareTests : UnitTest
         await WhenICallTheMiddlewareAsync();
 
         // Assert
-        ThenTheCacheAddIsCalledCorrectly();
+        ThenTheCacheAddIsCalled();
+    }
+
+    [Fact]
+    public async Task Should_not_use_cache()
+    {
+        // Arrange
+        GivenResponseIsNotCached(new HttpResponseMessage());
+        GivenTheDownstreamRouteIs(new CacheOptions(0, null, null, null));
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        _cacheGenerator.Verify(
+            x => x.GenerateRequestCacheKey(It.IsAny<DownstreamRequest>(), It.IsAny<DownstreamRoute>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Should_not_add_to_cache_when_errors()
+    {
+        // Arrange
+        GivenResponseIsNotCached(new HttpResponseMessage());
+        GivenTheDownstreamRouteIs();
+        _next = static context =>
+        {
+            context.Items.UpsertErrors([new RequestCanceledError("Bla-bla message")]);
+            return Task.CompletedTask;
+        };
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalled(Times.Never);
+        ThenTheMessageIs("There was a pipeline error for the 'GET-https://some.url/blah?abcd=123' key.");
+    }
+
+    [Fact]
+    public async Task CreateHttpResponseMessage_CachedIsNull()
+    {
+        // Arrange
+        CachedResponse cached = null;
+        GivenThereIsACachedResponse(cached);
+        GivenTheDownstreamRouteIs();
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheGetIsCalledCorrectly();
+    }
+
+    private void ThenTheMessageIs(string expected)
+    {
+        Assert.NotNull(_message);
+        var msg = _message.Invoke();
+        Assert.Equal(expected, msg);
     }
 
     private async Task WhenICallTheMiddlewareAsync()
     {
-        _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheKeyGenerator);
+        _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheGenerator.Object);
         await _middleware.Invoke(_httpContext);
     }
 
@@ -108,33 +169,32 @@ public class OutputCacheMiddlewareTests : UnitTest
         _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(responseMessage));
     }
 
-    private void GivenTheDownstreamRouteIs()
+    private void GivenTheDownstreamRouteIs(CacheOptions options = null)
     {
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder()
-                .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+        var downRoute = new DownstreamRouteBuilder()
+            .WithCacheOptions(options ?? new(100, "kanken", null, false))
+            .WithUpstreamHttpMethod([ "Get" ])
             .Build();
-
+        var route = new Route(downRoute)
+        {
+            UpstreamHttpMethod = [HttpMethod.Get],
+        };
         var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
-
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
     }
 
     private void ThenTheCacheGetIsCalledCorrectly()
     {
-        _cache
-            .Verify(x => x.Get(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _cache.Verify(
+            x => x.Get(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once);
     }
 
-    private void ThenTheCacheAddIsCalledCorrectly()
+    private void ThenTheCacheAddIsCalled(Func<Times> howMany = null)
     {
-        _cache
-            .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<CachedResponse>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
+        _cache.Verify(
+            x => x.Add(It.IsAny<string>(), It.IsAny<CachedResponse>(), It.IsAny<string>(), It.IsAny<TimeSpan>()),
+            howMany ?? Times.Once);
     }
 }

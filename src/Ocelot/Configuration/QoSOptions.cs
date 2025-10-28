@@ -11,7 +11,6 @@ public class QoSOptions
     /// <param name="from">The object to copy the properties from.</param>
     public QoSOptions(QoSOptions from)
     {
-        Key = from.Key;
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
         FailureRatio = from.FailureRatio;
@@ -24,15 +23,12 @@ public class QoSOptions
     /// <param name="from">The File-model to copy the properties from.</param>
     public QoSOptions(FileQoSOptions from)
     {
-        Key = string.Empty;
         DurationOfBreak = from.DurationOfBreak;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
     }
-
-    public string Key { get; internal set; }
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>

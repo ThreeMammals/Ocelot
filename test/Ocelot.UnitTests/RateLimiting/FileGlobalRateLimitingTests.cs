@@ -28,11 +28,27 @@ public class FileGlobalRateLimitingTests
     [Fact]
     public void FileGlobalRateLimitByHeaderRule_Ctor()
     {
-        // Arrange, Act
+        // Arrange, Act, Assert
         FileGlobalRateLimitByHeaderRule actual = new();
+        Assert.Null(actual.RouteKeys);
+
+        // Arrange
+        FileRateLimitByHeaderRule from = new()
+        {
+            ClientIdHeader = "1",
+            ClientWhitelist = ["2"],
+            DisableRateLimitHeaders = true,
+            HttpStatusCode = 4,
+            QuotaExceededMessage = "5",
+            RateLimitCounterPrefix = "6",
+        };
+
+        // Act
+        FileGlobalRateLimitByHeaderRule actualG = new(from);
 
         // Assert
-        Assert.Null(actual.RouteKeys);
+        Assert.False(ReferenceEquals(from, actualG));
+        Assert.Equivalent(from, actualG);
     }
 
     [Fact]

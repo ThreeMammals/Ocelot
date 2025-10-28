@@ -12,13 +12,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
@@ -495,6 +498,17 @@ public class OcelotBuilderTests : UnitTest
         creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>)).ShouldBe(1);
+
+        // Call Create
+        var creator = creators.Single(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>));
+        Assert.NotNull(creator);
+        var route = new DownstreamRouteBuilder().Build();
+        var provider = _serviceProvider.GetService<IServiceDiscoveryProvider>();
+        var response = creator.Create(route, provider);
+        Assert.NotNull(response);
+        Assert.False(response.IsError);
+        Assert.NotNull(response.Data);
+        Assert.IsType<FakeCustomLoadBalancer>(response.Data);
     }
 
     private class FakeCustomLoadBalancer : ILoadBalancer

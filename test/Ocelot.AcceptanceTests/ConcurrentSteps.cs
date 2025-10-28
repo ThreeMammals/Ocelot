@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.AcceptanceTests.LoadBalancer;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -102,6 +103,7 @@ public class ConcurrentSteps : Steps
         public const string Host = nameof(Uri.Host);
         public const string Port = nameof(Uri.Port);
         public const string Counter = nameof(Counter);
+        public const string Path = nameof(Path);
     }
 
     protected RequestDelegate MapGet(int index, string body) => MapGet(index, body, HttpStatusCode.OK);
@@ -119,18 +121,19 @@ public class ConcurrentSteps : Steps
         try
         {
             int count = Interlocked.Increment(ref _counters[index]);
-            responseBody = string.Concat(count, ':', body);
+            responseBody = string.Concat(count, CounterSeparator, body);
 
             response.StatusCode = (int)successCode;
             response.Headers.Append(HeaderNames.ServiceIndex, new StringValues(index.ToString()));
             response.Headers.Append(HeaderNames.Host, new StringValues(request.Host.Host));
             response.Headers.Append(HeaderNames.Port, new StringValues(request.Host.Port.ToString()));
             response.Headers.Append(HeaderNames.Counter, new StringValues(count.ToString()));
+            response.Headers.Append(HeaderNames.Path, new StringValues(request.Path + request.QueryString));
             await response.WriteAsync(responseBody);
         }
         catch (Exception exception)
         {
-            responseBody = string.Concat(1, ':', exception.StackTrace);
+            responseBody = string.Concat(1, CounterSeparator, exception.StackTrace);
             response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await response.WriteAsync(responseBody);
         }
@@ -157,12 +160,13 @@ public class ConcurrentSteps : Steps
         return _tasks;
     }
 
+    protected const string CounterSeparator = "^:^";
     private async Task GetParallelResponse(string url, int threadIndex)
     {
         var response = await ocelotClient.GetAsync(url);
         var content = await response.Content.ReadAsStringAsync();
-        var counterString = content.Contains(':')
-            ? content.Split(':')[0] // let the first fragment is counter value
+        var counterString = content.Contains(CounterSeparator)
+            ? content.Split(CounterSeparator)[0] // let the first fragment is counter value
             : "0";
         int count = int.Parse(counterString);
         count.ShouldBeGreaterThan(0);
@@ -177,10 +181,26 @@ public class ConcurrentSteps : Steps
         foreach (var r in _responses)
         {
             var content = r.Value.Content.ReadAsStringAsync().Result;
-            content = content?.Contains(':') == true
-                ? content.Split(':')[1] // remove counter for body comparison
+            content = content?.Contains(CounterSeparator) == true
+                ? content.Split(CounterSeparator)[1] // remove counter for body comparison
                 : "0";
 
+            content.ShouldBe(expectedBody);
+        }
+    }
+    public void ThenAllResponseBodiesShouldBe(int[] ports, string[] expected)
+    {
+        foreach (var r in _responses)
+        {
+            var response = r.Value;
+            var portHeader = response.Headers.GetValues("Port").Csv();
+            int port = int.Parse(portHeader);
+            int i = Array.IndexOf(ports, port);
+            var expectedBody = expected[i];
+            var content = response.Content.ReadAsStringAsync().Result;
+            content = content?.Contains(CounterSeparator) == true
+                ? content.Split(CounterSeparator)[1] // remove counter for body comparison
+                : "0";
             content.ShouldBe(expectedBody);
         }
     }
@@ -266,4 +286,18 @@ public class ConcurrentSteps : Steps
             }
         }
     }
+
+    protected IEnumerable<string> ThenAllResponsesHeaderExists(string key)
+    {
+        foreach (var kv in _responses)
+        {
+            var response = kv.Value.ShouldNotBeNull();
+            response.Headers.Contains(key).ShouldBeTrue();
+            var header = response.Headers.GetValues(key);
+            yield return string.Join(';', header);
+        }
+    }
+
+    protected virtual string ServiceName([CallerMemberName] string serviceName = null) => serviceName ?? GetType().Name;
+    protected virtual string ServiceNamespace() => GetType().Namespace;
 }

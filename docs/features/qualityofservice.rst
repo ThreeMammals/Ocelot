@@ -106,6 +106,10 @@ According to the :ref:`config-global-configuration-schema`, it is possible to co
 
 Please note that route-level options take precedence over global options.
 
+  **Note**: Dynamic routes were not supported in versions prior to `24.1`_.
+  Beginning with version `24.1`_, global *QoS* options for :ref:`Dynamic Routing <routing-dynamic>` may be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
+  Additionally, global configuration for static routes (also known as ``Routes``) has been supported since version `24.1`_.
+
 .. _qos-circuit-breaker-strategy:
 
 Circuit Breaker strategy
@@ -169,7 +173,7 @@ The ``TimeoutValue`` can be configured independently from the options of the :re
 
 This setup activates only the `Timeout resilience strategy`_.
 
-To configure a global QoS timeout using the *Timeout strategy* for all static routes (excluding :ref:`qos-notes-unsupported-dynamic-routes`), set the ``TimeoutValue`` option according to the :ref:`config-global-configuration-schema`:
+To configure a global QoS timeout using the *Timeout strategy* for all routes (both static and dynamic) set the ``TimeoutValue`` option as defined in the :ref:`config-global-configuration-schema`:
 
 .. code-block:: json
 
@@ -253,16 +257,6 @@ Global and default QoS timeouts
 
 If a route-level *QoS* timeout is undefined, the global ``TimeoutValue`` takes precedence over the default timeout (30 seconds, see the `Timeout`_ docs).
 This means the global *QoS* timeout can override Polly's default of `30 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22const+int+DefTimeout%22+path%3A%2F%5Esrc%5C%2FOcelot%5C.Provider%5C.Polly%5C%2F%2F&type=code>`_ via the :ref:`config-global-configuration-schema`.
-
-.. _qos-notes-unsupported-dynamic-routes:
-
-Unsupported dynamic routes
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Both route-level and global *QoS* options apply only to static routes, as defined by the :ref:`config-route-schema`.
-Since the :ref:`config-dynamic-route-schema` does not support *QoS* options, *Quality of Service* is not applied to dynamic routes in :ref:`Dynamic Routing <routing-dynamic>` mode.
-However, global configuration remains possible in :ref:`Dynamic Routing <routing-dynamic>` mode.
-Therefore, it is not possible to override global *QoS* options using dynamic route-level *QoS* settings.
 
 .. _qos-extensibility:
 

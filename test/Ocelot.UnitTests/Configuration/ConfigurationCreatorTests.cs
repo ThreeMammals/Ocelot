@@ -16,9 +16,12 @@ public class ConfigurationCreatorTests : UnitTest
     private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
     private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator;
     private readonly Mock<IVersionCreator> _vCreator;
-    private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
+    private readonly Mock<IVersionPolicyCreator> _vpCreator;
+    private readonly Mock<IMetadataCreator> _mdCreator;
+    private readonly Mock<IRateLimitOptionsCreator> _rlCreator;
+    private readonly Mock<ICacheOptionsCreator> _coCreator;
     private FileConfiguration _fileConfig;
-    private List<Route> _routes;
+    private Route[] _routes;
     private ServiceProviderConfiguration _spc;
     private LoadBalancerOptions _lbo;
     private QoSOptions _qoso;
@@ -29,11 +32,14 @@ public class ConfigurationCreatorTests : UnitTest
     public ConfigurationCreatorTests()
     {
         _vCreator = new Mock<IVersionCreator>();
-        _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
+        _vpCreator = new Mock<IVersionPolicyCreator>();
         _lboCreator = new Mock<ILoadBalancerOptionsCreator>();
         _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
         _qosCreator = new Mock<IQoSOptionsCreator>();
         _spcCreator = new Mock<IServiceProviderConfigurationCreator>();
+        _mdCreator = new Mock<IMetadataCreator>();
+        _rlCreator = new Mock<IRateLimitOptionsCreator>();
+        _coCreator = new Mock<ICacheOptionsCreator>();
         _serviceCollection = new ServiceCollection();
     }
 
@@ -49,7 +55,7 @@ public class ConfigurationCreatorTests : UnitTest
         // Assert
         ThenTheDepdenciesAreCalledCorrectly();
         ThenThePropertiesAreSetCorrectly();
-        ThenTheAdminPathIsNull();
+        _result.AdministrationPath.ShouldBeNull();
     }
 
     [Fact]
@@ -68,13 +74,24 @@ public class ConfigurationCreatorTests : UnitTest
         ThenTheAdminPathIsSet();
     }
 
-    private void ThenTheAdminPathIsNull()
+    [Fact]
+    public void Configuration_GlobalConfiguration_SoftNullGuard()
     {
-        _result.AdministrationPath.ShouldBeNull();
+        // Arrange
+        GivenTheDependenciesAreSetUp();
+        _fileConfig.GlobalConfiguration = null;
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheDepdenciesAreCalledCorrectly();
+        ThenThePropertiesAreSetCorrectly();
     }
 
     private void ThenThePropertiesAreSetCorrectly()
     {
+        _fileConfig.GlobalConfiguration ??= new();
         _result.ShouldNotBeNull();
         _result.ServiceProviderConfiguration.ShouldBe(_spc);
         _result.LoadBalancerOptions.ShouldBe(_lbo);
@@ -92,10 +109,15 @@ public class ConfigurationCreatorTests : UnitTest
 
     private void ThenTheDepdenciesAreCalledCorrectly()
     {
-        _spcCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration), Times.Once);
-        _lboCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.LoadBalancerOptions), Times.Once);
-        _qosCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.QoSOptions), Times.Once);
-        _hhoCreator.Verify(x => x.Create(_fileConfig.GlobalConfiguration.HttpHandlerOptions), Times.Once);
+        _spcCreator.Verify(x => x.Create(It.IsAny<FileGlobalConfiguration>()), Times.Once);
+        _lboCreator.Verify(x => x.Create(It.IsAny<FileLoadBalancerOptions>()), Times.Once);
+        _qosCreator.Verify(x => x.Create(It.IsAny<FileQoSOptions>()), Times.Once);
+        _hhoCreator.Verify(x => x.Create(It.IsAny<FileHttpHandlerOptions>()), Times.Once);
+        _vCreator.Verify(x => x.Create(It.IsAny<string>()), Times.Once);
+        _vpCreator.Verify(x => x.Create(It.IsAny<string>()), Times.Once);
+        _mdCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Once);
+        _vCreator.Verify(x => x.Create(It.IsAny<string>()), Times.Once);
+        _rlCreator.Verify(x => x.Create(It.IsAny<FileGlobalConfiguration>()), Times.Once);
     }
 
     private void GivenTheAdminPath()
@@ -110,9 +132,9 @@ public class ConfigurationCreatorTests : UnitTest
         {
             GlobalConfiguration = new FileGlobalConfiguration(),
         };
-        _routes = new List<Route>();
+        _routes = Array.Empty<Route>();
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
-        _lbo = new LoadBalancerOptionsBuilder().Build();
+        _lbo = new();
         _qoso = new QoSOptionsBuilder().Build();
         _hho = new HttpHandlerOptionsBuilder().Build();
 
@@ -125,7 +147,17 @@ public class ConfigurationCreatorTests : UnitTest
     private void WhenICreate()
     {
         var serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _creator = new ConfigurationCreator(_spcCreator.Object, _qosCreator.Object, _hhoCreator.Object, serviceProvider, _lboCreator.Object, _vCreator.Object, _versionPolicyCreator.Object);
+        _creator = new ConfigurationCreator(
+            _spcCreator.Object,
+            _qosCreator.Object,
+            _hhoCreator.Object,
+            serviceProvider,
+            _lboCreator.Object,
+            _vCreator.Object,
+            _vpCreator.Object,
+            _mdCreator.Object,
+            _rlCreator.Object,
+            _coCreator.Object);
         _result = _creator.Create(_fileConfig, _routes);
     }
 }

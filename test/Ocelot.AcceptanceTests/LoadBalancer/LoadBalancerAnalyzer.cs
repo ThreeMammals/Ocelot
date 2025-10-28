@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.Values;
 using System.Collections.Concurrent;
@@ -113,6 +114,7 @@ internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer, ILoadBalancer
     }
 
     public virtual string Type => nameof(LoadBalancerAnalyzer);
-    public virtual Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(new UnableToFindLoadBalancerError(GetType().Name)));
+    public virtual Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
+        => Task.FromResult<Response<ServiceHostAndPort>>(new ErrorResponse<ServiceHostAndPort>(new UnableToFindLoadBalancerError(GetType().Name)));
     public virtual void Release(ServiceHostAndPort hostAndPort) { }
 }

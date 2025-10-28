@@ -6,18 +6,21 @@ namespace Ocelot.UnitTests.Cache;
 public class DefaultMemoryCacheTests : UnitTest
 {
     private readonly DefaultMemoryCache<Fake> _cache;
-
     public DefaultMemoryCacheTests()
     {
+        _ttl = TimeSpan.FromSeconds(100);
         _cache = new DefaultMemoryCache<Fake>(new MemoryCache(new MemoryCacheOptions()));
     }
+
+    protected TimeSpan TTL => _ttl;
+    private TimeSpan _ttl;
 
     [Fact]
     public void Should_cache()
     {
         // Arrange
         var fake = new Fake(1);
-        _cache.Add("1", fake, TimeSpan.FromSeconds(100), "region");
+        _cache.Add("1", fake, "region", TTL);
 
         // Act
         var result = _cache.Get("1", "region");
@@ -38,13 +41,13 @@ public class DefaultMemoryCacheTests : UnitTest
     }
 
     [Fact]
-    public void Should_add_and_delete()
+    public void Should_add_or_update()
     {
         // Arrange
         var fake = new Fake(1);
-        _cache.Add("1", fake, TimeSpan.FromSeconds(100), "region");
+        _cache.Add("1", fake, "region", TTL);
         var newFake = new Fake(1);
-        _cache.AddAndDelete("1", newFake, TimeSpan.FromSeconds(100), "region");
+        _cache.AddOrUpdate("1", newFake, "region", TTL);
 
         // Act
         var result = _cache.Get("1", "region");
@@ -60,8 +63,8 @@ public class DefaultMemoryCacheTests : UnitTest
         // Arrange
         var fake1 = new Fake(1);
         var fake2 = new Fake(2);
-        _cache.Add("1", fake1, TimeSpan.FromSeconds(100), "region");
-        _cache.Add("2", fake2, TimeSpan.FromSeconds(100), "region");
+        _cache.Add("1", fake1, "region", TTL);
+        _cache.Add("2", fake2, "region", TTL);
         _cache.ClearRegion("region");
 
         // Act, Assert
@@ -78,7 +81,7 @@ public class DefaultMemoryCacheTests : UnitTest
     {
         // Arrange
         var fake = new Fake(1);
-        _cache.Add("1", fake, TimeSpan.FromMilliseconds(50), "region");
+        _cache.Add("1", fake, "region", TimeSpan.FromMilliseconds(50));
         Thread.Sleep(200);
 
         // Act
@@ -95,7 +98,7 @@ public class DefaultMemoryCacheTests : UnitTest
     {
         // Arrange
         var fake = new Fake(1);
-        _cache.Add("1", fake, TimeSpan.FromSeconds(ttl), "region");
+        _cache.Add("1", fake, "region", TimeSpan.FromSeconds(ttl));
 
         // Act
         var result = _cache.Get("1", "region");

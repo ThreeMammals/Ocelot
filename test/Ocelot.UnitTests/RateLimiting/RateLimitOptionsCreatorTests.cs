@@ -246,4 +246,27 @@ public class RateLimitOptionsCreatorTests : UnitTest
         Assert.Equal("12/9s/w10s", actual.Rule.ToString());
     }
     #endregion
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Create_FileGlobalConfiguration(bool hasOptions)
+    {
+        // Arrange
+        FileGlobalConfiguration global = new()
+        {
+            RateLimitOptions = !hasOptions ? null : new()
+            {
+                ClientIdHeader = "globalRule",
+            },
+        };
+
+        // Act
+        var actual = _creator.Create(global);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(hasOptions ? "globalRule" : "Oc-Client", actual.ClientIdHeader);
+        Assert.Equal(hasOptions, actual.EnableRateLimiting);
+    }
 }

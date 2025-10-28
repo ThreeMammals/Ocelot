@@ -50,7 +50,7 @@ public class CannotStartOcelotTests : Steps
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     ServiceName = "test",
                 },
             },

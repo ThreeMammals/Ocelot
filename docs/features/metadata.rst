@@ -21,20 +21,22 @@ As you may already know from the :doc:`../features/configuration` chapter and th
 
 .. _FileMetadataOptions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileMetadataOptions.cs
 
-  Class: `FileMetadataOptions`_
-
-But there is **global** *metadata* configuration: the ``MetadataOptions`` *schema*.
+However, **global** metadata configuration consists of both the ``Metadata`` and ``MetadataOptions`` sections.
 You do not need to set all of these things, but this is everything that is available at the moment.
 
 .. code-block:: json
 
-  "MetadataOptions": {
-    "CurrentCulture": "en-GB",
-    "NumberStyle": "Any",
-    "Separators": [","],
-    "StringSplitOption": "None",
-    "TrimChars": [" "],
-    "Metadata": {} // dictionary
+  "GlobalConfiguration": {
+    "Metadata": {
+      // "key": "value",
+    },
+    "MetadataOptions": {
+      "CurrentCulture": "en-GB",
+      "NumberStyle": "Any",
+      "Separators": [","],
+      "StringSplitOption": "None",
+      "TrimChars": [" "],
+    }
   }
 
 The actual global *metadata* schema with all the properties can be found in the C# `FileMetadataOptions`_ class.
@@ -91,11 +93,11 @@ By using the *metadata*, users can implement their own logic and extend the func
       }
     ],
     "GlobalConfiguration": {
+      "Metadata": {
+        "instance_name": "machine-1",
+        "plugin2/param1": "default-value"
+      },
       "MetadataOptions": {
-        "Metadata": {
-          "instance_name": "machine-1",
-          "plugin2/param1": "default-value"
-        }
       }
     }
   }

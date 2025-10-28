@@ -4,14 +4,7 @@ public class RouteOptionsBuilder
 {
     private bool _isAuthenticated;
     private bool _isAuthorized;
-    private bool _isCached;
     private bool _useServiceDiscovery;
-
-    public RouteOptionsBuilder WithIsCached(bool isCached)
-    {
-        _isCached = isCached;
-        return this;
-    }
 
     public RouteOptionsBuilder WithIsAuthenticated(bool isAuthenticated)
     {
@@ -33,6 +26,6 @@ public class RouteOptionsBuilder
 
     public RouteOptions Build()
     {
-        return new RouteOptions(_isAuthenticated, _isAuthorized, _isCached, _useServiceDiscovery);
+        return new RouteOptions(_isAuthenticated, _isAuthorized, _useServiceDiscovery);
     }
 }

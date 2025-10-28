@@ -1,4 +1,4 @@
-﻿using Consul;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -45,26 +45,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
+        var expectedRoute = GivenRoute(method: "Post", priority: 1);
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
-                .Build(),
+            expectedRoute,
+            GivenRoute(method: "Post", priority: 0),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -77,16 +62,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .Build())
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .Build()
-            ));
+            expectedRoute));
     }
 
     [Fact]
@@ -98,26 +74,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
+        var expectedRoute = GivenRoute(method: "Post", priority: 1);
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 0, false, "someUpstreamPath"))
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(method: "Post", priority: 0),
+            expectedRoute,
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -130,16 +91,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .Build())
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("test", 1, false, "someUpstreamPath"))
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .Build()
-            ));
+            expectedRoute));
     }
 
     [Fact]
@@ -153,15 +105,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -174,16 +118,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -199,15 +134,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -220,16 +147,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
 
         // Assert: Then The Url Matcher Is Called Correctly
         _mockUrlMatcher.Verify(x => x.Match("matchInUrlMatcher", _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Once);
@@ -246,15 +164,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -267,16 +177,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
     }
 
     [Fact]
@@ -290,24 +191,8 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPathForAPost")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(downstream: "someDownstreamPath", method: "Get", priority: 1),
+            GivenRoute(downstream: "someDownstreamPathForAPost", method: "Post", priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -320,16 +205,8 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPathForAPost")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(downstream: "someDownstreamPathForAPost", method: "Post", priority: 1)
+        ));
     }
 
     [Fact]
@@ -341,15 +218,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamQuery = string.Empty;
         _routesConfig = new List<Route>
         {
-            new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("somPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("somePath", 1, false, "someUpstreamPath"))
-                    .Build())
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .WithUpstreamPathTemplate(new UpstreamPathTemplate("somePath", 1, false, "someUpstreamPath"))
-            .Build(),
+            GivenRoute(downstream: "somPath", upstream: "somePath", priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(false));
@@ -375,15 +244,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get", "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(upstreamMethods: ["Get", "Post"], priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -396,16 +257,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(upstreamMethods: ["Post"], priority: 1)));
     }
 
     [Fact]
@@ -419,15 +271,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string>())
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string>())
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(upstreamMethods: [], priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -440,16 +284,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Post" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Post" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(upstreamMethods: ["Post"], priority: 1)));
     }
 
     [Fact]
@@ -463,15 +298,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get", "Patch", "Delete" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(upstreamMethods: ["Get", "Patch", "Delete"], priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -498,16 +325,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
+            GivenRoute(host: "MATCH", priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -520,16 +338,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-        ));
+            GivenRoute(priority: 1)));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -545,15 +354,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build(),
+            GivenRoute(host: null, priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -566,16 +367,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -591,26 +383,8 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string>()) // empty list of methods
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string>()) // empty list of methods
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
+            GivenRoute(host: "MATCH", upstreamMethods: ["Get"], priority: 1),
+            GivenRoute(host: "MATCH", upstreamMethods: [], priority: 1), // empty list of methods
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -637,16 +411,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string>())
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string>())
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
+            GivenRoute(host: "MATCH", upstreamMethods: [], priority: 1), // empty list of methods
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -673,16 +438,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string>())
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string>())
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
+            GivenRoute(host: "MATCH", upstreamMethods: [], priority: 1), // empty list of methods
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -708,25 +464,8 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("THENULLPATH")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHost("MATCH")
-                .Build(),
+            GivenRoute(downstream: "THENULLPATH", priority: 1),
+            GivenRoute(host: "MATCH", priority: 1), // empty list of methods
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -739,16 +478,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "test"))
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "test"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
         ThenTheUrlMatcherIsCalledCorrectly(1, 0);
         ThenTheUrlMatcherIsCalledCorrectly(1, 1);
     }
@@ -780,16 +510,7 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(headerPlaceholders);
         _routesConfig = new()
         {
-            new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder()
-                .WithDownstreamPathTemplate("someDownstreamPath")
-                .WithUpstreamHttpMethod(new() {"Get"})
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build())
-            .WithUpstreamHttpMethod(new() {"Get"})
-            .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-            .WithUpstreamHeaders(upstreamHeadersConfig)
-            .Build(),
+            GivenRoute(headers: upstreamHeadersConfig, priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -802,16 +523,7 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(new(
             urlPlaceholders.Union(headerPlaceholders).ToList(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new() { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new() { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .Build()
-            ));
+            GivenRoute(priority: 1)));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -834,26 +546,8 @@ public class DownstreamRouteFinderTests : UnitTest
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
         {
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new() { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new() { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHeaders(upstreamHeadersConfig)
-                .Build(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("someDownstreamPath")
-                    .WithUpstreamHttpMethod(new() { "Get" })
-                    .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                    .Build())
-                .WithUpstreamHttpMethod(new() { "Get" })
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate("someUpstreamPath", 1, false, "someUpstreamPath"))
-                .WithUpstreamHeaders(upstreamHeadersConfig)
-                .Build(),
+            GivenRoute(headers: upstreamHeadersConfig, priority: 1),
+            GivenRoute(headers: upstreamHeadersConfig, priority: 1),
         };
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
         GivenTheUrlMatcherReturns(new UrlMatch(true));
@@ -866,6 +560,69 @@ public class DownstreamRouteFinderTests : UnitTest
         // Assert
         _result.IsError.ShouldBeTrue();
     }
+
+    [Theory]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_filter_static_routes(bool isDynamic)
+    {
+        // Arrange
+        var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamQuery = string.Empty;
+        GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
+        GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
+        _routesConfig = new()
+        {
+            GivenRoute(priority: 1),
+            GivenRoute(isDynamic: isDynamic, priority: 1),
+        };
+        GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
+        GivenTheHeadersMatcherReturns(true);
+        _upstreamHttpMethod = "Get";
+
+        // Act, Assert
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result.Data.Route.IsDynamic.ShouldBeFalse();
+
+        // Act, Assert 2
+        _routesConfig.RemoveAll(r => !r.IsDynamic); // remove all static routes
+        GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result.IsError.ShouldBeTrue();
+    }
+
+    private static Route GivenRoute(bool? isDynamic = null, string downstream = null,
+        List<string> upstreamMethods = null, string method = null,
+        UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null,
+        string host = null,
+        IDictionary<string, UpstreamHeaderTemplate> headers = null)
+    {
+        var route = GivenDownstreamRoute(downstream, upstreamMethods, method, upTemplate, upstream, priority);
+        upstream ??= "someUpstreamPath";
+        upTemplate ??= new(upstream, priority ?? 1, false, upstream);
+        upstreamMethods ??= [method ?? HttpMethods.Get];
+        return new(isDynamic ?? false)
+        {
+            DownstreamRoute = [route],
+            UpstreamHttpMethod = upstreamMethods.Select(m => new HttpMethod(m)).ToHashSet(),
+            UpstreamTemplatePattern = upTemplate,
+            UpstreamHost = host,
+            UpstreamHeaderTemplates = headers,
+        };
+    }
+
+    private static DownstreamRoute GivenDownstreamRoute(string downstream = null,
+        List<string> upstreamMethods = null, string method = null,
+        UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null)
+        => new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate(downstream ?? "someDownstreamPath")
+            .WithUpstreamHttpMethod(upstreamMethods ?? [method ?? HttpMethods.Get])
+            .WithUpstreamPathTemplate(upTemplate ?? new(upstream ?? "someUpstreamPath", priority ?? 1, false, upstream ?? "someUpstreamPath"))
+            .Build();
 
     private void GivenTheTemplateVariableAndNameFinderReturns(Response<List<PlaceholderNameAndValue>> response)
     {
@@ -916,17 +673,16 @@ public class DownstreamRouteFinderTests : UnitTest
 
     private void GivenTheConfigurationIs(string adminPath, ServiceProviderConfiguration serviceProviderConfig)
     {
-        _config = new InternalConfiguration(
-            _routesConfig,
-            adminPath,
-            serviceProviderConfig,
-            string.Empty,
-            new LoadBalancerOptionsBuilder().Build(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+        _config = new InternalConfiguration(_routesConfig.ToArray())
+        {
+            AdministrationPath = adminPath,
+            DownstreamHttpVersion = new Version("1.1"),
+            DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
+            HttpHandlerOptions = new HttpHandlerOptionsBuilder().Build(),
+            LoadBalancerOptions = new(),
+            QoSOptions = new QoSOptionsBuilder().Build(),
+            ServiceProviderConfiguration = serviceProviderConfig,
+        };
     }
 
     private void ThenTheFollowingIsReturned(DownstreamRouteHolder expected)

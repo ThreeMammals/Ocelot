@@ -640,11 +640,12 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     public async Task Configuration_is_valid_with_duplicate_routes_but_one_upstreamhost_is_not_set()
     {
         // Arrange
-        var route = GivenDefaultRoute()
-            .WithMethods()
-            .WithUpstreamHost("upstreamhost");
-        var duplicate = Box(GivenDefaultRoute(null, "/www/test/"))
-            .Methods().Unbox();
+        var route = GivenDefaultRoute();
+        route.UpstreamHttpMethod.Clear();
+        route.UpstreamHost = "upstreamhost";
+        var duplicate = GivenDefaultRoute(null, "/www/test/");
+        duplicate.UpstreamHttpMethod.Clear();
+        duplicate.UpstreamHost = null; // !
         GivenAConfiguration(route, duplicate);
 
         // Act

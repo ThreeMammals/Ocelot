@@ -47,7 +47,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -92,7 +92,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -137,7 +137,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -182,7 +182,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -227,7 +227,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -271,7 +271,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -317,7 +317,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };
@@ -363,7 +363,7 @@ public class CustomMiddlewareTests : Steps
                         },
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
         };

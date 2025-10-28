@@ -126,11 +126,12 @@ public class FileRouteTests : UnitTest
         expected.DownstreamHttpVersionPolicy = "value11";
         expected.DownstreamPathTemplate = "value12";
         expected.DownstreamScheme = "value13";
-        expected.FileCacheOptions.Header = "value14";
+        expected.CacheOptions = new() { Header = "value14" };
+        expected.FileCacheOptions = new() { TtlSeconds = 14 };
         expected.HttpHandlerOptions.MaxConnectionsPerServer = 15;
         expected.Key = "value16";
-        expected.LoadBalancerOptions.Key = "value17";
-        expected.Metadata.Add("key18", "value18");
+        expected.LoadBalancerOptions ??= new("value17");
+        expected.Metadata ??= new Dictionary<string, string>() { { "key18", "value18" } };
         expected.Priority = 19;
         expected.QoSOptions.DurationOfBreak = 20;
         expected.RateLimitOptions ??= new() { Period = "value21" };
@@ -165,6 +166,7 @@ public class FileRouteTests : UnitTest
         Assert.Equal(expected.DownstreamHttpVersionPolicy, actual.DownstreamHttpVersionPolicy);
         Assert.Equal(expected.DownstreamPathTemplate, actual.DownstreamPathTemplate);
         Assert.Equal(expected.DownstreamScheme, actual.DownstreamScheme);
+        Assert.Equivalent(expected.CacheOptions, actual.CacheOptions); // FileCacheOptions requires Equals overriding
         Assert.Equivalent(expected.FileCacheOptions, actual.FileCacheOptions); // FileCacheOptions requires Equals overriding
         Assert.Equivalent(expected.HttpHandlerOptions, actual.HttpHandlerOptions); // FileHttpHandlerOptions requires Equals overriding
         Assert.Equal(expected.Key, actual.Key);
