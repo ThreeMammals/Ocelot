@@ -471,9 +471,10 @@ public class MessageInvokerPoolBase : UnitTest
         var qosOptions = new QoSOptionsBuilder()
             .WithTimeoutValue(qosTimeout.HasValue ? Ms(qosTimeout.Value): null) // !!!
             .Build();
-        var handlerOptions = new HttpHandlerOptionsBuilder()
-            .WithUseMaxConnectionPerServer(int.MaxValue)
-            .Build();
+        var handlerOptions = new HttpHandlerOptions()
+        {
+            MaxConnectionsPerServer = int.MaxValue,
+        };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
             .WithHttpHandlerOptions(handlerOptions)

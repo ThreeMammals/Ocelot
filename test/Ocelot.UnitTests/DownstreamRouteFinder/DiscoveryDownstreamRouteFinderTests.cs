@@ -32,7 +32,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public DiscoveryDownstreamRouteFinderTests()
     {
         _qoSOptions = new(new FileQoSOptions());
-        _handlerOptions = new HttpHandlerOptionsBuilder().Build();
+        _handlerOptions = new();
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();

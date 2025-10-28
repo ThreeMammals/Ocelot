@@ -5,6 +5,8 @@
 /// </summary>
 public class HttpHandlerOptions
 {
+    public HttpHandlerOptions() { }
+
     public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
         int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
     {
@@ -20,35 +22,35 @@ public class HttpHandlerOptions
     /// Specify if auto redirect is enabled.
     /// </summary>
     /// <value>AllowAutoRedirect.</value>
-    public bool AllowAutoRedirect { get; }
+    public bool AllowAutoRedirect { get; init; }
 
     /// <summary>
     /// Specify is handler has to use a cookie container.
     /// </summary>
     /// <value>UseCookieContainer.</value>
-    public bool UseCookieContainer { get; }
+    public bool UseCookieContainer { get; init; }
 
     /// <summary>
     /// Specify is handler has to use a opentracing.
     /// </summary>
     /// <value>UseTracing.</value>
-    public bool UseTracing { get; }
+    public bool UseTracing { get; init; }
 
     /// <summary>
     /// Specify if handler has to use a proxy.
     /// </summary>
     /// <value>UseProxy.</value>
-    public bool UseProxy { get; }
+    public bool UseProxy { get; init; }
 
     /// <summary>
     /// Specify the maximum of concurrent connection to a network endpoint.
     /// </summary>
     /// <value>MaxConnectionsPerServer.</value>
-    public int MaxConnectionsPerServer { get; }
+    public int MaxConnectionsPerServer { get; init; }
 
     /// <summary>
     /// Specify the maximum of time a connection can be pooled.
     /// </summary>
     /// <value>PooledConnectionLifeTime.</value>
-    public TimeSpan PooledConnectionLifeTime { get; }
+    public TimeSpan PooledConnectionLifeTime { get; init; }
 }

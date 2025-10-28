@@ -678,7 +678,7 @@ public class DownstreamRouteFinderTests : UnitTest
             AdministrationPath = adminPath,
             DownstreamHttpVersion = new Version("1.1"),
             DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
-            HttpHandlerOptions = new HttpHandlerOptionsBuilder().Build(),
+            HttpHandlerOptions = new(),
             LoadBalancerOptions = new(),
             QoSOptions = new QoSOptionsBuilder().Build(),
             ServiceProviderConfiguration = serviceProviderConfig,

@@ -265,7 +265,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
-        _hho = new HttpHandlerOptionsBuilder().Build();
+        _hho = new();
         _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
         _dhp = new List<DownstreamHostAndPort>();
         _lbo = new();
