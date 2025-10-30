@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -81,7 +80,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     }
 
     /// <summary>120 seconds.</summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds);
 
     [Fact]
     [Trait("PR", "1824")]

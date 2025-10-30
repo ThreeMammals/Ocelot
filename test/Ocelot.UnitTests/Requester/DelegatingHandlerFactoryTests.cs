@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Requester;
@@ -460,7 +459,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     }
 
     /// <summary>120 seconds.</summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds);
 }
 
 internal static class ListExtensions

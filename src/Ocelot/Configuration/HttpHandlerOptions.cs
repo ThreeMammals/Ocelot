@@ -1,21 +1,35 @@
-﻿namespace Ocelot.Configuration;
+﻿using Ocelot.Configuration.File;
+
+namespace Ocelot.Configuration;
 
 /// <summary>
 /// Describes configuration parameters for http handler, that is created to handle a request to service.
 /// </summary>
 public class HttpHandlerOptions
 {
+    public const int DefaultPooledConnectionLifetimeSeconds = 120;
+
     public HttpHandlerOptions() { }
+
+    public HttpHandlerOptions(FileHttpHandlerOptions from)
+    {
+        AllowAutoRedirect = from.AllowAutoRedirect;
+        MaxConnectionsPerServer = (from.MaxConnectionsPerServer > 0) ? from.MaxConnectionsPerServer : int.MaxValue;
+        PooledConnectionLifeTime = TimeSpan.FromSeconds(from.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
+        UseCookieContainer = from.UseCookieContainer;
+        UseProxy = from.UseProxy;
+        UseTracing = from.UseTracing;
+    }
 
     public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
         int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
     {
         AllowAutoRedirect = allowAutoRedirect;
-        UseCookieContainer = useCookieContainer;
-        UseTracing = useTracing;
-        UseProxy = useProxy;
         MaxConnectionsPerServer = maxConnectionsPerServer;
         PooledConnectionLifeTime = pooledConnectionLifeTime;
+        UseCookieContainer = useCookieContainer;
+        UseProxy = useProxy;
+        UseTracing = useTracing;
     }
 
     /// <summary>

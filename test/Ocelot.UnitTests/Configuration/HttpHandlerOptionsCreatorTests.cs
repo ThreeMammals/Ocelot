@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -12,14 +11,11 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     private HttpHandlerOptionsCreator _creator;
     private FileRoute _fileRoute;
     private HttpHandlerOptions _httpHandlerOptions;
-    private IServiceProvider _serviceProvider;
-    private readonly IServiceCollection _serviceCollection;
+    private readonly Mock<IOcelotTracer> _ocTracer = new();
 
     public HttpHandlerOptionsCreatorTests()
     {
-        _serviceCollection = new ServiceCollection();
-        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
+        _creator = new(_ocTracer.Object);
     }
 
     [Fact]
@@ -210,15 +206,13 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
     private void GivenARealTracer()
     {
-        _serviceCollection.AddSingleton<IOcelotTracer, FakeTracer>();
-        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
-        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
+        _creator = new HttpHandlerOptionsCreator(new FakeTracer());
     }
 
     /// <summary>
     /// 120 seconds.
     /// </summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
+    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds);
 
     private class FakeTracer : IOcelotTracer
     {

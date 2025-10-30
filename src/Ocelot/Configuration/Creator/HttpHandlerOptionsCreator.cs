@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Configuration.File;
+﻿using Ocelot.Configuration.File;
 using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Creator;
@@ -7,25 +6,25 @@ namespace Ocelot.Configuration.Creator;
 public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
 {
     private readonly IOcelotTracer _tracer;
-
-    //todo: this should be configurable and available as global config parameter in ocelot.json
-    public const int DefaultPooledConnectionLifetimeSeconds = 120;
-
-    public HttpHandlerOptionsCreator(IServiceProvider services)
-    {
-        _tracer = services.GetService<IOcelotTracer>();
-    }
+    public HttpHandlerOptionsCreator(IOcelotTracer tracer) => _tracer = tracer;
 
     public HttpHandlerOptions Create(FileHttpHandlerOptions options)
     {
         options ??= new();
         var useTracing = _tracer != null && options.UseTracing;
+        return new(options)
+        {
+            UseTracing = useTracing,
+        };
+    }
 
-        //be sure that maxConnectionPerServer is in correct range of values
-        var maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? options.MaxConnectionsPerServer : int.MaxValue;
-        var pooledConnectionLifetime = TimeSpan.FromSeconds(options.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
+    public HttpHandlerOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    {
+        throw new NotImplementedException();
+    }
 
-        return new HttpHandlerOptions(options.AllowAutoRedirect,
-            options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer, pooledConnectionLifetime);
+    public HttpHandlerOptions Create(FileDynamicRoute route, FileGlobalConfiguration globalConfiguration)
+    {
+        throw new NotImplementedException();
     }
 }

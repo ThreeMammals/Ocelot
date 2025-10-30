@@ -103,7 +103,7 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var rateLimitOption = _rateLimitOptionsCreator.Create(fileRoute, globalConfiguration);
 
-        var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute.HttpHandlerOptions);
+        var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var hAndRs = _headerFAndRCreator.Create(fileRoute, globalConfiguration);
 
