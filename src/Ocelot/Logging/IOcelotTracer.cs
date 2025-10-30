@@ -6,9 +6,8 @@ public interface IOcelotTracer
 {
     void Event(HttpContext httpContext, string @event);
 
-    Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken,
+    Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync);
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        CancellationToken cancellationToken);
 }

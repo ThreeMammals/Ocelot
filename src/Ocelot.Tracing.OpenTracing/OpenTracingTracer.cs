@@ -29,11 +29,9 @@ internal class OpenTracingTracer : IOcelotTracer
     /// <inheritdoc/>
     public async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
-        CancellationToken cancellationToken,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage,
-        CancellationToken,
-        Task<HttpResponseMessage>> baseSendAsync)
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        CancellationToken cancellationToken)
     {
         using (var scope = this.tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
         {

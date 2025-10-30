@@ -18,10 +18,11 @@ public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
         InnerHandler = httpMessageHandler ?? new HttpClientHandler();
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return _tracer.SendAsync(request, cancellationToken, x => _repo.Add("TraceId", x), (r, c) => base.SendAsync(r, c));
+        return _tracer.SendAsync(request,
+            x => _repo.Add("TraceId", x),
+            base.SendAsync, // implicit anonymous delegate
+            cancellationToken);
     }
 }

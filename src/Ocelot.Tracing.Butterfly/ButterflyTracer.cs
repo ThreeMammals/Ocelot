@@ -45,21 +45,20 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
         span?.Log(LogField.CreateNew().Event(@event));
     }
 
-    public Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken,
+    public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        CancellationToken cancellationToken)
     {
-        return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken, addTraceIdToRepo, baseSendAsync));
+        return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow,
+            span => TracingSendAsync(span, request, addTraceIdToRepo, baseSendAsync, cancellationToken));
     }
 
-    protected virtual async Task<HttpResponseMessage> TracingSendAsync(
-        ISpan span,
+    protected virtual async Task<HttpResponseMessage> TracingSendAsync(ISpan span,
         HttpRequestMessage request,
-        CancellationToken cancellationToken,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        CancellationToken cancellationToken)
     {
         if (request.Headers.Contains(PrefixSpanId))
         {

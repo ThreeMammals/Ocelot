@@ -222,15 +222,10 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
     private class FakeTracer : IOcelotTracer
     {
-        public void Event(HttpContext httpContext, string @event)
-        {
-            throw new NotImplementedException();
-        }
+        public void Event(HttpContext httpContext, string @event) => throw new NotImplementedException();
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken, Action<string> addTraceIdToRepo,
-            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Action<string> addTraceIdToRepo,
+            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+            CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }
