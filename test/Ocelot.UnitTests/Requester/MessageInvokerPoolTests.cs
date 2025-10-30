@@ -79,9 +79,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         _response.ShouldNotBeNull();
     }
 
-    /// <summary>120 seconds.</summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds);
-
     [Fact]
     [Trait("PR", "1824")]
     public async Task Should_log_if_ignoring_ssl_errors()
@@ -91,7 +88,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new() { UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -125,7 +122,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new() { UseCookieContainer = true, UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
             .WithQosOptions(new QoSOptionsBuilder().Build())
@@ -373,7 +370,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             .WithQosOptions(new QoSOptions(new FileQoSOptions()))
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithHttpHandlerOptions(new HttpHandlerOptions(false, false, false, false, 10, TimeSpan.FromSeconds(120)))
+            .WithHttpHandlerOptions(new() { MaxConnectionsPerServer = 10, PooledConnectionLifeTime = TimeSpan.FromSeconds(120) })
             .WithUpstreamHttpMethod(["Get"])
             .Build();
 }

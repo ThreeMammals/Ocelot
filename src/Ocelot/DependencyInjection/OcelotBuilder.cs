@@ -83,7 +83,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
         Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
         Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-        Services.TryAddSingleton<IOcelotLoggerFactory, OcelotLoggerFactory>();
         Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
         Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
         Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
@@ -101,7 +100,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
         Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
         Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-        Services.AddRateLimiting(); // Feature: Rate Limiting
         Services.TryAddSingleton<IRequestMapper, RequestMapper>();
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
@@ -110,15 +108,9 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
-        Services.AddOcelotCache();
-        Services.AddOcelotMetadata();
-        Services.AddOcelotMessageInvokerPool();
-
         // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
         Services.AddHttpContextAccessor();
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
-        Services.AddMemoryCache();
-        Services.TryAddSingleton<OcelotDiagnosticListener>();
         Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
         Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
@@ -139,7 +131,12 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
         // Features
-        Services.AddHeaderRouting();
+        Services.AddOcelotCache();
+        Services.AddOcelotHeaderRouting();
+        Services.AddOcelotLogging();
+        Services.AddOcelotMessageInvokerPool();
+        Services.AddOcelotMetadata();
+        Services.AddOcelotRateLimiting();
 
         // Add ASP.NET services
         var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
@@ -157,7 +154,6 @@ public class OcelotBuilder : IOcelotBuilder
     /// <remarks>
     /// Note that the following <see cref="IServiceCollection"/> extensions being called:<br/>
     /// - <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>, impossible to remove.<br/>
-    /// - <see cref="LoggingServiceCollectionExtensions.AddLogging(IServiceCollection)"/><br/>
     /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
     /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
     /// <para>
@@ -174,7 +170,6 @@ public class OcelotBuilder : IOcelotBuilder
     protected IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
     {
         Services
-            .AddLogging()
             .AddMiddlewareAnalysis()
             .AddWebEncoders();
 

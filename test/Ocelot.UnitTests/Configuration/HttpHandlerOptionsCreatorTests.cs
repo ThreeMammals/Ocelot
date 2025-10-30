@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -11,11 +12,14 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     private HttpHandlerOptionsCreator _creator;
     private FileRoute _fileRoute;
     private HttpHandlerOptions _httpHandlerOptions;
-    private readonly Mock<IOcelotTracer> _ocTracer = new();
+    private IServiceProvider _serviceProvider;
+    private readonly IServiceCollection _serviceCollection;
 
     public HttpHandlerOptionsCreatorTests()
     {
-        _creator = new(_ocTracer.Object);
+        _serviceCollection = new ServiceCollection();
+        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
+        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
     }
 
     [Fact]
@@ -24,12 +28,12 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions
+            HttpHandlerOptions = new()
             {
                 UseTracing = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions();
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -44,12 +48,12 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions
+            HttpHandlerOptions = new()
             {
                 UseTracing = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, true, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { UseTracing = true };
         GivenARealTracer();
 
         // Act
@@ -64,7 +68,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     {
         // Arrange
         _fileRoute = new FileRoute();
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { UseCookieContainer = false };
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -79,14 +83,14 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions
+            HttpHandlerOptions = new()
             {
                 AllowAutoRedirect = false,
                 UseCookieContainer = false,
                 UseTracing = false,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions();
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -101,9 +105,9 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions(),
+            HttpHandlerOptions = new(),
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions();
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -118,12 +122,12 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions
+            HttpHandlerOptions = new()
             {
                 UseProxy = true,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, true, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { UseProxy = true };
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -138,13 +142,13 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         // Arrange
         _fileRoute = new FileRoute
         {
-            HttpHandlerOptions = new FileHttpHandlerOptions
+            HttpHandlerOptions = new()
             {
                 MaxConnectionsPerServer = 10,
             },
         };
 
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, 10, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { MaxConnectionsPerServer = 10 };
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -165,7 +169,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             },
         };
 
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { MaxConnectionsPerServer = int.MaxValue };
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -185,7 +189,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
                 MaxConnectionsPerServer = 0,
             },
         };
-        var expectedOptions = new HttpHandlerOptions(false, false, false, false, int.MaxValue, DefaultPooledConnectionLifeTime);
+        var expectedOptions = new HttpHandlerOptions() { MaxConnectionsPerServer = int.MaxValue };
 
         // Act
         _httpHandlerOptions = _creator.Create(_fileRoute.HttpHandlerOptions);
@@ -206,13 +210,10 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
     private void GivenARealTracer()
     {
-        _creator = new HttpHandlerOptionsCreator(new FakeTracer());
+        _serviceCollection.AddSingleton<IOcelotTracer, FakeTracer>();
+        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
+        _creator = new HttpHandlerOptionsCreator(_serviceProvider);
     }
-
-    /// <summary>
-    /// 120 seconds.
-    /// </summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds);
 
     private class FakeTracer : IOcelotTracer
     {

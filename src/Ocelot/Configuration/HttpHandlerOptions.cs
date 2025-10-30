@@ -9,27 +9,27 @@ public class HttpHandlerOptions
 {
     public const int DefaultPooledConnectionLifetimeSeconds = 120;
 
-    public HttpHandlerOptions() { }
+    public HttpHandlerOptions()
+    {
+        MaxConnectionsPerServer = int.MaxValue;
+        PooledConnectionLifeTime = TimeSpan.FromSeconds(DefaultPooledConnectionLifetimeSeconds);
+    }
 
     public HttpHandlerOptions(FileHttpHandlerOptions from)
     {
-        AllowAutoRedirect = from.AllowAutoRedirect;
-        MaxConnectionsPerServer = (from.MaxConnectionsPerServer > 0) ? from.MaxConnectionsPerServer : int.MaxValue;
+        AllowAutoRedirect = from.AllowAutoRedirect ?? false;
+        MaxConnectionsPerServer = from.MaxConnectionsPerServer.HasValue && from.MaxConnectionsPerServer.Value > 0
+            ? from.MaxConnectionsPerServer.Value : int.MaxValue;
         PooledConnectionLifeTime = TimeSpan.FromSeconds(from.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
-        UseCookieContainer = from.UseCookieContainer;
-        UseProxy = from.UseProxy;
-        UseTracing = from.UseTracing;
+        UseCookieContainer = from.UseCookieContainer ?? false;
+        UseProxy = from.UseProxy ?? false;
+        UseTracing = from.UseTracing ?? false;
     }
 
-    public HttpHandlerOptions(bool allowAutoRedirect, bool useCookieContainer, bool useTracing, bool useProxy,
-        int maxConnectionsPerServer, TimeSpan pooledConnectionLifeTime)
+    public HttpHandlerOptions(FileHttpHandlerOptions from, bool useTracing)
+        : this(from)
     {
-        AllowAutoRedirect = allowAutoRedirect;
-        MaxConnectionsPerServer = maxConnectionsPerServer;
-        PooledConnectionLifeTime = pooledConnectionLifeTime;
-        UseCookieContainer = useCookieContainer;
-        UseProxy = useProxy;
-        UseTracing = useTracing;
+        UseTracing = useTracing && (from.UseTracing ?? false);
     }
 
     /// <summary>
