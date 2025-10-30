@@ -1,18 +1,14 @@
-﻿// <copyright file="OpenTracingTracer.cs" company="ThreeMammals">
-// Copyright (c) ThreeMammals. All rights reserved.
-// </copyright>
-
-using Microsoft.AspNetCore.Http;
-using OpenTracing;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Logging;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
 
 namespace Ocelot.Tracing.OpenTracing;
 
 /// <summary>
-/// Default tracer implementation for the <see cref="Logging.ITracer"/> interface.
+/// Default tracer implementation for the <see cref="Logging.IOcelotTracer"/> interface.
 /// </summary>
-internal class OpenTracingTracer : Logging.ITracer
+internal class OpenTracingTracer : IOcelotTracer
 {
     private readonly ITracer tracer;
 

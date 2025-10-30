@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.Logging;
 
-public interface ITracer
+public interface IOcelotTracer
 {
     void Event(HttpContext httpContext, string @event);
 

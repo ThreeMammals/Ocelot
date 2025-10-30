@@ -4,10 +4,11 @@ using Butterfly.OpenTracing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 
 namespace Ocelot.Tracing.Butterfly;
 
-public class ButterflyTracer : DelegatingHandler, Logging.ITracer
+public class ButterflyTracer : DelegatingHandler, IOcelotTracer
 {
     private readonly IServiceTracer _tracer;
     private const string PrefixSpanId = "ot-spanId";

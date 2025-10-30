@@ -5,11 +5,11 @@ namespace Ocelot.Requester;
 
 public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
 {
-    private readonly ITracer _tracer;
+    private readonly IOcelotTracer _tracer;
     private readonly IRequestScopedDataRepository _repo;
 
     public OcelotHttpTracingHandler(
-        ITracer tracer,
+        IOcelotTracer tracer,
         IRequestScopedDataRepository repo,
         HttpMessageHandler httpMessageHandler = null)
     {

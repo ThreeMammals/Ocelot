@@ -210,7 +210,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
     private void GivenARealTracer()
     {
-        _serviceCollection.AddSingleton<ITracer, FakeTracer>();
+        _serviceCollection.AddSingleton<IOcelotTracer, FakeTracer>();
         _serviceProvider = _serviceCollection.BuildServiceProvider(true);
         _creator = new HttpHandlerOptionsCreator(_serviceProvider);
     }
@@ -220,7 +220,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     /// </summary>
     private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
 
-    private class FakeTracer : ITracer
+    private class FakeTracer : IOcelotTracer
     {
         public void Event(HttpContext httpContext, string @event)
         {

@@ -1,9 +1,6 @@
-﻿// <copyright file="OcelotBuilderExtensions.cs" company="ThreeMammals">
-// Copyright (c) ThreeMammals. All rights reserved.
-// </copyright>
-
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 
 namespace Ocelot.Tracing.OpenTracing;
 
@@ -19,7 +16,7 @@ public static class OcelotBuilderExtensions
     /// <returns>An <see cref="IOcelotBuilder"/> object.</returns>
     public static IOcelotBuilder AddOpenTracing(this IOcelotBuilder builder)
     {
-        builder.Services.TryAddSingleton<Logging.ITracer, OpenTracingTracer>();
+        builder.Services.TryAddSingleton<IOcelotTracer, OpenTracingTracer>();
         return builder;
     }
 }

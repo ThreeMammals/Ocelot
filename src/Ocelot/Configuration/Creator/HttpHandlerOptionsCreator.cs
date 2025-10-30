@@ -6,14 +6,14 @@ namespace Ocelot.Configuration.Creator;
 
 public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
 {
-    private readonly ITracer _tracer;
+    private readonly IOcelotTracer _tracer;
 
     //todo: this should be configurable and available as global config parameter in ocelot.json
     public const int DefaultPooledConnectionLifetimeSeconds = 120;
 
     public HttpHandlerOptionsCreator(IServiceProvider services)
     {
-        _tracer = services.GetService<ITracer>();
+        _tracer = services.GetService<IOcelotTracer>();
     }
 
     public HttpHandlerOptions Create(FileHttpHandlerOptions options)
