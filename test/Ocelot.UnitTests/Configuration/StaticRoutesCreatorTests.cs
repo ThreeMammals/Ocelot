@@ -358,7 +358,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
         _rloCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute, globalConfig, _rrk), Times.Once);
-        _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
+        _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Exactly(2)); // null arg, 2 times
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);
         _hfarCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _daCreator.Verify(x => x.Create(fileRoute), Times.Once);

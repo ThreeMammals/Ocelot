@@ -18,6 +18,7 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
 
     public HttpHandlerOptions Create(FileHttpHandlerOptions options)
     {
+        options ??= new();
         var useTracing = _tracer != null && options.UseTracing;
 
         //be sure that maxConnectionPerServer is in correct range of values
