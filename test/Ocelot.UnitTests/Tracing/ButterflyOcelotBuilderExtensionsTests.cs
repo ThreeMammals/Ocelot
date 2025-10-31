@@ -1,21 +1,15 @@
-﻿using AspectCore.Injector;
-using Butterfly.Client;
+﻿using Butterfly.Client;
 using Butterfly.Client.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Tracing.Butterfly;
-using Shouldly;
-using System;
-using System.Management;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.UnitTests.Logging;
+namespace Ocelot.UnitTests.Tracing;
 
 public class ButterflyOcelotBuilderExtensionsTests : UnitTest
 {

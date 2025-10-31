@@ -6,7 +6,7 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.Tracing.Butterfly;
 using System.Net.Http.Headers;
 
-namespace Ocelot.UnitTests.Logging;
+namespace Ocelot.UnitTests.Tracing;
 
 public class ButterflyTracerTests : UnitTest
 {
@@ -28,7 +28,7 @@ public class ButterflyTracerTests : UnitTest
     public void Event()
     {
         // Arrange
-        HttpContext context = new DefaultHttpContext();
+        DefaultHttpContext context = new();
         _tracer.Setup(x => x.Extract(It.IsAny<ICarrierReader>(), It.IsAny<ICarrier>()))
             .Returns(_serviceTracer.Span.Object.SpanContext);
 
