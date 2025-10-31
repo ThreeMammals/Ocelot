@@ -1,8 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
 
-namespace Ocelot.Requester;
+namespace Ocelot.Logging;
 
 public class TracingHandlerFactory : ITracingHandlerFactory
 {

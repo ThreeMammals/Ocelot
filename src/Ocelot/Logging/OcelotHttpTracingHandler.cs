@@ -1,7 +1,6 @@
 ﻿using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
 
-namespace Ocelot.Requester;
+namespace Ocelot.Logging;
 
 public class OcelotHttpTracingHandler : DelegatingHandler, ITracingHandler
 {

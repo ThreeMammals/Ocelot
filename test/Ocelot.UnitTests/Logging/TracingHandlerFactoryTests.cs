@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Requester;
 
-namespace Ocelot.UnitTests.Requester;
+namespace Ocelot.UnitTests.Logging;
 
 public class TracingHandlerFactoryTests
 {
