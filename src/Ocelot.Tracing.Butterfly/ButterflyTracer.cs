@@ -11,7 +11,7 @@ namespace Ocelot.Tracing.Butterfly;
 public class ButterflyTracer : DelegatingHandler, IOcelotTracer
 {
     private readonly IServiceTracer _tracer;
-    private const string PrefixSpanId = "ot-spanId";
+    public const string PrefixSpanId = "ot-spanId";
 
     public ButterflyTracer(IServiceProvider services)
     {
@@ -28,7 +28,6 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
         }
 
         var span = httpContext.GetSpan();
-
         if (span == null)
         {
             var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
@@ -76,7 +75,6 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
             .PeerAddress(request.RequestUri.OriginalString)
             .PeerHostName(request.RequestUri.Host)
             .PeerPort(request.RequestUri.Port);
-
         _tracer.Tracer.Inject(span.SpanContext, request.Headers, (c, k, v) =>
         {
             if (!c.Contains(k))
@@ -84,13 +82,10 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
                 c.Add(k, v);
             }
         });
-
         span.Log(LogField.CreateNew().ClientSend());
 
         var responseMessage = await baseSendAsync(request, cancellationToken);
-
         span.Log(LogField.CreateNew().ClientReceive());
-
         return responseMessage;
     }
 }
