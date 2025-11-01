@@ -35,7 +35,7 @@ public class OcelotDiagnosticListener
         Event(httpContext, $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
     }
 
-    private void Event(HttpContext httpContext, string @event)
+    protected virtual void Event(HttpContext httpContext, string @event)
     {
         _tracer?.Event(httpContext, @event);
     }

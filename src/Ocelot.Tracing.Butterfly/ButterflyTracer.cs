@@ -46,7 +46,7 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
 
     public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync, // TODO This is design issue
         CancellationToken cancellationToken)
     {
         return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow,
@@ -56,7 +56,7 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
     protected virtual async Task<HttpResponseMessage> TracingSendAsync(ISpan span,
         HttpRequestMessage request,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync, // TODO WTF? 8)
         CancellationToken cancellationToken)
     {
         if (request.Headers.Contains(PrefixSpanId))
@@ -84,7 +84,9 @@ public class ButterflyTracer : DelegatingHandler, IOcelotTracer
         });
         span.Log(LogField.CreateNew().ClientSend());
 
+        // TODO There's a design issue here because it should actually be base.SendAsync, haha!
         var responseMessage = await baseSendAsync(request, cancellationToken);
+
         span.Log(LogField.CreateNew().ClientReceive());
         return responseMessage;
     }
