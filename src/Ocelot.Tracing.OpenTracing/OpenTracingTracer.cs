@@ -8,9 +8,9 @@ namespace Ocelot.Tracing.OpenTracing;
 /// <summary>
 /// Default tracer implementation for the <see cref="Logging.IOcelotTracer"/> interface.
 /// </summary>
-internal class OpenTracingTracer : IOcelotTracer
+public class OpenTracingTracer : IOcelotTracer
 {
-    private readonly ITracer tracer;
+    private readonly ITracer _tracer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenTracingTracer"/> class.
@@ -18,7 +18,7 @@ internal class OpenTracingTracer : IOcelotTracer
     /// <param name="tracer">The tracer.</param>
     public OpenTracingTracer(ITracer tracer)
     {
-        this.tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+        _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
     }
 
     /// <inheritdoc/>
@@ -33,45 +33,36 @@ internal class OpenTracingTracer : IOcelotTracer
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync,
         CancellationToken cancellationToken)
     {
-        using (var scope = this.tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true))
+        using var scope = _tracer.BuildSpan(request.RequestUri.AbsoluteUri).StartActive(finishSpanOnDispose: true);
+        var span = scope.Span;
+        span.SetTag(Tags.SpanKind, Tags.SpanKindClient)
+            .SetTag(Tags.HttpMethod, request.Method.Method)
+            .SetTag(Tags.HttpUrl, request.RequestUri.OriginalString);
+        addTraceIdToRepo(span.Context.SpanId);
+
+        var headers = new Dictionary<string, string>();
+        _tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
+        foreach (var item in headers)
         {
-            var span = scope.Span;
+            request.Headers.Add(item.Key, item.Value);
+        }
 
-            span.SetTag(Tags.SpanKind, Tags.SpanKindClient)
-                .SetTag(Tags.HttpMethod, request.Method.Method)
-                .SetTag(Tags.HttpUrl, request.RequestUri.OriginalString);
-
-            addTraceIdToRepo(span.Context.SpanId);
-
-            var headers = new Dictionary<string, string>();
-
-            this.tracer.Inject(span.Context, BuiltinFormats.HttpHeaders, new TextMapInjectAdapter(headers));
-
-            foreach (var item in headers)
+        try
+        {
+            var response = await baseSendAsync(request, cancellationToken);
+            span.SetTag(Tags.HttpStatus, (int)response.StatusCode);
+            return response;
+        }
+        catch (HttpRequestException ex)
+        {
+            Tags.Error.Set(scope.Span, true);
+            span.Log(new Dictionary<string, object>(3)
             {
-                request.Headers.Add(item.Key, item.Value);
-            }
-
-            try
-            {
-                var response = await baseSendAsync(request, cancellationToken);
-
-                span.SetTag(Tags.HttpStatus, (int)response.StatusCode);
-
-                return response;
-            }
-            catch (HttpRequestException ex)
-            {
-                Tags.Error.Set(scope.Span, true);
-
-                span.Log(new Dictionary<string, object>(3)
-                    {
-                        { LogFields.Event, Tags.Error.Key },
-                        { LogFields.ErrorKind, ex.GetType().Name },
-                        { LogFields.ErrorObject, ex },
-                    });
-                throw;
-            }
+                { LogFields.Event, Tags.Error.Key },
+                { LogFields.ErrorKind, ex.GetType().Name },
+                { LogFields.ErrorObject, ex },
+            });
+            throw;
         }
     }
 }

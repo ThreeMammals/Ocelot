@@ -10,7 +10,7 @@ using OpenTracing.Propagation;
 using OpenTracing.Tag;
 using Xunit.Abstractions;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.Tracing;
 
 public class OpenTracingTests : Steps
 {
@@ -137,12 +137,12 @@ public class OpenTracingTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningUsingOpenTracing(OpenTracing.ITracer fakeTracer)
+    private void GivenOcelotIsRunningUsingOpenTracing(ITracer fakeTracer)
     {
         GivenOcelotIsRunning(s =>
         {
             s.AddOcelot().AddOpenTracing();
-            s.AddSingleton(fakeTracer);
+            s.AddSingleton(fakeTracer); // WTF ?
         });
     }
 
@@ -178,7 +178,7 @@ public class OpenTracingTests : Steps
     }
 }
 
-internal class FakeTracer : OpenTracing.ITracer
+internal class FakeTracer : ITracer
 {
     public IScopeManager ScopeManager => throw new NotImplementedException();
     public ISpan ActiveSpan => throw new NotImplementedException();
