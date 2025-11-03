@@ -309,6 +309,57 @@ public class MultiplexingMiddlewareTests : UnitTest
             ItExpr.IsAny<Route>(),
             ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
     }
+    
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_expand_jsonpath_array_and_set_keys_on_contexts()
+    {
+        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
+        var route = GivenRoutesWithAggregator();
+        GivenTheFollowing(route);
+
+        await _middleware.Invoke(_httpContext);
+
+        _count.ShouldBe(3);
+
+        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
+            ItExpr.IsAny<HttpContext>(),
+            ItExpr.Is<Route>(r => r.DownstreamRouteConfig != null && r.DownstreamRouteConfig.Count == 2),
+            ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
+    }
+
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_call_fallback_route_when_no_matching_routekeyconfig()
+    {
+        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
+        var route = new Route
+        {
+            DownstreamRoute =
+            [
+                new DownstreamRouteBuilder().WithKey("Comments").Build(),
+                new DownstreamRouteBuilder().WithKey("UserDetails").Build(),
+            ],
+            DownstreamRouteConfig =
+            [
+                new AggregateRouteConfig { RouteKey = "NotExistingKey", JsonPath = "$[*].writerId", Parameter = "userId" },
+            ],
+            Aggregator = "TestAggregator",
+        };
+
+        GivenTheFollowing(route);
+
+        await _middleware.Invoke(_httpContext);
+
+        _count.ShouldBe(2);
+
+        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
+            ItExpr.IsAny<HttpContext>(),
+            ItExpr.IsAny<Route>(),
+            ItExpr.Is<List<HttpContext>>(list => list.Count == 2));
+    }
 
     private RequestDelegate AggregateRequestDelegateFactory()
     {
