@@ -13,7 +13,7 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     public HttpHandlerOptions Create(FileHttpHandlerOptions options)
     {
         options ??= new();
-        bool hasTracer = _tracer != null;
+        var hasTracer = _tracer != null;
         return new(options, hasTracer);
     }
 
@@ -35,10 +35,10 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {
         ArgumentNullException.ThrowIfNull(grouping);
         var group = globalOptions;
-        bool isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+        var isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
             group.RouteKeys.Count == 0 || // empty collection -> is global
             group.RouteKeys.Contains(grouping.Key); // this route is in the group
-        bool hasTracer = _tracer != null;
+        var hasTracer = _tracer != null;
         if (options == null && globalOptions != null && isGlobal)
         {
             return new(globalOptions, hasTracer);
