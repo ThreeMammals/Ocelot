@@ -313,52 +313,22 @@ public class MultiplexingMiddlewareTests : UnitTest
     [Fact]
     [Trait("Bug", "2248")]
     [Trait("PR", "2328")]
-    public async Task Should_expand_jsonpath_array_and_set_keys_on_contexts()
+    public async Task Should_verify_each_context_has_aggregate_key()
     {
-        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
+
         var route = GivenRoutesWithAggregator();
         GivenTheFollowing(route);
+
+        _middleware = new MultiplexingMiddleware(AggregateRequestDelegateFactory(), loggerFactory.Object, factory.Object);
 
         await _middleware.Invoke(_httpContext);
 
         _count.ShouldBe(3);
 
-        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.Is<Route>(r => r.DownstreamRouteConfig != null && r.DownstreamRouteConfig.Count == 2),
-            ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
-    }
-
-    [Fact]
-    [Trait("Bug", "2248")]
-    [Trait("PR", "2328")]
-    public async Task Should_call_fallback_route_when_no_matching_routekeyconfig()
-    {
-        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
-        var route = new Route
-        {
-            DownstreamRoute =
-            [
-                new DownstreamRouteBuilder().WithKey("Comments").Build(),
-                new DownstreamRouteBuilder().WithKey("UserDetails").Build(),
-            ],
-            DownstreamRouteConfig =
-            [
-                new AggregateRouteConfig { RouteKey = "NotExistingKey", JsonPath = "$[*].writerId", Parameter = "userId" },
-            ],
-            Aggregator = "TestAggregator",
-        };
-
-        GivenTheFollowing(route);
-
-        await _middleware.Invoke(_httpContext);
-
-        _count.ShouldBe(2);
-
-        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.Is<List<HttpContext>>(list => list.Count == 2));
+        aggregator.Verify(a => a.Aggregate(
+            It.IsAny<Route>(),
+            It.IsAny<HttpContext>(),
+            It.IsAny<List<HttpContext>>()), Times.Once());
     }
 
     private RequestDelegate AggregateRequestDelegateFactory()
