@@ -30,33 +30,33 @@ public class MessageInvokerPool : IMessageInvokerPool
         // we don't need to use the timeout value as part of the cache key.
         return _handlersPool.GetOrAdd(
             new MessageInvokerCacheKey(downstreamRoute),
-            cacheKey => new Lazy<HttpMessageInvoker>(() => CreateMessageInvoker(cacheKey.DownstreamRoute))
+            cacheKey => new Lazy<HttpMessageInvoker>(() => CreateMessageInvoker(cacheKey.Route))
         ).Value;
     }
 
     public void Clear() => _handlersPool.Clear();
 
-    private HttpMessageInvoker CreateMessageInvoker(DownstreamRoute route)
+    protected HttpMessageInvoker CreateMessageInvoker(DownstreamRoute route)
     {
-        var baseHandler = CreateHandler(route);
-        var handlers = _handlerFactory.Get(route);
+        HttpMessageHandler baseHandler = CreateHandler(route);
+        List<DelegatingHandler> handlers = _handlerFactory.Get(route);
         handlers.Reverse();
-        foreach (var handler in handlers)
+        foreach (DelegatingHandler handler in handlers)
         {
             handler.InnerHandler = baseHandler;
             baseHandler = handler;
         }
 
         int milliseconds = EnsureRouteTimeoutIsGreaterThanQosOne(route);
-        var timeout = TimeSpan.FromMilliseconds(milliseconds);
+        TimeSpan timeout = TimeSpan.FromMilliseconds(milliseconds);
 
         // Adding timeout handler to the top of the chain.
         // It's standard behavior to throw TimeoutException after the defined timeout (90 seconds by default)
-        var timeoutHandler = new TimeoutDelegatingHandler(timeout)
+        HttpMessageHandler timeoutHandler = new TimeoutDelegatingHandler(timeout)
         {
             InnerHandler = baseHandler,
         };
-        return new HttpMessageInvoker(timeoutHandler, true);
+        return new(timeoutHandler, true);
     }
 
     /// <summary>
@@ -86,23 +86,24 @@ public class MessageInvokerPool : IMessageInvokerPool
     public static string EqualitySentence(int left, int right)
         => left < right ? "is shorter than" : left == right ? "is equal to" : "is longer than";
 
-    private HttpMessageHandler CreateHandler(DownstreamRoute downstreamRoute)
+    protected SocketsHttpHandler CreateHandler(DownstreamRoute route)
     {
+        var options = route.HttpHandlerOptions;
         var handler = new SocketsHttpHandler
         {
-            AllowAutoRedirect = downstreamRoute.HttpHandlerOptions.AllowAutoRedirect,
-            UseCookies = downstreamRoute.HttpHandlerOptions.UseCookieContainer,
-            UseProxy = downstreamRoute.HttpHandlerOptions.UseProxy,
-            MaxConnectionsPerServer = downstreamRoute.HttpHandlerOptions.MaxConnectionsPerServer,
-            PooledConnectionLifetime = downstreamRoute.HttpHandlerOptions.PooledConnectionLifeTime,
+            AllowAutoRedirect = options.AllowAutoRedirect,
+            UseCookies = options.UseCookieContainer,
+            UseProxy = options.UseProxy,
+            MaxConnectionsPerServer = options.MaxConnectionsPerServer,
+            PooledConnectionLifetime = options.PooledConnectionLifeTime,
         };
 
-        if (downstreamRoute.HttpHandlerOptions.UseCookieContainer)
+        if (options.UseCookieContainer)
         {
             handler.CookieContainer = new CookieContainer();
         }
 
-        if (!downstreamRoute.DangerousAcceptAnyServerCertificateValidator)
+        if (!route.DangerousAcceptAnyServerCertificateValidator)
         {
             return handler;
         }
@@ -111,28 +112,23 @@ public class MessageInvokerPool : IMessageInvokerPool
         {
             RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
         };
-
         _logger.LogWarning(() =>
-            $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this {nameof(DownstreamRoute)} -> {downstreamRoute.Name()}");
-
+            $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this {nameof(DownstreamRoute)} -> {route.Name()}");
         return handler;
     }
 
     public readonly struct MessageInvokerCacheKey : IEquatable<MessageInvokerCacheKey>
     {
-        public MessageInvokerCacheKey(DownstreamRoute downstreamRoute)
-        {
-            DownstreamRoute = downstreamRoute;
-        }
+        public MessageInvokerCacheKey(DownstreamRoute route) => Route = route;
 
-        public DownstreamRoute DownstreamRoute { get; }
+        public DownstreamRoute Route { get; }
 
         public override bool Equals(object obj) => obj is MessageInvokerCacheKey key && Equals(key);
 
         public bool Equals(MessageInvokerCacheKey other) =>
-            EqualityComparer<DownstreamRoute>.Default.Equals(DownstreamRoute, other.DownstreamRoute);
+            EqualityComparer<DownstreamRoute>.Default.Equals(Route, other.Route);
 
-        public override int GetHashCode() => DownstreamRoute.GetHashCode();
+        public override int GetHashCode() => Route.GetHashCode();
 
         public static bool operator ==(MessageInvokerCacheKey left, MessageInvokerCacheKey right) => left.Equals(right);
         public static bool operator !=(MessageInvokerCacheKey left, MessageInvokerCacheKey right) => !(left == right);
