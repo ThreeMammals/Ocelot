@@ -5,7 +5,7 @@ namespace Ocelot.Configuration;
 /// <summary>
 /// Describes configuration parameters for http handler, that is created to handle a request to service.
 /// </summary>
-public class HttpHandlerOptions
+public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using inheritance or composition design since we initialize the SocketsHttpHandler instance with the options
 {
     public const int DefaultPooledConnectionLifetimeSeconds = 120;
 
