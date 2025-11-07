@@ -23,7 +23,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         _logger = loggerFactory.CreateLogger<MessageInvokerPool>();
     }
 
-    public HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
+    public virtual HttpMessageInvoker Get(DownstreamRoute downstreamRoute)
     {
         // Since the comparison is based on the downstream route object reference,
         // and the QoS Options properties can't be changed after the route is created,
@@ -34,7 +34,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         ).Value;
     }
 
-    public void Clear() => _handlersPool.Clear();
+    public virtual void Clear() => _handlersPool.Clear();
 
     protected HttpMessageInvoker CreateMessageInvoker(DownstreamRoute route)
     {
@@ -86,7 +86,7 @@ public class MessageInvokerPool : IMessageInvokerPool
     public static string EqualitySentence(int left, int right)
         => left < right ? "is shorter than" : left == right ? "is equal to" : "is longer than";
 
-    protected SocketsHttpHandler CreateHandler(DownstreamRoute route)
+    protected virtual SocketsHttpHandler CreateHandler(DownstreamRoute route)
     {
         var options = route.HttpHandlerOptions;
         var handler = new SocketsHttpHandler
