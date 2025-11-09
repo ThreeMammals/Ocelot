@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Caching;
+using Ocelot.AcceptanceTests.Requester;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.Logging;
 using Ocelot.Metadata;
+using Ocelot.Requester;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -69,31 +72,20 @@ public class DynamicRoutingTests : ConcurrentSteps
     {
         // 1st route
         var ports1 = PortFinder.GetPorts(2);
-        var route1 = GivenLbRoute("route1");
+        var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
         route1.LoadBalancerOptions = null; // 1st route is not balanced
-        route1.Key = null; // 1st route is not in the global group
-        route1.Metadata = new Dictionary<string, string>()
-        {
-            { route1.ServiceName, ports1.Select(DownstreamUrl).Csv() },
-        };
+        GivenDiscoveryMetadata(route1, ports1);
 
         // 2nd route
         var ports2 = PortFinder.GetPorts(2);
-        var route2 = GivenLbRoute("route2");
+        var route2 = GivenLbRoute("route2", key: "R2"); // 2nd route is in the group
         route2.LoadBalancerOptions = null; // 2nd route opts will be applied from global ones
-        route2.Key = "R2"; // 2nd route is in the group
-        route2.Metadata = new Dictionary<string, string>()
-        {
-            { route2.ServiceName, ports2.Select(DownstreamUrl).Csv() },
-        };
+        GivenDiscoveryMetadata(route2, ports2);
 
         // 3rd route
         var ports3 = PortFinder.GetPorts(2);
-        var route3 = GivenLbRoute("noLoadBalancing", loadBalancer: nameof(NoLoadBalancer));
-        route3.Metadata = new Dictionary<string, string>()
-        {
-            { route3.ServiceName, ports3.Select(DownstreamUrl).Csv() },
-        };
+        var route3 = GivenLbRoute("noLoadBalancing", loadBalancer: nameof(NoLoadBalancer), key: null);
+        GivenDiscoveryMetadata(route3, ports3);
 
         var configuration = GivenDynamicRouting(new(), route1, route2, route3);
         configuration.GlobalConfiguration.LoadBalancerOptions = new()
@@ -121,7 +113,8 @@ public class DynamicRoutingTests : ConcurrentSteps
 
     [Fact]
     [Trait("Feat", "585")]
-    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    [Trait("Feat", "2330")]
+    [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
     public void ShouldApplyGlobalCacheOptions_ForAllDynamicRoutes()
     {
         const int TTL = 1; // let's cache for one second
@@ -178,38 +171,28 @@ public class DynamicRoutingTests : ConcurrentSteps
 
     [Fact]
     [Trait("Feat", "585")]
-    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    [Trait("Feat", "2330")]
+    [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
     public void ShouldApplyGlobalGroupCacheOptions_WhenRouteOptsHasAKey()
     {
         const int TTL = 1; // let's cache for one second
 
         // 1st route
         var ports1 = PortFinder.GetPorts(2);
-        var route1 = GivenLbRoute("route1");
+        var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
         route1.CacheOptions = null; // 1st route is not cached
-        route1.Key = null; // 1st route is not in the global group
-        route1.Metadata = new Dictionary<string, string>()
-        {
-            { route1.ServiceName, ports1.Select(DownstreamUrl).Csv() },
-        };
+        GivenDiscoveryMetadata(route1, ports1);
 
         // 2nd route
         var ports2 = PortFinder.GetPorts(2);
-        var route2 = GivenLbRoute("route2");
+        var route2 = GivenLbRoute("route2", key: "R2"); // 2nd route is in the group
         route2.CacheOptions = null; // 2nd route opts will be applied from global ones
-        route2.Key = "R2"; // 2nd route is in the group
-        route2.Metadata = new Dictionary<string, string>()
-        {
-            { route2.ServiceName, ports2.Select(DownstreamUrl).Csv() },
-        };
+        GivenDiscoveryMetadata(route2, ports2);
 
         // 3rd route
         var ports3 = PortFinder.GetPorts(2);
-        var route3 = GivenLbRoute("noCaching", loadBalancer: nameof(NoLoadBalancer));
-        route3.Metadata = new Dictionary<string, string>()
-        {
-            { route3.ServiceName, ports3.Select(DownstreamUrl).Csv() },
-        };
+        var route3 = GivenLbRoute("noCaching", loadBalancer: nameof(NoLoadBalancer), key: null);
+        GivenDiscoveryMetadata(route3, ports3);
 
         var configuration = GivenDynamicRouting(new(), route1, route2, route3);
         configuration.GlobalConfiguration.CacheOptions = new()
@@ -251,6 +234,94 @@ public class DynamicRoutingTests : ConcurrentSteps
         ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 6, not cached
     }
 
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2320")]
+    [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
+    public void ShouldApplyGlobalHttpHandlerOptions_ForAllDynamicRoutes()
+    {
+        var ports = PortFinder.GetPorts(3);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        configuration.GlobalConfiguration.HttpHandlerOptions = new()
+        {
+            MaxConnectionsPerServer = 77,
+            PooledConnectionLifetimeSeconds = 88,
+            UseTracing = true, // let's enable global tracing
+        };
+        GivenMultipleServiceInstancesAreRunning(serviceUrls);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting);
+        int times = ports.Length;
+        WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times);
+        ThenAllServicesShouldHaveBeenCalledTimes(times);
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1); // distribution by RoundRobin algorithm, aka strict assertion
+
+        ThenRouteHttpHandlerOptionsAre(serviceName, configuration.GlobalConfiguration.Metadata, 77, 88, true);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2320")]
+    [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
+    public void ShouldApplyGlobalGroupHttpHandlerOptions_ForDynamicRoutes_WhenRouteOptsHasAKey()
+    {
+        // 1st route
+        var ports1 = PortFinder.GetPorts(2);
+        var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
+        route1.HttpHandlerOptions = null; // 1st route has no opts
+        GivenDiscoveryMetadata(route1, ports1);
+
+        // 2nd route
+        var ports2 = PortFinder.GetPorts(2);
+        var route2 = GivenLbRoute("route2", key: "R2"); // 2nd route is in the group
+        route2.HttpHandlerOptions = null; // 2nd route opts will be applied from global ones
+        GivenDiscoveryMetadata(route2, ports2);
+
+        // 3rd route
+        var ports3 = PortFinder.GetPorts(2);
+        var route3 = GivenLbRoute("noTracing", loadBalancer: nameof(NoLoadBalancer), key: null);
+        var route3Opts = route3.HttpHandlerOptions = new()
+        {
+            MaxConnectionsPerServer = 66,
+            PooledConnectionLifetimeSeconds = 77,
+            UseTracing = false, // no tracing route
+        };
+        GivenDiscoveryMetadata(route3, ports3);
+
+        var configuration = GivenDynamicRouting(new(), route1, route2, route3);
+        var globalOpts = configuration.GlobalConfiguration.HttpHandlerOptions = new()
+        {
+            RouteKeys = ["R2"],
+            MaxConnectionsPerServer = 88,
+            PooledConnectionLifetimeSeconds = 99,
+            UseCookieContainer = false,
+            UseProxy = false,
+            UseTracing = true, // enable global tracing
+        };
+
+        var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting);
+
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2);
+        WhenIGetUrlOnTheApiGatewayConcurrently("/noTracing/", 2);
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 2, 0);
+
+        ThenRouteHttpHandlerOptionsAre(route1.ServiceName, route1.Metadata,
+            int.MaxValue, HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds, false); // default opts
+        ThenRouteHttpHandlerOptionsAre(route2.ServiceName, route2.Metadata,
+            globalOpts.MaxConnectionsPerServer.Value, globalOpts.PooledConnectionLifetimeSeconds.Value, globalOpts.UseTracing.Value); // global opts
+        ThenRouteHttpHandlerOptionsAre(route3.ServiceName, route3.Metadata,
+            route3Opts.MaxConnectionsPerServer.Value, route3Opts.PooledConnectionLifetimeSeconds.Value, route3Opts.UseTracing.Value); // route opts
+    }
+
     private FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes)
     {
         var config = new FileConfiguration()
@@ -272,22 +343,56 @@ public class DynamicRoutingTests : ConcurrentSteps
         return config;
     }
 
-    private FileDynamicRoute GivenLbRoute(string serviceName, string serviceNamespace = null, string loadBalancer = null)
-    {
-        var route = new FileDynamicRoute()
+    private FileDynamicRoute GivenLbRoute(string serviceName, string serviceNamespace = null,
+        string loadBalancer = null, string key = null) => new()
         {
             ServiceName = serviceName,
             ServiceNamespace = serviceNamespace ?? ServiceNamespace(),
             LoadBalancerOptions = new(loadBalancer ?? nameof(RoundRobin)),
+            Key = key,
         };
-        return route;
-    }
+
+    private static void GivenDiscoveryMetadata(FileDynamicRoute route, int[] ports)
+        => route.Metadata = new Dictionary<string, string>()
+        {
+            { route.ServiceName, ports.Select(DownstreamUrl).Csv() },
+        };
 
     private static readonly ServiceDiscoveryFinderDelegate DynamicRoutingDiscoveryFinder = (provider, config, route)
         => new DynamicRoutingDiscoveryProvider(provider, config, route);
     private static void WithDiscovery(IServiceCollection services) => services
         .AddSingleton(DynamicRoutingDiscoveryFinder)
         .AddOcelot();
+    private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
+    {
+        WithDiscovery(services);
+        RequesterSteps.WithRequesterTesting(services, false);
+    }
+
+    private void ThenRouteHttpHandlerOptionsAre(string serviceName, IDictionary<string, string> metadata,
+        int maxConnections, int seconds, bool useTracing)
+    {
+        var pool = ocelotServer.Services.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
+        pool.ShouldNotBeNull();
+        var tracer = ocelotServer.Services.GetService<IOcelotTracer>() as TestTracer;
+        tracer.ShouldNotBeNull();
+        foreach (var kv in pool.CreatedHandlers.Where(x => x.Key.ServiceName == serviceName))
+        {
+            var downstream = kv.Key;
+            var httpHandler = kv.Value;
+            httpHandler.MaxConnectionsPerServer.ShouldBe(maxConnections);
+            httpHandler.PooledConnectionLifetime.TotalSeconds.ShouldBe(seconds);
+            downstream.HttpHandlerOptions.UseTracing.ShouldBe(useTracing);
+        }
+        var csvData = metadata[serviceName];
+        var serviceUrls = csvData.Split(',');
+        tracer.Requests.Count.ShouldBe(serviceUrls.Length);
+        foreach (var url in serviceUrls)
+        {
+            var request = tracer.Requests.Keys.SingleOrDefault(k => k.RequestUri.AbsoluteUri.StartsWith(url));
+            (request is not null).ShouldBe(useTracing);
+        }
+    }
 
     protected override string ServiceNamespace() => nameof(DynamicRoutingTests);
 }

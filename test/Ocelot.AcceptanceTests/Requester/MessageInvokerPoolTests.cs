@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Requester;
 
 namespace Ocelot.AcceptanceTests.Requester;
 
-public sealed class MessageInvokerPoolTests : Steps
+public sealed class MessageInvokerPoolTests : RequesterSteps
 {
     [Fact]
     [Trait("Feat", "585")]
@@ -28,7 +25,7 @@ public sealed class MessageInvokerPoolTests : Steps
         GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
         GivenThereIsAServiceRunningOnPath(ports[2], "/noTracing");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithTesting);
+        GivenOcelotIsRunning(WithRequesterTesting);
 
         await WhenIGetUrlOnTheApiGateway("/route1");
         await WhenIGetUrlOnTheApiGateway("/route2");
@@ -68,7 +65,7 @@ public sealed class MessageInvokerPoolTests : Steps
         GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
         GivenThereIsAServiceRunningOnPath(ports[2], "/noTracing");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithTesting);
+        GivenOcelotIsRunning(WithRequesterTesting);
 
         await WhenIGetUrlOnTheApiGateway("/route1");
         await WhenIGetUrlOnTheApiGateway("/route2");
@@ -110,42 +107,5 @@ public sealed class MessageInvokerPoolTests : Steps
         var r = GivenRoute(port, path, path);
         r.HttpHandlerOptions = options;
         return r;
-    }
-
-    private static void WithTesting(IServiceCollection services) => services
-        .AddOcelot().Services
-        .AddSingleton<IOcelotTracer, TestTracer>()
-        .RemoveAll<IMessageInvokerPool>()
-        .AddSingleton<IMessageInvokerPool, TestMessageInvokerPool>();
-}
-
-public class TestMessageInvokerPool : MessageInvokerPool, IMessageInvokerPool
-{
-    public TestMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
-        : base(handlerFactory, loggerFactory) { }
-
-    public readonly Dictionary<DownstreamRoute, SocketsHttpHandler> CreatedHandlers = new();
-    protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
-    {
-        var handler = base.CreateHandler(route);
-        CreatedHandlers[route] = handler;
-        return handler;
-    }
-}
-
-public class TestTracer : IOcelotTracer
-{
-    public readonly List<string> Events = new();
-    public readonly Dictionary<HttpRequestMessage, HttpResponseMessage> Requests = new();
-
-    public void Event(HttpContext httpContext, string @event)
-        => Events.Add(@event);
-
-    public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Action<string> addTraceIdToRepo, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync, CancellationToken cancellationToken)
-    {
-        addTraceIdToRepo?.Invoke("12345");
-        var response = await baseSendAsync.Invoke(request, cancellationToken).ConfigureAwait(false);
-        Requests[request] = response;
-        return response;
     }
 }
