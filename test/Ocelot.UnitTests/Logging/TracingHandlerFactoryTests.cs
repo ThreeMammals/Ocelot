@@ -1,21 +1,20 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Requester;
 
-namespace Ocelot.UnitTests.Requester;
+namespace Ocelot.UnitTests.Logging;
 
 public class TracingHandlerFactoryTests
 {
     private readonly TracingHandlerFactory _factory;
-    private readonly Mock<ITracer> _tracer;
+    private readonly Mock<IOcelotTracer> _tracer;
     private readonly IServiceCollection _serviceCollection;
     private readonly IServiceProvider _serviceProvider;
     private readonly Mock<IRequestScopedDataRepository> _repo;
 
     public TracingHandlerFactoryTests()
     {
-        _tracer = new Mock<ITracer>();
+        _tracer = new Mock<IOcelotTracer>();
         _serviceCollection = new ServiceCollection();
         _serviceCollection.AddSingleton(_tracer.Object);
         _serviceProvider = _serviceCollection.BuildServiceProvider(true);

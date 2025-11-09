@@ -7,25 +7,28 @@ namespace Ocelot.Configuration.Creator;
 public class DynamicRoutesCreator : IDynamicsCreator
 {
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
-    private readonly IRouteKeyCreator _loadBalancerKeyCreator;
+    private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
     private readonly IMetadataCreator _metadataCreator;
     private readonly IQoSOptionsCreator _qosOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
+    private readonly IRouteKeyCreator _loadBalancerKeyCreator;
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
 
     public DynamicRoutesCreator(
         ICacheOptionsCreator cacheOptionsCreator,
-        IRouteKeyCreator loadBalancerKeyCreator,
+        IHttpHandlerOptionsCreator handlerOptionsCreator,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IMetadataCreator metadataCreator,
         IQoSOptionsCreator qosOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
+        IRouteKeyCreator loadBalancerKeyCreator,
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator)
     {
         _cacheOptionsCreator = cacheOptionsCreator;
+        _httpHandlerOptionsCreator = handlerOptionsCreator;
         _loadBalancerKeyCreator = loadBalancerKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _metadataCreator = metadataCreator;
@@ -58,12 +61,15 @@ public class DynamicRoutesCreator : IDynamicsCreator
             dynamicRoute.RateLimitOptions = dynamicRoute.RateLimitRule;
         }
 
-        var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion.IfEmpty(globalConfiguration.DownstreamHttpVersion));
-        var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy.IfEmpty(globalConfiguration.DownstreamHttpVersionPolicy));
-        var scheme = dynamicRoute.DownstreamScheme.IfEmpty(globalConfiguration.DownstreamScheme);
+        // Load balancing dependants
         var lbOptions = _loadBalancerOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var lbKey = _loadBalancerKeyCreator.Create(dynamicRoute, lbOptions);
         var cacheOptions = _cacheOptionsCreator.Create(dynamicRoute, globalConfiguration, lbKey);
+
+        var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion.IfEmpty(globalConfiguration.DownstreamHttpVersion));
+        var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy.IfEmpty(globalConfiguration.DownstreamHttpVersionPolicy));
+        var scheme = dynamicRoute.DownstreamScheme.IfEmpty(globalConfiguration.DownstreamScheme);
+        var handlerOptions = _httpHandlerOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var metadata = _metadataCreator.Create(dynamicRoute.Metadata, globalConfiguration);
         var qosOptions = _qosOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var rlOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
@@ -73,6 +79,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
             .WithDownstreamScheme(scheme)
+            .WithHttpHandlerOptions(handlerOptions)
             .WithLoadBalancerKey(lbKey)
             .WithLoadBalancerOptions(lbOptions)
             .WithMetadata(metadata)

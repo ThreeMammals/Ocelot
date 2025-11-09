@@ -31,7 +31,7 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
         DownstreamScheme = default; // to be reviewed 
         CacheOptions = default;
         FileCacheOptions = default;
-        HttpHandlerOptions = new FileHttpHandlerOptions();
+        HttpHandlerOptions = default;
         Key = default;
         LoadBalancerOptions = default;
         Metadata = default;

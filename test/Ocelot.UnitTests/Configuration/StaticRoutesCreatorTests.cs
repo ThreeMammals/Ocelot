@@ -265,7 +265,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
-        _hho = new HttpHandlerOptionsBuilder().Build();
+        _hho = new();
         _ht = new HeaderTransformations(new List<HeaderFindAndReplace>(), new List<HeaderFindAndReplace>(), new List<AddHeader>(), new List<AddHeader>());
         _dhp = new List<DownstreamHostAndPort>();
         _lbo = new();
@@ -285,6 +285,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _rloCreator.Setup(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rlo);
         _coCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>())).Returns(_cacheOptions);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
+        _hhoCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_hho);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_ht);
         _hfarCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ht);
         _daCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_dhp);
@@ -358,7 +359,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _qosoCreator.Verify(x => x.Create(fileRoute, globalConfig));
         _rloCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _coCreator.Verify(x => x.Create(fileRoute, globalConfig, _rrk), Times.Once);
-        _hhoCreator.Verify(x => x.Create(fileRoute.HttpHandlerOptions), Times.Once);
+        _hhoCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _hfarCreator.Verify(x => x.Create(fileRoute), Times.Never);
         _hfarCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _daCreator.Verify(x => x.Create(fileRoute), Times.Once);

@@ -136,7 +136,7 @@ public class ConfigurationCreatorTests : UnitTest
         _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
         _lbo = new();
         _qoso = new QoSOptionsBuilder().Build();
-        _hho = new HttpHandlerOptionsBuilder().Build();
+        _hho = new HttpHandlerOptions();
 
         _spcCreator.Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(_spc);
         _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);

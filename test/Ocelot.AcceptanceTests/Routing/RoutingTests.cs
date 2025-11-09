@@ -699,9 +699,9 @@ public sealed class RoutingTests : Steps
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, HttpHandler);
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
 
-        Task HttpHandler(HttpContext context)
+        Task MapStatusCode(HttpContext context)
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value + context.Request.Path.Value

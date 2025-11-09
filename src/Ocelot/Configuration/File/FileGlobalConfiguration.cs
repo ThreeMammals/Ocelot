@@ -28,7 +28,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
     public string BaseUrl { get; set; }
     public new FileGlobalCacheOptions CacheOptions { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
-    public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
+    public new FileGlobalHttpHandlerOptions HttpHandlerOptions { get; set; }
     public FileMetadataOptions MetadataOptions { get; set; }
     /*public FileQoSOptions QoSOptions { get; set; }*/
     public new FileGlobalLoadBalancerOptions LoadBalancerOptions { get; set; }

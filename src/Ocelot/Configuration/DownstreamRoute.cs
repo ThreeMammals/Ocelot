@@ -161,4 +161,6 @@ public class DownstreamRoute
             ? string.Join(':', ServiceNamespace, ServiceName, path)
             : path;
     }
+
+    public override string ToString() => LoadBalancerKey;
 }

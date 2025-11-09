@@ -136,4 +136,19 @@ public class DownstreamRouteTests
         Assert.Equal(expected, DownstreamRoute.DefaultTimeoutSeconds);
         DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout; // recover clean state after assembly starting
     }
+
+    [Fact]
+    public void ToString_ShouldBeLoadBalancerKey()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("testLbKey")
+            .Build();
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.Equal("testLbKey", actual);
+    }
 }

@@ -54,7 +54,10 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
-    public void Should_add_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_NotGlobal()
     {
         // Arrange
         _ocelotBuilder = _services.AddOcelot(_configRoot);
@@ -69,7 +72,59 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
-    public void Should_add_type_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_Global()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_TypeCheck()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(
+            () => _ocelotBuilder.AddDelegatingHandler(typeof(OcelotBuilderTests))); // OcelotBuilderTests type is not DelegatingHandler one
+
+        // Assert
+        Assert.Equal("delegateType", ex.ParamName);
+        Assert.Equal(nameof(OcelotBuilderTests), (string)ex.ActualValue);
+        Assert.Equal($"It is not a delegating handler (Parameter 'delegateType'){Environment.NewLine}Actual value was OcelotBuilderTests.", ex.Message);
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_Global()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandler), true);
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandlerTwo), true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_NotGlobal()
     {
         // Arrange
         _ocelotBuilder = _services.AddOcelot(_configRoot);
@@ -81,36 +136,6 @@ public class OcelotBuilderTests : UnitTest
         // Assert
         ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
         ThenTheSpecificHandlersAreTransient();
-    }
-
-    [Fact]
-    public void Should_add_global_delegating_handlers_transient()
-    {
-        // Arrange
-        _ocelotBuilder = _services.AddOcelot(_configRoot);
-
-        // Act
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
-
-        // Assert
-        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-        ThenTheGlobalHandlersAreTransient();
-    }
-
-    [Fact]
-    public void Should_add_global_type_delegating_handlers_transient()
-    {
-        // Arrange
-        _ocelotBuilder = _services.AddOcelot(_configRoot);
-
-        // Act
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
-
-        // Assert
-        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-        ThenTheGlobalHandlersAreTransient();
     }
 
     [Fact]

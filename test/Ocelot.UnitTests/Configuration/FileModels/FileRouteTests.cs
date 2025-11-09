@@ -128,7 +128,7 @@ public class FileRouteTests : UnitTest
         expected.DownstreamScheme = "value13";
         expected.CacheOptions = new() { Header = "value14" };
         expected.FileCacheOptions = new() { TtlSeconds = 14 };
-        expected.HttpHandlerOptions.MaxConnectionsPerServer = 15;
+        expected.HttpHandlerOptions = new() { MaxConnectionsPerServer = 15 };
         expected.Key = "value16";
         expected.LoadBalancerOptions ??= new("value17");
         expected.Metadata ??= new Dictionary<string, string>() { { "key18", "value18" } };

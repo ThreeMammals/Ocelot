@@ -8,6 +8,7 @@ public class DynamicRoutesCreatorTests : UnitTest
 {
     private readonly DynamicRoutesCreator _creator;
     private readonly Mock<IRouteKeyCreator> _lbKeyCreator = new();
+    private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator = new();
     private readonly Mock<ILoadBalancerOptionsCreator> _lboCreator = new();
     private readonly Mock<IQoSOptionsCreator> _qosCreator = new();
     private readonly Mock<IRateLimitOptionsCreator> _rloCreator = new();
@@ -26,10 +27,11 @@ public class DynamicRoutesCreatorTests : UnitTest
     {
         _creator = new DynamicRoutesCreator(
             _cacheCreator.Object,
-            _lbKeyCreator.Object,
+            _hhoCreator.Object,
             _lboCreator.Object,
             _metadataCreator.Object, _qosCreator.Object,
             _rloCreator.Object,
+            _lbKeyCreator.Object,
             _versionCreator.Object,
             _versionPolicyCreator.Object);
     }

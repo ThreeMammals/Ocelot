@@ -26,7 +26,7 @@ public class CacheOptionsCreator : ICacheOptionsCreator
     {
         ArgumentNullException.ThrowIfNull(grouping);
         var group = globalOptions;
-        bool isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+        var isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
             group.RouteKeys.Count == 0 || // empty collection -> is global
             group.RouteKeys.Contains(grouping.Key); // this route is in the group
 

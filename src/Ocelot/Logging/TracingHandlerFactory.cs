@@ -1,12 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
 
-namespace Ocelot.Requester;
+namespace Ocelot.Logging;
 
 public class TracingHandlerFactory : ITracingHandlerFactory
 {
-    private readonly ITracer _tracer;
+    private readonly IOcelotTracer _tracer;
     private readonly IRequestScopedDataRepository _repo;
 
     public TracingHandlerFactory(
@@ -14,7 +13,7 @@ public class TracingHandlerFactory : ITracingHandlerFactory
         IRequestScopedDataRepository repo)
     {
         _repo = repo;
-        _tracer = services.GetService<ITracer>();
+        _tracer = services.GetService<IOcelotTracer>();
     }
 
     public ITracingHandler Get()

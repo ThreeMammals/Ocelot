@@ -74,6 +74,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
                 .WithDownstreamHttpVersion(dynamicRoute.DownstreamHttpVersion)
                 .WithDownstreamHttpVersionPolicy(dynamicRoute.DownstreamHttpVersionPolicy)
                 .WithDownstreamScheme(dynamicRoute.DownstreamScheme)
+                .WithHttpHandlerOptions(dynamicRoute.HttpHandlerOptions)
                 .WithLoadBalancerKey(loadBalancerKey/*dynamicRoute.LoadBalancerKey*/)
                 .WithLoadBalancerOptions(dynamicRoute.LoadBalancerOptions)
                 .WithMetadata(dynamicRoute.MetadataOptions)

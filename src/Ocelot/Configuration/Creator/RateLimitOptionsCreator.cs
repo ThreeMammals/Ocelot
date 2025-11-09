@@ -20,9 +20,7 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
         var rule = route.RateLimitOptions;
         var globalOptions = globalConfiguration.RateLimitOptions;
         var group = globalOptions as IRouteGroup;
-
-        // bool isGlobal = globalOptions?.RouteKeys?.Contains(route.Key) ?? true;
-        bool isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+        var isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
             group.RouteKeys.Count == 0 || // empty collection -> is global
             group.RouteKeys.Contains(route.Key); // this route is in the group
 
