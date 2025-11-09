@@ -125,6 +125,7 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
       "CacheOptions": {},
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
+      "HttpHandlerOptions": {},
       "LoadBalancerOptions": {},
       "Metadata": {}, // dictionary
       "QoSOptions": {},
@@ -141,8 +142,9 @@ The actual dynamic route schema with all the properties can be found in the C# `
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
-  **Note 2**: ``CacheOptions`` were not supported in versions prior to `24.1`_.
-  Starting with version `24.1`_, both global and route-level ``CacheOptions`` for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
+  Starting with version `24.1`_, both global and route-level options for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  For a clearer understanding of the changes, refer to the `previous schema (version 24.0) <https://ocelot.readthedocs.io/en/24.0/features/configuration.html#dynamic-route-schema>`_.
 
 .. _config-aggregate-route-schema:
 
@@ -546,16 +548,17 @@ As a final step, you could add shutdown logic to save the complete configuration
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
 This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
-These options can be set at the route or global level.
+These options can be set at the route or global level for both static and :ref:`dynamic routing <routing-dynamic>`.
 
-Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior based on a ``SocketsHttpHandler`` instance:
+Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior
+based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler&type=code>`_ instance:
 
 .. code-block:: json
 
   "HttpHandlerOptions": {
     "AllowAutoRedirect": false,
-    "MaxConnectionsPerServer": 2147483647, // max value
-    "PooledConnectionLifetimeSeconds": null, // integer or null
+    "MaxConnectionsPerServer": 2147483647, // max integer
+    "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
     "UseProxy": false,
     "UseTracing": false
@@ -590,22 +593,27 @@ Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandle
       - This enables :doc:`../features/tracing` feature in Ocelot.
         Also refer to the **3rd note** below!
 
-.. _break2: http://break.do
+.. note::
 
-    **Note 1**: If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds, which is hardcoded in the `HttpHandlerOptionsCreator <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/Creator/HttpHandlerOptionsCreator.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
+  1. If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds,
+  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
 
-    **Note 2**: If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
-    This means that all requests to that downstream service will share the same cookies. 
-    Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
-    The Ocelot team tried to think of a nice way to handle this but we think it is impossible. 
-    If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
-    If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
-    This would also mean that subsequent requests don't use the cookies from the previous response!
-    All in all not a great situation.
-    We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
-    Just look at your response headers and forward the cookies back with your next request! 
+  2. If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
+  This means that all requests to that downstream service will share the same cookies.
+  Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
+  The Ocelot team tried to think of a nice way to handle this but we think it is impossible.
+  If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
+  If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
+  This would also mean that subsequent requests don't use the cookies from the previous response!
+  All in all not a great situation.
+  We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
+  Just look at your response headers and forward the cookies back with your next request!
 
-    **Note 3**: ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``, encapsulating the ``Ocelot.Logging.ITracer`` service of DI-container.
+  3. ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``,
+  encapsulating the ``Ocelot.Logging.IOcelotTracer`` service of DI-container.
+
+  4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
+  Since version `24.1`_, global configuration is supported for both static and dynamic routes.
 
 .. _ssl-errors:
 

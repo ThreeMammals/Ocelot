@@ -4,7 +4,10 @@
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.1
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _24.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+.. _Globality: https://github.com/ThreeMammals/Ocelot/milestone/9
 .. _Ocelot: https://www.nuget.org/packages/Ocelot
 .. role::  htm(raw)
     :format: html
@@ -15,31 +18,33 @@
 Welcome
 #######
 
-Welcome to the Ocelot `24.0`_ documentation!
+Welcome to the Ocelot `24.1`_ documentation!
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
-The major version `24.0.0`_ includes several patches, the history of which is outlined below.
+.. The major version `24.1.0`_ includes several patches, the history of which is outlined below.
 
-.. admonition:: Patches
+.. .. admonition:: Patches
 
-  - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ extension package.
+..   - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ extension package.
 
 .. _release-notes:
 
 Release Notes
 -------------
 
-  | Release Tag: `24.0.0`_
-  | Release Codename: `.NET 9`_
+  | Release Tag: `24.1.0`_
+  | Release Codename: `Globality`_
 
-On November 12th, 2024, the `.NET team <https://devblogs.microsoft.com/dotnet/author/dotnet/>`_ announced the release of the `.NET 9`_ framework:
+.. On November 12th, 2024, the `.NET team <https://devblogs.microsoft.com/dotnet/author/dotnet/>`_ announced the release of the `.NET 9`_ framework:
 
-* `Announcing .NET 9 | .NET Blog <https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/>`_
+.. * `Announcing .NET 9 | .NET Blog <https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/>`_
 
-This major release upgrades `Ocelot`_ package `TFMs <https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions>`_ to ``net9.0`` in addition to the current ``net8.0``.
-Thus, the current Ocelot `supported frameworks <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ are .NET 8 LTS and .NET 9 STS.
-According to the `.NET Support Policy <https://dotnet.microsoft.com/en-us/platform/support/policy>`_, the Ocelot team has discontinued support of .NET 6 and .NET 7 by providing the version `23.4.3`_ which targets those .NET versions.
+.. This major release upgrades `Ocelot`_ package `TFMs <https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions>`_ to ``net9.0`` in addition to the current ``net8.0``.
+.. Thus, the current Ocelot `supported frameworks <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ are .NET 8 LTS and .NET 9 STS.
+.. According to the `.NET Support Policy <https://dotnet.microsoft.com/en-us/platform/support/policy>`_, the Ocelot team has discontinued support of .NET 6 and .NET 7 by providing the version `23.4.3`_ which targets those .NET versions.
+
+Global configuration for all features.
 
 Official Notice to the Community Regarding CircleCI
 ---------------------------------------------------
