@@ -7,8 +7,8 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
 {
     private readonly IOcelotLogger _logger;
     private readonly IServiceDiscoveryProvider _kubeServiceDiscoveryProvider;
-    private readonly Timer _timer;
-    
+
+    private Timer _timer;
     private bool _polling;
     private List<Service> _services;
 
@@ -45,6 +45,16 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
 
     public void Dispose()
     {
-        _timer.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _timer.Dispose();
+            _timer = null;
+        }
     }
 }
