@@ -51,8 +51,8 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
         {
         }
 
-        return _queue.TryPeek(out var latestVersion)
-            ? latestVersion : new(0);
+        _queue.TryPeek(out var latestVersion);
+        return latestVersion;
     }
 
     protected virtual async Task<List<Service>> Poll()
