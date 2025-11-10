@@ -40,7 +40,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [InlineData(nameof(Kube))]
-    /* [InlineData(nameof(PollKube))] TODO Fails now. Bug 2304? -> https://github.com/ThreeMammals/Ocelot/issues/2304 */
+    [InlineData(nameof(PollKube))] // TODO Fails now. Bug 2304? -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldReturnServicesFromK8s(string discoveryType)
     {
@@ -238,7 +238,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
     [InlineData(nameof(Kube))]
-    /* [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304 */
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes(string discoveryType)
     {
