@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Security.Claims;
@@ -93,17 +94,12 @@ public class AuthenticationMiddlewareTests : UnitTest
         ThenTheUserIsAuthenticated();
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers(bool isMultipleKeys)
+    [Fact]
+    public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers()
     {
         // Arrange
         var multipleKeys = new string[] { string.Empty, "Fail", "Test" };
-        var options = new AuthenticationOptions(null,
-            !isMultipleKeys ? "Test" : null,
-            isMultipleKeys ? multipleKeys : null
-        );
+        var options = new AuthenticationOptions(null, multipleKeys);
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
@@ -126,10 +122,12 @@ public class AuthenticationMiddlewareTests : UnitTest
     public void Should_provide_backward_compatibility_if_route_has_several_options_authentication_providers()
     {
         // Arrange
-        var options = new AuthenticationOptions(null,
-            "Test",
-            new string[] { string.Empty, "Fail", "Test" }
-        );
+        FileAuthenticationOptions opts = new()
+        {
+            AuthenticationProviderKey = "Test",
+            AuthenticationProviderKeys = new[] { string.Empty, "Fail", "Test" },
+        };
+        AuthenticationOptions options = new(opts);
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
@@ -152,9 +150,8 @@ public class AuthenticationMiddlewareTests : UnitTest
     public void Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
     {
         // Arrange
-        var options = new AuthenticationOptions(null, null,
-            new string[] { string.Empty, "Fail", "Fail", "UnknownScheme" }
-        );
+        var options = new AuthenticationOptions(null,
+            new[] { string.Empty, "Fail", "Fail", "UnknownScheme" });
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
@@ -188,7 +185,7 @@ public class AuthenticationMiddlewareTests : UnitTest
             emptyKeys[i] = i % 2 == 0 ? null : string.Empty;
         }
 
-        var optionsWithEmptyKeys = new AuthenticationOptions(null, string.Empty, emptyKeys);
+        var optionsWithEmptyKeys = new AuthenticationOptions(null, emptyKeys);
         var methods = new List<string> { "Get" };
         var route = new DownstreamRouteBuilder()
             .WithAuthenticationOptions(optionsWithEmptyKeys)
@@ -206,8 +203,8 @@ public class AuthenticationMiddlewareTests : UnitTest
         ThenTheUserIsNotAuthenticated();
         _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
         _logWarningMessages.Count.ShouldBe(2);
-        _logWarningMessages[0].ShouldStartWith($"Impossible to authenticate client for path '/{nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty)}':");
-        _logWarningMessages[1].ShouldStartWith("Client has NOT been authenticated for path");
+        _logWarningMessages[0].ShouldBe("Unable to authenticate the client for route '/Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty' due to empty AuthenticationProviderKeys, even though AuthenticationOptions are defined.");
+        _logWarningMessages[1].ShouldBe("Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' was unauthenticated;");
         _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(1);
     }
 

@@ -62,20 +62,15 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
     private async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)
     {
         var options = route.AuthenticationOptions;
-        if (!string.IsNullOrWhiteSpace(options.AuthenticationProviderKey))
+        var authSchemes = options.AuthenticationProviderKeys;
+        if (authSchemes.Length == 0 || authSchemes.All(string.IsNullOrWhiteSpace))
         {
-            return await context.AuthenticateAsync(options.AuthenticationProviderKey);
-        }
-
-        var providerKeys = options.AuthenticationProviderKeys;
-        if (providerKeys.Length == 0 || providerKeys.All(string.IsNullOrWhiteSpace))
-        {
-            Logger.LogWarning(() => $"Impossible to authenticate client for path '{route.DownstreamPathTemplate}': both {nameof(options.AuthenticationProviderKey)} and {nameof(options.AuthenticationProviderKeys)} are empty but the {nameof(Configuration.AuthenticationOptions)} have defined.");
+            Logger.LogWarning(() => $"Unable to authenticate the client for route '{route.Name()}' due to empty {nameof(options.AuthenticationProviderKeys)}, even though {nameof(Configuration.AuthenticationOptions)} are defined.");
             return AuthenticateResult.NoResult();
         }
 
         AuthenticateResult result = null;
-        foreach (var scheme in providerKeys.Where(apk => !string.IsNullOrWhiteSpace(apk)))
+        foreach (var scheme in authSchemes.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
             try
             {
@@ -88,7 +83,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
             catch (Exception e)
             {
                 Logger.LogWarning(() =>
-                    $"Impossible to authenticate client for path '{route.DownstreamPathTemplate}' and {nameof(options.AuthenticationProviderKey)}:{scheme}. Error: {e.Message}.");
+                    $"Unable to authenticate the client for route '{route.Name()}' using the {scheme} authentication scheme due to error: {e.Message}");
             }
         }
 

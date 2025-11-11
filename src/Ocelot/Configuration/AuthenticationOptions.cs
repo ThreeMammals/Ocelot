@@ -1,40 +1,41 @@
 ﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration;
 
 public sealed class AuthenticationOptions
 {
-    public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey)
+    public AuthenticationOptions()
     {
-        AllowedScopes = allowedScopes;
-        AuthenticationProviderKey = authenticationProviderKey;
+        AllowedScopes = new();
         AuthenticationProviderKeys = Array.Empty<string>();
     }
 
     public AuthenticationOptions(FileAuthenticationOptions from)
     {
         AllowedScopes = from.AllowedScopes ?? new();
-        AuthenticationProviderKey = from.AuthenticationProviderKey ?? string.Empty;
-        AuthenticationProviderKeys = from.AuthenticationProviderKeys ?? Array.Empty<string>();
+        AuthenticationProviderKeys = Merge(from.AuthenticationProviderKey, from.AuthenticationProviderKeys ?? Array.Empty<string>());
     }
 
-    public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, string[] authenticationProviderKeys)
+    public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys)
     {
         AllowedScopes = allowedScopes ?? new();
-        AuthenticationProviderKey = authenticationProviderKey ?? string.Empty;
         AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
     }
 
-    public List<string> AllowedScopes { get; }
+    private static string[] Merge(string primaryKey, string[] keys)
+    {
+        if (primaryKey.IsEmpty())
+        {
+            return keys;
+        }
 
-    /// <summary>
-    /// Authentication scheme registered in DI services with appropriate authentication provider.
-    /// </summary>
-    /// <value>
-    /// A <see langword="string"/> value of the scheme name.
-    /// </value>
-    [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
-    public string AuthenticationProviderKey { get; }
+        List<string> merged = new(1 + keys.Length) { primaryKey };
+        merged.AddRange(keys);
+        return merged.ToArray();
+    }
+
+    public List<string> AllowedScopes { get; init; }
 
     /// <summary>
     /// Multiple authentication schemes registered in DI services with appropriate authentication providers.
@@ -45,5 +46,5 @@ public sealed class AuthenticationOptions
     /// <value>
     /// An array of <see langword="string"/> values of the scheme names.
     /// </value>
-    public string[] AuthenticationProviderKeys { get; }
+    public string[] AuthenticationProviderKeys { get; init; }
 }

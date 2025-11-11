@@ -26,7 +26,7 @@ public sealed class FileAuthenticationOptions
     /// <value><see langword="true"/> if it is allowed; otherwise, <see langword="false"/>.</value>
     public bool? AllowAnonymous { get; set; }
 
-    [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
+    [Obsolete("Use AuthenticationProviderKeys instead of AuthenticationProviderKey! Note that AuthenticationProviderKey will be removed in version 25.0!")]
     public string AuthenticationProviderKey { get; set; }
 
     public string[] AuthenticationProviderKeys { get; set; }
