@@ -34,7 +34,7 @@ public class RoundRobin : ILoadBalancer
 
     public virtual async Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext)
     {
-        var services = await _servicesDelegate.Invoke() ?? new List<Service>();
+        var services = await _servicesDelegate.Invoke() ?? new(0);
         if (services.Count == 0)
         {
             return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"There were no services in {Type} for '{_serviceName}' during {nameof(LeaseAsync)} operation!"));

@@ -9,6 +9,7 @@ using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
@@ -40,7 +41,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [InlineData(nameof(Kube))]
-    /* [InlineData(nameof(PollKube))] TODO Fails now. Bug 2304? -> https://github.com/ThreeMammals/Ocelot/issues/2304 */
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldReturnServicesFromK8s(string discoveryType)
     {
@@ -108,27 +109,31 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [Trait("Bug", "2110")]
-    [InlineData(1, 30)]
-    [InlineData(2, 50)]
-    [InlineData(3, 50)]
-    [InlineData(4, 50)]
-    [InlineData(5, 50)]
-    [InlineData(6, 99)]
-    [InlineData(7, 99)]
-    [InlineData(8, 99)]
-    [InlineData(9, 999)]
-    [InlineData(10, 999)]
-    public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests)
+    [InlineData(1, 30, null)]
+    [InlineData(2, 50, null)]
+    [InlineData(3, 50, null)]
+    [InlineData(4, 50, null)]
+    [InlineData(5, 50, null)]
+    [InlineData(6, 99, null)]
+    [InlineData(7, 99, null)]
+    [InlineData(8, 99, null)]
+    [InlineData(9, 999, null)]
+    [InlineData(10, 999, nameof(Kube))]
+    [InlineData(10, 999, nameof(PollKube))]
+    [InlineData(10, 999, nameof(WatchKube))]
+    public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, string discoveryType)
     {
         // Skip in MacOS because the test is very unstable
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
             return;
 
-        const int ZeroGeneration = 0;
-        var (endpoints, servicePorts) = GivenServiceDiscoveryAndLoadBalancing(totalServices);
+        int zeroGeneration = 0, k8sCount = totalRequests;
+        var (endpoints, servicePorts) = GivenServiceDiscoveryAndLoadBalancing(totalServices, discoveryType ?? nameof(Kube));
         GivenThereIsAFakeKubernetesProvider(endpoints); // stable, services will not be removed from the list
+        if (discoveryType == nameof(WatchKube))
+            k8sCount = GivenWatchReceivedEvent(); // 1
 
-        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, ZeroGeneration);
+        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, zeroGeneration, k8sCount);
 
         int bottom = totalRequests / totalServices,
             top = totalRequests - (bottom * totalServices) + bottom;
@@ -138,21 +143,29 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [Trait("Bug", "2110")]
-    [InlineData(5, 50, 1)]
-    [InlineData(5, 50, 2)]
-    [InlineData(5, 50, 3)]
-    [InlineData(5, 50, 4)]
-    public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration)
+    [InlineData(5, 50, 1, null)]
+    [InlineData(5, 50, 2, null)]
+    [InlineData(5, 50, 3, null)]
+    [InlineData(5, 50, 4, nameof(Kube))]
+    [InlineData(5, 50, 4, nameof(PollKube))]
+    [InlineData(5, 50, 4, nameof(WatchKube))]
+    public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration, string discoveryType)
     {
         // Skip in MacOS because the test is very unstable
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // the test is stable in Linux and Windows only
             return;
 
-        int failPerThreads = (totalRequests / k8sGeneration) - 1; // k8sGeneration means number of offline services
-        var (endpoints, servicePorts) = GivenServiceDiscoveryAndLoadBalancing(totalServices);
+        int failPerThreads = (totalRequests / k8sGeneration) - 1, // k8sGeneration means number of offline services
+            k8sCount = totalRequests;
+        var (endpoints, servicePorts) = GivenServiceDiscoveryAndLoadBalancing(totalServices, discoveryType ?? nameof(Kube));
         GivenThereIsAFakeKubernetesProvider(endpoints, false, k8sGeneration, failPerThreads); // false means unstable, k8sGeneration services will be removed from the list
+        if (discoveryType == nameof(WatchKube))
+        {
+            k8sCount = GivenWatchReceivedEvent(); // 1
+            k8sGeneration = 0;
+        }
 
-        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration);
+        HighlyLoadOnKubeProviderAndRoundRobinBalancer(totalRequests, k8sGeneration, k8sCount);
 
         ThenAllServicesCalledOptimisticAmountOfTimes(_roundRobinAnalyzer); // with unstable checkings
         ThenServiceCountersShouldMatchLeasingCounters(_roundRobinAnalyzer, servicePorts, totalRequests);
@@ -160,6 +173,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [InlineData(nameof(Kube))]
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     [Trait("Feat", "2256")]
     public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions(string discoveryType)
@@ -238,7 +252,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
     [InlineData(nameof(Kube))]
-    /* [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304 */
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes(string discoveryType)
     {
@@ -260,7 +274,11 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         var upstreamPath = $"/{ServiceNamespace()}.{ServiceName()}/";
         WhenIGetUrlOnTheApiGatewayConcurrently(upstreamPath, 50);
 
-        _k8sCounter.ShouldBe(discoveryType == nameof(WatchKube) ? 1 : 50);
+        if (discoveryType == nameof(PollKube))
+            _k8sCounter.ShouldBeGreaterThanOrEqualTo(50); // can be 50, 51 and sometimes 52
+        else
+            _k8sCounter.ShouldBe(discoveryType == nameof(WatchKube) ? 1 : 50);
+
         _k8sServiceGeneration.ShouldBe(0);
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(50);
@@ -293,7 +311,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         downstreams.ForEach(ds => GivenSubsetAddress(ds, subset));
         var endpoints = GivenEndpoints(subset, serviceName); // totalServices service instances with different ports
         var route = GivenRouteWithServiceName(serviceName, loadBalancerType); // !!!
-        var configuration = GivenKubeConfiguration(route, discoveryType);
+        var configuration = GivenKubeConfiguration(route, discoveryType.IfEmpty(nameof(Kube)));
         configure?.Invoke(configuration);
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
@@ -301,13 +319,13 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         return (endpoints, servicePorts);
     }
 
-    private void HighlyLoadOnKubeProviderAndRoundRobinBalancer(int totalRequests, int k8sGenerationNo)
+    private void HighlyLoadOnKubeProviderAndRoundRobinBalancer(int totalRequests, int k8sGenerationNo, int? k8sCount = null)
     {
         // Act
         WhenIGetUrlOnTheApiGatewayConcurrently("/", totalRequests); // load by X parallel requests
 
         // Assert
-        _k8sCounter.ShouldBeGreaterThanOrEqualTo(totalRequests); // integration endpoint called times
+        _k8sCounter.ShouldBeGreaterThanOrEqualTo(k8sCount ?? totalRequests); // integration endpoint called times
         _k8sServiceGeneration.ShouldBe(k8sGenerationNo);
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
@@ -373,7 +391,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             Host = u.Host,
             Port = u.Port,
             Type = type,
-            PollingInterval = 0,
+            PollingInterval = 3, // 3ms is very fast polling, make sense for PollKube provider only
             Namespace = ServiceNamespace(),
             Token = token ?? "Test",
         };
@@ -442,7 +460,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, (c) => GivenHandleWatchRequest(c, events, namespaces, serviceName));
     }
 
-    private void GivenWatchReceivedEvent() => _k8sWatchResetEvent.Set();
+    private int GivenWatchReceivedEvent() => _k8sWatchResetEvent.Set() ? 1 : 0;
     private static Task GivenDelay(int milliseconds) => Task.Delay(TimeSpan.FromMilliseconds(milliseconds));
     
     private async Task GivenHandleWatchRequest(HttpContext context,

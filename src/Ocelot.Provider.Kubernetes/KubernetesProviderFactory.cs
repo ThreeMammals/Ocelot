@@ -31,10 +31,10 @@ public static class KubernetesProviderFactory // TODO : IServiceDiscoveryProvide
             return new WatchKube(configuration, factory, kubeClient, serviceBuilder, Scheduler.Default);
         }
 
-        var defaultK8sProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
+        var kubeProvider = new Kube(configuration, factory, kubeClient, serviceBuilder);
 
         return PollKube.Equals(config.Type, StringComparison.OrdinalIgnoreCase)
-            ? new PollKube(config.PollingInterval, factory, defaultK8sProvider)
-            : defaultK8sProvider;
+            ? new PollKube(config.PollingInterval, factory, kubeProvider)
+            : kubeProvider;
     }
 }
