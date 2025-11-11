@@ -38,7 +38,7 @@ public class DownstreamRouteExtensionsTests
             new List<ClaimToThing>(),
             default,
             default,
-            new AuthenticationOptions(null, null, null),
+            new AuthenticationOptions(null, null),
             new DownstreamPathTemplate(null),
             null,
             new List<string>(),

@@ -259,7 +259,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
-        _ao = new AuthenticationOptionsBuilder().Build();
+        _ao = new AuthenticationOptions();
         _ctt = new List<ClaimToThing>();
         _qoso = new QoSOptionsBuilder().Build();
         _rlo = new RateLimitOptions();

@@ -43,7 +43,6 @@ public class AuthenticationOptionsCreatorTests
         Assert.NotNull(actual);
         Assert.NotNull(actual.AllowedScopes);
         Assert.Empty(actual.AllowedScopes);
-        Assert.NotNull(actual.AuthenticationProviderKey);
         Assert.NotNull(actual.AuthenticationProviderKeys);
         Assert.Empty(actual.AuthenticationProviderKeys);
     }
@@ -55,19 +54,14 @@ public class AuthenticationOptionsCreatorTests
     {
         string authenticationProviderKey = !isAuthenticationProviderKeys ? _routeAuthProviderKey : null;
         string[] authenticationProviderKeys = isAuthenticationProviderKeys ? _routeAuthProviderKeys : null;
-        var fileRoute = CreateFileRoute(_routeScopes, authenticationProviderKey, authenticationProviderKeys);
-        var expected = new AuthenticationOptionsBuilder()
-            .WithAllowedScopes(fileRoute.AuthenticationOptions?.AllowedScopes)
-            .WithAuthenticationProviderKey(authenticationProviderKey)
-            .WithAuthenticationProviderKeys(authenticationProviderKeys)
-            .Build();
+        var route = CreateFileRoute(_routeScopes, authenticationProviderKey, authenticationProviderKeys);
+        var expected = new AuthenticationOptions(route.AuthenticationOptions);
 
         // Act
-        var actual = _authOptionsCreator.Create(fileRoute, null);
+        var actual = _authOptionsCreator.Create(route, null);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
-        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
 
@@ -119,18 +113,13 @@ public class AuthenticationOptionsCreatorTests
         // Arrange
         var route = new FileRoute();
         var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
-        var expected = new AuthenticationOptionsBuilder()
-            .WithAllowedScopes(_globalScopes)
-            .WithAuthenticationProviderKey(_globalAuthProviderKey)
-            .WithAuthenticationProviderKeys(_globalAuthProviderKeys)
-            .Build();
+        var expected = new AuthenticationOptions(globalConfig.AuthenticationOptions);
 
         // Act
         var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
-        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
 
@@ -142,18 +131,13 @@ public class AuthenticationOptionsCreatorTests
         // Arrange
         var route = CreateFileRoute(_routeScopes, string.Empty, null);
         var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
-        var expected = new AuthenticationOptionsBuilder()
-            .WithAllowedScopes(_globalScopes)
-            .WithAuthenticationProviderKey(_globalAuthProviderKey)
-            .WithAuthenticationProviderKeys(_globalAuthProviderKeys)
-            .Build();
+        var expected = new AuthenticationOptions(globalConfig.AuthenticationOptions);
 
         // Act
         var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
-        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
 
@@ -169,18 +153,19 @@ public class AuthenticationOptionsCreatorTests
         var routeAuthProviderKeys = routeHasSingleProviderKey ? null : _routeAuthProviderKeys;
         var route = CreateFileRoute(_routeScopes, routeAuthProviderKey, routeAuthProviderKeys);
         var globalConfig = CreateGlobalConfiguration(_globalScopes, _globalAuthProviderKey, _globalAuthProviderKeys);
-        var expected = new AuthenticationOptionsBuilder()
-            .WithAllowedScopes(_routeScopes)
-            .WithAuthenticationProviderKey(routeAuthProviderKey)
-            .WithAuthenticationProviderKeys(routeAuthProviderKeys)
-            .Build();
+        FileAuthenticationOptions opts = new()
+        {
+            AllowedScopes = _routeScopes,
+            AuthenticationProviderKey = routeAuthProviderKey,
+            AuthenticationProviderKeys = routeAuthProviderKeys,
+        };
+        AuthenticationOptions expected = new(opts);
 
         // Act
         var actual = _authOptionsCreator.Create(route, globalConfig);
 
         // Assert
         actual.AllowedScopes.ShouldBe(expected.AllowedScopes);
-        actual.AuthenticationProviderKey.ShouldBe(expected.AuthenticationProviderKey);
         actual.AuthenticationProviderKeys.ShouldBe(expected.AuthenticationProviderKeys);
     }
 
