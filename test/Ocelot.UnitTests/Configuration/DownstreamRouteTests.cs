@@ -106,7 +106,6 @@ public class DownstreamRouteTests
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithUseServiceDiscovery(useServiceDiscovery)
             .WithUpstreamPathTemplate(new("/test", 0, false, "/test"))
             .WithServiceName(useServiceDiscovery ? "TestService" : string.Empty)
             .WithServiceNamespace("TestNamespace")

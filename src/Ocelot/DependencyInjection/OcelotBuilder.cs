@@ -71,7 +71,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
         Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
-        Services.TryAddSingleton<IRouteOptionsCreator, RouteOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
         Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();

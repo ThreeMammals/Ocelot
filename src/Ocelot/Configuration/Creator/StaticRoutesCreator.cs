@@ -13,7 +13,6 @@ public class StaticRoutesCreator : IRoutesCreator
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
     private readonly IRequestIdKeyCreator _requestIdKeyCreator;
     private readonly IQoSOptionsCreator _qosOptionsCreator;
-    private readonly IRouteOptionsCreator _fileRouteOptionsCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
     private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
@@ -31,7 +30,6 @@ public class StaticRoutesCreator : IRoutesCreator
         IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,
         IRequestIdKeyCreator requestIdKeyCreator,
         IQoSOptionsCreator qosOptionsCreator,
-        IRouteOptionsCreator fileRouteOptionsCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
         ICacheOptionsCreator cacheOptionsCreator,
         IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
@@ -56,7 +54,6 @@ public class StaticRoutesCreator : IRoutesCreator
         _authOptionsCreator = authOptionsCreator;
         _claimsToThingCreator = claimsToThingCreator;
         _qosOptionsCreator = qosOptionsCreator;
-        _fileRouteOptionsCreator = fileRouteOptionsCreator;
         _httpHandlerOptionsCreator = httpHandlerOptionsCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _securityOptionsCreator = securityOptionsCreator;
@@ -83,8 +80,6 @@ public class StaticRoutesCreator : IRoutesCreator
 
     private DownstreamRoute SetUpDownstreamRoute(FileRoute fileRoute, FileGlobalConfiguration globalConfiguration)
     {
-        var fileRouteOptions = _fileRouteOptionsCreator.Create(fileRoute, globalConfiguration); // TODO Refactor this overhead service by moving options to native creators
-
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
@@ -156,7 +151,6 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
             .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithUseServiceDiscovery(fileRouteOptions.UseServiceDiscovery)
             .Build();
         return route;
     }

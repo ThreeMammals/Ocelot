@@ -23,7 +23,6 @@ public class DownstreamRouteBuilder
     private QoSOptions _qosOptions;
     private HttpHandlerOptions _httpHandlerOptions;
     private RateLimitOptions _rateLimitOptions;
-    private bool _useServiceDiscovery;
     private string _serviceName;
     private string _serviceNamespace;
     private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
@@ -164,12 +163,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
-    {
-        _useServiceDiscovery = useServiceDiscovery;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithServiceName(string serviceName)
     {
         _serviceName = serviceName;
@@ -271,7 +264,6 @@ public class DownstreamRouteBuilder
             _serviceName,
             _serviceNamespace,
             _httpHandlerOptions,
-            _useServiceDiscovery,
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,

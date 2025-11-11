@@ -1,4 +1,5 @@
 using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration;
@@ -14,7 +15,6 @@ public class DownstreamRoute
         string serviceName,
         string serviceNamespace,
         HttpHandlerOptions httpHandlerOptions,
-        bool useServiceDiscovery,
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
@@ -52,7 +52,6 @@ public class DownstreamRoute
         ServiceName = serviceName;
         ServiceNamespace = serviceNamespace;
         HttpHandlerOptions = httpHandlerOptions;
-        UseServiceDiscovery = useServiceDiscovery;
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
@@ -122,7 +121,6 @@ public class DownstreamRoute
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
     public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
-    public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
 
     /// <summary>The timeout duration for the downstream request in seconds.</summary>
@@ -160,4 +158,5 @@ public class DownstreamRoute
     }
 
     public override string ToString() => LoadBalancerKey;
+    public bool UseServiceDiscovery => !ServiceName.IsEmpty();
 }

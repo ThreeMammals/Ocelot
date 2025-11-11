@@ -24,7 +24,6 @@ public class DownstreamRouteExtensionsTests
             null,
             null,
             new HttpHandlerOptions(),
-            default,
             new QoSOptionsBuilder().Build(),
             null,
             null,

@@ -49,7 +49,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
-            .WithUseServiceDiscovery(true)
             .WithServiceName(serviceName)
             .WithServiceNamespace(serviceNamespace)
             .WithCacheOptions(configuration.CacheOptions)

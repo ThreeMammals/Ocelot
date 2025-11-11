@@ -224,7 +224,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -253,7 +252,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -282,7 +280,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -311,7 +308,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/products").Build())
-            .WithUseServiceDiscovery(true)
             .Build();
         var routeHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -372,7 +368,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme(string.Empty)
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
