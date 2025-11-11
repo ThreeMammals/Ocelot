@@ -83,7 +83,6 @@ public class AuthenticationMiddlewareTests : UnitTest
         // Arrange
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod([HttpMethods.Options])
-            .WithIsAuthenticated(true)
             .Build());
         GivenTheRequestIsUsingMethod(HttpMethods.Options);
 
@@ -103,7 +102,6 @@ public class AuthenticationMiddlewareTests : UnitTest
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
-            .WithIsAuthenticated(true)
             .WithUpstreamHttpMethod(methods)
             .Build());
         GivenTheRequestIsUsingMethod(methods.First());
@@ -131,7 +129,6 @@ public class AuthenticationMiddlewareTests : UnitTest
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
-            .WithIsAuthenticated(true)
             .WithUpstreamHttpMethod(methods)
             .Build());
         GivenTheRequestIsUsingMethod(methods.First());
@@ -155,7 +152,6 @@ public class AuthenticationMiddlewareTests : UnitTest
         var methods = new List<string> { HttpMethods.Get };
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithAuthenticationOptions(options)
-            .WithIsAuthenticated(true)
             .WithUpstreamHttpMethod(methods)
             .Build());
         GivenTheRequestIsUsingMethod(methods.First());
@@ -189,7 +185,6 @@ public class AuthenticationMiddlewareTests : UnitTest
         var methods = new List<string> { "Get" };
         var route = new DownstreamRouteBuilder()
             .WithAuthenticationOptions(optionsWithEmptyKeys)
-            .WithIsAuthenticated(true)
             .WithUpstreamHttpMethod(methods)
             .WithDownstreamPathTemplate("/" + nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty))
             .Build();

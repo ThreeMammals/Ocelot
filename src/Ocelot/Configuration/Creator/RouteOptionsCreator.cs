@@ -10,22 +10,21 @@ public class RouteOptionsCreator : IRouteOptionsCreator
         global ??= new();
         if (route == null)
         {
-            return new RouteOptionsBuilder().Build();
+            return new();
         }
 
-        route.AuthenticationOptions ??= new();
-        global.AuthenticationOptions ??= new();
-        bool isAuthenticated = route.AuthenticationOptions.AllowAnonymous != true
-            && (route.AuthenticationOptions.HasScheme || global.AuthenticationOptions.HasScheme);
-
+        //route.AuthenticationOptions ??= new();
+        //global.AuthenticationOptions ??= new();
+        //bool isAuthenticated = route.AuthenticationOptions.AllowAnonymous != true
+        //    && (route.AuthenticationOptions.HasScheme || global.AuthenticationOptions.HasScheme);
         bool isAuthorized = (route.RouteClaimsRequirement?.Count ?? 0) > 0;
 
         var useServiceDiscovery = !string.IsNullOrEmpty(route.ServiceName);
 
-        return new RouteOptionsBuilder()
-            .WithIsAuthenticated(isAuthenticated)
-            .WithIsAuthorized(isAuthorized)
-            .WithUseServiceDiscovery(useServiceDiscovery)
-            .Build();
+        return new(useServiceDiscovery);
+            //.WithIsAuthenticated(isAuthenticated)
+            //.WithIsAuthorized(isAuthorized)
+            //.WithUseServiceDiscovery(useServiceDiscovery)
+            //.Build();
     }
 }

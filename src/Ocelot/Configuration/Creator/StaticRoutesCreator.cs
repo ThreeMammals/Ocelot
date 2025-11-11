@@ -89,7 +89,7 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
 
-        var authOptionsForRoute = _authOptionsCreator.Create(fileRoute, globalConfiguration);
+        var authOptions = _authOptionsCreator.Create(fileRoute, globalConfiguration);
 
         var claimsToHeaders = _claimsToThingCreator.Create(fileRoute.AddHeadersToRequest);
 
@@ -125,7 +125,7 @@ public class StaticRoutesCreator : IRoutesCreator
         var route = new DownstreamRouteBuilder()
             .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
             .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
-            .WithAuthenticationOptions(authOptionsForRoute)
+            .WithAuthenticationOptions(authOptions)
             .WithCacheOptions(cacheOptions)
             .WithClaimsToClaims(claimsToClaims)
             .WithClaimsToDownstreamPath(claimsToDownstreamPath)
@@ -141,8 +141,6 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithDownstreamPathTemplate(fileRoute.DownstreamPathTemplate)
             .WithDownstreamScheme(fileRoute.DownstreamScheme)
             .WithHttpHandlerOptions(httpHandlerOptions)
-            .WithIsAuthenticated(fileRouteOptions.IsAuthenticated)
-            .WithIsAuthorized(fileRouteOptions.IsAuthorized)
             .WithKey(fileRoute.Key)
             .WithLoadBalancerKey(lbKey)
             .WithLoadBalancerOptions(lbOptions)

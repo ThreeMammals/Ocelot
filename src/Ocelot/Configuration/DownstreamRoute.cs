@@ -26,8 +26,6 @@ public class DownstreamRoute
         List<ClaimToThing> claimsToHeaders,
         List<ClaimToThing> claimsToClaims,
         List<ClaimToThing> claimsToPath,
-        bool isAuthenticated,
-        bool isAuthorized,
         AuthenticationOptions authenticationOptions,
         DownstreamPathTemplate downstreamPathTemplate,
         string loadBalancerKey,
@@ -66,8 +64,6 @@ public class DownstreamRoute
         ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
         ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
         ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
-        IsAuthenticated = isAuthenticated;
-        IsAuthorized = isAuthorized;
         AuthenticationOptions = authenticationOptions;
         DownstreamPathTemplate = downstreamPathTemplate;
         LoadBalancerKey = loadBalancerKey;
@@ -100,8 +96,9 @@ public class DownstreamRoute
     public List<ClaimToThing> ClaimsToHeaders { get; }
     public List<ClaimToThing> ClaimsToClaims { get; }
     public List<ClaimToThing> ClaimsToPath { get; }
-    public bool IsAuthenticated { get; }
-    public bool IsAuthorized { get; }
+
+    public bool IsAuthenticated => !AuthenticationOptions.AllowAnonymous && AuthenticationOptions.HasScheme;
+    public bool IsAuthorized => RouteClaimsRequirement?.Count > 0;
     public AuthenticationOptions AuthenticationOptions { get; }
     public DownstreamPathTemplate DownstreamPathTemplate { get; }
     public string LoadBalancerKey { get; }

@@ -23,14 +23,11 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
         route.AuthenticationOptions ??= new();
         globalConfiguration ??= new();
         globalConfiguration.AuthenticationOptions ??= new();
-
-        FileAuthenticationOptions opts = route.AuthenticationOptions,
+        FileAuthenticationOptions
+            opts = route.AuthenticationOptions,
             global = globalConfiguration.AuthenticationOptions;
 
-        // We must ignore the global option because it is purely designed for route-level use only
-        //opts.AllowAnonymous ??= global.AllowAnonymous;
-        opts.AllowAnonymous = opts.AllowAnonymous ?? false;
-
+        opts.AllowAnonymous ??= global.AllowAnonymous ?? false;
         MergeScopes(opts, global);
         MergeSchemes(opts, global);
         return new(opts);

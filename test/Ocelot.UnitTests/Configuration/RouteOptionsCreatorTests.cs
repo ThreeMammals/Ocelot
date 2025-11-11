@@ -1,4 +1,4 @@
-using Ocelot.Configuration.Builder;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
@@ -24,7 +24,7 @@ public class RouteOptionsCreatorTests : UnitTest
         Assert.NotNull(actual);
     }
 
-    [Fact]
+    /*[Fact]
     public void Create_AuthenticationOptionsObjIsNull_IsAuthenticatedIsFalse()
     {
         // Arrange
@@ -94,7 +94,7 @@ public class RouteOptionsCreatorTests : UnitTest
         // Assert
         Assert.NotNull(actual);
         Assert.False(actual.IsAuthorized);
-    }
+    }*/
 
     [Theory]
     [InlineData(false)]
@@ -106,18 +106,12 @@ public class RouteOptionsCreatorTests : UnitTest
                                     isAuthenticationProviderKeys ? new string[] { string.Empty, "Test #1" } : null,
                                     false);
         var globalConfig = CreateGlobalConfiguration(null, null);
-        var expected = new RouteOptionsBuilder()
-            .WithIsAuthenticated(true)
-            .WithIsAuthorized(true)
-            .WithUseServiceDiscovery(true)
-            .Build();
+        var expected = new RouteOptions(true);
 
         // Act
         var actual = _creator.Create(route, globalConfig);
 
         // Assert
-        actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
-        actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 
@@ -134,18 +128,13 @@ public class RouteOptionsCreatorTests : UnitTest
         var route = CreateFileRoute(null, null, allowAnonymous);
         var globalConfig = CreateGlobalConfiguration(globalConfigHasSingleProviderKey ? "key" : null,
                                                      globalConfigHasSingleProviderKey ? null : new string[] { "key1", "key2" });
-        var expected = new RouteOptionsBuilder()
-                .WithIsAuthenticated(!allowAnonymous)
-                .WithIsAuthorized(true)
-                .WithUseServiceDiscovery(true)
-                .Build();
+        var expected = new RouteOptions(true);
 
         // Act
         var actual = _creator.Create(route, globalConfig);
 
         // Assert
-        actual.IsAuthenticated.ShouldBe(expected.IsAuthenticated);
-        actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
+        //actual.IsAuthorized.ShouldBe(expected.IsAuthorized);
         actual.UseServiceDiscovery.ShouldBe(expected.UseServiceDiscovery);
     }
 

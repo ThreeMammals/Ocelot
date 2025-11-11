@@ -255,7 +255,7 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _expectedVersion = new Version("1.1");
         _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _rro = new RouteOptions(false, false, false);
+        _rro = new RouteOptions(false);
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
@@ -308,8 +308,8 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
         _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
-        _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
-        _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
+        _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBeFalse();
+        _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBeFalse();
         _result[routeIndex].DownstreamRoute[0].CacheOptions.UseCache.ShouldBeFalse();
         _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);

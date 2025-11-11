@@ -41,7 +41,6 @@ public class AuthorizationMiddlewareTests : UnitTest
             new List<PlaceholderNameAndValue>(),
             new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
-                .WithIsAuthorized(true)
                 .WithUpstreamHttpMethod([HttpMethods.Get])
                 .Build());
         GivenTheAuthServiceReturns(new OkResponse<bool>(true));

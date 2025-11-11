@@ -11,11 +11,9 @@ public class DownstreamRouteBuilder
     private string _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
     private HashSet<HttpMethod> _upstreamHttpMethod;
-    private bool _isAuthenticated;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
     private Dictionary<string, string> _routeClaimRequirement;
-    private bool _isAuthorized;
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
@@ -91,18 +89,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithUpstreamHttpMethod(IEnumerable<string> methods)
     {
         _upstreamHttpMethod = methods.ToHttpMethods();
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthenticated(bool input)
-    {
-        _isAuthenticated = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthorized(bool input)
-    {
-        _isAuthorized = input;
         return this;
     }
 
@@ -297,8 +283,6 @@ public class DownstreamRouteBuilder
             _claimsToHeaders,
             _claimToClaims,
             _claimToDownstreamPath,
-            _isAuthenticated,
-            _isAuthorized,
             _authenticationOptions,
             new DownstreamPathTemplate(_downstreamPathTemplate),
             _loadBalancerKey,
