@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Ocelot.Configuration.File;
+﻿using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration;
@@ -44,15 +43,9 @@ public sealed class AuthenticationOptions
     public bool AllowAnonymous { get; init; }
     public List<string> AllowedScopes { get; init; }
 
-    /// <summary>
-    /// Multiple authentication schemes registered in DI services with appropriate authentication providers.
-    /// </summary>
-    /// <remarks>
-    /// The order in the collection matters: first successful authentication result wins.
-    /// </remarks>
-    /// <value>
-    /// An array of <see langword="string"/> values of the scheme names.
-    /// </value>
+    /// <summary>Multiple authentication schemes registered in DI services with appropriate authentication providers.</summary>
+    /// <remarks>The order in the collection matters: first successful authentication result wins.</remarks>
+    /// <value>An array of <see langword="string"/> values of the scheme names.</value>
     public string[] AuthenticationProviderKeys { get; init; }
 
     public bool HasScheme => AuthenticationProviderKeys.Any(k => !k.IsEmpty());

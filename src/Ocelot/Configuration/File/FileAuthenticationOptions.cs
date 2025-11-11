@@ -4,10 +4,7 @@ public class FileAuthenticationOptions
 {
     public FileAuthenticationOptions()
     {
-        AllowAnonymous = null;
         AllowedScopes = new();
-        AuthenticationProviderKey = null;
-        AuthenticationProviderKeys = Array.Empty<string>();
     }
 
     public FileAuthenticationOptions(string authScheme) : this()
@@ -42,8 +39,8 @@ public class FileAuthenticationOptions
 
     public override string ToString() => new StringBuilder()
         .Append($"{nameof(AllowAnonymous)}:{AllowAnonymous ?? false},")
-        .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}],")
+        .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes?.Select(x => $"'{x}'") ?? Enumerable.Empty<string>())}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
-        .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys.Select(x => $"'{x}'"))}]")
+        .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys?.Select(x => $"'{x}'") ?? Enumerable.Empty<string>())}]")
         .ToString();
 }

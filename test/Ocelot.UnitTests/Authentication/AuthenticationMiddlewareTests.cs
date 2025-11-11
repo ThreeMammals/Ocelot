@@ -36,6 +36,8 @@ public class AuthenticationMiddlewareTests : UnitTest
         _factory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _factory.Setup(x => x.CreateLogger<AuthenticationMiddleware>()).Returns(_logger.Object);
+        _logger.Setup(x => x.LogInformation(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => _logInformationMessages.Add(f.Invoke()));
         _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
             .Callback<Func<string>>(f => _logWarningMessages.Add(f.Invoke()));
     }
@@ -66,15 +68,17 @@ public class AuthenticationMiddlewareTests : UnitTest
     public void Should_call_next_middleware_if_route_is_not_authenticated()
     {
         // Arrange
-        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod([HttpMethods.Get])
-            .Build());
+            .WithAuthenticationOptions(new())
+            .Build();
+        GivenTheDownStreamRouteIs(route);
 
         // Act
-        WhenICallTheMiddleware();
+        WhenICallTheMiddleware(route.IsAuthenticated);
 
         // Assert
-        ThenTheUserIsAuthenticated();
+        ThenTheUserIsAuthenticated("The user is NOT authenticated");
     }
 
     [Fact]
@@ -83,6 +87,7 @@ public class AuthenticationMiddlewareTests : UnitTest
         // Arrange
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
             .WithUpstreamHttpMethod([HttpMethods.Options])
+            .WithAuthenticationOptions(new())
             .Build());
         GivenTheRequestIsUsingMethod(HttpMethods.Options);
 
@@ -186,23 +191,24 @@ public class AuthenticationMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithAuthenticationOptions(optionsWithEmptyKeys)
             .WithUpstreamHttpMethod(methods)
-            .WithDownstreamPathTemplate("/" + nameof(Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty))
+            .WithDownstreamPathTemplate("/" + TestName())
             .Build();
         GivenTheDownStreamRouteIs(route);
         GivenTheRequestIsUsingMethod(methods.First());
 
         // Act
-        WhenICallTheMiddleware();
+        WhenICallTheMiddleware(route.IsAuthenticated);
 
         // Assert
-        ThenTheUserIsNotAuthenticated();
+        ThenTheUserIsAuthenticated("The user is NOT authenticated");
         _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
-        _logWarningMessages.Count.ShouldBe(2);
-        _logWarningMessages[0].ShouldBe("Unable to authenticate the client for route '/Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty' due to empty AuthenticationProviderKeys, even though AuthenticationOptions are defined.");
-        _logWarningMessages[1].ShouldBe("Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' was unauthenticated;");
-        _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(1);
+        _logWarningMessages.Count.ShouldBe(0);
+        _logInformationMessages.Count.ShouldBe(1);
+        _logInformationMessages[0].ShouldBe("No authentication is required for the path '' in the route /Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty.");
+        _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(0);
     }
 
+    private readonly List<string> _logInformationMessages = new();
     private readonly List<string> _logWarningMessages = new();
 
     private void GivenTheAuthenticationIsFail()
@@ -241,26 +247,27 @@ public class AuthenticationMiddlewareTests : UnitTest
         _httpContext.Request.Method = method;
     }
 
-    private void ThenTheUserIsAuthenticated()
+    private void ThenTheUserIsAuthenticated(string expected = null)
     {
         var content = _httpContext.Response.Body.AsString();
-        content.ShouldBe("The user is authenticated");
+        content.ShouldBe(expected ?? "The user is authenticated");
     }
 
-    private void ThenTheUserIsNotAuthenticated()
+    private void ThenTheUserIsNotAuthenticated(string expected = null)
     {
         var content = _httpContext.Response.Body.AsString();
         var errors = _httpContext.Items.Errors();
 
-        content.ShouldBe(string.Empty);
+        content.ShouldBe(expected ?? string.Empty);
         errors.ShouldNotBeEmpty();
     }
 
-    private async void WhenICallTheMiddleware()
+    private async void WhenICallTheMiddleware(bool isAuthenticated = true)
     {
         _next = (context) =>
         {
-            byte[] byteArray = Encoding.ASCII.GetBytes("The user is authenticated");
+            var not = !isAuthenticated ? " NOT" : string.Empty;
+            byte[] byteArray = Encoding.ASCII.GetBytes($"The user is{not} authenticated");
             var stream = new MemoryStream(byteArray);
 
             _httpContext.Response.Body = stream;

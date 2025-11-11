@@ -96,7 +96,7 @@ public class DownstreamRoute
     public List<ClaimToThing> ClaimsToClaims { get; }
     public List<ClaimToThing> ClaimsToPath { get; }
 
-    public bool IsAuthenticated => !AuthenticationOptions.AllowAnonymous && AuthenticationOptions.HasScheme;
+    public bool IsAuthenticated => AuthenticationOptions is not null && !AuthenticationOptions.AllowAnonymous && AuthenticationOptions.HasScheme;
     public bool IsAuthorized => RouteClaimsRequirement?.Count > 0;
     public AuthenticationOptions AuthenticationOptions { get; }
     public DownstreamPathTemplate DownstreamPathTemplate { get; }

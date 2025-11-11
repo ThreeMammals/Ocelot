@@ -308,6 +308,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/products").Build())
+            .WithServiceName("Service_1.0/Api")
             .Build();
         var routeHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),

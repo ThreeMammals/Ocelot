@@ -1,10 +1,11 @@
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
 public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
 {
-    public AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    /*public AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
         route ??= new();
         route.AuthenticationOptions ??= new();
@@ -14,10 +15,10 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
             ? route.AuthenticationOptions
             : globalConfiguration.AuthenticationOptions;
         return new(options);
-    }
+    }*/
 
     // TODO Apply this version after removal of the AuthenticationProviderKey property
-    private AuthenticationOptions Create2(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    public AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {
         route ??= new();
         route.AuthenticationOptions ??= new();
@@ -36,11 +37,8 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
     // Merging must keep order of definition as it is stated in the docs
     protected virtual void MergeSchemes(FileAuthenticationOptions opts, FileAuthenticationOptions global)
     {
-        //opts.AuthenticationProviderKey ??= global.AuthenticationProviderKey;
-        if (!opts.HasScheme && global.HasScheme)
-        {
-            opts.AuthenticationProviderKeys = global.AuthenticationProviderKeys;
-        }
+        opts.AuthenticationProviderKey = opts.AuthenticationProviderKey.IfEmpty(global.AuthenticationProviderKey);
+        opts.AuthenticationProviderKeys ??= global.AuthenticationProviderKeys;
     }
 
     protected virtual void MergeScopes(FileAuthenticationOptions opts, FileAuthenticationOptions global)

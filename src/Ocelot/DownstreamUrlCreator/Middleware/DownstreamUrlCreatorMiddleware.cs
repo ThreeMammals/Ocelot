@@ -6,6 +6,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Web;
 
@@ -166,8 +167,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         return (pathTemplate, query);
     }
 
-    private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute downstreamRoute)
-    {
-        return config.ServiceProviderConfiguration.Type?.ToLower() == "servicefabric" && downstreamRoute.UseServiceDiscovery;
-    }
+    private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute route)
+        => ServiceFabricServiceDiscoveryProvider.Type.Equals(config.ServiceProviderConfiguration.Type, StringComparison.OrdinalIgnoreCase)
+            && route.UseServiceDiscovery;
 }

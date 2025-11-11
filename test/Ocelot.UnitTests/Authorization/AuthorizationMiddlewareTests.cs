@@ -42,6 +42,8 @@ public class AuthorizationMiddlewareTests : UnitTest
             new DownstreamRouteBuilder()
                 .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
                 .WithUpstreamHttpMethod([HttpMethods.Get])
+                /*.WithAuthenticationOptions(new(new("authScheme")))*/
+                .WithRouteClaimsRequirement(new() { { "k", "v" } })
                 .Build());
         GivenTheAuthServiceReturns(new OkResponse<bool>(true));
 

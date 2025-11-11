@@ -220,8 +220,10 @@ public class AuthenticationSteps : Steps
         bool allowAnonymous = false, string method = null)
     {
         var r = GivenDefaultRoute(port).WithMethods(method ?? HttpMethods.Get);
-        r.AuthenticationOptions.AuthenticationProviderKeys = [scheme];
-        r.AuthenticationOptions.AllowAnonymous = allowAnonymous;
+        r.AuthenticationOptions = new(scheme)
+        {
+            AllowAnonymous = allowAnonymous,
+        };
         return r;
     }
 

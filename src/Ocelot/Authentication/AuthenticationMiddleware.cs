@@ -20,20 +20,18 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
     {
         var request = httpContext.Request;
         var path = httpContext.Request.Path;
-        var downstreamRoute = httpContext.Items.DownstreamRoute();
+        var route = httpContext.Items.DownstreamRoute();
 
-        // reducing nesting, returning early when no authentication is needed.
-        if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !downstreamRoute.IsAuthenticated)
+        if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !route.IsAuthenticated)
         {
-            Logger.LogInformation($"No authentication needed for path: {path}");
+            Logger.LogInformation(() => $"No authentication is required for the path '{path}' in the route {route.Name()}.");
             await _next(httpContext);
             return;
         }
 
         Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
 
-        var result = await AuthenticateAsync(httpContext, downstreamRoute);
-
+        var result = await AuthenticateAsync(httpContext, route);
         if (result.Principal?.Identity == null)
         {
             SetUnauthenticatedError(httpContext, path, null);
@@ -41,7 +39,6 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         }
 
         httpContext.User = result.Principal;
-
         if (httpContext.User.Identity.IsAuthenticated)
         {
             Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{httpContext.User.Identity.AuthenticationType}' scheme.");
@@ -61,16 +58,10 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
 
     private async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)
     {
-        var options = route.AuthenticationOptions;
-        var authSchemes = options.AuthenticationProviderKeys;
-        if (authSchemes.Length == 0 || authSchemes.All(string.IsNullOrWhiteSpace))
-        {
-            Logger.LogWarning(() => $"Unable to authenticate the client for route '{route.Name()}' due to empty {nameof(options.AuthenticationProviderKeys)}, even though {nameof(Configuration.AuthenticationOptions)} are defined.");
-            return AuthenticateResult.NoResult();
-        }
-
+        var notEmptySchemes = route.AuthenticationOptions.AuthenticationProviderKeys
+            .Where(s => !string.IsNullOrWhiteSpace(s));
         AuthenticateResult result = null;
-        foreach (var scheme in authSchemes.Where(s => !string.IsNullOrWhiteSpace(s)))
+        foreach (var scheme in notEmptySchemes)
         {
             try
             {
