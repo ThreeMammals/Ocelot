@@ -18,7 +18,7 @@ public class FileRoute : IRouteUpstream, IRouteGrouping, IRouteRateLimiting, ICl
         AddClaimsToRequest = new Dictionary<string, string>();
         AddHeadersToRequest = new Dictionary<string, string>();
         AddQueriesToRequest = new Dictionary<string, string>();
-        AuthenticationOptions = new FileAuthenticationOptions();
+        AuthenticationOptions = default;
         ChangeDownstreamPathTemplate = new Dictionary<string, string>();
         DangerousAcceptAnyServerCertificateValidator = false;
         DelegatingHandlers = new List<string>();

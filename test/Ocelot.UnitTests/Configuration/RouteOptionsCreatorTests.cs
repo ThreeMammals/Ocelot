@@ -174,7 +174,7 @@ public class RouteOptionsCreatorTests : UnitTest
 
     private static FileGlobalConfiguration CreateGlobalConfiguration(string authProviderKey, string[] authProviderKeys) => new()
         {
-            AuthenticationOptions = new FileAuthenticationOptions
+            AuthenticationOptions = new()
             {
                 AuthenticationProviderKey = authProviderKey,
                 AuthenticationProviderKeys = authProviderKeys,

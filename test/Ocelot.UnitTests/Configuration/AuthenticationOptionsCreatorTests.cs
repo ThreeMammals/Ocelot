@@ -207,7 +207,7 @@ public class AuthenticationOptionsCreatorTests
 
     private static FileRoute CreateFileRoute(List<string> allowedScopes, string authProviderKey, string[] authProviderKeys) => new()
     {
-        AuthenticationOptions = new FileAuthenticationOptions
+        AuthenticationOptions = new()
         {
             AllowedScopes = allowedScopes,
             AuthenticationProviderKey = authProviderKey,
@@ -217,7 +217,7 @@ public class AuthenticationOptionsCreatorTests
 
     private static FileGlobalConfiguration CreateGlobalConfiguration(List<string> allowedScopes, string authProviderKey, string[] authProviderKeys) => new()
     {
-        AuthenticationOptions = new FileAuthenticationOptions
+        AuthenticationOptions = new()
         {
             AllowedScopes = allowedScopes,
             AuthenticationProviderKey = authProviderKey,

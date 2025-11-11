@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public sealed class FileAuthenticationOptions
+public class FileAuthenticationOptions
 {
     public FileAuthenticationOptions()
     {
@@ -9,6 +9,9 @@ public sealed class FileAuthenticationOptions
         AuthenticationProviderKey = null;
         AuthenticationProviderKeys = Array.Empty<string>();
     }
+
+    public FileAuthenticationOptions(string authScheme) : this()
+        => AuthenticationProviderKeys = [authScheme];
 
     public FileAuthenticationOptions(FileAuthenticationOptions from)
     {
