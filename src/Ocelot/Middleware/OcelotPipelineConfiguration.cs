@@ -21,7 +21,7 @@ public class OcelotPipelineConfiguration
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> PreAuthenticationMiddleware { get; set; }
 
-    /// <summary>This allows the user to completely override Ocelot's <see cref="Authentication.Middleware.AuthenticationMiddleware"/>.</summary>
+    /// <summary>This allows the user to completely override Ocelot's <see cref="Authentication.AuthenticationMiddleware"/>.</summary>
     /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
     public Func<HttpContext, Func<Task>, Task> AuthenticationMiddleware { get; set; }
 

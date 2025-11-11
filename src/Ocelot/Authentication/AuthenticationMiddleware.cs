@@ -4,7 +4,7 @@ using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Authentication.Middleware;
+namespace Ocelot.Authentication;
 
 public sealed class AuthenticationMiddleware : OcelotMiddleware
 {

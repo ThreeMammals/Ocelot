@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
-using AuthenticationMiddleware = Ocelot.Authentication.Middleware.AuthenticationMiddleware;
+using AuthenticationMiddleware = Ocelot.Authentication.AuthenticationMiddleware;
 using AuthenticationOptions = Ocelot.Configuration.AuthenticationOptions;
 
 namespace Ocelot.UnitTests.Authentication;

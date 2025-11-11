@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authentication.Middleware;
+using Ocelot.Authentication;
 using Ocelot.Authorization.Middleware;
 using Ocelot.Cache;
 using Ocelot.Claims.Middleware;
