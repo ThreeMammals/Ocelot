@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Authorization;
-using Ocelot.Authorization.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;

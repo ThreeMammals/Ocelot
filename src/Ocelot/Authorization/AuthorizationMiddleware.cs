@@ -3,7 +3,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Authorization.Middleware;
+namespace Ocelot.Authorization;
 
 public class AuthorizationMiddleware : OcelotMiddleware
 {
@@ -22,21 +22,21 @@ public class AuthorizationMiddleware : OcelotMiddleware
         _scopesAuthorizer = scopesAuthorizer;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
-        var route = httpContext.Items.DownstreamRoute();
+        var route = context.Items.DownstreamRoute();
 
-        if (!IsOptionsHttpMethod(httpContext) && route.IsAuthenticated)
+        if (!IsOptionsHttpMethod(context) && route.IsAuthenticated)
         {
             Logger.LogInformation("route is authenticated scopes must be checked");
 
-            var authorized = _scopesAuthorizer.Authorize(httpContext.User, route.AuthenticationOptions.AllowedScopes);
+            var authorized = _scopesAuthorizer.Authorize(context.User, route.AuthenticationOptions.AllowedScopes);
 
             if (authorized.IsError)
             {
                 Logger.LogWarning("error authorizing user scopes");
 
-                httpContext.Items.UpsertErrors(authorized.Errors);
+                context.Items.UpsertErrors(authorized.Errors);
                 return;
             }
 
@@ -48,41 +48,41 @@ public class AuthorizationMiddleware : OcelotMiddleware
             {
                 Logger.LogWarning("user scopes is not authorized setting pipeline error");
 
-                httpContext.Items.SetError(new UnauthorizedError(
-                        $"{httpContext.User.Identity.Name} unable to access {route.UpstreamPathTemplate.OriginalValue}"));
+                context.Items.SetError(new UnauthorizedError(
+                        $"{context.User.Identity.Name} unable to access {route.UpstreamPathTemplate.OriginalValue}"));
             }
         }
 
-        if (!IsOptionsHttpMethod(httpContext) && route.IsAuthorized)
+        if (!IsOptionsHttpMethod(context) && route.IsAuthorized)
         {
             Logger.LogInformation("route is authorized");
 
-            var authorized = _claimsAuthorizer.Authorize(httpContext.User, route.RouteClaimsRequirement, httpContext.Items.TemplatePlaceholderNameAndValues());
+            var authorized = _claimsAuthorizer.Authorize(context.User, route.RouteClaimsRequirement, context.Items.TemplatePlaceholderNameAndValues());
 
             if (authorized.IsError)
             {
-                Logger.LogWarning(() => $"Error whilst authorizing {httpContext.User.Identity.Name}. Setting pipeline error");
+                Logger.LogWarning(() => $"Error whilst authorizing {context.User.Identity.Name}. Setting pipeline error");
 
-                httpContext.Items.UpsertErrors(authorized.Errors);
+                context.Items.UpsertErrors(authorized.Errors);
                 return;
             }
 
             if (IsAuthorized(authorized))
             {
-                Logger.LogInformation(() => $"{httpContext.User.Identity.Name} has succesfully been authorized for {route.UpstreamPathTemplate.OriginalValue}.");
-                await _next.Invoke(httpContext);
+                Logger.LogInformation(() => $"{context.User.Identity.Name} has succesfully been authorized for {route.UpstreamPathTemplate.OriginalValue}.");
+                await _next.Invoke(context);
             }
             else
             {
-                Logger.LogWarning(() => $"{httpContext.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
+                Logger.LogWarning(() => $"{context.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
 
-                httpContext.Items.SetError(new UnauthorizedError($"{httpContext.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}"));
+                context.Items.SetError(new UnauthorizedError($"{context.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}"));
             }
         }
         else
         {
             Logger.LogInformation(() => $"No authorization needed for upstream path: { route.UpstreamPathTemplate.OriginalValue}");
-            await _next.Invoke(httpContext);
+            await _next.Invoke(context);
         }
     }
 

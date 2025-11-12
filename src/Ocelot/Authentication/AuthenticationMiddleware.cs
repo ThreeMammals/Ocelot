@@ -16,37 +16,37 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         _next = next;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
-        var request = httpContext.Request;
-        var path = httpContext.Request.Path;
-        var route = httpContext.Items.DownstreamRoute();
+        var request = context.Request;
+        var path = context.Request.Path;
+        var route = context.Items.DownstreamRoute();
 
         if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !route.IsAuthenticated)
         {
             Logger.LogInformation(() => $"No authentication is required for the path '{path}' in the route {route.Name()}.");
-            await _next(httpContext);
+            await _next(context);
             return;
         }
 
         Logger.LogInformation(() => $"The path '{path}' is an authenticated route! {MiddlewareName} checking if client is authenticated...");
 
-        var result = await AuthenticateAsync(httpContext, route);
+        var result = await AuthenticateAsync(context, route);
         if (result.Principal?.Identity == null)
         {
-            SetUnauthenticatedError(httpContext, path, null);
+            SetUnauthenticatedError(context, path, null);
             return;
         }
 
-        httpContext.User = result.Principal;
-        if (httpContext.User.Identity.IsAuthenticated)
+        context.User = result.Principal;
+        if (context.User.Identity.IsAuthenticated)
         {
-            Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{httpContext.User.Identity.AuthenticationType}' scheme.");
-            await _next.Invoke(httpContext);
+            Logger.LogInformation(() => $"Client has been authenticated for path '{path}' by '{context.User.Identity.AuthenticationType}' scheme.");
+            await _next.Invoke(context);
             return;
         }
 
-        SetUnauthenticatedError(httpContext, path, httpContext.User.Identity.Name);
+        SetUnauthenticatedError(context, path, context.User.Identity.Name);
     }
 
     private void SetUnauthenticatedError(HttpContext httpContext, string path, string userName)
