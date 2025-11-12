@@ -6,6 +6,7 @@ namespace Ocelot.Configuration.Creator;
 
 public class DynamicRoutesCreator : IDynamicsCreator
 {
+    private readonly IAuthenticationOptionsCreator _authOptionsCreator;
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
     private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
     private readonly ILoadBalancerOptionsCreator _loadBalancerOptionsCreator;
@@ -17,6 +18,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
     private readonly IVersionPolicyCreator _versionPolicyCreator;
 
     public DynamicRoutesCreator(
+        IAuthenticationOptionsCreator authOptionsCreator,
         ICacheOptionsCreator cacheOptionsCreator,
         IHttpHandlerOptionsCreator handlerOptionsCreator,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
@@ -27,6 +29,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator)
     {
+        _authOptionsCreator = authOptionsCreator;
         _cacheOptionsCreator = cacheOptionsCreator;
         _httpHandlerOptionsCreator = handlerOptionsCreator;
         _loadBalancerKeyCreator = loadBalancerKeyCreator;
@@ -66,6 +69,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         var lbKey = _loadBalancerKeyCreator.Create(dynamicRoute, lbOptions);
         var cacheOptions = _cacheOptionsCreator.Create(dynamicRoute, globalConfiguration, lbKey);
 
+        var authOptions = _authOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var version = _versionCreator.Create(dynamicRoute.DownstreamHttpVersion.IfEmpty(globalConfiguration.DownstreamHttpVersion));
         var versionPolicy = _versionPolicyCreator.Create(dynamicRoute.DownstreamHttpVersionPolicy.IfEmpty(globalConfiguration.DownstreamHttpVersionPolicy));
         var scheme = dynamicRoute.DownstreamScheme.IfEmpty(globalConfiguration.DownstreamScheme);
@@ -75,6 +79,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         var rlOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var timeout = CreateTimeout(dynamicRoute, globalConfiguration);
         var downstreamRoute = new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(authOptions)
             .WithCacheOptions(cacheOptions)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)

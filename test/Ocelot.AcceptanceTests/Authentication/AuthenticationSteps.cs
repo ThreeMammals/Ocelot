@@ -230,12 +230,14 @@ public class AuthenticationSteps : Steps
     public static FileGlobalConfiguration GivenGlobalAuthConfiguration(
         string scheme = JwtBearerDefaults.AuthenticationScheme,
         string[] allowedScopes = null)
-    {
-        FileGlobalConfiguration c = new();
-        c.AuthenticationOptions.AuthenticationProviderKeys = [scheme];
-        c.AuthenticationOptions.AllowedScopes.AddRange(allowedScopes ?? []);
-        return c;
-    }
+        => new()
+        {
+            AuthenticationOptions = new()
+            {
+                AllowedScopes = new(allowedScopes ?? []),
+                AuthenticationProviderKeys = [scheme],
+            },
+        };
 
     //private IConfiguration _config;
     private readonly UserManager<IdentityUser> _userManager = default;
