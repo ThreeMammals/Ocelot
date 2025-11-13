@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
@@ -26,7 +27,7 @@ public class AuthorizationMiddleware : OcelotMiddleware
     {
         var route = context.Items.DownstreamRoute();
 
-        if (!IsOptionsHttpMethod(context) && route.IsAuthenticated)
+        if (!context.IsOptionsMethod() && route.IsAuthenticated)
         {
             Logger.LogInformation("route is authenticated scopes must be checked");
 
@@ -53,7 +54,7 @@ public class AuthorizationMiddleware : OcelotMiddleware
             }
         }
 
-        if (!IsOptionsHttpMethod(context) && route.IsAuthorized)
+        if (!context.IsOptionsMethod() && route.IsAuthorized)
         {
             Logger.LogInformation("route is authorized");
 
@@ -89,10 +90,5 @@ public class AuthorizationMiddleware : OcelotMiddleware
     private static bool IsAuthorized(Response<bool> authorized)
     {
         return authorized.Data;
-    }
-
-    private static bool IsOptionsHttpMethod(HttpContext httpContext)
-    {
-        return httpContext.Request.Method.ToUpper() == "OPTIONS";
     }
 }

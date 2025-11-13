@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -22,7 +23,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         var path = context.Request.Path;
         var route = context.Items.DownstreamRoute();
 
-        if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) || !route.IsAuthenticated)
+        if (request.IsOptionsMethod() || !route.IsAuthenticated)
         {
             Logger.LogInformation(() => $"No authentication is required for the path '{path}' in the route {route.Name()}.");
             await _next(context);

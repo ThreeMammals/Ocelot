@@ -26,7 +26,7 @@ public sealed class AuthenticationOptions
         AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
     }
 
-    public static string[] Merge(string primaryKey, string[] keys)
+    private static string[] Merge(string primaryKey, string[] keys)
     {
         if (primaryKey.IsEmpty())
         {
