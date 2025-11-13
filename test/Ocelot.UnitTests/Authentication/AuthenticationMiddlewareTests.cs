@@ -23,6 +23,7 @@ public class AuthenticationMiddlewareTests : UnitTest
 
     private AuthenticationMiddleware _middleware;
     private RequestDelegate _next;
+    private bool _isNextCalled;
 
     public AuthenticationMiddlewareTests()
     {
@@ -46,10 +47,10 @@ public class AuthenticationMiddlewareTests : UnitTest
     public void MiddlewareName_Cstor_ReturnsTypeName()
     {
         // Arrange
-        var isNextCalled = false;
+        _isNextCalled = false;
         _next = (context) =>
         {
-            isNextCalled = true;
+            _isNextCalled = true;
             return Task.CompletedTask;
         };
         _middleware = new AuthenticationMiddleware(_next, _factory.Object);
@@ -59,13 +60,13 @@ public class AuthenticationMiddlewareTests : UnitTest
         var actual = _middleware.MiddlewareName;
 
         // Assert
-        Assert.False(isNextCalled);
+        Assert.False(_isNextCalled);
         Assert.NotNull(actual);
         Assert.Equal(expected, actual);
     }
 
     [Fact]
-    public void Should_call_next_middleware_if_route_is_not_authenticated()
+    public async Task Should_call_next_middleware_if_route_is_not_authenticated()
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
@@ -75,14 +76,14 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheDownStreamRouteIs(route);
 
         // Act
-        WhenICallTheMiddleware(route.IsAuthenticated);
+        await WhenICallTheMiddleware(route.IsAuthenticated);
 
         // Assert
         ThenTheUserIsAuthenticated("The user is NOT authenticated");
     }
 
     [Fact]
-    public void Should_call_next_middleware_if_route_is_using_options_method()
+    public async Task Should_call_next_middleware_if_route_is_using_options_method()
     {
         // Arrange
         GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
@@ -92,14 +93,17 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheRequestIsUsingMethod(HttpMethods.Options);
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheUserIsAuthenticated();
     }
 
     [Fact]
-    public void Should_call_next_middleware_if_route_is_using_several_options_authentication_providers()
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task Should_call_next_middleware_if_route_is_using_several_options_authentication_providers()
     {
         // Arrange
         var multipleKeys = new string[] { string.Empty, "Fail", "Test" };
@@ -115,14 +119,17 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheAuthenticationThrowsException();
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheUserIsAuthenticated();
     }
 
     [Fact]
-    public void Should_provide_backward_compatibility_if_route_has_several_options_authentication_providers()
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task Should_provide_backward_compatibility_if_route_has_several_options_authentication_providers()
     {
         // Arrange
         FileAuthenticationOptions opts = new()
@@ -142,14 +149,17 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheAuthenticationThrowsException();
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheUserIsAuthenticated();
     }
 
     [Fact]
-    public void Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task Should_not_call_next_middleware_and_return_no_result_if_all_multiple_keys_were_failed()
     {
         // Arrange
         var options = new AuthenticationOptions(null,
@@ -164,7 +174,7 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheAuthenticationIsSuccess();
 
         // Act
-        WhenICallTheMiddleware();
+        await WhenICallTheMiddleware();
 
         // Assert
         ThenTheUserIsNotAuthenticated();
@@ -174,10 +184,86 @@ public class AuthenticationMiddlewareTests : UnitTest
         _httpContext.Items.Errors().First().ShouldBeOfType<UnauthenticatedError>();
     }
 
+    private void GivenHappyPath(bool isHappy = true, string userName = null)
+    {
+        var multipleKeys = new string[] { "Test" };
+        var options = new AuthenticationOptions(null, multipleKeys);
+        string[] methods = [HttpMethods.Get];
+        GivenTheDownStreamRouteIs(new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(options)
+            .WithUpstreamHttpMethod(methods)
+            .Build());
+        GivenTheRequestIsUsingMethod(methods[0]);
+        GivenTheAuthenticationIsFail();
+        GivenTheAuthenticationIsSuccess(isHappy, userName); // Identity.IsAuthenticated -> true by default
+        GivenTheAuthenticationThrowsException();
+    }
+
+    [Fact]
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task Should_SetUnauthenticatedError_and_not_call_next_middleware_if_identity_IsNOT_authenticated()
+    {
+        // Arrange
+        GivenHappyPath(false);// Identity.IsAuthenticated -> false
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsNotAuthenticated();
+        Assert.False(_isNextCalled);
+        _httpContext.User.Identity.IsAuthenticated.ShouldBeFalse();
+        _logInformationMessages.Count.ShouldBe(1);
+        _logWarningMessages.Count.ShouldBe(1);
+        _logWarningMessages[0].ShouldBe("Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' was unauthenticated!;");
+        _httpContext.Items.Errors().Count.ShouldBe(1);
+        var e = _httpContext.Items.Errors()[0];
+        Assert.IsType<UnauthenticatedError>(e);
+        Assert.Equal("Request for authenticated route '' was unauthenticated!", e.Message);
+    }
+
+    [Theory]
+    [InlineData("", 0)]
+    [InlineData("Igor", 1)]
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task SetUnauthenticatedError(string userName, int index)
+    {
+        // Arrange
+        var warnings = new string[]
+        {
+            "Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' was unauthenticated!;",
+            "Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' by 'Igor' was unauthenticated!;",
+        };
+        var messages = new string[]
+        {
+            "Request for authenticated route '' was unauthenticated!",
+            "Request for authenticated route '' by 'Igor' was unauthenticated!",
+        };
+        GivenHappyPath(false, userName);// Identity.IsAuthenticated -> false
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsNotAuthenticated();
+        Assert.False(_isNextCalled);
+        Assert.Equal(warnings[index], _logWarningMessages[0]);
+        var e = _httpContext.Items.Errors()[0];
+        Assert.IsType<UnauthenticatedError>(e);
+        Assert.Equal(messages[index], e.Message);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(2)]
-    public void Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty(int keysCount)
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty(int keysCount)
     {
         // Arrange
         var emptyKeys = new string[keysCount];
@@ -197,7 +283,7 @@ public class AuthenticationMiddlewareTests : UnitTest
         GivenTheRequestIsUsingMethod(methods.First());
 
         // Act
-        WhenICallTheMiddleware(route.IsAuthenticated);
+        await WhenICallTheMiddleware(route.IsAuthenticated);
 
         // Assert
         ThenTheUserIsAuthenticated("The user is NOT authenticated");
@@ -206,6 +292,34 @@ public class AuthenticationMiddlewareTests : UnitTest
         _logInformationMessages.Count.ShouldBe(1);
         _logInformationMessages[0].ShouldBe("No authentication is required for the path '' in the route /Should_not_call_next_middleware_and_return_no_result_if_providers_keys_are_empty.");
         _httpContext.Items.Errors().Count(e => e.GetType() == typeof(UnauthenticatedError)).ShouldBe(0);
+    }
+
+    [Fact]
+    [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
+    [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
+    [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
+    public async Task AuthenticateAsync_CatchException()
+    {
+        // Arrange
+        GivenHappyPath(false);// Identity.IsAuthenticated -> false
+        _authentication
+            .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+            .Throws<HttpContext, string, InvalidOperationException>((ctx, scheme) => new("Bad auth scheme -> " + scheme));
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheUserIsNotAuthenticated();
+        Assert.False(_isNextCalled);
+        Assert.False(_httpContext.User.Identity.IsAuthenticated);
+        Assert.Equal(2, _logWarningMessages.Count);
+        Assert.Equal("Unable to authenticate the client for route '?' using the Test authentication scheme due to error: Bad auth scheme -> Test", _logWarningMessages[0]);
+        Assert.Equal("Client has NOT been authenticated for path '' and pipeline error set. UnauthenticatedError: Request for authenticated route '' was unauthenticated!;", _logWarningMessages[1]);
+        var errors = _httpContext.Items.Errors();
+        Assert.Equal(1, errors.Count);
+        Assert.IsType<UnauthenticatedError>(errors[0]);
+        Assert.Equal("Request for authenticated route '' was unauthenticated!", errors[0].Message);
     }
 
     private readonly List<string> _logInformationMessages = new();
@@ -218,12 +332,12 @@ public class AuthenticationMiddlewareTests : UnitTest
             .Returns(Task.FromResult(AuthenticateResult.Fail("The user is not authenticated.")));
     }
 
-    private void GivenTheAuthenticationIsSuccess()
+    private void GivenTheAuthenticationIsSuccess(bool isAuthenticated = true, string userName = null)
     {
         var principal = new Mock<ClaimsPrincipal>();
         var identity = new Mock<IIdentity>();
-
-        identity.Setup(i => i.IsAuthenticated).Returns(true);
+        identity.Setup(i => i.IsAuthenticated).Returns(isAuthenticated);
+        identity.Setup(i => i.Name).Returns(userName ?? string.Empty);
         principal.Setup(p => p.Identity).Returns(identity.Object);
         _authentication
             .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.Is<string>(s => s.Equals("Test"))))
@@ -233,7 +347,7 @@ public class AuthenticationMiddlewareTests : UnitTest
     private void GivenTheAuthenticationThrowsException()
     {
         _authentication
-            .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.Is<string>(s => string.Empty.Equals(s))))
+            .Setup(a => a.AuthenticateAsync(It.IsAny<HttpContext>(), It.Is<string>(scheme => string.Empty.Equals(scheme))))
             .Throws(new InvalidOperationException("Authentication provider key is empty."));
     }
 
@@ -262,18 +376,19 @@ public class AuthenticationMiddlewareTests : UnitTest
         errors.ShouldNotBeEmpty();
     }
 
-    private async void WhenICallTheMiddleware(bool isAuthenticated = true)
+    private Task WhenICallTheMiddleware(bool isAuthenticated = true)
     {
+        _isNextCalled = false;
         _next = (context) =>
         {
+            _isNextCalled = true;
             var not = !isAuthenticated ? " NOT" : string.Empty;
             byte[] byteArray = Encoding.ASCII.GetBytes($"The user is{not} authenticated");
             var stream = new MemoryStream(byteArray);
-
             _httpContext.Response.Body = stream;
             return Task.CompletedTask;
         };
         _middleware = new AuthenticationMiddleware(_next, _factory.Object);
-        await _middleware.Invoke(_httpContext);
+        return _middleware.Invoke(_httpContext);
     }
 }

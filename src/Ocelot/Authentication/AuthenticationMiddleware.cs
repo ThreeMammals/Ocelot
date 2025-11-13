@@ -51,7 +51,8 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
 
     private void SetUnauthenticatedError(HttpContext httpContext, string path, string userName)
     {
-        var error = new UnauthenticatedError($"Request for authenticated route '{path}' {(string.IsNullOrEmpty(userName) ? "was unauthenticated" : $"by '{userName}' was unauthenticated!")}");
+        var reason = string.IsNullOrEmpty(userName) ? "was unauthenticated!" : $"by '{userName}' was unauthenticated!";
+        var error = new UnauthenticatedError($"Request for authenticated route '{path}' {reason}");
         Logger.LogWarning(() => $"Client has NOT been authenticated for path '{path}' and pipeline error set. {error};");
         httpContext.Items.SetError(error);
     }
