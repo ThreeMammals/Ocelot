@@ -1,6 +1,6 @@
 ﻿using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration.FileModels;
+namespace Ocelot.UnitTests.Authentication;
 
 public class FileAuthenticationOptionsTests
 {

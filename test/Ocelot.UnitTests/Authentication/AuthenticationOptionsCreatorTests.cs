@@ -2,7 +2,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration;
+namespace Ocelot.UnitTests.Authentication;
 
 public class AuthenticationOptionsCreatorTests
 {
