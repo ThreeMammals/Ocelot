@@ -25,10 +25,10 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
     protected virtual AuthenticationOptions Create(IRouteGrouping grouping, FileAuthenticationOptions options, FileGlobalAuthenticationOptions globalOptions)
     {
         ArgumentNullException.ThrowIfNull(grouping);
-        var group = globalOptions;
-        var isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
-            group.RouteKeys.Count == 0 || // empty collection -> is global
-            group.RouteKeys.Contains(grouping.Key); // this route is in the group
+
+        bool isGlobal = globalOptions?.RouteKeys is null // undefined section or array option -> is global
+            || globalOptions.RouteKeys.Count == 0 // empty collection -> is global
+            || globalOptions.RouteKeys.Contains(grouping.Key); // this route is in the group
 
         if (options == null && globalOptions != null && isGlobal)
         {
@@ -39,14 +39,10 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
         {
             return new(options);
         }
-        else if (options != null && globalOptions != null && !isGlobal)
-        {
-            return new(options);
-        }
 
-        if (options != null && globalOptions != null && isGlobal)
+        if (options != null && globalOptions != null)
         {
-            return Merge(options, globalOptions);
+            return isGlobal ? Merge(options, globalOptions) : new(options);
         }
 
         return new();
