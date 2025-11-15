@@ -15,8 +15,13 @@ public class CacheOptions
 
     internal CacheOptions() { }
     public CacheOptions(FileCacheOptions from, string defaultRegion)
-        : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing)
+        : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing, from.StatusCodes)
     { }
+
+    public CacheOptions(int ttlSeconds, string region, string header, bool? enableContentHashing) 
+        : this(ttlSeconds, region, header, enableContentHashing, null)
+    { }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CacheOptions"/> class.
@@ -32,12 +37,13 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing)
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, HttpStatusCode[] statusCodes)
     {
         TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
         Header = header.IfEmpty(Oc_Cache_Control);
         EnableContentHashing = enableContentHashing ?? false;
+        StatusCodes = statusCodes;
     }
 
     /// <summary>Time-to-live seconds.</summary>
@@ -53,4 +59,6 @@ public class CacheOptions
     public bool EnableContentHashing { get; }
 
     public bool UseCache => TtlSeconds > NoSeconds;
+
+    public HttpStatusCode[] StatusCodes { get; }
 }
