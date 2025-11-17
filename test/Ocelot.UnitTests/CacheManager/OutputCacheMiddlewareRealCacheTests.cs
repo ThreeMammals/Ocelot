@@ -6,6 +6,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.CacheManager;
@@ -47,13 +48,59 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
         };
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
         GivenResponseIsNotCached(response);
-        GivenTheDownstreamRouteIs();
+        GivenTheDownstreamRouteIs(null);
 
         // Act
         await WhenICallTheMiddleware();
 
         // Assert
         ThenTheContentTypeHeaderIsCached();
+    }
+
+    [Theory]
+    [InlineData(null, HttpStatusCode.OK)]
+    [InlineData(null, HttpStatusCode.Forbidden)]
+    [InlineData(null, HttpStatusCode.InternalServerError)]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Forbidden)]
+    public async Task Should_cache_when_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var content = new StringContent("{\"Test\": 1}")
+        {
+            Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
+        };
+        var response = new DownstreamResponse(content, responseCode, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheContentTypeHeaderIsCached();
+    }
+
+    [Theory]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.BadRequest)]
+    public async Task Should_not_cache_when_not_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var content = new StringContent("{\"Test\": 1}")
+        {
+            Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
+        };
+        var response = new DownstreamResponse(content, responseCode, new List<KeyValuePair<string, IEnumerable<string>>>(), "fooreason");
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+
+        // Act
+        await WhenICallTheMiddleware();
+
+        // Assert
+        ThenTheResponseIsNotCached();
     }
 
     private async Task WhenICallTheMiddleware()
@@ -69,15 +116,22 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
         header.First().ShouldBe("application/json");
     }
 
+    private void ThenTheResponseIsNotCached()
+    {
+        var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123-"); // absent header -> '-' dash char is added at the end
+        var result = _cacheManager.Get(cacheKey, "kanken");
+        Assert.Null(result);
+    }
+
     private void GivenResponseIsNotCached(DownstreamResponse response)
     {
         _httpContext.Items.UpsertDownstreamResponse(response);
     }
 
-    private void GivenTheDownstreamRouteIs()
+    private void GivenTheDownstreamRouteIs(CacheOptions options)
     {
         var route = new DownstreamRouteBuilder()
-            .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
+            .WithCacheOptions(options ?? new CacheOptions(100, "kanken", null, false, null))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();
 
