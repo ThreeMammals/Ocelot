@@ -13,17 +13,19 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Caching;
+namespace Ocelot.AcceptanceTests.Administration;
 
 public sealed class CacheManagerTests : AuthenticationSteps
 {
     public CacheManagerTests() : base()
-    {
-    }
+    { }
 
-    [Fact(Skip = AuthenticationTests.IdentityServer4Skip)]
-    public async Task ShouldClearRegionViaAdministrationAPI()
+    [Fact(
+        DisplayName = "TODO " + nameof(ShouldClearCacheRegionViaAdministrationAPI),
+        Skip = "TODO: Requires redevelopment after deprecation of Ocelot.Administration.IdentityServer4 package.")]
+    public async Task ShouldClearCacheRegionViaAdministrationAPI()
     {
         int port = PortFinder.GetRandomPort();
         var ocelotUrl = DownstreamUrl(port);
@@ -39,21 +41,30 @@ public sealed class CacheManagerTests : AuthenticationSteps
             },
         };
         GivenThereIsAConfiguration(configuration);
+        const string AdminPath = "/administration";
 
+        //GivenOcelotIsRunning(s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath));
         using var ocelot = await GivenOcelotHostIsRunning(
-            WithBasicConfiguration, WithCacheManager, WithUseOcelot,
-            (host) => host.UseUrls()
+            WithBasicConfiguration, // Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate,
+            s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath), // Action<IServiceCollection> configureServices,
+            WithUseOcelot, // Action<IApplicationBuilder> configureApp,
+            (host) => host.UseUrls(ocelotUrl) // Action<IWebHostBuilder> configureHost
         );
         ocelotClient = new()
         {
             BaseAddress = new(ocelotUrl),
         };
+        bool isExternal = true;
+        await GivenThereIsExternalJwtSigningService(OcelotScopes.OcAdmin);
+        var token = await GivenIHaveATokenWithUrlPath(
+            path: !isExternal ? AdminPath : string.Empty,
+            scope: OcelotScopes.OcAdmin);
+        GivenIHaveAddedATokenToMyRequest(token);
 
-        await GivenIHaveATokenWithUrlPath("/administration");
-        GivenIHaveAddedATokenToMyRequest();
-
-        response = await ocelotClient.DeleteAsync($"/administration/outputcache/{nameof(ShouldClearRegionViaAdministrationAPI)}");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent);
+        //await WhenIGetUrlOnTheApiGateway("/");
+        //ThenTheStatusCodeShouldBeOK(); // currently HttpStatusCode.BadGateway
+        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent); // currently HttpStatusCode.Unauthorized
     }
 
     public static FileCacheOptions DefaultFileCacheOptions { get; set; } = new()
@@ -71,22 +82,9 @@ public sealed class CacheManagerTests : AuthenticationSteps
         FileCacheOptions = options ?? DefaultFileCacheOptions,
     };
 
-    /*
-    private async Task GivenIHaveAnOcelotToken(string adminPath)
-    {
-        var formData = new List<KeyValuePair<string, string>>
-        {
-            new("client_id", "admin"),
-            new("client_secret", "secret"),
-            new("scope", "admin"),
-            new("grant_type", "client_credentials"),
-        };
-        await GivenIHaveATokenWithForm(adminPath, formData, _ocelotClient); // TODO Steps but move to AuthSteps
-        var response = await _ocelotClient.GetAsync($"{adminPath}/.well-known/openid-configuration");
-        response.EnsureSuccessStatusCode();
-    }*/
-
-    private static void WithCacheManager(IServiceCollection services)
+    private void WithCacheManagerAndAdministrationForExternalJwtServer(IServiceCollection services,
+        string adminPath,
+        [CallerMemberName] string testName = nameof(CacheManagerTests))
     {
         static void WithSettings(ConfigurationBuilderCachePart settings)
         {
@@ -94,7 +92,10 @@ public sealed class CacheManagerTests : AuthenticationSteps
         }
         services.AddMvc(option => option.EnableEndpointRouting = false);
         services.AddOcelot()
-            .AddCacheManager(WithSettings); //.AddAdministration("/administration", "secret");
+            .AddCacheManager(WithSettings)
+            //.AddAdministration(adminPath, "secret") // this is for internal server
+            .AddAdministration(adminPath, testName,
+                externalJwtServer: new Uri(JwtSigningServerUrl)); // this is for external server
     }
 
     public override void Dispose()

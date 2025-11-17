@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 
-namespace Ocelot.Configuration;
+namespace Ocelot.Administration;
 
+// [ApiController] // TODO: Make it ApiController
 [Authorize]
 [Route("configuration")]
 public class FileConfigurationController : Controller
