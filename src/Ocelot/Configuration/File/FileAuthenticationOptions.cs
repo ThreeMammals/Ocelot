@@ -10,14 +10,14 @@ public class FileAuthenticationOptions
     public FileAuthenticationOptions(string authScheme) : this()
         => AuthenticationProviderKeys = [authScheme];
 
-    public FileAuthenticationOptions(FileAuthenticationOptions from)
+    public FileAuthenticationOptions(FileAuthenticationOptions options)
     {
-        ArgumentNullException.ThrowIfNull(from);
-        AllowAnonymous = from.AllowAnonymous;
-        AllowedScopes = from.AllowedScopes is null ? null : new(from.AllowedScopes);
-        AuthenticationProviderKey = from.AuthenticationProviderKey;
-        AuthenticationProviderKeys = new string[from.AuthenticationProviderKeys.Length];
-        Array.Copy(from.AuthenticationProviderKeys, AuthenticationProviderKeys, from.AuthenticationProviderKeys.Length);
+        ArgumentNullException.ThrowIfNull(options);
+        AllowAnonymous = options.AllowAnonymous;
+        AllowedScopes = options.AllowedScopes is null ? null : new(options.AllowedScopes);
+        AuthenticationProviderKey = options.AuthenticationProviderKey;
+        AuthenticationProviderKeys = new string[options.AuthenticationProviderKeys.Length];
+        Array.Copy(options.AuthenticationProviderKeys, AuthenticationProviderKeys, options.AuthenticationProviderKeys.Length);
     }
 
     public List<string> AllowedScopes { get; set; }

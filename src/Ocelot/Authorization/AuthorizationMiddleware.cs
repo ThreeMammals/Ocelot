@@ -2,7 +2,6 @@
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Responses;
 
 namespace Ocelot.Authorization;
 
@@ -29,66 +28,60 @@ public class AuthorizationMiddleware : OcelotMiddleware
 
         if (!context.IsOptionsMethod() && route.IsAuthenticated)
         {
-            Logger.LogInformation("route is authenticated scopes must be checked");
-
             var authorized = _scopesAuthorizer.Authorize(context.User, route.AuthenticationOptions.AllowedScopes);
-
             if (authorized.IsError)
             {
-                Logger.LogWarning("error authorizing user scopes");
-
+#if DEBUG
+                Logger.LogWarning(() => $"The '{route.Name()}' route encountered authorization errors due to user scopes:{authorized.Errors.ToErrorString(true)}");
+#endif
                 context.Items.UpsertErrors(authorized.Errors);
                 return;
             }
 
-            if (IsAuthorized(authorized))
+            if (!authorized.Data)
             {
-                Logger.LogInformation("user scopes is authorized calling next authorization checks");
-            }
-            else
-            {
-                Logger.LogWarning("user scopes is not authorized setting pipeline error");
-
-                context.Items.SetError(new UnauthorizedError(
-                        $"{context.User.Identity.Name} unable to access {route.UpstreamPathTemplate.OriginalValue}"));
+                var error = new UnauthorizedError($"{context.User.Identity.Name} unable to access route {route.Name()}");
+#if DEBUG
+                Logger.LogInformation(error.ToString);
+#endif
+                context.Items.SetError(error);
             }
         }
 
         if (!context.IsOptionsMethod() && route.IsAuthorized)
         {
-            Logger.LogInformation("route is authorized");
-
             var authorized = _claimsAuthorizer.Authorize(context.User, route.RouteClaimsRequirement, context.Items.TemplatePlaceholderNameAndValues());
-
             if (authorized.IsError)
             {
-                Logger.LogWarning(() => $"Error whilst authorizing {context.User.Identity.Name}. Setting pipeline error");
-
+#if DEBUG
+                Logger.LogWarning(() => $"Error whilst authorizing {context.User.Identity.Name} in route {route.Name()}:{authorized.Errors.ToErrorString(true)}");
+#endif
                 context.Items.UpsertErrors(authorized.Errors);
                 return;
             }
 
-            if (IsAuthorized(authorized))
+            if (authorized.Data)
             {
-                Logger.LogInformation(() => $"{context.User.Identity.Name} has succesfully been authorized for {route.UpstreamPathTemplate.OriginalValue}.");
+#if DEBUG
+                Logger.LogInformation(() => $"{context.User.Identity.Name} has successfully been authorized for {route.Name()}.");
+#endif
                 await _next.Invoke(context);
             }
             else
             {
-                Logger.LogWarning(() => $"{context.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}. Setting pipeline error");
-
-                context.Items.SetError(new UnauthorizedError($"{context.User.Identity.Name} is not authorized to access {route.UpstreamPathTemplate.OriginalValue}"));
+                var error = new UnauthorizedError($"{context.User.Identity.Name} is not authorized to access '{route.Name()}' route. Setting pipeline error.");
+#if DEBUG
+                Logger.LogInformation(error.ToString);
+#endif
+                context.Items.SetError(error);
             }
         }
         else
         {
-            Logger.LogInformation(() => $"No authorization needed for upstream path: { route.UpstreamPathTemplate.OriginalValue}");
+#if DEBUG
+            Logger.LogDebug(() => $"No authorization needed for the route: {route.Name()}");
+#endif
             await _next.Invoke(context);
         }
-    }
-
-    private static bool IsAuthorized(Response<bool> authorized)
-    {
-        return authorized.Data;
     }
 }

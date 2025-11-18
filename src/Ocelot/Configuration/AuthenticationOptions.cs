@@ -12,11 +12,11 @@ public sealed class AuthenticationOptions
         AuthenticationProviderKeys = Array.Empty<string>();
     }
 
-    public AuthenticationOptions(FileAuthenticationOptions from)
+    public AuthenticationOptions(FileAuthenticationOptions options)
     {
-        AllowAnonymous = from.AllowAnonymous ?? false;
-        AllowedScopes = from.AllowedScopes ?? new();
-        AuthenticationProviderKeys = Merge(from.AuthenticationProviderKey, from.AuthenticationProviderKeys ?? Array.Empty<string>());
+        AllowAnonymous = options.AllowAnonymous ?? false;
+        AllowedScopes = options.AllowedScopes ?? new();
+        AuthenticationProviderKeys = Merge(options.AuthenticationProviderKey, options.AuthenticationProviderKeys ?? Array.Empty<string>());
     }
 
     public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys)

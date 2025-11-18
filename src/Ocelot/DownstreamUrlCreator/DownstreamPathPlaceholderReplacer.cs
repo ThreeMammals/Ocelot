@@ -10,8 +10,7 @@ public class DownstreamPathPlaceholderReplacer : IDownstreamPathPlaceholderRepla
 {
     public DownstreamPath Replace(string downstreamPathTemplate, List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
     {
-        var downstreamPath = new StringBuilder();
-        downstreamPath.Append(downstreamPathTemplate);
+        var downstreamPath = new StringBuilder(downstreamPathTemplate);
         foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
         {
             downstreamPath.Replace(placeholderVariableAndValue.Name, placeholderVariableAndValue.Value);

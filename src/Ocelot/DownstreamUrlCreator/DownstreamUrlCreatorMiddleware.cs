@@ -38,14 +38,14 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         var downstreamRoute = context.Items.DownstreamRoute();
         var placeholders = context.Items.TemplatePlaceholderNameAndValues();
         var downstreamPath = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
-        var downstreamRequest = context.Items.DownstreamRequest();
-        var upstreamPath = downstreamRequest.AbsolutePath;
         if (downstreamPath.Value.IsEmpty())
         {
             throw new NotSupportedException($"{_replacer.GetType().Name} returned an empty {nameof(DownstreamPath)} for the route {downstreamRoute.Name()}.");
         }
 
         var dsPath = downstreamPath.Value;
+        var downstreamRequest = context.Items.DownstreamRequest();
+        var upstreamPath = downstreamRequest.AbsolutePath;
         if (dsPath.EndsWith(Slash) && !upstreamPath.EndsWith(Slash))
         {
             dsPath = dsPath.TrimEnd(Slash);
@@ -72,8 +72,8 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         {
             if (dsPath.Contains(QuestionMark))
             {
-                downstreamRequest.AbsolutePath = GetPath(dsPath);
-                var newQuery = GetQueryString(dsPath);
+                downstreamRequest.AbsolutePath = GetPath(dsPath).ToString();
+                var newQuery = GetQueryString(dsPath).ToString();
                 downstreamRequest.Query = string.IsNullOrEmpty(downstreamRequest.Query)
                     ? newQuery
                     : MergeQueryStringsWithoutDuplicateValues(downstreamRequest.Query, newQuery, placeholders);
@@ -90,6 +90,10 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         await _next.Invoke(context);
     }
 
+    /// <summary>
+    /// <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#merging-of-query-parameters">Merging of Query Parameters</see> is part of
+    /// the <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#query-placeholders">Query Placeholders</see> feature.
+    /// </summary>
     private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
     {
         newQueryString = newQueryString.Replace(QuestionMark, Ampersand);
@@ -143,16 +147,20 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         }
     }
 
-    private static string GetPath(string downstreamPath)
+    private static ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
     {
-        int length = downstreamPath.IndexOf(QuestionMark, StringComparison.Ordinal);
-        return downstreamPath[..length];
+        int length = downstreamPath.IndexOf(QuestionMark);
+        return length >= 0
+            ? downstreamPath[..length]
+            : downstreamPath;
     }
 
-    private static string GetQueryString(string downstreamPath)
+    private static ReadOnlySpan<char> GetQueryString(ReadOnlySpan<char> downstreamPath)
     {
-        int startIndex = downstreamPath.IndexOf(QuestionMark, StringComparison.Ordinal);
-        return downstreamPath[startIndex..];
+        int startIndex = downstreamPath.IndexOf(QuestionMark);
+        return startIndex >= 0
+            ? downstreamPath[startIndex..]
+            : ReadOnlySpan<char>.Empty;
     }
 
     private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamPath dsPath)
