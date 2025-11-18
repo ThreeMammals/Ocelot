@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Administration;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -126,9 +127,9 @@ public class ConfigurationCreatorTests : UnitTest
         _rlCreator.Verify(x => x.Create(It.IsAny<FileGlobalConfiguration>()), Times.Once);
     }
 
-    private void GivenTheAdminPath()
+    private void GivenTheAdminPath([CallerMemberName] string testName = nameof(ConfigurationCreatorTests))
     {
-        _adminPath = new AdministrationPath("wooty");
+        _adminPath = new AdministrationPath("wooty", testName);
         _serviceCollection.AddSingleton<IAdministrationPath>(_adminPath);
     }
 

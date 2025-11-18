@@ -75,4 +75,5 @@ public class Steps : AcceptanceSteps
 
     protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
     public virtual string Body([CallerMemberName] string responseBody = nameof(Steps)) => responseBody;
+    public virtual string TestName([CallerMemberName] string testName = nameof(Steps)) => testName;
 }

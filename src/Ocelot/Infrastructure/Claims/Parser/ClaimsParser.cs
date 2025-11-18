@@ -34,8 +34,10 @@ public class ClaimsParser : IClaimsParser
 
     public Response<List<string>> GetValuesByClaimType(IEnumerable<Claim> claims, string claimType)
     {
-        var values = claims.Where(x => x.Type == claimType).Select(x => x.Value).ToList();
-
+        var values = claims
+            .Where(x => x.Type == claimType) // Case sensitive or insensitive? That's the question!
+            .Select(x => x.Value)
+            .ToList();
         return new OkResponse<List<string>>(values);
     }
 
