@@ -2,201 +2,159 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
 using System.Text;
 
-namespace Ocelot.UnitTests.Multiplexing
+namespace Ocelot.UnitTests.Multiplexing;
+
+public class SimpleJsonResponseAggregatorTests : UnitTest
 {
-    public class SimpleJsonResponseAggregatorTests : UnitTest
+    private readonly SimpleJsonResponseAggregator _aggregator;
+
+    public SimpleJsonResponseAggregatorTests()
     {
-        private readonly SimpleJsonResponseAggregator _aggregator;
-        private List<HttpContext> _downstreamContexts;
-        private HttpContext _upstreamContext;
-        private Route _route;
+        _aggregator = new SimpleJsonResponseAggregator();
+    }
 
-        public SimpleJsonResponseAggregatorTests()
+    [Fact]
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
+    {
+        var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
+        var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
+            .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 0, false, "/v1/users/{userId}"))
+            .Build();
+        var downstreamRoutes = new List<DownstreamRoute>
         {
-            _aggregator = new SimpleJsonResponseAggregator();
-        }
-
-        [Fact]
-        public void should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
+            commentsDownstreamRoute,
+            userDetailsDownstreamRoute,
+        };
+        var route = new Route()
         {
-            var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
+            DownstreamRoute = downstreamRoutes,
+            DownstreamRouteConfig = [
+                new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+            ],
+        };
 
-            var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
-                .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 0, false, "/v1/users/{userId}"))
-                .Build();
+        var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
 
-            var downstreamRoutes = new List<DownstreamRoute>
-            {
-                commentsDownstreamRoute,
-                userDetailsDownstreamRoute,
-            };
+        var commentsDownstreamContext = new DefaultHttpContext();
+        commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
 
-            var route = new RouteBuilder()
-                .WithDownstreamRoutes(downstreamRoutes)
-                .WithAggregateRouteConfig(new List<AggregateRouteConfig>
-                {
-                    new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-                })
-                .Build();
+        var userDetailsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptyfirstNamestring.Empty:string.Emptyabolfazlstring.Empty,string.EmptylastNamestring.Empty:string.Emptyrajabpourstring.Empty},{string.Emptyidstring.Empty:2,string.EmptyfirstNamestring.Empty:string.Emptyrezastring.Empty,string.EmptylastNamestring.Empty:string.Emptyrezaeistring.Empty}]";
+        var userDetailsDownstreamContext = new DefaultHttpContext();
+        userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
 
-            var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
+        var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
+        var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
+        var upstreamContext = new DefaultHttpContext();
 
-            var commentsDownstreamContext = new DefaultHttpContext();
-            commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
-            var userDetailsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptyfirstNamestring.Empty:string.Emptyabolfazlstring.Empty,string.EmptylastNamestring.Empty:string.Emptyrajabpourstring.Empty},{string.Emptyidstring.Empty:2,string.EmptyfirstNamestring.Empty:string.Emptyrezastring.Empty,string.EmptylastNamestring.Empty:string.Emptyrezaeistring.Empty}]";
-            var userDetailsDownstreamContext = new DefaultHttpContext();
-            userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
+    }
 
-            var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
-
-            var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
-
-            this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheRoute(route))
-                .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
-                .And(x => ThenTheContentTypeIs("application/json"))
-                .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_aggregate_n_responses_and_set_response_content_on_upstream_context()
+    [Fact]
+    public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context()
+    {
+        var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
+        var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
+        var downstreamRoutes = new List<DownstreamRoute>
         {
-            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
-
-            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
-
-            var downstreamRoutes = new List<DownstreamRoute>
-            {
-                billDownstreamRoute,
-                georgeDownstreamRoute,
-            };
-
-            var route = new RouteBuilder()
-                .WithDownstreamRoutes(downstreamRoutes)
-                .Build();
-
-            var billDownstreamContext = new DefaultHttpContext();
-            billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
-
-            var georgeDownstreamContext = new DefaultHttpContext();
-            georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
-
-            var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
-
-            var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
-
-            this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheRoute(route))
-                .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
-                .And(x => ThenTheContentTypeIs("application/json"))
-                .And(x => ThenTheReasonPhraseIs("cannot return from aggregate..which reason phrase would you use?"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_if_any_downstreams_have_errored()
+            billDownstreamRoute,
+            georgeDownstreamRoute,
+        };
+        var route = new Route()
         {
-            var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
+            DownstreamRoute = downstreamRoutes,
+        };
 
-            var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
+        var billDownstreamContext = new DefaultHttpContext();
+        billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
 
-            var downstreamRoutes = new List<DownstreamRoute>
-            {
-                billDownstreamRoute,
-                georgeDownstreamRoute,
-            };
+        var georgeDownstreamContext = new DefaultHttpContext();
+        georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
 
-            var route = new RouteBuilder()
-                .WithDownstreamRoutes(downstreamRoutes)
-                .Build();
+        var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
+        var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
+        var upstreamContext = new DefaultHttpContext();
 
-            var billDownstreamContext = new DefaultHttpContext();
-            billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
-            var georgeDownstreamContext = new DefaultHttpContext();
-            georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-            georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
+    }
 
-            georgeDownstreamContext.Items.SetError(new AnyError());
-
-            var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
-
-            var expected = "Error";
-
-            this.Given(x => GivenTheUpstreamContext(new DefaultHttpContext()))
-                .And(x => GivenTheRoute(route))
-                .And(x => GivenTheDownstreamContext(downstreamContexts))
-                .When(x => WhenIAggregate())
-                .Then(x => ThenTheContentIs(expected))
-                .And(x => ThenTheErrorIsMapped())
-                .BDDfy();
-        }
-
-        private void ThenTheReasonPhraseIs(string expected)
+    [Fact]
+    public async Task Should_return_error_if_any_downstreams_have_errored()
+    {
+        var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
+        var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
+        var downstreamRoutes = new List<DownstreamRoute>
         {
-            _upstreamContext.Items.DownstreamResponse().ReasonPhrase.ShouldBe(expected);
-        }
-
-        private void ThenTheErrorIsMapped()
+            billDownstreamRoute,
+            georgeDownstreamRoute,
+        };
+        var route = new Route()
         {
-            _upstreamContext.Items.Errors().ShouldBe(_downstreamContexts[1].Items.Errors());
-            _upstreamContext.Items.DownstreamResponse().ShouldBe(_downstreamContexts[1].Items.DownstreamResponse());
-        }
+            DownstreamRoute = downstreamRoutes,
+        };
 
-        private void GivenTheRoute(Route route)
-        {
-            _route = route;
-        }
+        var billDownstreamContext = new DefaultHttpContext();
+        billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
 
-        private void GivenTheUpstreamContext(HttpContext upstreamContext)
-        {
-            _upstreamContext = upstreamContext;
-        }
+        var georgeDownstreamContext = new DefaultHttpContext();
+        georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
 
-        private void GivenTheDownstreamContext(List<HttpContext> downstreamContexts)
-        {
-            _downstreamContexts = downstreamContexts;
-        }
+        georgeDownstreamContext.Items.SetError(new AnyError());
 
-        private async Task WhenIAggregate()
-        {
-            await _aggregator.Aggregate(_route, _upstreamContext, _downstreamContexts);
-        }
+        var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
+        var expected = "Error";
+        var upstreamContext = new DefaultHttpContext();
 
-        private async Task ThenTheContentIs(string expected)
-        {
-            var content = await _upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
-            content.ShouldBe(expected);
-        }
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
-        private void ThenTheContentTypeIs(string expected)
-        {
-            _upstreamContext.Items.DownstreamResponse().Content.Headers.ContentType.MediaType.ShouldBe(expected);
-        }
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheErrorIsMapped(upstreamContext, downstreamContexts);
+    }
 
-        private void ThenTheUpstreamContextIsMappedForNonAggregate()
-        {
-            _upstreamContext.Items.DownstreamRequest().ShouldBe(_downstreamContexts[0].Items.DownstreamRequest());
-            _upstreamContext.Items.DownstreamRequest().ShouldBe(_downstreamContexts[0].Items.DownstreamRequest());
-            _upstreamContext.Items.Errors().ShouldBe(_downstreamContexts[0].Items.Errors());
-        }
+    private static void ThenTheReasonPhraseIs(DefaultHttpContext upstreamContext, string expected)
+    {
+        upstreamContext.Items.DownstreamResponse().ReasonPhrase.ShouldBe(expected);
+    }
+
+    private static void ThenTheErrorIsMapped(DefaultHttpContext upstreamContext, List<HttpContext> downstreamContexts)
+    {
+        upstreamContext.Items.Errors().ShouldBe(downstreamContexts[1].Items.Errors());
+        upstreamContext.Items.DownstreamResponse().ShouldBe(downstreamContexts[1].Items.DownstreamResponse());
+    }
+
+    private static async Task ThenTheContentIs(DefaultHttpContext upstreamContext, string expected)
+    {
+        var content = await upstreamContext.Items.DownstreamResponse().Content.ReadAsStringAsync();
+        content.ShouldBe(expected);
+    }
+
+    private static void ThenTheContentTypeIs(DefaultHttpContext upstreamContext, string expected)
+    {
+        upstreamContext.Items.DownstreamResponse().Content.Headers.ContentType.MediaType.ShouldBe(expected);
     }
 }

@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0-nanoserver-ltsc2022
+
+# Install PowerShell globally  AND  RUN powershell -Command "gci"
+#RUN dotnet tool install -g powershell  &&  pwsh -Command "gci"
+RUN pwsh -Command "gci"
+
+# # Install .NET 8 SDK
+USER ContainerAdministrator
+RUN pwsh -Command "Invoke-WebRequest -OutFile dotnet-install.ps1 https://dot.net/v1/dotnet-install.ps1; gci"
+ENV DOTNET_GENERATE_ASPNET_CERTIFICATE=true
+RUN pwsh -Command "./dotnet-install.ps1 -Channel 8.0 -InstallDir 'C:\Program Files\dotnet\'; gci -Path C:\\ -Recurse -Include *8.0* -Directory"
+
+#RUN git status
+RUN dotnet --info
+
+# Generate and export the development SSL certificate
+#RUN mkdir -p certs
+#RUN dotnet dev-certs https -ep certs/cert.pem -p ''
+#RUN pwsh -Command "dotnet dev-certs https --clean; dotnet dev-certs https; exit 0;"
+#RUN pwsh -Command "dotnet dev-certs https --trust; exit 0;"
+RUN pwsh -Command "dotnet dev-certs https --check --trust; exit 0;"
+
+#ENV ASPNETCORE_URLS="https://+;http://+"  ASPNETCORE_HTTPS_PORT=443
+#ENV ASPNETCORE_Kestrel__Certificates__Default__Password=""  ASPNETCORE_Kestrel__Certificates__Default__Path=certs/cert.pem

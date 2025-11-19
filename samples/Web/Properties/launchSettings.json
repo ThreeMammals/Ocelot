@@ -1,12 +1,12 @@
 {
   "profiles": {
-    "Ocelot.Samples.Helpers": {
+    "Ocelot.Samples.Web": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:63629;http://localhost:63630"
+      "applicationUrl": "https://localhost:60184;http://localhost:60185"
     }
   }
 }

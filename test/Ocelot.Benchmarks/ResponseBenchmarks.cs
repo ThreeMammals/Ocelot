@@ -52,7 +52,7 @@ public class ResponseBenchmarks : ManualConfig
                     },
                     DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() { HttpMethods.Get },
+                    UpstreamHttpMethod = [HttpMethods.Get],
                 },
             },
         };

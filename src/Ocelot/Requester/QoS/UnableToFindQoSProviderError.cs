@@ -1,12 +1,11 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.Requester.QoS
+namespace Ocelot.Requester.QoS;
+
+public class UnableToFindQoSProviderError : Error
 {
-    public class UnableToFindQoSProviderError : Error
+    public UnableToFindQoSProviderError(string message)
+        : base(message, OcelotErrorCode.UnableToFindQoSProviderError, 404)
     {
-        public UnableToFindQoSProviderError(string message)
-            : base(message, OcelotErrorCode.UnableToFindQoSProviderError, 404)
-        {
-        }
     }
 }

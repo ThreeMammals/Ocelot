@@ -1,98 +1,102 @@
+using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
-using Ocelot.Responses;
+using Header = System.Collections.Generic.KeyValuePair<string, string>;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
 {
-    public class HeaderFindAndReplaceCreator : IHeaderFindAndReplaceCreator
+    private readonly IPlaceholders _placeholders;
+    private readonly IOcelotLogger _logger;
+    private readonly FileGlobalConfiguration _globalConfiguration;
+
+    public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory, IOptions<FileGlobalConfiguration> global)
     {
-        private readonly IPlaceholders _placeholders;
-        private readonly IOcelotLogger _logger;
+        _placeholders = placeholders;
+        _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
+        _globalConfiguration = global.Value;
+    }
 
-        public HeaderFindAndReplaceCreator(IPlaceholders placeholders, IOcelotLoggerFactory factory)
+    public HeaderTransformations Create(FileRoute route)
+        => Create(route, _globalConfiguration);
+
+    public HeaderTransformations Create(FileRoute route, FileGlobalConfiguration global)
+    {
+        global ??= _globalConfiguration;
+        var upstreamTransform = Merge(route.UpstreamHeaderTransform, global.UpstreamHeaderTransform);
+        var (upstream, addHeadersToUpstream) = ProcessHeaders(upstreamTransform, nameof(route.UpstreamHeaderTransform));
+
+        var downstreamTransform = Merge(route.DownstreamHeaderTransform, global.DownstreamHeaderTransform);
+        var (downstream, addHeadersToDownstream) = ProcessHeaders(downstreamTransform, nameof(route.DownstreamHeaderTransform));
+        
+        return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
+    }
+
+    /// <summary>Merge global Up/Downstream settings to the Route local ones.</summary>
+    /// <param name="local">The Route local settings.</param>
+    /// <param name="global">Global default settings.</param>
+    /// <returns> An <see cref="IEnumerable{T}"/> collection where T is <see cref="Header"/>.</returns>
+    public static IEnumerable<Header> Merge(IDictionary<string, string> local, IDictionary<string, string> global)
+    {
+        local ??= new Dictionary<string, string>();
+        global ??= new Dictionary<string, string>();
+        var toAdd = global.ExceptBy(local.Keys, x => x.Key); // Winning strategy: the route Transform-value wins over global one
+        return local.Union(toAdd);
+    }
+
+    private (List<HeaderFindAndReplace> StreamHeaders, List<AddHeader> AddHeaders)
+        ProcessHeaders(IEnumerable<Header> headerTransform, string propertyName)
+    {
+        var addHeaders = new List<AddHeader>();
+        var streamHeaders = new List<HeaderFindAndReplace>();
+
+        foreach (var input in headerTransform)
         {
-            _logger = factory.CreateLogger<HeaderFindAndReplaceCreator>();
-            _placeholders = placeholders;
-        }
-
-        public HeaderTransformations Create(FileRoute fileRoute)
-        {
-            var upstream = new List<HeaderFindAndReplace>();
-            var addHeadersToUpstream = new List<AddHeader>();
-
-            foreach (var input in fileRoute.UpstreamHeaderTransform)
+            if (input.Value.Contains(HeaderFindAndReplace.Comma))
             {
-                if (input.Value.Contains(","))
+                var hAndr = Map(input);
+                if (hAndr != null)
                 {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        upstream.Add(hAndr.Data);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add UpstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
+                    streamHeaders.Add(hAndr);
                 }
                 else
                 {
-                    addHeadersToUpstream.Add(new AddHeader(input.Key, input.Value));
+                    _logger.LogWarning(() => $"Unable to add {propertyName} {input}");
                 }
             }
-
-            var downstream = new List<HeaderFindAndReplace>();
-            var addHeadersToDownstream = new List<AddHeader>();
-
-            foreach (var input in fileRoute.DownstreamHeaderTransform)
+            else
             {
-                if (input.Value.Contains(","))
-                {
-                    var hAndr = Map(input);
-                    if (!hAndr.IsError)
-                    {
-                        downstream.Add(hAndr.Data);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(() => $"Unable to add DownstreamHeaderTransform {input.Key}: {input.Value}");
-                    }
-                }
-                else
-                {
-                    addHeadersToDownstream.Add(new AddHeader(input.Key, input.Value));
-                }
+                addHeaders.Add(new AddHeader(input.Key, input.Value));
             }
-
-            return new HeaderTransformations(upstream, downstream, addHeadersToDownstream, addHeadersToUpstream);
         }
 
-        private Response<HeaderFindAndReplace> Map(KeyValuePair<string, string> input)
+        return (streamHeaders, addHeaders);
+    }
+
+    private HeaderFindAndReplace Map(Header input)
+    {
+        var findAndReplace = input.Value.Split(HeaderFindAndReplace.Comma);
+        var replace = findAndReplace[1].TrimStart();
+
+        var startOfPlaceholder = replace.IndexOf(Placeholders.OpeningBrace, StringComparison.Ordinal);
+        if (startOfPlaceholder > -1)
         {
-            var findAndReplace = input.Value.Split(',');
-
-            var replace = findAndReplace[1].TrimStart();
-
-            var startOfPlaceholder = replace.IndexOf('{', StringComparison.Ordinal);
-            if (startOfPlaceholder > -1)
+            var endOfPlaceholder = replace.IndexOf(Placeholders.ClosingBrace, startOfPlaceholder);
+            var placeholder = replace.Substring(startOfPlaceholder,
+                                                endOfPlaceholder - startOfPlaceholder + 1);
+            var value = _placeholders.Get(placeholder);
+            if (value.IsError)
             {
-                var endOfPlaceholder = replace.IndexOf('}', startOfPlaceholder);
-
-                var placeholder = replace.Substring(startOfPlaceholder, endOfPlaceholder - startOfPlaceholder + 1);
-
-                var value = _placeholders.Get(placeholder);
-
-                if (value.IsError)
-                {
-                    return new ErrorResponse<HeaderFindAndReplace>(value.Errors);
-                }
-
-                replace = replace.Replace(placeholder, value.Data);
+                _logger.LogWarning(() => $"{nameof(HeaderFindAndReplace)} was not mapped from {input} due to {value.Errors.ToErrorString()}");
+                return null;
             }
 
-            var hAndr = new HeaderFindAndReplace(input.Key, findAndReplace[0], replace, 0);
-
-            return new OkResponse<HeaderFindAndReplace>(hAndr);
+            replace = replace.Replace(placeholder, value.Data);
         }
+
+        return new(input.Key, findAndReplace[0], replace, 0);
     }
 }

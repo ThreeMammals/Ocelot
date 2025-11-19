@@ -1,24 +1,15 @@
-using Ocelot.Configuration.Creator;
+namespace Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.File
+/// <summary>
+/// Represents the JSON structure of a dynamic route in dynamic routing mode using service discovery.
+/// </summary>
+public class FileDynamicRoute : FileGlobalDynamicRouting, IRouteGrouping, IRouteRateLimiting
 {
-    public class FileDynamicRoute
-    {
-        public string ServiceName { get; set; }
-        public FileRateLimitRule RateLimitRule { get; set; }
-        public string DownstreamHttpVersion { get; set; }
+    public string Key { get; set; } // IRouteGrouping
 
-        /// <summary>The <see cref="HttpVersionPolicy"/> enum specifies behaviors for selecting and negotiating the HTTP version for a request.</summary>
-        /// <value>A <see langword="string" /> value of defined <see cref="VersionPolicies"/> constants.</value>
-        /// <remarks>
-        /// Related to the <see cref="DownstreamHttpVersion"/> property.
-        /// <list type="bullet">
-        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpversionpolicy">HttpVersionPolicy Enum</see></item>
-        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.httpversion">HttpVersion Class</see></item>
-        ///   <item><see href="https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage.versionpolicy">HttpRequestMessage.VersionPolicy Property</see></item>
-        /// </list>
-        /// </remarks>
-        public string DownstreamHttpVersionPolicy { get; set; }
-        public IDictionary<string, string> Metadata { get; set; }
-    }
+    [Obsolete("Use RateLimitOptions instead of RateLimitRule! Note that RateLimitRule will be removed in version 25.0!")]
+    public FileRateLimitByHeaderRule RateLimitRule { get; set; }
+
+    public string ServiceName { get; set; }
+    public string ServiceNamespace { get; set; }
 }

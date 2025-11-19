@@ -1,29 +1,19 @@
-using Ocelot.Configuration.File;
+namespace Ocelot.Configuration;
 
-namespace Ocelot.Configuration
+public interface IInternalConfiguration
 {
-    public interface IInternalConfiguration
-    {
-        List<Route> Routes { get; }
-
-        string AdministrationPath { get; }
-
-        ServiceProviderConfiguration ServiceProviderConfiguration { get; }
-
-        string RequestId { get; }
-
-        LoadBalancerOptions LoadBalancerOptions { get; }
-
-        string DownstreamScheme { get; }
-
-        QoSOptions QoSOptions { get; }
-
-        HttpHandlerOptions HttpHandlerOptions { get; }
-
-        Version DownstreamHttpVersion { get; }
-
-        /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamHttpVersionPolicy"/> property.</summary>
-        /// <value>An <see cref="HttpVersionPolicy"/> enumeration value.</value>
-        HttpVersionPolicy? DownstreamHttpVersionPolicy { get; }
-    }
+    string AdministrationPath { get; }
+    CacheOptions CacheOptions { get; }
+    Version DownstreamHttpVersion { get; }
+    HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
+    string DownstreamScheme { get; }
+    HttpHandlerOptions HttpHandlerOptions { get; }
+    LoadBalancerOptions LoadBalancerOptions { get; }
+    MetadataOptions MetadataOptions { get; }
+    QoSOptions QoSOptions { get; }
+    RateLimitOptions RateLimitOptions { get; }
+    string RequestId { get; }
+    Route[] Routes { get; }
+    ServiceProviderConfiguration ServiceProviderConfiguration { get; }
+    int? Timeout { get; }
 }

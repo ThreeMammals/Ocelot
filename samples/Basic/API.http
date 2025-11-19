@@ -1,0 +1,17 @@
+@OcelotHttp = http://localhost:5555
+
+GET {{OcelotHttp}}/ocelot/posts/1
+Accept: application/json
+###
+GET {{OcelotHttp}}/ocelot/docs/
+Accept: text/html, */*
+###
+
+@OcelotHttps = https://localhost:7777
+
+GET {{OcelotHttps}}/ocelot/posts/3
+Accept: application/json
+###
+GET {{OcelotHttps}}/ocelot/docs/releasenotes.html
+Accept: text/html, */*
+###

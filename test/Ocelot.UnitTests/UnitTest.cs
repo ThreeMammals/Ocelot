@@ -1,15 +1,11 @@
-﻿using TestStack.BDDfy.Configuration;
+﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests;
 
-public class UnitTest
+public class UnitTest : Unit
 {
-    public UnitTest()
-    {
-        Configurator.Processors.ConsoleReport.Disable();
-    }
-
-    protected readonly Guid _testId = Guid.NewGuid();
-
-    protected string TestID { get => _testId.ToString("N"); }
+    protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
+    protected string TestName([CallerMemberName] string testName = null) => testName.IfEmpty(TestID);
 }

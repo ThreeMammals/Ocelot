@@ -2,48 +2,46 @@
 
 namespace Ocelot.WebSockets;
 
-public class ClientWebSocketProxy : WebSocket, IClientWebSocket
+public sealed class ClientWebSocketProxy : WebSocket, IClientWebSocket
 {
     // RealSubject (Service) class of Proxy design pattern
-    private readonly ClientWebSocket _realService;
-    private readonly IClientWebSocketOptions _options;
+    private readonly WebSocket _realSocket;
+    private readonly IClientWebSocketConnector _connector;
 
-    public ClientWebSocketProxy()
+    public ClientWebSocketProxy(WebSocket socket, IClientWebSocketConnector connector)
     {
-        _realService = new ClientWebSocket();
-        _options = new ClientWebSocketOptionsProxy(_realService.Options);
+        _realSocket = socket;
+        _connector = connector;
     }
 
-    // ClientWebSocket implementations
-    public IClientWebSocketOptions Options => _options;
-
+    // IClientWebSocketConnector implementations
+    public WebSocket ToWebSocket() => _realSocket;
+    public IClientWebSocketOptions Options => _connector.Options;
     public Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
-        => _realService.ConnectAsync(uri, cancellationToken);
+        => _connector.ConnectAsync(uri, cancellationToken);
 
     // WebSocket implementations
-    public override WebSocketCloseStatus? CloseStatus => _realService.CloseStatus;
+    public override WebSocketCloseStatus? CloseStatus => _realSocket.CloseStatus;
 
-    public override string CloseStatusDescription => _realService.CloseStatusDescription;
+    public override string CloseStatusDescription => _realSocket.CloseStatusDescription;
 
-    public override WebSocketState State => _realService.State;
+    public override WebSocketState State => _realSocket.State;
 
-    public override string SubProtocol => _realService.SubProtocol;
+    public override string SubProtocol => _realSocket.SubProtocol;
 
-    public override void Abort() => _realService.Abort();
+    public override void Abort() => _realSocket.Abort();
 
     public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
-        => _realService.CloseAsync(closeStatus, statusDescription, cancellationToken);
+        => _realSocket.CloseAsync(closeStatus, statusDescription, cancellationToken);
 
     public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
-        => _realService.CloseOutputAsync(closeStatus, statusDescription, cancellationToken);
+        => _realSocket.CloseOutputAsync(closeStatus, statusDescription, cancellationToken);
 
-    public override void Dispose() => _realService.Dispose();
+    public override void Dispose() => _realSocket.Dispose();
 
     public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
-        => _realService.ReceiveAsync(buffer, cancellationToken);
+        => _realSocket.ReceiveAsync(buffer, cancellationToken);
 
     public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
-        => _realService.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
-
-    public WebSocket ToWebSocket() => _realService;
+        => _realSocket.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
 }

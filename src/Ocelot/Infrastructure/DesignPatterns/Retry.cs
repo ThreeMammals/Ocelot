@@ -35,6 +35,11 @@ public static class Retry
         int retryTimes = DefaultRetryTimes, int waitTime = DefaultWaitTimeMilliseconds,
         IOcelotLogger logger = null)
     {
+        if (waitTime < 0)
+        {
+            waitTime = 0; // 0 means no thread sleeping
+        }
+
         for (int n = 1; n < retryTimes; n++)
         {
             TResult result;
@@ -92,7 +97,7 @@ public static class Retry
             catch (Exception e)
             {
                 logger?.LogError(() => GetMessage(operation, n, $"Caught exception of the {e.GetType()} type -> Message: {e.Message}."), e);
-                await Task.Delay(waitTime);
+                await (waitTime > 0 ? Task.Delay(waitTime) : Task.CompletedTask);
                 continue; // the result is unknown, so continue to retry
             }
 
@@ -100,7 +105,7 @@ public static class Retry
             if (predicate?.Invoke(result) == true)
             {
                 logger?.LogWarning(() => GetMessage(operation, n, $"The predicate has identified erroneous state in the returned result. For further details, implement logging of the result's value or properties within the predicate method."));
-                await Task.Delay(waitTime);
+                await (waitTime > 0 ? Task.Delay(waitTime) : Task.CompletedTask);
                 continue; // on erroneous state
             }
 

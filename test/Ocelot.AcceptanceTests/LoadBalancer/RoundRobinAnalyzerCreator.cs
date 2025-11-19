@@ -1,5 +1,5 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 

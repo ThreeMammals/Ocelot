@@ -1,10 +1,9 @@
 ﻿using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Headers
+namespace Ocelot.Headers;
+
+public interface IRemoveOutputHeaders
 {
-    public interface IRemoveOutputHeaders
-    {
-        Response Remove(List<Header> headers);
-    }
+    Response Remove(List<Header> headers);
 }
