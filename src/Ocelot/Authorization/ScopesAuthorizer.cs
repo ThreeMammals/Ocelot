@@ -41,10 +41,12 @@ public class ScopesAuthorizer : IScopesAuthorizer
             }
         }
 
-        if (routeAllowedScopes.Except(userScopes).Any())
+        var matchesScopes = routeAllowedScopes.Intersect(userScopes);
+
+        if (!matchesScopes.Any())
         {
             return new ErrorResponse<bool>(
-                new ScopeNotAuthorizedError($"User scopes: '{string.Join(',', userScopes)}' do not have all allowed route scopes: '{string.Join(',', routeAllowedScopes)}'"));
+                new ScopeNotAuthorizedError($"no one user scope: '{string.Join(',', userScopes)}' match with some allowed scope: '{string.Join(',', routeAllowedScopes)}'"));
         }
 
         return new OkResponse<bool>(true);
