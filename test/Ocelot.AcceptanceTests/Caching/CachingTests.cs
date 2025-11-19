@@ -215,6 +215,70 @@ public sealed class CachingTests : Steps
             .BDDfy();
     }
 
+    [Theory]
+    [InlineData(null, HttpStatusCode.OK)]
+    [InlineData(null, HttpStatusCode.Forbidden)]
+    [InlineData(null, HttpStatusCode.InternalServerError)]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Forbidden)]
+    [Trait("Feat", "741")]
+    public void Should_cache_when_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var port = PortFinder.GetRandomPort();
+        var options = new FileCacheOptions
+        {
+            TtlSeconds = 100,
+            StatusCodes = statusCodes,
+        };
+        var (testBody1String, testBody2String) = TestBodiesFactory();
+        var configuration = GivenFileConfiguration(port, options);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
+            .BDDfy();
+    }
+
+    [Theory]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.BadRequest)]
+    [Trait("Feat", "741")]
+    public void Should_not_cache_when_not_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var port = PortFinder.GetRandomPort();
+        var options = new FileCacheOptions
+        {
+            TtlSeconds = 100,
+            StatusCodes = statusCodes,
+        };
+        var (testBody1String, testBody2String) = TestBodiesFactory();
+        var configuration = GivenFileConfiguration(port, options);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
+            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
+            .BDDfy();
+    }
+
     [Fact]
     [Trait("Issue", "1172")]
     public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
