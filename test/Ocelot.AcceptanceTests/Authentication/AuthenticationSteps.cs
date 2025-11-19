@@ -182,6 +182,13 @@ public class AuthenticationSteps : Steps
         return JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptions.Web);
     }
 
+    protected FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
+    {
+        var r = GivenRoute(port, path, path);
+        r.AuthenticationOptions = options;
+        return r;
+    }
+
     public FileRoute GivenAuthRoute(int port,
         string scheme = JwtBearerDefaults.AuthenticationScheme,
         bool allowAnonymous = false,

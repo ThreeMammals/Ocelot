@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.Authentication;
@@ -112,7 +113,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
 
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(status);
-        ThenTheResponseBodyShouldBe(hasToken ? nameof(Should_use_global_authentication) : string.Empty);
+        ThenTheResponseBodyShouldBe(hasToken ? Body() : string.Empty);
     }
 
     [Fact]
@@ -137,4 +138,114 @@ public sealed class AuthenticationTests : AuthenticationSteps
         ThenTheStatusCodeShouldBeOK();
         ThenTheResponseBody();
     }
+
+    [Fact]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
+    [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
+    public async Task ShouldApplyGlobalAuthenticationOptions_ForStaticRoutes()
+    {
+        var ports = PortFinder.GetPorts(3);
+        var route1 = GivenAuthRoute(ports[0], "/route1",
+            options: null); // no opts -> use global opts
+        var route2 = GivenAuthRoute(ports[1], "/route2",
+            GivenOptions(false, ["api"], "test", [JwtBearerDefaults.AuthenticationScheme]));
+        var route3 = GivenAuthRoute(ports[2], "/noAuthorization",
+            GivenOptions(false, ["invalid-scope"]));
+        var configuration = GivenConfiguration(route1, route2, route3); // static routes come to Routes collection
+        var globalOptions = configuration.GlobalConfiguration.AuthenticationOptions
+            = new(GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []));
+
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1");
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization");
+        GivenThereIsAConfiguration(configuration);
+        Action<IServiceCollection> withAuth = WithJwtBearerAuthentication;
+        void WithOAuthNotConfigured(IServiceCollection services) => services
+            .AddAuthentication()
+            .AddOAuth(route2.AuthenticationOptions.AuthenticationProviderKey,
+                opts => opts.ClientSecret = "bla-bla... actually, there are no options"); // -> 'test' scheme and it is registered now, but the auth will fail
+        GivenOcelotIsRunning(withAuth + WithOAuthNotConfigured);
+        await GivenThereIsExternalJwtSigningService("api", "apiGlobal", "Mr.Who");
+
+        await GivenIHaveAToken(scope: globalOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBody();
+
+        await GivenIHaveAToken(scope: route2.AuthenticationOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBody();
+
+        await GivenIHaveAToken(scope: "Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/noAuthorization");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        ThenTheResponseBodyShouldBe(string.Empty); // ThenTheResponseBodyShouldBeEmpty is a new helper?
+    }
+
+    [Fact]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
+    [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
+    public async Task ShouldApplyGlobalGroupAuthenticationOptions_ForStaticRoutes_WhenRouteOptsHasAKey()
+    {
+        // 1st route
+        var ports = PortFinder.GetPorts(3);
+        var route1 = GivenAuthRoute(ports[0], "/route1", options: null); // no opts -> no auth at all
+        route1.Key = null; // 1st route is not in the global group
+
+        // 2nd route
+        var route2 = GivenAuthRoute(ports[1], "/route2", options: null); // 2nd route opts will be applied from global ones
+        route2.Key = "R2"; // 2nd route is in the group
+
+        // 3rd route
+        var route3 = GivenAuthRoute(ports[2], "/noAuthorization",
+            GivenOptions(false, ["invalid-scope"], JwtBearerDefaults.AuthenticationScheme));
+
+        var configuration = GivenConfiguration(route1, route2, route3);
+        var globalOptions = configuration.GlobalConfiguration.AuthenticationOptions
+            = new(GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []))
+            {
+                RouteKeys = ["R2"],
+            };
+
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1");
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenThereIsExternalJwtSigningService("api", "apiGlobal", "Mr.Who");
+
+        await GivenIHaveAToken(scope: "Mr.Who");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheStatusCodeShouldBeOK(); // auth is switched off and the scope doesn't matter
+        ThenTheResponseBody();
+
+        await GivenIHaveAToken(scope: globalOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheStatusCodeShouldBeOK(); // global scope has been accepted
+        ThenTheResponseBody();
+
+        await GivenIHaveAToken(scope: "Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/noAuthorization");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        ThenTheResponseBodyShouldBe(string.Empty); // ThenTheResponseBodyShouldBeEmpty is a new helper?
+    }
+
+    private static FileAuthenticationOptions GivenOptions(bool? allowAnonymous = null,
+        List<string> allowedScopes = null, string authKey = null, string[] schemes = null)
+        => new()
+        {
+            AllowAnonymous = allowAnonymous,
+            AllowedScopes = allowedScopes,
+            AuthenticationProviderKey = authKey,
+            AuthenticationProviderKeys = schemes,
+        };
 }
