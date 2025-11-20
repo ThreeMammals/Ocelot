@@ -90,7 +90,104 @@ public class ScopesAuthorizerTests : UnitTest
         var result = _authorizer.Authorize(principal, allowedScopes);
 
         // Assert
-        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));        
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
+    }
+
+    [Fact]
+    public void Should_split_space_separated_scope_and_match()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read", "api.write" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_split_space_separated_scope_and_match_single_scope()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.write" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_split_space_separated_scope_but_not_match()
+    {
+        // Arrange
+        var fakeError = new FakeError();
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "admin" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
+    }
+
+    [Fact]
+    public void Should_handle_multiple_scope_claims_without_splitting()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "api.read", "api.write" }; // Multiple separate claims
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_not_split_single_scope_without_spaces()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "api.read" }; // Single scope without spaces
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_handle_empty_string_after_splitting()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "  api.read  api.write  " }; // Scope with extra spaces
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
     }
 
     private void GivenTheParserReturns(Response<List<string>> response)
