@@ -65,8 +65,10 @@ public class AuthenticationSteps : Steps
     }
 
     protected void WithJwtBearerAuthentication(IServiceCollection services)
+        => WithJwtBearerAuthentication(services, true);
+    public void WithJwtBearerAuthentication(IServiceCollection services, bool addOcelot)
     {
-        services.AddOcelot();
+        if (addOcelot) services.AddOcelot();
         services.AddAuthentication().AddJwtBearer(WithThreemammalsOptions);
     }
 
@@ -118,7 +120,7 @@ public class AuthenticationSteps : Steps
         json.ShouldNotBeNullOrEmpty();
     }
 
-    protected Task<string> GivenThereIsExternalJwtSigningService(params string[] extraScopes)
+    public Task<string> GivenThereIsExternalJwtSigningService(params string[] extraScopes)
     {
         List<string> scopes = [OcelotScopes.Api, OcelotScopes.Api2];
         scopes.AddRange(extraScopes);
@@ -130,8 +132,9 @@ public class AuthenticationSteps : Steps
             .ContinueWith(t => url);
     }
 
-    protected void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);
-    protected void GivenIHaveAddedATokenToMyRequest(BearerToken token) => GivenIHaveAddedATokenToMyRequest(token.AccessToken, JwtBearerDefaults.AuthenticationScheme);
+    public void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);
+    public void GivenIHaveAddedATokenToMyRequest(BearerToken token)
+        => GivenIHaveAddedATokenToMyRequest(token.AccessToken, JwtBearerDefaults.AuthenticationScheme);
 
     public AuthenticationTokenRequest GivenAuthTokenRequest(string scope,
         IEnumerable<KeyValuePair<string, string>> claims = null,
@@ -139,7 +142,7 @@ public class AuthenticationSteps : Steps
     {
         var auth = new AuthenticationTokenRequest()
         {
-            Audience = ocelotClient.BaseAddress.Authority, // Ocelot DNS is token audience
+            Audience = ocelotClient?.BaseAddress.Authority, // Ocelot DNS is token audience
             ApiSecret = testName, // "secret",
             Scope = scope ?? OcelotScopes.Api,
             Claims = claims is null ? new() : new(claims),
@@ -150,14 +153,16 @@ public class AuthenticationSteps : Steps
     }
 
     public Task<BearerToken> GivenIHaveAToken([CallerMemberName] string testName = "")
-        => GivenIHaveAToken(OcelotScopes.Api, null, JwtSigningServerUrl, testName);
+        => GivenIHaveAToken(OcelotScopes.Api, null, JwtSigningServerUrl, null, testName);
 
-    protected async Task<BearerToken> GivenIHaveAToken(string scope,
+    public async Task<BearerToken> GivenIHaveAToken(string scope,
         IEnumerable<KeyValuePair<string, string>> claims = null,
         string issuerUrl = null,
+        string audience = null,
         [CallerMemberName] string testName = "")
     {
         var auth = GivenAuthTokenRequest(scope, claims, testName);
+        auth.Audience = audience ?? ocelotClient?.BaseAddress.Authority;
         return token = await GivenToken(auth, string.Empty, issuerUrl);
     }
     public async Task<BearerToken> GivenIHaveATokenWithUrlPath(string path, string scope, [CallerMemberName] string testName = "")
@@ -305,4 +310,14 @@ public class AuthenticationSteps : Steps
         };
         return bt;
     }
+
+    public static FileAuthenticationOptions GivenOptions(bool? allowAnonymous = null,
+        List<string> allowedScopes = null, string authKey = null, string[] schemes = null)
+        => new()
+        {
+            AllowAnonymous = allowAnonymous,
+            AllowedScopes = allowedScopes,
+            AuthenticationProviderKey = authKey,
+            AuthenticationProviderKeys = schemes,
+        };
 }

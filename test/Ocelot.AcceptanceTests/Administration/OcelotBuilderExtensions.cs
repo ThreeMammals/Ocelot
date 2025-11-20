@@ -69,6 +69,7 @@ public static class OcelotBuilderExtensions
     public static IApplicationBuilder UseOcelotJwtServer(this IApplicationBuilder app, Uri externalJwtSigningUrl, bool requireInstance = false)
     {
         ArgumentNullException.ThrowIfNull(app);
+
         //app.Properties[AuthenticationMiddlewareSetKey] = true;
         //return app.UseMiddleware<AuthenticationMiddleware>();
         return app;

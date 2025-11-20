@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.AcceptanceTests.Requester;
 using Ocelot.Configuration;
@@ -322,6 +324,99 @@ public class DynamicRoutingTests : ConcurrentSteps
             route3Opts.MaxConnectionsPerServer.Value, route3Opts.PooledConnectionLifetimeSeconds.Value, route3Opts.UseTracing.Value); // route opts
     }
 
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
+    [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
+    public async Task ShouldApplyGlobalAuthenticationOptions_ForAllDynamicRoutes()
+    {
+        using var steps = new AuthenticationSteps();
+        var ports = PortFinder.GetPorts(3);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        configuration.GlobalConfiguration.AuthenticationOptions = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []));
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, Enumerable.Repeat(serviceName, ports.Length).ToArray());
+        steps.GivenThereIsAConfiguration(configuration);
+        steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
+        await steps.GivenThereIsExternalJwtSigningService("apiGlobal");
+        await steps.GivenIHaveAToken(scope: "apiGlobal"); //,audience: ocelotClient.BaseAddress.Authority);
+        steps.GivenIHaveAddedATokenToMyRequest();
+
+        int times = ports.Length;
+        ocelotClient ??= steps.OcelotClient;
+        WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times);
+        ThenAllServicesShouldHaveBeenCalledTimes(times);
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1); // distribution by RoundRobin algorithm, aka strict assertion
+        ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
+        ThenAllResponseBodiesShouldBe(serviceName);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
+    [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
+    public async Task ShouldApplyGlobalGroupAuthenticationOptions_ForDynamicRoutes_WhenRouteOptsHasAKey()
+    {
+        using var steps = new AuthenticationSteps();
+
+        // 1st route
+        var ports1 = PortFinder.GetPorts(2);
+        var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
+        route1.AuthenticationOptions = null; // 1st route has no opts
+        GivenDiscoveryMetadata(route1, ports1);
+
+        // 2nd route
+        var ports2 = PortFinder.GetPorts(2);
+        var route2 = GivenLbRoute("route2", key: "R2"); // 2nd route is in the group
+        route2.AuthenticationOptions = null; // 2nd route opts will be applied from global ones
+        GivenDiscoveryMetadata(route2, ports2);
+
+        // 3rd route
+        var ports3 = PortFinder.GetPorts(2);
+        var route3 = GivenLbRoute("noAuthorization", loadBalancer: nameof(NoLoadBalancer), key: null);
+        var route3Opts = route3.AuthenticationOptions =
+            AuthenticationSteps.GivenOptions(false, ["invalid-scope"], JwtBearerDefaults.AuthenticationScheme);
+        GivenDiscoveryMetadata(route3, ports3);
+
+        var configuration = GivenDynamicRouting(new(), route1, route2, route3);
+        var globalOptions = configuration.GlobalConfiguration.AuthenticationOptions
+            = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []))
+            {
+                RouteKeys = ["R2"],
+            };
+        var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls, Enumerable.Repeat(Body(), downstreamUrls.Length).ToArray());
+        steps.GivenThereIsAConfiguration(configuration);
+        steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
+        await steps.GivenThereIsExternalJwtSigningService("api", "apiGlobal", "Mr.Who");
+        ocelotClient ??= steps.OcelotClient;
+
+        await steps.GivenIHaveAToken(scope: "Mr.Who");
+        steps.GivenIHaveAddedATokenToMyRequest();
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2);
+        ThenAllStatusCodesShouldBe(HttpStatusCode.OK); // auth is switched off and the scope doesn't matter
+        ThenAllResponseBodiesShouldBe(Body());
+
+        await steps.GivenIHaveAToken(scope: globalOptions.AllowedScopes[0]);
+        steps.GivenIHaveAddedATokenToMyRequest();
+        WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2);
+        ThenAllStatusCodesShouldBe(HttpStatusCode.OK); // global scope has been accepted
+        ThenAllResponseBodiesShouldBe(Body());
+
+        await steps.GivenIHaveAToken(scope: "Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        steps.GivenIHaveAddedATokenToMyRequest();
+        WhenIGetUrlOnTheApiGatewayConcurrently("/noAuthorization/", 2);
+        ThenAllStatusCodesShouldBe(HttpStatusCode.Forbidden);
+        ThenAllResponseBodiesShouldBe("0");
+
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0);
+    }
+
     private FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes)
     {
         var config = new FileConfiguration()
@@ -367,6 +462,14 @@ public class DynamicRoutingTests : ConcurrentSteps
     {
         WithDiscovery(services);
         RequesterSteps.WithRequesterTesting(services, false);
+    }
+    private static Action<IServiceCollection> WithDiscoveryAndJwtBearerAuthentication(AuthenticationSteps steps)
+    {
+        Action<IServiceCollection> ocelotServices = WithDiscovery;
+        void withJwtBearerAuthentication(IServiceCollection services)
+            => steps.WithJwtBearerAuthentication(services, false);
+        ocelotServices += withJwtBearerAuthentication;
+        return ocelotServices;
     }
 
     private void ThenRouteHttpHandlerOptionsAre(string serviceName, IDictionary<string, string> metadata,

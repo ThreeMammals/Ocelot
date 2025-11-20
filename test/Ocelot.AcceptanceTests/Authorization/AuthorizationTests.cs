@@ -64,7 +64,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, testName))
+            .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -241,7 +241,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, testName))
+            .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
@@ -274,5 +274,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
     private static void Void() { }
 
     private async Task GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
-        => await GivenIHaveAToken(scope, null, JwtSigningServerUrl, testName);
+        => await GivenIHaveAToken(scope, null, JwtSigningServerUrl, null, testName);
+    private async Task GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
+        => await GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, null, testName);
 }

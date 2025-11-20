@@ -93,6 +93,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
         services.AddMvc(option => option.EnableEndpointRouting = false);
         services.AddOcelot()
             .AddCacheManager(WithSettings)
+
             //.AddAdministration(adminPath, "secret") // this is for internal server
             .AddAdministration(adminPath, testName,
                 externalJwtServer: new Uri(JwtSigningServerUrl)); // this is for external server
