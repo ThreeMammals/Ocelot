@@ -17,7 +17,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Creators;
