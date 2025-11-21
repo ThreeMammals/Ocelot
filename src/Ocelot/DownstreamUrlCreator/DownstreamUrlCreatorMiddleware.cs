@@ -94,7 +94,8 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     /// <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#merging-of-query-parameters">Merging of Query Parameters</see> is part of
     /// the <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#query-placeholders">Query Placeholders</see> feature.
     /// </summary>
-    private static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
+    /// <returns>A <see cref="string"/> object.</returns>
+    protected static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
     {
         newQueryString = newQueryString.Replace(QuestionMark, Ampersand);
         var queries = HttpUtility.ParseQueryString(queryString);
@@ -118,13 +119,13 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         return QuestionMark + string.Join(Ampersand, parameters.Select(MapQueryParameter));
     }
 
-    private static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
+    protected static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
 
     /// <summary>
     /// Feature <see href="https://github.com/ThreeMammals/Ocelot/pull/467">467</see>:
     /// Added support for query string parameters in upstream path template.
     /// </summary>
-    private static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
+    protected static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
     {
         var builder = new StringBuilder();
         foreach (var nAndV in templatePlaceholders)
@@ -147,7 +148,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         }
     }
 
-    private static ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
+    protected static ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
     {
         int length = downstreamPath.IndexOf(QuestionMark);
         return length >= 0
@@ -155,7 +156,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             : downstreamPath;
     }
 
-    private static ReadOnlySpan<char> GetQueryString(ReadOnlySpan<char> downstreamPath)
+    protected static ReadOnlySpan<char> GetQueryString(ReadOnlySpan<char> downstreamPath)
     {
         int startIndex = downstreamPath.IndexOf(QuestionMark);
         return startIndex >= 0
@@ -163,7 +164,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             : ReadOnlySpan<char>.Empty;
     }
 
-    private (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamPath dsPath)
+    protected (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamPath dsPath)
     {
         var query = downstreamRequest.Query;
         var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);
@@ -171,7 +172,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         return (pathTemplate, query);
     }
 
-    private static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute route)
+    protected static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute route)
         => ServiceFabricServiceDiscoveryProvider.Type.Equals(config.ServiceProviderConfiguration.Type, StringComparison.OrdinalIgnoreCase)
             && route.UseServiceDiscovery;
 }

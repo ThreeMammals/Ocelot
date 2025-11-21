@@ -1,9 +1,12 @@
 ﻿namespace Ocelot.Infrastructure.Extensions;
 
-public static class IntExtensions
+public static class Int32Extensions
 {
-    public static int Ensure(this int value, int low = 0) => value < low ? low : value;
-    public static int Positive(this int value) => Ensure(value, 1);
+    public static int Ensure(this int value, int low = 0)
+        => value < low ? low : value;
+
+    public static int Positive(this int value)
+        => Ensure(value, 1);
 
     /// <summary>
     /// Ensures nullable integer is positive, otherwise converts the value to default one.

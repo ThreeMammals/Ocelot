@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Primitives;
 
-namespace Ocelot.Infrastructure.Extensions;
+namespace Ocelot.Tracing.Butterfly;
 
 public static class StringValuesExtensions
 {

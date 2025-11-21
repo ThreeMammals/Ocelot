@@ -662,6 +662,90 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
+    private static ReadOnlySpan<char> GetPath(string downstreamPath)
+        => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);
+
+    [Theory]
+    [InlineData("/api/resource?param=value", "/api/resource")]
+    [InlineData("/api/resource?x=1&y=2", "/api/resource")]
+    public void GetPath_ShouldReturnSubstringBeforeQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetPath(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("/api/resource", "/api/resource")]
+    [InlineData("/api/resource/123", "/api/resource/123")]
+    public void GetPath_ShouldReturnFullPath_WhenNoQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetPath(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void GetPath_ShouldHandleEmptyString()
+    {
+        // Act
+        var result = GetPath(string.Empty);
+
+        // Assert
+        Assert.Equal(string.Empty, result.ToString());
+    }
+
+    private static ReadOnlySpan<char> GetQueryString(string downstreamPath)
+        => DownstreamUrlCreatorMiddlewareTestWrapper.GetQueryString(downstreamPath);
+
+    [Theory]
+    [InlineData("/api/resource?param=value", "?param=value")]
+    [InlineData("/api/resource?x=1&y=2", "?x=1&y=2")]
+    public void GetQueryString_ShouldReturnSubstringStartingWithQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetQueryString(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("/api/resource", "")]
+    [InlineData("/api/resource/123", "")]
+    public void GetQueryString_ShouldReturnEmpty_WhenNoQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetQueryString(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void GetQueryString_ShouldHandleEmptyString()
+    {
+        // Act
+        var result = GetQueryString(string.Empty);
+
+        // Assert
+        Assert.Equal(string.Empty, result.ToString());
+    }
+
+    [Fact]
+    public void GetQueryString_ShouldHandleOnlyQuestionMark()
+    {
+        // Act
+        var result = GetQueryString("?");
+
+        // Assert
+        Assert.Equal("?", result.ToString());
+    }
+
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
     private static HttpMethod AsHttpMethod(string method) => new(method);
 
@@ -713,4 +797,16 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         _httpContext.Items.DownstreamRequest().Query.ShouldBe(queryString);
     }
+}
+
+internal class DownstreamUrlCreatorMiddlewareTestWrapper : DownstreamUrlCreatorMiddleware
+{
+    public DownstreamUrlCreatorMiddlewareTestWrapper(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IDownstreamPathPlaceholderReplacer replacer)
+        : base(next, loggerFactory, replacer) { }
+
+    public static new ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
+        => DownstreamUrlCreatorMiddleware.GetPath(downstreamPath);
+
+    public static new ReadOnlySpan<char> GetQueryString(ReadOnlySpan<char> downstreamPath)
+        => DownstreamUrlCreatorMiddleware.GetQueryString(downstreamPath);
 }

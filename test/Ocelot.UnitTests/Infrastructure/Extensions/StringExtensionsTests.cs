@@ -1,6 +1,6 @@
 ﻿using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.UnitTests.Infrastructure;
+namespace Ocelot.UnitTests.Infrastructure.Extensions;
 
 public class StringExtensionsTests
 {
@@ -31,7 +31,7 @@ public class StringExtensionsTests
     [InlineData(0, "s")]
     [InlineData(1, "")]
     [InlineData(2, "s")]
-    public void Plural_ThisInt(int count, string expected)
+    public void Plural_Int32(int count, string expected)
     {
         var actual = count.Plural();
         Assert.Equal(expected, actual);
@@ -55,6 +55,17 @@ public class StringExtensionsTests
     public void IsEmpty(string str, bool expected)
     {
         bool actual = str.IsEmpty();
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData(" ", false)]
+    [InlineData("x", true)]
+    public void IsNotEmpty(string str, bool expected)
+    {
+        bool actual = str.IsNotEmpty();
         Assert.Equal(expected, actual);
     }
 
