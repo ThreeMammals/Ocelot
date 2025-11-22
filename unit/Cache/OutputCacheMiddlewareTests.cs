@@ -3,6 +3,7 @@ using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Filter;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
@@ -162,7 +163,7 @@ public class OutputCacheMiddlewareTests : UnitTest
         // Arrange
         var response = new HttpResponseMessage(responseCode);
         GivenResponseIsNotCached(response);
-        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes)));
 
         // Act
         await WhenICallTheMiddlewareAsync();
@@ -172,20 +173,54 @@ public class OutputCacheMiddlewareTests : UnitTest
     }
 
     [Theory]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
     [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.BadRequest)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
     public async Task Should_not_cache_when_not_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
         var response = new HttpResponseMessage(responseCode);
         GivenResponseIsNotCached(response);
-        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes)));
 
         // Act
         await WhenICallTheMiddlewareAsync();
 
         // Assert
         ThenTheCacheAddIsCalled(Times.Never);
+    }
+
+    [Theory]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Forbidden)]
+    public async Task Should_not_cache_when_blacklisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var response = new HttpResponseMessage(responseCode);
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes)));
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalled(Times.Never);
+    }
+
+    [Theory]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Unauthorized)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
+    public async Task Should_cache_when_not_blacklisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var response = new HttpResponseMessage(responseCode);
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes)));
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalled(Times.Once);
     }
 
     private async Task WhenICallTheMiddlewareAsync()
