@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration.File;
+using Ocelot.Filter;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Request.Middleware;
 
@@ -15,13 +16,12 @@ public class CacheOptions
 
     internal CacheOptions() { }
     public CacheOptions(FileCacheOptions from, string defaultRegion)
-        : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing, from.StatusCodes)
+        : this(from.TtlSeconds, from.Region.IfEmpty(defaultRegion), from.Header, from.EnableContentHashing, from.StatusCodeFilter)
     { }
 
     public CacheOptions(int ttlSeconds, string region, string header, bool? enableContentHashing) 
         : this(ttlSeconds, region, header, enableContentHashing, null)
     { }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CacheOptions"/> class.
@@ -37,13 +37,14 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, HttpStatusCode[] statusCodes)
+    /// <param name="statusCodeFilter">The filter for discriminating what gets cached. <code>null</code> means "everything is whitelisted".</param>
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, HttpStatusCodeFilter statusCodeFilter)
     {
         TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
         Header = header.IfEmpty(Oc_Cache_Control);
         EnableContentHashing = enableContentHashing ?? false;
-        StatusCodes = statusCodes;
+        StatusCodeFilter = statusCodeFilter;
     }
 
     /// <summary>Time-to-live seconds.</summary>
@@ -60,5 +61,5 @@ public class CacheOptions
 
     public bool UseCache => TtlSeconds > NoSeconds;
 
-    public HttpStatusCode[] StatusCodes { get; }
+    public HttpStatusCodeFilter StatusCodeFilter { get; }
 }
