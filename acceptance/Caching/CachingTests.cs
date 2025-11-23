@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Filter;
 using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -176,7 +175,7 @@ public sealed class CachingTests : Steps
         var options = new FileCacheOptions
         {
             TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes),
+            StatusCodes = statusCodes,
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options);
@@ -197,7 +196,7 @@ public sealed class CachingTests : Steps
 
     [Theory]
     [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Unauthorized)]
+    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.BadRequest)]
     [Trait("Feat", "741")]
     public void Should_not_cache_when_not_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
     {
@@ -206,7 +205,7 @@ public sealed class CachingTests : Steps
         var options = new FileCacheOptions
         {
             TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes),
+            StatusCodes = statusCodes,
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options);
@@ -222,195 +221,6 @@ public sealed class CachingTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(responseCode))
             .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
             .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.OK)] // this is a blacklist, so OK will NOT be cached
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Forbidden)] // this is a blacklist, so Forbidden will NOT be cached
-    [Trait("Feat", "741")]
-    public void Should_not_cache_when_blacklisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)] // this is a blacklist, so InternalServerError WILL be cached
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Unauthorized)] // this is a blacklist, so Unauthorized WILL be cached
-    [Trait("Feat", "741")]
-    public void Should_cache_when_not_blacklisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.OK)]
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.Forbidden)]
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.OK)]
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.Forbidden)]
-
-    [Trait("Feat", "741")]
-    public void Should_cache_when_whitelisted_with_strings(string[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.InternalServerError)] // this whitelists 200 and 403, so 500 will not be cached
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.Unauthorized)]        // this whitelists 200 and 403, so 401 will not be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.InternalServerError)] // this whitelists 2xx and 4xx, so 500 will not be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.Redirect)]            // this whitelists 2xx and 4xx, so 302 will not be cached
-    [Trait("Feat", "741")]
-    public void Should_not_cache_when_not_whitelisted_with_strings(string[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Whitelist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.OK)]        // this is a blacklist, so OK will NOT be cached
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.Forbidden)] // this is a blacklist, so Forbidden will NOT be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.OK)]        // this is a blacklist, so OK will NOT be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.Forbidden)] // this is a blacklist, so Forbidden will NOT be cached
-    [Trait("Feat", "741")]
-    public void Should_not_cache_when_blacklisted_with_strings(string[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
-            .BDDfy();
-    }
-
-    [Theory]
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.InternalServerError)] // this is a blacklist, so InternalServerError WILL be cached
-    [InlineData(new string[] { "200", "403" }, HttpStatusCode.Unauthorized)]        // this is a blacklist, so Unauthorized WILL be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.InternalServerError)] // this blacklists 2xx and 4xx so InternalServerError (500) WILL be cached
-    [InlineData(new string[] { "2xx", "4xx" }, HttpStatusCode.Redirect)]            // this blacklists 2xx and 4xx, so Redirect (302) WILL be cached
-    [Trait("Feat", "741")]
-    public void Should_cache_when_not_blacklisted_with_strings(string[] statusCodes, HttpStatusCode responseCode)
-    {
-        // Arrange
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-            StatusCodeFilter = new HttpStatusCodeFilter(FilterType.Blacklist, statusCodes),
-        };
-        var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
             .BDDfy();
     }
 
