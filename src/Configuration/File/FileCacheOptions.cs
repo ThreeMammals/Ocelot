@@ -24,5 +24,6 @@ public class FileCacheOptions
     /// <value><see langword="true"/> if content hashing is enabled; otherwise, <see langword="false"/>.</value>
     public bool? EnableContentHashing { get; set; }
 
-    public HttpStatusCode[] StatusCodes { get; set; }
+    //public HttpStatusCode[] StatusCodes { get; set; }
+    public int[] StatusCodes { get; set; }
 }
