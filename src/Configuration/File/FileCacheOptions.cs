@@ -1,6 +1,4 @@
-﻿using Ocelot.Filter;
-
-namespace Ocelot.Configuration.File;
+﻿namespace Ocelot.Configuration.File;
 
 public class FileCacheOptions
 {
@@ -12,7 +10,6 @@ public class FileCacheOptions
         TtlSeconds = from.TtlSeconds;
         Header = from.Header;
         EnableContentHashing = from.EnableContentHashing;
-        StatusCodeFilter = from.StatusCodeFilter;
     }
 
     /// <summary>Using <see cref="Nullable{T}"/> where T is <see cref="int"/> to have <see langword="null"/> as default value and allowing global configuration usage.</summary>
@@ -27,5 +24,5 @@ public class FileCacheOptions
     /// <value><see langword="true"/> if content hashing is enabled; otherwise, <see langword="false"/>.</value>
     public bool? EnableContentHashing { get; set; }
 
-    public HttpStatusCodeFilter StatusCodeFilter { get; set; }
+    public HttpStatusCode[] StatusCodes { get; set; }
 }
