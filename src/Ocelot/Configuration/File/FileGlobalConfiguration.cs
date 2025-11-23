@@ -13,6 +13,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
         DownstreamScheme = default;
         HttpHandlerOptions = new();
         LoadBalancerOptions = default;
+        Metadata = default;
         MetadataOptions = new();
         QoSOptions = new();
         RateLimitOptions = default;

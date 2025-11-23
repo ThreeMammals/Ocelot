@@ -680,4 +680,4 @@ However, you can retain this ``Type`` option to maintain compatibility between b
 .. _13.5.2: https://github.com/ThreeMammals/Ocelot/releases/tag/13.5.2
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13

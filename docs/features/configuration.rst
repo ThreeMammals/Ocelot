@@ -122,6 +122,7 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
       "CacheOptions": {},
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
@@ -142,7 +143,7 @@ The actual dynamic route schema with all the properties can be found in the C# `
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
-  **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
+  **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
   Starting with version `24.1`_, both global and route-level options for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
   For a clearer understanding of the changes, refer to the `previous schema (version 24.0) <https://ocelot.readthedocs.io/en/24.0/features/configuration.html#dynamic-route-schema>`_.
 
@@ -187,6 +188,7 @@ Here is the complete global configuration, also known as the *"global configurat
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
       "BaseUrl": "",
       "CacheOptions": {},
       "DownstreamHeaderTransform": {}, // dictionary
@@ -207,6 +209,13 @@ Here is the complete global configuration, also known as the *"global configurat
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
+
+  **Note 1**: The following global options were not supported in versions prior to `24.1`_ for overriding in the :ref:`config-dynamic-route-schema`: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, and ``Timeout``.
+  Moreover, these global options were not available in versions prior to `24.1`_ for static routes, as stated in issue `585`_.
+  Starting with version `24.1`_, both static and dynamic route *global* options are fully supported.
+  For a clearer understanding of the changes, refer to the :ref:`config-dynamic-route-schema` and related notes.
+
+  **Note 2**: The ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` global options were introduced in version `24.1`_, but they are available only for static routes.
 
 .. _config-overview:
 
@@ -929,6 +938,7 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 
 .. _default timeout of 90 seconds: https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Requester/MessageInvokerPool.cs#L38
 .. _296: https://github.com/ThreeMammals/Ocelot/issues/296
+.. _585: https://github.com/ThreeMammals/Ocelot/issues/585
 .. _738: https://github.com/ThreeMammals/Ocelot/issues/738
 .. _1216: https://github.com/ThreeMammals/Ocelot/issues/1216
 .. _1227: https://github.com/ThreeMammals/Ocelot/pull/1227
@@ -943,4 +953,4 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
