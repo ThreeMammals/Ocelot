@@ -220,10 +220,10 @@ public sealed class CachingTests : Steps
     [InlineData(null, HttpStatusCode.Forbidden)]
     [InlineData(null, HttpStatusCode.InternalServerError)]
     [InlineData(null, HttpStatusCode.Unauthorized)]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.Forbidden)]
+    [InlineData(new int[] { (int)HttpStatusCode.OK, (int)HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.Forbidden)]
     [Trait("Feat", "741")]
-    public void Should_cache_when_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    public void Should_cache_when_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
         var port = PortFinder.GetRandomPort();
@@ -250,10 +250,10 @@ public sealed class CachingTests : Steps
     }
 
     [Theory]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.InternalServerError)]
-    [InlineData(new HttpStatusCode[] { HttpStatusCode.OK, HttpStatusCode.Forbidden }, HttpStatusCode.BadRequest)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.InternalServerError)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.BadRequest)]
     [Trait("Feat", "741")]
-    public void Should_not_cache_when_not_whitelisted(HttpStatusCode[] statusCodes, HttpStatusCode responseCode)
+    public void Should_not_cache_when_not_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
         var port = PortFinder.GetRandomPort();

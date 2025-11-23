@@ -37,7 +37,7 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
-    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, HttpStatusCode[] statusCodes)
+    public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, int[] statusCodes)
     {
         TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
@@ -60,5 +60,6 @@ public class CacheOptions
 
     public bool UseCache => TtlSeconds > NoSeconds;
 
-    public HttpStatusCode[] StatusCodes { get; }
+    //public HttpStatusCode[] StatusCodes { get; }
+    public int[] StatusCodes { get; }
 }
