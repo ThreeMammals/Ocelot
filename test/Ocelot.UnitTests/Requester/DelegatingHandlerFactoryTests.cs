@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Requester;
@@ -39,6 +38,14 @@ public class DelegatingHandlerFactoryTests : UnitTest
         _services.AddSingleton(_optionsMonitor.Object);
     }
 
+    protected static FileHttpHandlerOptions GivenHandlerOptions => new()
+    {
+        AllowAutoRedirect = true,
+        UseCookieContainer = true,
+        UseProxy = true,
+        UseTracing = true,
+    };
+
     [Fact]
     public void Should_follow_ordering_add_specifics()
     {
@@ -50,7 +57,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
                 "FakeDelegatingHandler",
@@ -87,7 +94,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
                 "FakeDelegatingHandlerTwo",
@@ -125,7 +132,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
                 "FakeDelegatingHandlerTwo",
@@ -162,7 +169,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
                 "FakeDelegatingHandler",
@@ -197,7 +204,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
         GivenTheQosFactoryReturns(new FakeQoSHandler());
@@ -224,7 +231,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithDelegatingHandlers(new List<string>
             {
                 "FakeDelegatingHandler",
@@ -253,7 +260,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
         GivenTheQosFactoryReturns(new FakeQoSHandler());
@@ -276,7 +283,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
         GivenTheServiceProviderReturnsNothing();
@@ -299,7 +306,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
         GivenTheQosFactoryReturns(new FakeQoSHandler());
@@ -322,7 +329,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, false, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
         GivenTheQosFactoryReturns(new FakeQoSHandler());
@@ -347,7 +354,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
         _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
@@ -379,7 +386,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             .Build();
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
-            .WithHttpHandlerOptions(new HttpHandlerOptions(true, true, true, true, int.MaxValue, DefaultPooledConnectionLifeTime))
+            .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
         _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
@@ -458,9 +465,6 @@ public class DelegatingHandlerFactoryTests : UnitTest
         _factory = new DelegatingHandlerFactory(_tracingFactory.Object, _qosFactory.Object, _serviceProvider, _loggerFactory.Object);
         return _factory.Get(route);
     }
-
-    /// <summary>120 seconds.</summary>
-    private static TimeSpan DefaultPooledConnectionLifeTime => TimeSpan.FromSeconds(HttpHandlerOptionsCreator.DefaultPooledConnectionLifetimeSeconds);
 }
 
 internal static class ListExtensions

@@ -38,7 +38,7 @@ public class WatchKubeTests
         _logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<Func<string, Exception, string>>()))
             .Verifiable();
         _dataRepository.Setup(x => x.Get<string>(It.IsAny<string>()))
-            .Returns((Response<string>)null);
+            .Returns(new OkResponse<string>("123"));
         _ocLogger = new(_logger.Object, _dataRepository.Object);
         _loggerFactory.Setup(x => x.CreateLogger<WatchKube>())
             .Returns(_ocLogger);

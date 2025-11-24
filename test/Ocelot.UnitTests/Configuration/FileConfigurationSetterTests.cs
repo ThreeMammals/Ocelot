@@ -41,7 +41,7 @@ public class FileConfigurationSetterTests : UnitTest
             LoadBalancerOptions = new(),
             DownstreamScheme = string.Empty,
             QoSOptions = new QoSOptionsBuilder().Build(),
-            HttpHandlerOptions = new HttpHandlerOptionsBuilder().Build(),
+            HttpHandlerOptions = new(),
             DownstreamHttpVersion = new Version("1.1"),
             DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
             MetadataOptions = new(),

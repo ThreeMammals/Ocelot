@@ -384,16 +384,17 @@ If :ref:`sd-consul-provider` returns a service, Ocelot will request it using the
 
 Ocelot will append any query string to the downstream URL as usual.
 
-.. note::
+.. warning::
+
   To enable *dynamic routing*, the `ocelot.json`_ configuration must contain no static routes in the ``Routes`` collection!
   Currently, dynamic routes and static routes cannot be mixed.
   Additionally, you need to specify the details of the *service discovery* provider as outlined above, along with the downstream ``http(s)`` scheme under ``DownstreamScheme``.
 
-  In addition to the global ``ServiceDiscoveryProvider`` section, the :ref:`config-global-configuration-schema` includes configurable options such as ``CacheOptions``, ``RateLimitOptions``, ``QoSOptions``, ``LoadBalancerOptions``, ``HttpHandlerOptions``, and ``DownstreamScheme``.
+.. note::
+
+  In addition to the global ``ServiceDiscoveryProvider`` section, the :ref:`config-global-configuration-schema` includes configurable options such as ``DownstreamScheme``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, and ``Timeout``.
   These options are applicable to all dynamic routes, globally.
-  However, since the :ref:`config-dynamic-route-schema` does not support these options (except for ``CacheOptions``, ``LoadBalancerOptions`` and ``RateLimitOptions``), they are not applied in *dynamic routing* mode.
-  Therefore, it is not possible to override global options using dynamic route-level settings.
-  To reiterate, the only options fully supported by both static and dynamic routes are ``CacheOptions``, ``LoadBalancerOptions`` and ``RateLimitOptions``.
+  Moreover, starting with version `24.1`_, the :ref:`config-dynamic-route-schema` also supports these options for overriding global settings.
 
 For instance, when exposing Ocelot publicly over HTTPS while routing to internal services over HTTP, your configuration may resemble the following:
 
@@ -416,23 +417,23 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
         "CacheOptions": {
           "TtlSeconds": 300 // 5 minutes
         },
+        "HttpHandlerOptions": {
+          "AllowAutoRedirect": false,
+          "UseCookieContainer": false,
+          "UseTracing": false
+        },
         "LoadBalancerOptions": {
           "Type": "LeastConnection"
-        },
-        "RateLimitOptions": {
-          "ClientIdHeader": "Oc-DynamicRouting-Client",
-          "QuotaMessage": "No Quota!",
-          "StatusCode": 499 // special shared status
         },
         "QoSOptions": {
           "ExceptionsAllowedBeforeBreaking": 2,
           "DurationOfBreak": 333,
           "TimeoutValue": 3000 // ms
         },
-        "HttpHandlerOptions": {
-          "AllowAutoRedirect": false,
-          "UseCookieContainer": false,
-          "UseTracing": false
+        "RateLimitOptions": {
+          "ClientIdHeader": "Oc-DynamicRouting-Client",
+          "QuotaMessage": "No Quota!",
+          "StatusCode": 499 // special shared status
         }
       }
     }
@@ -465,6 +466,9 @@ The final configuration looks like:
           "CacheOptions": {
             "TtlSeconds": 0 // disable cache for notifying
           },
+          "HttpHandlerOptions": {
+            "UseTracing": false // disable tracing
+          },
           "LoadBalancerOptions": {
             "Type": "LeastConnection" // switch from RoundRobin to LeastConnection
           },
@@ -485,6 +489,10 @@ The final configuration looks like:
         "CacheOptions": {
           "TtlSeconds": 300 // 5 minutes
         },
+        "HttpHandlerOptions": {
+          "PooledConnectionLifetimeSeconds": 600, // change the default value from 2 minutes to 10 minutes
+          "UseTracing": true // enable tracing globally
+        },
         "LoadBalancerOptions": {
           "Type": "RoundRobin"
         },
@@ -500,8 +508,8 @@ The final configuration looks like:
     }
 
 This configuration means that when a request is sent to Ocelot at ``/product/*``, *dynamic routing* is activated, and Ocelot applies the rate limiting rules defined for the 'product' service in the ``DynamicRoutes`` section, as described in the :doc:`../features/ratelimiting` documentation.
-The 'notification' service is unlimited because both rate limiting and caching are disabled.
-All other services use the global ``RateLimitOptions``.
+The 'notification' service is unlimited because both caching, tracing, and rate limiting are disabled.
+All other services use the global ``RateLimitOptions`` along with the other specified options.
 
 .. warning::
   Dynamic route ``RateLimitRule`` option is deprecated!
@@ -510,10 +518,10 @@ All other services use the global ``RateLimitOptions``.
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
-.. _break: http://break.do
+.. note::
 
-  **Note**: The ``ServiceNamespace`` option was introduced in version `24.1`_ to enable precise overrides for the :doc:`../features/kubernetes` providers.
-  If ``ServiceNamespace`` is left empty or undefined, only one dynamic route with the same ``ServiceName`` may be defined in the ``DynamicRoutes`` collection.
+  The ``ServiceNamespace`` option was introduced in version `24.1`_ to enable precise overrides for the :doc:`../features/kubernetes` providers.
+  If ``ServiceNamespace`` is left empty or undefined, only **one** dynamic route with the same ``ServiceName`` may be defined in the ``DynamicRoutes`` collection.
 
 .. _sd-custom-providers:
 
@@ -672,4 +680,4 @@ However, you can retain this ``Type`` option to maintain compatibility between b
 .. _13.5.2: https://github.com/ThreeMammals/Ocelot/releases/tag/13.5.2
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13

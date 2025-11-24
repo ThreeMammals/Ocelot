@@ -1,11 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Administration;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
 
 namespace Ocelot.Configuration.Creator;
 
 public class ConfigurationCreator : IConfigurationCreator
 {
+    private readonly IAuthenticationOptionsCreator _authOptionsCreator;
     private readonly IServiceProviderConfigurationCreator _serviceProviderConfigCreator;
     private readonly IQoSOptionsCreator _qosOptionsCreator;
     private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
@@ -18,10 +19,11 @@ public class ConfigurationCreator : IConfigurationCreator
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
 
     public ConfigurationCreator(
+        IServiceProvider serviceProvider,
+        IAuthenticationOptionsCreator authOptionsCreator,
         IServiceProviderConfigurationCreator serviceProviderConfigCreator,
         IQoSOptionsCreator qosOptionsCreator,
         IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
-        IServiceProvider serviceProvider,
         ILoadBalancerOptionsCreator loadBalancerOptionsCreator,
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
@@ -30,6 +32,7 @@ public class ConfigurationCreator : IConfigurationCreator
         ICacheOptionsCreator cacheOptionsCreator)
     {
         _adminPath = serviceProvider.GetService<IAdministrationPath>();
+        _authOptionsCreator = authOptionsCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
         _serviceProviderConfigCreator = serviceProviderConfigCreator;
         _qosOptionsCreator = qosOptionsCreator;
@@ -45,6 +48,7 @@ public class ConfigurationCreator : IConfigurationCreator
     {
         var adminPath = _adminPath?.Path;
         var globalConfiguration = configuration.GlobalConfiguration ?? new();
+        var authOptions = _authOptionsCreator.Create(globalConfiguration.AuthenticationOptions);
         var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(globalConfiguration);
         var lbOptions = _loadBalancerOptionsCreator.Create(globalConfiguration.LoadBalancerOptions);
         var qosOptions = _qosOptionsCreator.Create(globalConfiguration.QoSOptions);
@@ -58,6 +62,7 @@ public class ConfigurationCreator : IConfigurationCreator
         return new InternalConfiguration(routes)
         {
             AdministrationPath = adminPath,
+            AuthenticationOptions = authOptions,
             CacheOptions = cacheOptions,
             DownstreamHttpVersion = version,
             DownstreamHttpVersionPolicy = versionPolicy,

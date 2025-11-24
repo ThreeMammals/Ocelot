@@ -322,7 +322,7 @@ Filter the current discussions by the `Rate Limiting <https://github.com/ThreeMa
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat

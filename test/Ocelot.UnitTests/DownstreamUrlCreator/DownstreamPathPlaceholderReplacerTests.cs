@@ -20,10 +20,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
                 GivenRoute());
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe(string.Empty);
+        dsPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -35,10 +35,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("/"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("/");
+        dsPath.Value.ShouldBe("/");
     }
 
     [Fact]
@@ -50,10 +50,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("api"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("api");
+        dsPath.Value.ShouldBe("api");
     }
 
     [Fact]
@@ -65,10 +65,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("api/"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("api/");
+        dsPath.Value.ShouldBe("api/");
     }
 
     [Fact]
@@ -80,10 +80,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("api/product/products/"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("api/product/products/");
+        dsPath.Value.ShouldBe("api/product/products/");
     }
 
     [Fact]
@@ -99,10 +99,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("productservice/products/{productId}/"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("productservice/products/1/");
+        dsPath.Value.ShouldBe("productservice/products/1/");
     }
 
     [Fact]
@@ -118,10 +118,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("productservice/products/{productId}/variants"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("productservice/products/1/variants");
+        dsPath.Value.ShouldBe("productservice/products/1/variants");
     }
 
     [Fact]
@@ -138,10 +138,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("productservice/products/{productId}/variants/{variantId}"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("productservice/products/1/variants/12");
+        dsPath.Value.ShouldBe("productservice/products/1/variants/12");
     }
 
     [Fact]
@@ -159,10 +159,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
             GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}"));
 
         // Act
-        var result = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
 
         // Assert
-        result.Data.Value.ShouldBe("productservice/category/34/products/1/variants/12");
+        dsPath.Value.ShouldBe("productservice/category/34/products/1/variants/12");
     }
 
     private static Route GivenRoute(string downstream = null, string method = null)

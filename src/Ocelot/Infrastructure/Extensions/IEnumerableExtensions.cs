@@ -24,5 +24,9 @@ public static class IEnumerableExtensions
     /// </summary>
     /// <param name="values">The collection of strings to join by comma separator.</param>
     /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
-    public static string Csv(this IEnumerable<string> values) => string.Join(',', values);
+    public static string Csv(this IEnumerable<string> values)
+        => string.Join(',', values.NotNull());
+
+    public static IEnumerable<T> NotNull<T>(this IEnumerable<T> collection)
+        => collection ?? Enumerable.Empty<T>();
 }

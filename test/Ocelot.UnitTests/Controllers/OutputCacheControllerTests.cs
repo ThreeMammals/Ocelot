@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Ocelot.Administration;
 using Ocelot.Cache;
 
 namespace Ocelot.UnitTests.Controllers;

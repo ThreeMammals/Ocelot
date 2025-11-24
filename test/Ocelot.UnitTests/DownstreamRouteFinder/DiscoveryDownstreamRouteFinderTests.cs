@@ -15,7 +15,6 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 {
     private readonly DiscoveryDownstreamRouteFinder _finder;
     private QoSOptions _qoSOptions;
-    private readonly HttpHandlerOptions _handlerOptions;
     private LoadBalancerOptions _loadBalancerOptions;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _result;
     private string _upstreamHost;
@@ -26,13 +25,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
     private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator = new();
+    private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
 
     public DiscoveryDownstreamRouteFinderTests()
     {
         _qoSOptions = new(new FileQoSOptions());
-        _handlerOptions = new HttpHandlerOptionsBuilder().Build();
+        _handlerOptions = new();
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();
@@ -71,6 +71,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithLoadBalancerKey("|auth")
             .WithLoadBalancerOptions(_loadBalancerOptions)
             .WithQosOptions(_qoSOptions)
+            .WithHttpHandlerOptions(_handlerOptions)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
@@ -287,6 +288,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithMetadata(_metadataOptions)
             .WithRateLimitOptions(_rateLimitOptions)
             .WithQosOptions(_qoSOptions)
+            .WithHttpHandlerOptions(_handlerOptions)
             .WithDownstreamScheme("http")
             .Build();
         var route = new Route(true, downstreamRoute); // create dynamic route
@@ -323,6 +325,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .WithLoadBalancerKey("namespace2-service2")
             .WithLoadBalancerOptions(lbOptions)
             .WithQosOptions(_qoSOptions)
+            .WithHttpHandlerOptions(_handlerOptions)
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var route = new Route(true)

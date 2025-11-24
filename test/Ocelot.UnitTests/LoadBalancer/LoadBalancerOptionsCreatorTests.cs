@@ -2,7 +2,6 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.Balancers;
-using Shouldly;
 using System.Reflection;
 
 namespace Ocelot.UnitTests.LoadBalancer;
@@ -235,7 +234,7 @@ public class LoadBalancerOptionsCreatorTests : UnitTest
     public void Merge_NullCheck()
     {
         // Arrange
-        var method = _creator.GetType().GetMethod("Merge", BindingFlags.Instance | BindingFlags.NonPublic);
+        var method = _creator.GetType().GetMethod(nameof(Merge), BindingFlags.Instance | BindingFlags.NonPublic);
         FileLoadBalancerOptions options = null;
         FileLoadBalancerOptions globalOptions = null;
 

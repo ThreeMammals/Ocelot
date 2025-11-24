@@ -122,9 +122,11 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
       "CacheOptions": {},
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
+      "HttpHandlerOptions": {},
       "LoadBalancerOptions": {},
       "Metadata": {}, // dictionary
       "QoSOptions": {},
@@ -141,8 +143,9 @@ The actual dynamic route schema with all the properties can be found in the C# `
   Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
-  **Note 2**: ``CacheOptions`` were not supported in versions prior to `24.1`_.
-  Starting with version `24.1`_, both global and route-level ``CacheOptions`` for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
+  Starting with version `24.1`_, both global and route-level options for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  For a clearer understanding of the changes, refer to the `previous schema (version 24.0) <https://ocelot.readthedocs.io/en/24.0/features/configuration.html#dynamic-route-schema>`_.
 
 .. _config-aggregate-route-schema:
 
@@ -185,6 +188,7 @@ Here is the complete global configuration, also known as the *"global configurat
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
       "BaseUrl": "",
       "CacheOptions": {},
       "DownstreamHeaderTransform": {}, // dictionary
@@ -205,6 +209,13 @@ Here is the complete global configuration, also known as the *"global configurat
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
+
+  **Note 1**: The following global options were not supported in versions prior to `24.1`_ for overriding in the :ref:`config-dynamic-route-schema`: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, and ``Timeout``.
+  Moreover, these global options were not available in versions prior to `24.1`_ for static routes, as stated in issue `585`_.
+  Starting with version `24.1`_, both static and dynamic route *global* options are fully supported.
+  For a clearer understanding of the changes, refer to the :ref:`config-dynamic-route-schema` and related notes.
+
+  **Note 2**: The ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` global options were introduced in version `24.1`_, but they are available only for static routes.
 
 .. _config-overview:
 
@@ -546,16 +557,17 @@ As a final step, you could add shutdown logic to save the complete configuration
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
 This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
-These options can be set at the route or global level.
+These options can be set at the route or global level for both static and :ref:`dynamic routing <routing-dynamic>`.
 
-Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior based on a ``SocketsHttpHandler`` instance:
+Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior
+based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler&type=code>`_ instance:
 
 .. code-block:: json
 
   "HttpHandlerOptions": {
     "AllowAutoRedirect": false,
-    "MaxConnectionsPerServer": 2147483647, // max value
-    "PooledConnectionLifetimeSeconds": null, // integer or null
+    "MaxConnectionsPerServer": 2147483647, // max integer
+    "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
     "UseProxy": false,
     "UseTracing": false
@@ -590,22 +602,27 @@ Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandle
       - This enables :doc:`../features/tracing` feature in Ocelot.
         Also refer to the **3rd note** below!
 
-.. _break2: http://break.do
+.. note::
 
-    **Note 1**: If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds, which is hardcoded in the `HttpHandlerOptionsCreator <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/Creator/HttpHandlerOptionsCreator.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
+  1. If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds,
+  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
 
-    **Note 2**: If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
-    This means that all requests to that downstream service will share the same cookies. 
-    Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
-    The Ocelot team tried to think of a nice way to handle this but we think it is impossible. 
-    If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
-    If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
-    This would also mean that subsequent requests don't use the cookies from the previous response!
-    All in all not a great situation.
-    We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
-    Just look at your response headers and forward the cookies back with your next request! 
+  2. If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
+  This means that all requests to that downstream service will share the same cookies.
+  Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
+  The Ocelot team tried to think of a nice way to handle this but we think it is impossible.
+  If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
+  If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
+  This would also mean that subsequent requests don't use the cookies from the previous response!
+  All in all not a great situation.
+  We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
+  Just look at your response headers and forward the cookies back with your next request!
 
-    **Note 3**: ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``, encapsulating the ``Ocelot.Logging.ITracer`` service of DI-container.
+  3. ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``,
+  encapsulating the ``Ocelot.Logging.IOcelotTracer`` service of DI-container.
+
+  4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
+  Since version `24.1`_, global configuration is supported for both static and dynamic routes.
 
 .. _ssl-errors:
 
@@ -921,6 +938,7 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 
 .. _default timeout of 90 seconds: https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Requester/MessageInvokerPool.cs#L38
 .. _296: https://github.com/ThreeMammals/Ocelot/issues/296
+.. _585: https://github.com/ThreeMammals/Ocelot/issues/585
 .. _738: https://github.com/ThreeMammals/Ocelot/issues/738
 .. _1216: https://github.com/ThreeMammals/Ocelot/issues/1216
 .. _1227: https://github.com/ThreeMammals/Ocelot/pull/1227
@@ -935,4 +953,4 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13

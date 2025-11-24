@@ -76,6 +76,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         }
 
         public string AdministrationPath { get; }
+        public AuthenticationOptions AuthenticationOptions { get; }
         public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
         public string RequestId { get; }
         public LoadBalancerOptions LoadBalancerOptions { get; }

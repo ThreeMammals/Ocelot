@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Logging;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Logging;
 
 public class OcelotDiagnosticListenerTests : UnitTest
 {
-    private readonly OcelotDiagnosticListener _listener;
+    private OcelotDiagnosticListener _listener;
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
     private readonly IServiceCollection _serviceCollection;
-    private readonly IServiceProvider _serviceProvider;
+    private IServiceProvider _serviceProvider;
     private readonly DefaultHttpContext _httpContext;
 
     public OcelotDiagnosticListenerTests()
@@ -62,6 +63,32 @@ public class OcelotDiagnosticListenerTests : UnitTest
 
         // Assert
         ThenTheLogIs($"MiddlewareException: {name}; {exception.Message};");
+    }
+
+    [Fact]
+    public void Event()
+    {
+        // Arrange
+        var tracer = new Mock<IOcelotTracer>();
+        tracer.Setup(x => x.Event(It.IsAny<HttpContext>(), It.IsAny<string>()));
+        var method = _listener.GetType().GetMethod(nameof(Event), BindingFlags.Instance | BindingFlags.NonPublic);
+
+        // Act
+        method.Invoke(_listener, [_httpContext, TestID]);
+
+        // Assert 1 : _tracer is null
+        tracer.Verify(x => x.Event(It.IsAny<HttpContext>(), It.IsAny<string>()),
+            Times.Never);
+
+        // Scenario 2: _tracer is NOT null
+        _serviceCollection.AddSingleton<IOcelotTracer>(tracer.Object);
+        _serviceProvider = _serviceCollection.BuildServiceProvider(true);
+        _listener = new OcelotDiagnosticListener(_factory.Object, _serviceProvider);
+
+        // Act
+        method.Invoke(_listener, [_httpContext, TestID]);
+        tracer.Verify(x => x.Event(It.IsAny<HttpContext>(), It.IsAny<string>()),
+            Times.Once);
     }
 
     private void ThenTheLogIs(string expected)

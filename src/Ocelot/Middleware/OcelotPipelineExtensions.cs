@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authentication.Middleware;
-using Ocelot.Authorization.Middleware;
+using Ocelot.Authentication;
+using Ocelot.Authorization;
 using Ocelot.Cache;
 using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamPathManipulation.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer;

@@ -2,7 +2,7 @@
 using Ocelot.Errors;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Logging;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
