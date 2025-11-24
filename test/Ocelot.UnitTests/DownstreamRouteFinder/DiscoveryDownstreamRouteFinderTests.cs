@@ -221,10 +221,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void Should_create_downstream_route_with_qos()
     {
         // Arrange
-        _qoSOptions = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .WithTimeoutValue(1)
-            .Build();
+        _qoSOptions = new QoSOptions(1)
+        {
+            ExceptionsAllowedBeforeBreaking = 1,
+        };
         GivenInternalConfiguration();
         GivenTheConfiguration();
 

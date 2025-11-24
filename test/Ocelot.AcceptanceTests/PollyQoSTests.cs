@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Configuration;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Polly;
@@ -25,13 +24,14 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_not_timeout()
     {
-        var qos = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(10)
-            .WithDurationOfBreak(500)
-            .WithTimeoutValue(1000)
-            .WithFailureRatio(0.5)
-            .WithSamplingDuration(5)
-            .Build();
+        var qos = new QoSOptions()
+        {
+            DurationOfBreak = 500,
+            ExceptionsAllowedBeforeBreaking = 10,
+            FailureRatio = 0.5,
+            SamplingDuration = 5,
+            TimeoutValue = 1000,
+        };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
@@ -47,9 +47,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_timeout()
     {
-        var qos = new QoSOptionsBuilder()
-            .WithTimeoutValue(1000)
-            .Build();
+        var qos = new QoSOptions(1000);
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
@@ -65,11 +63,10 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     public void Should_open_circuit_breaker_after_two_exceptions()
     {
-        var qos = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(1000)
-            .WithTimeoutValue(100_000)
-            .Build();
+        var qos = new QoSOptions(2, 1000)
+        {
+            TimeoutValue = 100_000,
+        };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
@@ -91,11 +88,10 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
-        var qos = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(invalidDuration)
-            .WithTimeoutValue(100_000)
-            .Build();
+        var qos = new QoSOptions(2, invalidDuration)
+        {
+            TimeoutValue = 100_000,
+        };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
@@ -126,11 +122,10 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     public void Should_open_circuit_breaker_then_close()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
-        var qos = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 501
-            .WithTimeoutValue(1000)
-            .Build();
+        var qos = new QoSOptions(2, CircuitBreakerStrategy.LowBreakDuration + 1) // 501
+        {
+            TimeoutValue = 1000,
+        };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
@@ -162,13 +157,12 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var qos1 = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 501
-            .WithTimeoutValue(1000)
-            .Build();
+        var qos1 = new QoSOptions(2, CircuitBreakerStrategy.LowBreakDuration + 1) // 501\
+        {
+            TimeoutValue = 1000,
+        };
         var route = GivenRoute(port1, qos1);
-        var route2 = GivenRoute(port2, new QoSOptionsBuilder().Build(), null, "/working");
+        var route2 = GivenRoute(port2, new(), null, "/working");
         var configuration = GivenConfiguration(route, route2);
         this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
             .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, 0, "Hello from Tom"))

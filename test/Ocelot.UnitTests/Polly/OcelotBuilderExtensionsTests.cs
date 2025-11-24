@@ -112,11 +112,10 @@ public class OcelotBuilderExtensionsTests
     private static ServiceProvider GivenServiceProvider(Action<IOcelotBuilder> withAddPolly, out DownstreamRoute route)
     {
         var services = new ServiceCollection();
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(100)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(200)
-            .Build();
+        var options = new QoSOptions(2, 200)
+        {
+            TimeoutValue = 100,
+        };
         route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();

@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
@@ -25,13 +24,12 @@ public class QoSOptionsCreatorTests : UnitTest
                 TimeoutValue = 5,
             },
         };
-        var expected = new QoSOptionsBuilder()
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithFailureRatio(3.0D)
-            .WithSamplingDuration(4)
-            .WithTimeoutValue(5)
-            .Build();
+        var expected = new QoSOptions(2, 1)
+        {
+            FailureRatio = 3.0D,
+            SamplingDuration = 4,
+            TimeoutValue = 5,
+        };
 
         // Act
         var actual = _creator.Create(route.QoSOptions);

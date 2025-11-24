@@ -147,11 +147,10 @@ public class PollyResiliencePipelineDelegatingHandlerTests
 
     private static DownstreamRoute DownstreamRouteFactory()
     {
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(100)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(200)
-            .Build();
+        var options = new QoSOptions(2, 200)
+        {
+            TimeoutValue = 100,
+        };
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate("/")
             .WithContainsQueryString(false)

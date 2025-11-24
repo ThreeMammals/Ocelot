@@ -58,11 +58,12 @@ public class PollyQoSResiliencePipelineProviderTests
     public void ShouldBuild()
     {
         // Arrange
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(1000) // 10ms, minimum required by Polly
-            .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
-            .WithDurationOfBreak(CircuitBreakerStrategy.LowBreakDuration + 1) // 0.5s, minimum required by Polly
-            .Build();
+        var options = new QoSOptions()
+        {
+            DurationOfBreak = CircuitBreakerStrategy.LowBreakDuration + 1, // 0.5s, minimum required by Polly
+            ExceptionsAllowedBeforeBreaking = 2, // 2 is the minimum required by Polly
+            TimeoutValue = 1000, // 10ms, minimum required by Polly
+        };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
@@ -82,7 +83,7 @@ public class PollyQoSResiliencePipelineProviderTests
     public void ShouldNotBuild_ReturnedEmpty()
     {
         // Arrange
-        var options = new QoSOptionsBuilder().Build(); // empty options
+        var options = new QoSOptions(); // empty options
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
@@ -105,11 +106,12 @@ public class PollyQoSResiliencePipelineProviderTests
     public void ShouldBuild_WithDefaultBreakDuration(int durationOfBreak, int expectedMillisecons)
     {
         // Arrange
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(1000) // 10ms, minimum required by Polly
-            .WithExceptionsAllowedBeforeBreaking(2) // 2 is the minimum required by Polly
-            .WithDurationOfBreak(durationOfBreak) // 0.5s, minimum required by Polly
-            .Build();
+        var options = new QoSOptions()
+        {
+            DurationOfBreak = durationOfBreak, // 0.5s, minimum required by Polly
+            ExceptionsAllowedBeforeBreaking = 2, // 2 is the minimum required by Polly
+            TimeoutValue = 1000, // 10ms, minimum required by Polly
+        };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
@@ -570,13 +572,14 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         // Arrange
         var provider = GivenProvider();
-        var invalidOptions = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(1) // invalid
-            .WithDurationOfBreak(0)
-            .WithFailureRatio(0.0D)
-            .WithSamplingDuration(0)
-            .WithTimeoutValue(_TimeoutStrategy_.DefTimeout) // but timeout is valid
-            .Build();
+        var invalidOptions = new QoSOptions()
+        {
+            ExceptionsAllowedBeforeBreaking = 1, // invalid
+            DurationOfBreak = 0,
+            FailureRatio = 0.0D,
+            SamplingDuration = 0,
+            TimeoutValue = _TimeoutStrategy_.DefTimeout, // but timeout is valid
+        };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(invalidOptions)
             .WithUpstreamPathTemplate(new("/", 1, false, "/"))
@@ -607,13 +610,10 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         // Arrange
         var provider = GivenProvider();
-        var nullOptions = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(1) // invalid
-            .WithDurationOfBreak(null)
-            .WithFailureRatio(null)
-            .WithSamplingDuration(null)
-            .WithTimeoutValue(_TimeoutStrategy_.DefTimeout) // but timeout is valid
-            .Build();
+        var nullOptions = new QoSOptions(1, null) // invalid
+        {
+            TimeoutValue = _TimeoutStrategy_.DefTimeout, // but timeout is valid
+        };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(nullOptions)
             .WithUpstreamPathTemplate(new("/", 1, false, "/"))
@@ -652,19 +652,16 @@ public class PollyQoSResiliencePipelineProviderTests
 
     private static DownstreamRoute GivenDownstreamRoute(string routeTemplate, int? exceptionsAllowedBeforeBreaking = 2, int? timeOut = 10000)
     {
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(timeOut)
-            .WithExceptionsAllowedBeforeBreaking(exceptionsAllowedBeforeBreaking)
-            .WithDurationOfBreak(5000)
-            .Build();
-
+        var options = new QoSOptions(exceptionsAllowedBeforeBreaking, 5000)
+        {
+            TimeoutValue = timeOut,
+        };
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate(routeTemplate)
             .WithContainsQueryString(false)
             .WithPriority(1)
             .WithOriginalValue(routeTemplate)
             .Build();
-
         return new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .WithUpstreamPathTemplate(upstreamPath)

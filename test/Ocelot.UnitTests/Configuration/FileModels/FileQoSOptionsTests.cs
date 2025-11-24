@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration.FileModels;
@@ -59,13 +58,12 @@ public class FileQoSOptionsTests
             SamplingDuration = 4,
             TimeoutValue = 5,
         };
-        QoSOptions from = new QoSOptionsBuilder()
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithFailureRatio(3.0D)
-            .WithSamplingDuration(4)
-            .WithTimeoutValue(5)
-            .Build();
+        QoSOptions from = new(2, 1)
+        {
+            FailureRatio = 3.0D,
+            SamplingDuration = 4,
+            TimeoutValue = 5,
+        };
 
         // Act
         FileQoSOptions actual = new(from); // copying

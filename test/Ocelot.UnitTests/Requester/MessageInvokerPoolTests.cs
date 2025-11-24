@@ -84,14 +84,11 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public async Task Should_log_if_ignoring_ssl_errors()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new() { UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
 
             // The test should pass without timeout definition -> implicit default timeout
@@ -118,14 +115,11 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public async Task Should_reuse_cookies_from_container()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new() { UseCookieContainer = true, UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithQosOptions(new QoSOptionsBuilder().Build())
 
             // The test should pass without timeout definition -> implicit default timeout
             //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
@@ -464,9 +458,7 @@ public class MessageInvokerPoolBase : UnitTest
     protected static DownstreamRoute GivenRoute(int? qosTimeout, int? routeTimeout,
         bool dangerousAcceptAnyServerCertificateValidator = false)
     {
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(qosTimeout.HasValue ? Ms(qosTimeout.Value): null) // !!!
-            .Build();
+        var qosOptions = new QoSOptions(qosTimeout.HasValue ? Ms(qosTimeout.Value) : null); // !!!
         var handlerOptions = new HttpHandlerOptions()
         {
             MaxConnectionsPerServer = int.MaxValue,

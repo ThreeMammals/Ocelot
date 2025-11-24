@@ -46,17 +46,17 @@ public class DelegatingHandlerFactoryTests : UnitTest
         UseTracing = true,
     };
 
+    private static QoSOptions GivenQoS() => new(1, 1)
+    {
+        TimeoutValue = 1,
+    };
+
     [Fact]
     public void Should_follow_ordering_add_specifics()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
@@ -87,13 +87,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_follow_ordering_order_specifics_and_globals()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
@@ -125,13 +120,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_follow_ordering_order_specifics()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
@@ -162,13 +152,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_follow_ordering_order_and_only_add_specifics_in_config()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithDelegatingHandlers(new List<string>
             {
@@ -197,13 +182,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_follow_ordering_dont_add_specifics()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -227,10 +207,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_apply_re_route_specific()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithDelegatingHandlers(new List<string>
             {
@@ -253,13 +231,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_all_from_all_routes_provider_and_qos()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -279,10 +252,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_return_provider_with_no_delegates()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -299,13 +270,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_return_provider_with_qos_delegate()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -324,11 +290,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_return_provider_with_qos_delegate_when_timeout_value_set()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new(timeout: 1))
             .WithHttpHandlerOptions(new(GivenHandlerOptions) { UseTracing = false })
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -347,13 +310,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
@@ -379,13 +337,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(1)
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(GivenQoS())
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();

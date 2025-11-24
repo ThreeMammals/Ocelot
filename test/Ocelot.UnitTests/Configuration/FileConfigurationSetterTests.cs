@@ -40,7 +40,7 @@ public class FileConfigurationSetterTests : UnitTest
             RequestId = "asdf",
             LoadBalancerOptions = new(),
             DownstreamScheme = string.Empty,
-            QoSOptions = new QoSOptionsBuilder().Build(),
+            QoSOptions = new(),
             HttpHandlerOptions = new(),
             DownstreamHttpVersion = new Version("1.1"),
             DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
