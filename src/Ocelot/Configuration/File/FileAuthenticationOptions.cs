@@ -1,23 +1,23 @@
-﻿namespace Ocelot.Configuration.File;
+﻿using Ocelot.Infrastructure.Extensions;
 
-public sealed class FileAuthenticationOptions
+namespace Ocelot.Configuration.File;
+
+public class FileAuthenticationOptions
 {
     public FileAuthenticationOptions()
-    {
-        AllowAnonymous = null;
-        AllowedScopes = new();
-        AuthenticationProviderKey = null;
-        AuthenticationProviderKeys = Array.Empty<string>();
-    }
+    { }
 
-    public FileAuthenticationOptions(FileAuthenticationOptions from)
+    public FileAuthenticationOptions(string authScheme) : this()
+        => AuthenticationProviderKeys = [authScheme];
+
+    public FileAuthenticationOptions(FileAuthenticationOptions options)
     {
-        ArgumentNullException.ThrowIfNull(from, nameof(from));
-        AllowAnonymous = from.AllowAnonymous;
-        AllowedScopes = new(from.AllowedScopes);
-        AuthenticationProviderKey = from.AuthenticationProviderKey;
-        AuthenticationProviderKeys = new string[from.AuthenticationProviderKeys.Length];
-        Array.Copy(from.AuthenticationProviderKeys, AuthenticationProviderKeys, from.AuthenticationProviderKeys.Length);
+        ArgumentNullException.ThrowIfNull(options);
+        AllowAnonymous = options.AllowAnonymous;
+        AllowedScopes = options.AllowedScopes is null ? null : new(options.AllowedScopes);
+        AuthenticationProviderKey = options.AuthenticationProviderKey;
+        AuthenticationProviderKeys = new string[options.AuthenticationProviderKeys.Length];
+        Array.Copy(options.AuthenticationProviderKeys, AuthenticationProviderKeys, options.AuthenticationProviderKeys.Length);
     }
 
     public List<string> AllowedScopes { get; set; }
@@ -26,21 +26,21 @@ public sealed class FileAuthenticationOptions
     /// <value><see langword="true"/> if it is allowed; otherwise, <see langword="false"/>.</value>
     public bool? AllowAnonymous { get; set; }
 
-    [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
+    [Obsolete("Use AuthenticationProviderKeys instead of AuthenticationProviderKey! Note that AuthenticationProviderKey will be removed in version 25.0!")]
     public string AuthenticationProviderKey { get; set; }
 
     public string[] AuthenticationProviderKeys { get; set; }
 
     /// <summary>Checks whether authentication schemes are specified (not empty, exist).</summary>
     /// <value><see langword="true"/> if an authentication scheme is defined; otherwise, <see langword="false"/>.</value>
-    public bool HasScheme => !string.IsNullOrWhiteSpace(AuthenticationProviderKey)
-            || AuthenticationProviderKeys?.Any(k => !string.IsNullOrWhiteSpace(k)) == true;
-    public bool HasScope => AllowedScopes.Exists(s => !string.IsNullOrWhiteSpace(s));
+    public bool HasScheme => AuthenticationProviderKey.IsNotEmpty()
+            || AuthenticationProviderKeys?.Any(StringExtensions.IsNotEmpty) == true;
+    public bool HasScope => AllowedScopes?.Exists(StringExtensions.IsNotEmpty) == true;
 
     public override string ToString() => new StringBuilder()
         .Append($"{nameof(AllowAnonymous)}:{AllowAnonymous ?? false},")
-        .Append($"{nameof(AllowedScopes)}:[{string.Join(',', AllowedScopes.Select(x => $"'{x}'"))}],")
+        .Append($"{nameof(AllowedScopes)}:[{AllowedScopes.NotNull().Select(x => $"'{x}'").Csv()}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
-        .Append($"{nameof(AuthenticationProviderKeys)}:[{string.Join(',', AuthenticationProviderKeys.Select(x => $"'{x}'"))}]")
+        .Append($"{nameof(AuthenticationProviderKeys)}:[{AuthenticationProviderKeys.NotNull().Select(x => $"'{x}'").Csv()}]")
         .ToString();
 }

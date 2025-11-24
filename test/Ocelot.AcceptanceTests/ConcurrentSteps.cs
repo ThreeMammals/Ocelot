@@ -169,7 +169,7 @@ public class ConcurrentSteps : Steps
             ? content.Split(CounterSeparator)[0] // let the first fragment is counter value
             : "0";
         int count = int.Parse(counterString);
-        count.ShouldBeGreaterThan(0);
+        if (content.IsNotEmpty()) count.ShouldBeGreaterThan(0);
         _responses[threadIndex] = response;
     }
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
+using Ocelot.DownstreamUrlCreator;
 using Ocelot.LoadBalancer;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;

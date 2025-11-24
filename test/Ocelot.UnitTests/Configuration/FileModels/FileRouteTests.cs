@@ -115,7 +115,7 @@ public class FileRouteTests : UnitTest
         expected.AddClaimsToRequest.Add("key1", "value1");
         expected.AddHeadersToRequest.Add("key2", "value2");
         expected.AddQueriesToRequest.Add("key3", "value3");
-        expected.AuthenticationOptions.AuthenticationProviderKeys = ["value4"];
+        expected.AuthenticationOptions = new("value4");
         expected.ChangeDownstreamPathTemplate.Add("key5", "value5");
         expected.DangerousAcceptAnyServerCertificateValidator = true;
         expected.DelegatingHandlers.Add("value6");

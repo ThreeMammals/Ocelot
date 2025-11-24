@@ -3,6 +3,7 @@ namespace Ocelot.Configuration;
 public interface IInternalConfiguration
 {
     string AdministrationPath { get; }
+    AuthenticationOptions AuthenticationOptions { get; }
     CacheOptions CacheOptions { get; }
     Version DownstreamHttpVersion { get; }
     HttpVersionPolicy DownstreamHttpVersionPolicy { get; }

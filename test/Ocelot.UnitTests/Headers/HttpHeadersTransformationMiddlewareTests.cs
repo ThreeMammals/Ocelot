@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authorization.Middleware;
+using Ocelot.Authorization;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Headers;
