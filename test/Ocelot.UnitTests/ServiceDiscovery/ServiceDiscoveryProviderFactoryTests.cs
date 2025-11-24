@@ -85,7 +85,6 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName("product")
-            .WithUseServiceDiscovery(true)
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType(nameof(Fake))
@@ -105,7 +104,6 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName("product")
-            .WithUseServiceDiscovery(true)
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType("Wookie")
@@ -136,7 +134,6 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName("product")
-            .WithUseServiceDiscovery(true)
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
@@ -161,8 +158,7 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithServiceName(nameof(Should_return_Kubernetes_provider_with_type_names_from_docs))
-            .WithUseServiceDiscovery(true)
+            .WithServiceName(TestName())
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType(typeName)

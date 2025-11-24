@@ -13,6 +13,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
         DownstreamScheme = default;
         HttpHandlerOptions = new();
         LoadBalancerOptions = default;
+        Metadata = default;
         MetadataOptions = new();
         QoSOptions = new();
         RateLimitOptions = default;
@@ -24,7 +25,7 @@ public class FileGlobalConfiguration : FileGlobalDynamicRouting
         UpstreamHeaderTransform = new Dictionary<string, string>();
     }
 
-    public FileAuthenticationOptions AuthenticationOptions { get; set; }
+    public new FileGlobalAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
     public new FileGlobalCacheOptions CacheOptions { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }

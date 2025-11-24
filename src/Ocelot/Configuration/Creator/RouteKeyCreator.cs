@@ -79,14 +79,8 @@ internal static class RouteKeyCreatorHelpers
     /// <summary>Helper function to append a string to the key builder, separated by a pipe.</summary>
     /// <param name="builder">The builder of the key.</param>
     /// <param name="next">The next word to add.</param>
+    /// <param name="separator">The character used to separate entries.</param>
     /// <returns>The reference to the builder.</returns>
-    public static StringBuilder AppendNext(this StringBuilder builder, string next)
-    {
-        if (builder.Length > 0)
-        {
-            builder.Append(RouteKeyCreator.Separator);
-        }
-
-        return builder.Append(next);
-    }
+    public static StringBuilder AppendNext(this StringBuilder builder, string next, char separator = RouteKeyCreator.Separator)
+        => StringBuilderExtensions.AppendNext(builder, next, separator);
 }

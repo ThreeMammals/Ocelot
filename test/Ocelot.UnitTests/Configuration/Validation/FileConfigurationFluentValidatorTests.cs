@@ -500,7 +500,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.AuthenticationOptions.AuthenticationProviderKey = "Test";
+        route.AuthenticationOptions = new() { AuthenticationProviderKey = "Test" };
         GivenAConfiguration(route);
         GivenTheAuthSchemeExists("Test");
 
