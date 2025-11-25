@@ -15,10 +15,13 @@ public class QoSOptionsCreator : IQoSOptionsCreator
     {
         options ??= new();
         options.DurationOfBreak ??= global.DurationOfBreak;
+        options.BreakDuration ??= global.BreakDuration;
         options.ExceptionsAllowedBeforeBreaking ??= global.ExceptionsAllowedBeforeBreaking;
+        options.MinimumThroughput ??= global.MinimumThroughput;
         options.FailureRatio ??= global.FailureRatio;
         options.SamplingDuration ??= global.SamplingDuration;
         options.TimeoutValue ??= global.TimeoutValue;
+        options.Timeout ??= global.Timeout;
         return new(options);
     }
 }

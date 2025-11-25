@@ -12,23 +12,35 @@ public class FileQoSOptions
     public FileQoSOptions(FileQoSOptions from)
     {
         DurationOfBreak = from.DurationOfBreak;
+        BreakDuration = from.BreakDuration;
         ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+        MinimumThroughput = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
+        Timeout = from.Timeout;
     }
 
     public FileQoSOptions(QoSOptions from)
     {
         DurationOfBreak = from.BreakDuration;
+        BreakDuration = from.BreakDuration;
         ExceptionsAllowedBeforeBreaking = from.MinimumThroughput;
+        MinimumThroughput = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.Timeout;
+        Timeout = from.Timeout;
     }
 
+    [Obsolete("Use BreakDuration instead of DurationOfBreak! Note that DurationOfBreak will be removed in version 25.0!")]
     public int? DurationOfBreak { get; set; }
+    public int? BreakDuration { get; set; }
+
+    [Obsolete("Use MinimumThroughput instead of ExceptionsAllowedBeforeBreaking! Note that ExceptionsAllowedBeforeBreaking will be removed in version 25.0!")]
     public int? ExceptionsAllowedBeforeBreaking { get; set; }
+    public int? MinimumThroughput { get; set; }
+
     public double? FailureRatio { get; set; }
     public int? SamplingDuration { get; set; }
 
@@ -41,5 +53,7 @@ public class FileQoSOptions
     /// </list>
     /// </remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in milliseconds.</value>
+    [Obsolete("Use Timeout instead of TimeoutValue! Note that TimeoutValue will be removed in version 25.0!")]
     public int? TimeoutValue { get; set; }
+    public int? Timeout { get; set; }
 }

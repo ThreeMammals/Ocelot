@@ -29,11 +29,11 @@ public class QoSOptions
     /// <param name="from">The File-model to copy the properties from.</param>
     public QoSOptions(FileQoSOptions from)
     {
-        BreakDuration = from.DurationOfBreak;
-        MinimumThroughput = from.ExceptionsAllowedBeforeBreaking;
+        BreakDuration = from.DurationOfBreak ?? from.BreakDuration;
+        MinimumThroughput = from.ExceptionsAllowedBeforeBreaking ?? from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
-        Timeout = from.TimeoutValue;
+        Timeout = from.TimeoutValue ?? from.Timeout;
     }
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
