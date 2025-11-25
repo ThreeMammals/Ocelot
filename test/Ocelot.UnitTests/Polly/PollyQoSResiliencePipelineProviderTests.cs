@@ -61,7 +61,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var options = new QoSOptions()
         {
             DurationOfBreak = CircuitBreakerStrategy.LowBreakDuration + 1, // 0.5s, minimum required by Polly
-            ExceptionsAllowedBeforeBreaking = 2, // 2 is the minimum required by Polly
+            MinimumThroughput = 2, // 2 is the minimum required by Polly
             TimeoutValue = 1000, // 10ms, minimum required by Polly
         };
         var route = new DownstreamRouteBuilder()
@@ -109,7 +109,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var options = new QoSOptions()
         {
             DurationOfBreak = durationOfBreak, // 0.5s, minimum required by Polly
-            ExceptionsAllowedBeforeBreaking = 2, // 2 is the minimum required by Polly
+            MinimumThroughput = 2, // 2 is the minimum required by Polly
             TimeoutValue = 1000, // 10ms, minimum required by Polly
         };
         var route = new DownstreamRouteBuilder()
@@ -544,8 +544,8 @@ public class PollyQoSResiliencePipelineProviderTests
     [Theory]
     [Trait("PR", "2081")]
     [Trait("Feat", "2080")]
-    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the ExceptionsAllowedBeforeBreaking value (?) is either undefined, negative, or zero.")]
-    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the ExceptionsAllowedBeforeBreaking value (-1) is either undefined, negative, or zero.")]
+    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the MinimumThroughput value (?) is either undefined, negative, or zero.")]
+    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the circuit breaker is disabled because the MinimumThroughput value (-1) is either undefined, negative, or zero.")]
     public void IsConfigurationValidForCircuitBreaker_InvalidValue_ShouldLogError(int? exceptionsAllowedBeforeBreaking, string expectedMessage)
     {
         // Arrange
@@ -574,7 +574,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var provider = GivenProvider();
         var invalidOptions = new QoSOptions()
         {
-            ExceptionsAllowedBeforeBreaking = 1, // invalid
+            MinimumThroughput = 1, // invalid
             DurationOfBreak = 0,
             FailureRatio = 0.0D,
             SamplingDuration = 0,
@@ -597,7 +597,7 @@ public class PollyQoSResiliencePipelineProviderTests
         _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
         var message = _funcMessage?.Invoke() ?? string.Empty;
         message.ShouldBe(@"Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, 
-  1. The MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase ExceptionsAllowedBeforeBreaking to at least 2 or higher. Until then, the default value (100) will be substituted.
+  1. The MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase MinimumThroughput to at least 2 or higher. Until then, the default value (100) will be substituted.
   2. The BreakDuration value (0) is outside the valid range (500 to 86400000 milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value (5000) will be substituted.
   3. The FailureRatio value (0) is outside the valid range (0 to 1). Therefore, ensure the ratio falls within this range; otherwise, the default value (0.1) will be substituted.
   4. The SamplingDuration value (0) is outside the valid range (500 to 86400000 milliseconds). Therefore, ensure the duration falls within this range; otherwise, the default value (30000) will be substituted.");
@@ -630,7 +630,7 @@ public class PollyQoSResiliencePipelineProviderTests
         descriptor.Strategies.ShouldContain(x => x.Options.GetType() == typeof(CircuitBreakerStrategyOptions<HttpResponseMessage>));
         _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
         var message = _funcMessage?.Invoke() ?? string.Empty;
-        message.ShouldBe("Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase ExceptionsAllowedBeforeBreaking to at least 2 or higher. Until then, the default value (100) will be substituted.");
+        message.ShouldBe("Route '/' has invalid QoSOptions for Polly's Circuit Breaker strategy. Specifically, the MinimumThroughput value (1) is less than the required LowMinimumThroughput threshold (2). Therefore, increase MinimumThroughput to at least 2 or higher. Until then, the default value (100) will be substituted.");
     }
 
     private Func<string> _funcMessage;

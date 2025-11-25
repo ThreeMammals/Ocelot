@@ -150,7 +150,7 @@ public class QoSOptionsCreatorTests : UnitTest
     private static void AssertEquality(QoSOptions actual, QoSOptions expected)
     {
         Assert.Equal(expected.DurationOfBreak, actual.DurationOfBreak);
-        Assert.Equal(expected.ExceptionsAllowedBeforeBreaking, actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Equal(expected.MinimumThroughput, actual.MinimumThroughput);
         Assert.Equal(expected.FailureRatio, actual.FailureRatio);
         Assert.Equal(expected.SamplingDuration, actual.SamplingDuration);
         Assert.Equal(expected.TimeoutValue, actual.TimeoutValue);

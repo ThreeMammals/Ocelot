@@ -9,7 +9,7 @@ public class QoSOptions
     public QoSOptions(int? exceptions, int? breakMs)
     {
         DurationOfBreak = breakMs;
-        ExceptionsAllowedBeforeBreaking = exceptions;
+        MinimumThroughput = exceptions;
     }
 
     /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class.</summary>
@@ -18,7 +18,7 @@ public class QoSOptions
     public QoSOptions(QoSOptions from)
     {
         DurationOfBreak = from.DurationOfBreak;
-        ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+        MinimumThroughput = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
@@ -30,7 +30,7 @@ public class QoSOptions
     public QoSOptions(FileQoSOptions from)
     {
         DurationOfBreak = from.DurationOfBreak;
-        ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
+        MinimumThroughput = from.ExceptionsAllowedBeforeBreaking;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
         TimeoutValue = from.TimeoutValue;
@@ -44,7 +44,7 @@ public class QoSOptions
     /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (exceptions number).</value>
-    public int? ExceptionsAllowedBeforeBreaking { get; init; }
+    public int? MinimumThroughput { get; init; }
 
     /// <summary>Gets or sets the failure-to-success ratio at which the circuit will break.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
@@ -61,6 +61,6 @@ public class QoSOptions
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? TimeoutValue { get; init; }
 
-    public bool UseQos => (ExceptionsAllowedBeforeBreaking.HasValue && ExceptionsAllowedBeforeBreaking > 0)
+    public bool UseQos => (MinimumThroughput.HasValue && MinimumThroughput > 0)
         || (TimeoutValue.HasValue && TimeoutValue > 0);
 }

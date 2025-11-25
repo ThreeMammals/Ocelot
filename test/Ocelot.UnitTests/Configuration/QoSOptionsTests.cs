@@ -21,7 +21,7 @@ public class QoSOptionsTests
 
         // Assert
         Assert.Equivalent(copyee, actual);
-        Assert.Equal(copyee.ExceptionsAllowedBeforeBreaking, actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Equal(copyee.MinimumThroughput, actual.MinimumThroughput);
         Assert.Equal(copyee.DurationOfBreak, actual.DurationOfBreak);
         Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
         Assert.Equal(copyee.FailureRatio, actual.FailureRatio);
@@ -49,7 +49,7 @@ public class QoSOptionsTests
         // Arrange
         var opts = new QoSOptions()
         {
-            ExceptionsAllowedBeforeBreaking = exceptionsAllowed,
+            MinimumThroughput = exceptionsAllowed,
         }; // timeoutValue is null
 
         // Act, Assert

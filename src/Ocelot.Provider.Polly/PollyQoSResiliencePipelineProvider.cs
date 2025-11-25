@@ -75,17 +75,17 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(route.QosOptions);
 
         var qos = route.QosOptions;
-        if (!qos.ExceptionsAllowedBeforeBreaking.HasValue || qos.ExceptionsAllowedBeforeBreaking <= 0)
+        if (!qos.MinimumThroughput.HasValue || qos.MinimumThroughput <= 0)
         {
             _logger.LogError(
-                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({ToStr(qos.ExceptionsAllowedBeforeBreaking)}) is either undefined, negative, or zero.", null);
+                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.MinimumThroughput)} value ({ToStr(qos.MinimumThroughput)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
         List<Func<string>> warnings = new(), w = warnings;
-        if (!qos.ExceptionsAllowedBeforeBreaking.Value.IsValidMinimumThroughput())
+        if (!qos.MinimumThroughput.Value.IsValidMinimumThroughput())
         {
-            string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
+            string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.MinimumThroughput}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.MinimumThroughput)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
             warnings.Add(msg1);
         }
 
@@ -168,7 +168,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         QoSOptions qos = route.QosOptions;
-        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.ExceptionsAllowedBeforeBreaking ?? 0); // 0 fallbacks to the default value
+        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.MinimumThroughput ?? 0); // 0 fallbacks to the default value
         int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.DurationOfBreak ?? 0); // 0 fallbacks to the default value
         double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
         int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? 0); // 0 fallbacks to the default value

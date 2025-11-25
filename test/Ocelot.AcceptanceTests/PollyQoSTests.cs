@@ -27,7 +27,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var qos = new QoSOptions()
         {
             DurationOfBreak = 500,
-            ExceptionsAllowedBeforeBreaking = 10,
+            MinimumThroughput = 10,
             FailureRatio = 0.5,
             SamplingDuration = 5,
             TimeoutValue = 1000,
@@ -135,7 +135,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min MinimumThroughput is 2
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -171,7 +171,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min ExceptionsAllowedBeforeBreaking is 2
+            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min MinimumThroughput is 2
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -396,11 +396,11 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             if (requestCount == 2)
             {
                 // In Polly v8:
-                //   MinimumThroughput (ExceptionsAllowedBeforeBreaking) must be 2 or more
+                //   MinimumThroughput (MinimumThroughput) must be 2 or more
                 //   BreakDuration (DurationOfBreak) must be > 500
                 //   Timeout (TimeoutValue) must be 1000 or more
                 // So, we wait for 2.1 seconds to make sure the circuit is open
-                // DurationOfBreak * ExceptionsAllowedBeforeBreaking + Timeout
+                // DurationOfBreak * MinimumThroughput + Timeout
                 // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum
                 await Task.Delay(2_100);
             }

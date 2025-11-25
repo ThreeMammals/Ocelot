@@ -223,7 +223,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         _qoSOptions = new QoSOptions(1)
         {
-            ExceptionsAllowedBeforeBreaking = 1,
+            MinimumThroughput = 1,
         };
         GivenInternalConfiguration();
         GivenTheConfiguration();
