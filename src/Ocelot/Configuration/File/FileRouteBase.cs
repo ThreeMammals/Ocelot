@@ -7,7 +7,10 @@ using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
-public class FileGlobalDynamicRouting
+/// <summary>
+/// Defines common aggregation for dynamic and static routes.
+/// </summary>
+public abstract class FileRouteBase : IRouteGrouping
 {
     public FileAuthenticationOptions AuthenticationOptions { get; set; }
     public FileCacheOptions CacheOptions { get; set; }
@@ -26,12 +29,15 @@ public class FileGlobalDynamicRouting
     public string DownstreamHttpVersion { get; set; }
     public string DownstreamScheme { get; set; }
     public FileHttpHandlerOptions HttpHandlerOptions { get; set; }
+    public string Key { get; set; } // IRouteGrouping
     public FileLoadBalancerOptions LoadBalancerOptions { get; set; }
     public IDictionary<string, string> Metadata { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting
-    [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.0!
+    [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.1!
     public FileRateLimiting RateLimiting { get; set; }
+    public string ServiceName { get; set; }
+    public string ServiceNamespace { get; set; }
 
     /// <summary>Explicit timeout value which overrides default <see cref="DownstreamRoute.DefaultTimeoutSeconds"/>.</summary>
     /// <remarks>Notes:

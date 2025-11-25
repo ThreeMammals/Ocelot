@@ -176,7 +176,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
-        configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
+        configuration.GlobalConfiguration.QoSOptions = new()
         {
             TimeoutValue = 1,
             ExceptionsAllowedBeforeBreaking = 1,
@@ -218,7 +218,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
-        configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
+        configuration.GlobalConfiguration.QoSOptions = new()
         {
             TimeoutValue = 1,
             ExceptionsAllowedBeforeBreaking = 1,
