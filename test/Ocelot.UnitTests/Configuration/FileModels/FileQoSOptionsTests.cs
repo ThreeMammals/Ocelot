@@ -62,7 +62,7 @@ public class FileQoSOptionsTests
         {
             FailureRatio = 3.0D,
             SamplingDuration = 4,
-            TimeoutValue = 5,
+            Timeout = 5,
         };
 
         // Act

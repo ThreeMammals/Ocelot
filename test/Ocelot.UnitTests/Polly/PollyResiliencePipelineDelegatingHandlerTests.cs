@@ -149,7 +149,7 @@ public class PollyResiliencePipelineDelegatingHandlerTests
     {
         var options = new QoSOptions(2, 200)
         {
-            TimeoutValue = 100,
+            Timeout = 100,
         };
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate("/")

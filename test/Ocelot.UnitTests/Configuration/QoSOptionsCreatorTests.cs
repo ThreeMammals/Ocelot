@@ -28,7 +28,7 @@ public class QoSOptionsCreatorTests : UnitTest
         {
             FailureRatio = 3.0D,
             SamplingDuration = 4,
-            TimeoutValue = 5,
+            Timeout = 5,
         };
 
         // Act
@@ -153,6 +153,6 @@ public class QoSOptionsCreatorTests : UnitTest
         Assert.Equal(expected.MinimumThroughput, actual.MinimumThroughput);
         Assert.Equal(expected.FailureRatio, actual.FailureRatio);
         Assert.Equal(expected.SamplingDuration, actual.SamplingDuration);
-        Assert.Equal(expected.TimeoutValue, actual.TimeoutValue);
+        Assert.Equal(expected.Timeout, actual.Timeout);
     }
 }

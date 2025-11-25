@@ -48,7 +48,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
 
     private static QoSOptions GivenQoS() => new(1, 1)
     {
-        TimeoutValue = 1,
+        Timeout = 1,
     };
 
     [Fact]

@@ -46,7 +46,7 @@ public class FileGlobalConfiguration
     /// <list type="bullet">
     ///   <item><see cref="DownstreamRoute.Timeout"/> is the consumer of this property.</item>
     ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/> implicitly overrides this property if not defined (null).</item>
-    ///   <item><see cref="QoSOptions.TimeoutValue"/> explicitly overrides this property if QoS is enabled.</item>
+    ///   <item><see cref="QoSOptions.Timeout"/> explicitly overrides this property if QoS is enabled.</item>
     /// </list>
     /// </remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>

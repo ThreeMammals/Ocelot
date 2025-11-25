@@ -13,7 +13,7 @@ public class QoSOptionsTests
         {
             FailureRatio = 3.0D,
             SamplingDuration = 4,
-            TimeoutValue = 5,
+            Timeout = 5,
         };
 
         // Act
@@ -23,7 +23,7 @@ public class QoSOptionsTests
         Assert.Equivalent(copyee, actual);
         Assert.Equal(copyee.MinimumThroughput, actual.MinimumThroughput);
         Assert.Equal(copyee.BreakDuration, actual.BreakDuration);
-        Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
+        Assert.Equal(copyee.Timeout, actual.Timeout);
         Assert.Equal(copyee.FailureRatio, actual.FailureRatio);
         Assert.Equal(copyee.SamplingDuration, actual.SamplingDuration);
     }

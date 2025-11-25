@@ -62,7 +62,7 @@ public class PollyQoSResiliencePipelineProviderTests
         {
             BreakDuration = CircuitBreakerStrategy.LowBreakDuration + 1, // 0.5s, minimum required by Polly
             MinimumThroughput = 2, // 2 is the minimum required by Polly
-            TimeoutValue = 1000, // 10ms, minimum required by Polly
+            Timeout = 1000, // 10ms, minimum required by Polly
         };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
@@ -110,7 +110,7 @@ public class PollyQoSResiliencePipelineProviderTests
         {
             BreakDuration = durationOfBreak, // 0.5s, minimum required by Polly
             MinimumThroughput = 2, // 2 is the minimum required by Polly
-            TimeoutValue = 1000, // 10ms, minimum required by Polly
+            Timeout = 1000, // 10ms, minimum required by Polly
         };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
@@ -471,8 +471,8 @@ public class PollyQoSResiliencePipelineProviderTests
     [Trait("PR", "2073")]
     [Trait("Feat", "1314")]
     [Trait("Feat", "1869")]
-    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the TimeoutValue (?) is either undefined, negative, or zero.")]
-    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the TimeoutValue (-1) is either undefined, negative, or zero.")]
+    [InlineData(null, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the Timeout (?) is either undefined, negative, or zero.")]
+    [InlineData(-1, "Route '/' has invalid QoSOptions for Polly's Timeout strategy. Specifically, the timeout is disabled because the Timeout (-1) is either undefined, negative, or zero.")]
     public void IsConfigurationValidForTimeout_InvalidValue_ShouldLogError(int? invalidTimeout, string expectedMessage)
     {
         // Arrange
@@ -578,7 +578,7 @@ public class PollyQoSResiliencePipelineProviderTests
             BreakDuration = 0,
             FailureRatio = 0.0D,
             SamplingDuration = 0,
-            TimeoutValue = _TimeoutStrategy_.DefTimeout, // but timeout is valid
+            Timeout = _TimeoutStrategy_.DefTimeout, // but timeout is valid
         };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(invalidOptions)
@@ -612,7 +612,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var provider = GivenProvider();
         var nullOptions = new QoSOptions(1, null) // invalid
         {
-            TimeoutValue = _TimeoutStrategy_.DefTimeout, // but timeout is valid
+            Timeout = _TimeoutStrategy_.DefTimeout, // but timeout is valid
         };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(nullOptions)
@@ -654,7 +654,7 @@ public class PollyQoSResiliencePipelineProviderTests
     {
         var options = new QoSOptions(exceptionsAllowedBeforeBreaking, 5000)
         {
-            TimeoutValue = timeOut,
+            Timeout = timeOut,
         };
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate(routeTemplate)

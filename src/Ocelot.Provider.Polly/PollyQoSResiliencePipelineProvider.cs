@@ -123,11 +123,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
 
-        int? timeoutMs = route.QosOptions.TimeoutValue;
+        int? timeoutMs = route.QosOptions.Timeout;
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             _logger.LogError(
-                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.TimeoutValue)} ({ToStr(timeoutMs)}) is either undefined, negative, or zero.", null);
+                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.Timeout)} ({ToStr(timeoutMs)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
@@ -217,7 +217,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return builder;
         }
 
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? TimeoutStrategy.DefaultTimeout;
+        int? timeoutMs = route.QosOptions.Timeout ?? TimeoutStrategy.DefaultTimeout;
         timeoutMs = TimeoutStrategy.Timeout(timeoutMs.Value) ?? TimeoutStrategy.DefaultTimeout;
 
         var strategy = new TimeoutStrategyOptions

@@ -24,7 +24,7 @@ public class FileQoSOptions
         ExceptionsAllowedBeforeBreaking = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
-        TimeoutValue = from.TimeoutValue;
+        TimeoutValue = from.Timeout;
     }
 
     public int? DurationOfBreak { get; set; }
@@ -35,7 +35,7 @@ public class FileQoSOptions
     /// <summary>Explicit timeout value which overrides default one.</summary>
     /// <remarks>Reused in, or ignored in favor of implicit default value:
     /// <list type="bullet">
-    ///   <item><see cref="QoSOptions.TimeoutValue"/></item>
+    ///   <item><see cref="QoSOptions.Timeout"/></item>
     ///   <item><see cref="DownstreamRoute.Timeout"/></item>
     ///   <item><see cref="DownstreamRoute.DefaultTimeoutSeconds"/></item>
     /// </list>

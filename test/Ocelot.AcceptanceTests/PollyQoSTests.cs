@@ -30,7 +30,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             MinimumThroughput = 10,
             FailureRatio = 0.5,
             SamplingDuration = 5,
-            TimeoutValue = 1000,
+            Timeout = 1000,
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
@@ -65,7 +65,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     {
         var qos = new QoSOptions(2, 1000)
         {
-            TimeoutValue = 100_000,
+            Timeout = 100_000,
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
@@ -90,7 +90,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var qos = new QoSOptions(2, invalidDuration)
         {
-            TimeoutValue = 100_000,
+            Timeout = 100_000,
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
@@ -124,7 +124,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var qos = new QoSOptions(2, CircuitBreakerStrategy.LowBreakDuration + 1) // 501
         {
-            TimeoutValue = 1000,
+            Timeout = 1000,
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
@@ -159,7 +159,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port2 = PortFinder.GetRandomPort();
         var qos1 = new QoSOptions(2, CircuitBreakerStrategy.LowBreakDuration + 1) // 501\
         {
-            TimeoutValue = 1000,
+            Timeout = 1000,
         };
         var route = GivenRoute(port1, qos1);
         var route2 = GivenRoute(port2, new(), null, "/working");
@@ -398,7 +398,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
                 // In Polly v8:
                 //   MinimumThroughput (MinimumThroughput) must be 2 or more
                 //   BreakDuration (BreakDuration) must be > 500
-                //   Timeout (TimeoutValue) must be 1000 or more
+                //   Timeout (Timeout) must be 1000 or more
                 // So, we wait for 2.1 seconds to make sure the circuit is open
                 // BreakDuration * MinimumThroughput + Timeout
                 // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum

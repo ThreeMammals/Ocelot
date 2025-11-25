@@ -114,7 +114,7 @@ public class OcelotBuilderExtensionsTests
         var services = new ServiceCollection();
         var options = new QoSOptions(2, 200)
         {
-            TimeoutValue = 100,
+            Timeout = 100,
         };
         route = new DownstreamRouteBuilder()
             .WithQosOptions(options)

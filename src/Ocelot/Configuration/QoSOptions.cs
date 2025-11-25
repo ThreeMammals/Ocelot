@@ -5,7 +5,7 @@ namespace Ocelot.Configuration;
 public class QoSOptions
 {
     public QoSOptions() { }
-    public QoSOptions(int? timeout) => TimeoutValue = timeout;
+    public QoSOptions(int? timeout) => Timeout = timeout;
     public QoSOptions(int? exceptions, int? breakMs)
     {
         BreakDuration = breakMs;
@@ -21,7 +21,7 @@ public class QoSOptions
         MinimumThroughput = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
-        TimeoutValue = from.TimeoutValue;
+        Timeout = from.Timeout;
     }
 
     /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class from a <see cref="FileQoSOptions"/> model.</summary>
@@ -33,7 +33,7 @@ public class QoSOptions
         MinimumThroughput = from.ExceptionsAllowedBeforeBreaking;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
-        TimeoutValue = from.TimeoutValue;
+        Timeout = from.TimeoutValue;
     }
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
@@ -59,8 +59,8 @@ public class QoSOptions
     /// <summary>Gets the timeout in milliseconds.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
-    public int? TimeoutValue { get; init; }
+    public int? Timeout { get; init; }
 
     public bool UseQos => (MinimumThroughput.HasValue && MinimumThroughput > 0)
-        || (TimeoutValue.HasValue && TimeoutValue > 0);
+        || (Timeout.HasValue && Timeout > 0);
 }
