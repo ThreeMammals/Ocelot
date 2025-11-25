@@ -26,7 +26,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     {
         var qos = new QoSOptions()
         {
-            DurationOfBreak = 500,
+            BreakDuration = 500,
             MinimumThroughput = 10,
             FailureRatio = 0.5,
             SamplingDuration = 5,
@@ -397,10 +397,10 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             {
                 // In Polly v8:
                 //   MinimumThroughput (MinimumThroughput) must be 2 or more
-                //   BreakDuration (DurationOfBreak) must be > 500
+                //   BreakDuration (BreakDuration) must be > 500
                 //   Timeout (TimeoutValue) must be 1000 or more
                 // So, we wait for 2.1 seconds to make sure the circuit is open
-                // DurationOfBreak * MinimumThroughput + Timeout
+                // BreakDuration * MinimumThroughput + Timeout
                 // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum
                 await Task.Delay(2_100);
             }

@@ -22,7 +22,7 @@ public class QoSOptionsTests
         // Assert
         Assert.Equivalent(copyee, actual);
         Assert.Equal(copyee.MinimumThroughput, actual.MinimumThroughput);
-        Assert.Equal(copyee.DurationOfBreak, actual.DurationOfBreak);
+        Assert.Equal(copyee.BreakDuration, actual.BreakDuration);
         Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
         Assert.Equal(copyee.FailureRatio, actual.FailureRatio);
         Assert.Equal(copyee.SamplingDuration, actual.SamplingDuration);

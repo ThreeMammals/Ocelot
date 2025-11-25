@@ -20,7 +20,7 @@ public class FileQoSOptions
 
     public FileQoSOptions(QoSOptions from)
     {
-        DurationOfBreak = from.DurationOfBreak;
+        DurationOfBreak = from.BreakDuration;
         ExceptionsAllowedBeforeBreaking = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;

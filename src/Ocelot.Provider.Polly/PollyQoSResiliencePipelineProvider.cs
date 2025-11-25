@@ -89,9 +89,9 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             warnings.Add(msg1);
         }
 
-        if (qos.DurationOfBreak.HasValue && !qos.DurationOfBreak.Value.IsValidBreakDuration())
+        if (qos.BreakDuration.HasValue && !qos.BreakDuration.Value.IsValidBreakDuration())
         {
-            string msg2() => $"{The(w, msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.DurationOfBreak}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
+            string msg2() => $"{The(w, msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.BreakDuration}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
             warnings.Add(msg2);
         }
 
@@ -169,7 +169,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         QoSOptions qos = route.QosOptions;
         int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.MinimumThroughput ?? 0); // 0 fallbacks to the default value
-        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.DurationOfBreak ?? 0); // 0 fallbacks to the default value
+        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.BreakDuration ?? 0); // 0 fallbacks to the default value
         double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
         int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? 0); // 0 fallbacks to the default value
 

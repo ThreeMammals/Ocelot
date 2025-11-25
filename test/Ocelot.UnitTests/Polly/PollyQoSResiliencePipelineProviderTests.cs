@@ -60,7 +60,7 @@ public class PollyQoSResiliencePipelineProviderTests
         // Arrange
         var options = new QoSOptions()
         {
-            DurationOfBreak = CircuitBreakerStrategy.LowBreakDuration + 1, // 0.5s, minimum required by Polly
+            BreakDuration = CircuitBreakerStrategy.LowBreakDuration + 1, // 0.5s, minimum required by Polly
             MinimumThroughput = 2, // 2 is the minimum required by Polly
             TimeoutValue = 1000, // 10ms, minimum required by Polly
         };
@@ -108,7 +108,7 @@ public class PollyQoSResiliencePipelineProviderTests
         // Arrange
         var options = new QoSOptions()
         {
-            DurationOfBreak = durationOfBreak, // 0.5s, minimum required by Polly
+            BreakDuration = durationOfBreak, // 0.5s, minimum required by Polly
             MinimumThroughput = 2, // 2 is the minimum required by Polly
             TimeoutValue = 1000, // 10ms, minimum required by Polly
         };
@@ -575,7 +575,7 @@ public class PollyQoSResiliencePipelineProviderTests
         var invalidOptions = new QoSOptions()
         {
             MinimumThroughput = 1, // invalid
-            DurationOfBreak = 0,
+            BreakDuration = 0,
             FailureRatio = 0.0D,
             SamplingDuration = 0,
             TimeoutValue = _TimeoutStrategy_.DefTimeout, // but timeout is valid

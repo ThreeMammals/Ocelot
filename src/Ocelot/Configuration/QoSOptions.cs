@@ -8,7 +8,7 @@ public class QoSOptions
     public QoSOptions(int? timeout) => TimeoutValue = timeout;
     public QoSOptions(int? exceptions, int? breakMs)
     {
-        DurationOfBreak = breakMs;
+        BreakDuration = breakMs;
         MinimumThroughput = exceptions;
     }
 
@@ -17,7 +17,7 @@ public class QoSOptions
     /// <param name="from">The object to copy the properties from.</param>
     public QoSOptions(QoSOptions from)
     {
-        DurationOfBreak = from.DurationOfBreak;
+        BreakDuration = from.BreakDuration;
         MinimumThroughput = from.MinimumThroughput;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
@@ -29,7 +29,7 @@ public class QoSOptions
     /// <param name="from">The File-model to copy the properties from.</param>
     public QoSOptions(FileQoSOptions from)
     {
-        DurationOfBreak = from.DurationOfBreak;
+        BreakDuration = from.DurationOfBreak;
         MinimumThroughput = from.ExceptionsAllowedBeforeBreaking;
         FailureRatio = from.FailureRatio;
         SamplingDuration = from.SamplingDuration;
@@ -39,7 +39,7 @@ public class QoSOptions
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
-    public int? DurationOfBreak { get; init; }
+    public int? BreakDuration { get; init; }
 
     /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
     /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
