@@ -1,7 +1,7 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration;
+namespace Ocelot.UnitTests.QualityOfService;
 
 public class QoSOptionsTests
 {
