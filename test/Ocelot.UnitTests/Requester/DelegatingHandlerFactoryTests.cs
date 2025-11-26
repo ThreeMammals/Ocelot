@@ -4,8 +4,8 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
+using Ocelot.QualityOfService;
 using Ocelot.Requester;
-using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 

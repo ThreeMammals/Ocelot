@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
-using Ocelot.Errors.QoS;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Ocelot.Provider.Polly.Interfaces;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 using Polly;
 
 namespace Ocelot.UnitTests.Polly;

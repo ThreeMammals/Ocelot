@@ -7,7 +7,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Logging;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;

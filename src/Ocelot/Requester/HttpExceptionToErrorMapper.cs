@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Errors;
-using Ocelot.Errors.QoS;
 using Ocelot.Request.Mapper;
 
 namespace Ocelot.Requester;
