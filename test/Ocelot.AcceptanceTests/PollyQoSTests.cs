@@ -26,7 +26,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
     [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
-    public void Should_not_timeout()
+    public async Task Should_not_timeout()
     {
         var qos = new QoSOptions()
         {
@@ -34,67 +34,62 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             MinimumThroughput = 10,
             FailureRatio = 0.5,
             SamplingDuration = 5,
-            Timeout = 1000,
+            Timeout = 1000, // !!!
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        var body = ResponseBody();
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, 10, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, timeout: 10); // !!!
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        await WhenIPostUrlOnTheApiGateway("/", "postContent");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
     [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
-    public void Should_timeout()
+    public async Task Should_timeout()
     {
-        var qos = new QoSOptions(1000);
+        var qos = new QoSOptions(1000); // timeout
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        var body = ResponseBody();
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, 2100, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .BDDfy();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, timeout: 2100);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        await WhenIPostUrlOnTheApiGateway("/", "postContent");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
     }
 
     [Fact]
     [Trait("Bug", "1550")] // https://github.com/ThreeMammals/Ocelot/issues/1550
     [Trait("Bug", "1706")] // https://github.com/ThreeMammals/Ocelot/issues/1706
     [Trait("PR", "1753")] // https://github.com/ThreeMammals/Ocelot/pull/1753
-    public void Should_open_circuit_breaker_after_two_exceptions()
+    public async Task Should_open_circuit_breaker_after_two_exceptions()
     {
         var qos = new QoSOptions(2, 1000)
         {
-            Timeout = 100_000,
+            Timeout = 100_000, // infinite -> actually no timeout
         };
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
-            .BDDfy();
+        GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        for (int i = 0; i < qos.MinimumThroughput.Value; i++)
+        {
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError);
+        }
+        await WhenIGetUrlOnTheApiGateway("/"); // opened
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // Polly status
     }
 
     [Fact]
     [Trait("Bug", "2085")] // https://github.com/ThreeMammals/Ocelot/issues/2085
-    public void Should_open_circuit_breaker_for_DefaultBreakDuration()
+    public async Task Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var qos = new QoSOptions(2, invalidDuration)
@@ -104,32 +99,30 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // opened
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // Polly status
-            .Given(x => GivenIWaitMilliseconds(CircuitBreakerStrategy.DefaultBreakDuration - 500)) // BreakDuration is not elapsed
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // still opened
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // still opened
-            .Given(x => GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound))
-            .Given(x => GivenIWaitMilliseconds(500)) // BreakDuration should elapse now
-            .When(x => WhenIGetUrlOnTheApiGateway("/")) // closed, service online
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound)) // closed, service online
-            .And(x => ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.NotFound)))
-            .BDDfy();
+        GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError);
+        await WhenIGetUrlOnTheApiGateway("/"); // opened
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // Polly status
+        GivenIWaitMilliseconds(CircuitBreakerStrategy.DefaultBreakDuration - 500); // BreakDuration is not elapsed
+        await WhenIGetUrlOnTheApiGateway("/"); // still opened
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // still opened
+        GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound);
+        GivenIWaitMilliseconds(500); // BreakDuration should elapse now
+        await WhenIGetUrlOnTheApiGateway("/"); // closed, service online
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // closed, service online
+        ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.NotFound));
     }
 
     private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
 
     [SkippableFact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
-    public void Should_open_circuit_breaker_then_close()
+    public async Task Should_open_circuit_breaker_then_close()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var qos = new QoSOptions(2, CircuitBreakerStrategy.LowBreakDuration + 1) // 501
@@ -139,31 +132,30 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, qos);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min MinimumThroughput is 2
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => GivenIWaitMilliseconds(3000)) // qos.BreakDuration.Value
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        GivenThereIsAPossiblyBrokenServiceRunningOn(port, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await WhenIGetUrlOnTheApiGateway("/"); // repeat same request because min MinimumThroughput is 2
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        GivenIWaitMilliseconds(3000); // qos.BreakDuration.Value
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("Hello from Laura");
     }
 
     [SkippableFact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
-    public void Open_circuit_should_not_effect_different_route()
+    public async Task Open_circuit_should_not_effect_different_route()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var port1 = PortFinder.GetRandomPort();
@@ -175,30 +167,29 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var route = GivenRoute(port1, qos1);
         var route2 = GivenRoute(port2, new(), null, "/working");
         var configuration = GivenConfiguration(route, route2);
-        this.Given(x => x.GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura"))
-            .And(x => x.GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, 0, "Hello from Tom"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithPolly())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min MinimumThroughput is 2
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/working"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => GivenIWaitMilliseconds(3000))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        GivenThereIsAPossiblyBrokenServiceRunningOn(port1, "Hello from Laura");
+        GivenThereIsAServiceRunningOn(port2, HttpStatusCode.OK, 0, "Hello from Tom");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithPolly();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await WhenIGetUrlOnTheApiGateway("/"); // repeat same request because min MinimumThroughput is 2
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        await WhenIGetUrlOnTheApiGateway("/working");
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBodyShouldBe("Hello from Tom");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
+        GivenIWaitMilliseconds(3000);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOK();
+        ThenTheResponseBodyShouldBe("Hello from Laura");
     }
 
     // TODO: If failed in parallel execution mode, switch to SequentialTests
@@ -407,9 +398,9 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             if (requestCount == 2)
             {
                 // In Polly v8:
-                //   MinimumThroughput (MinimumThroughput) must be 2 or more
-                //   BreakDuration (BreakDuration) must be > 500
-                //   Timeout (Timeout) must be 1000 or more
+                //   MinimumThroughput (exceptions) must be 2 or more
+                //   BreakDuration (ex. DurationOfBreak) must be > 500
+                //   Timeout (ex. TimeoutValue) must be 1000 or more
                 // So, we wait for 2.1 seconds to make sure the circuit is open
                 // BreakDuration * MinimumThroughput + Timeout
                 // 500 * 2 + 1000 = 2000 minimum + 100 milliseconds to exceed the minimum
