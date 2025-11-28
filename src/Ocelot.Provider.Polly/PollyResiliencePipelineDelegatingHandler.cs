@@ -42,15 +42,15 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
     /// <exception cref="HttpRequestException">Exception thrown by <see cref="HttpClient"/> and <see cref="HttpMessageHandler"/> classes.</exception>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var qoSProvider = this.GetQoSProvider();
-        var pipeline = qoSProvider.GetResiliencePipeline(_route);
+        var provider = GetQoSProvider();
+        var pipeline = provider.GetResiliencePipeline(_route);
         if (pipeline == null)
         {
-            _logger.LogDebug(() => $"No {nameof(pipeline)} was detected by QoS provider for the route with downstream URL '{request.RequestUri}'.");
-            return await base.SendAsync(request, cancellationToken); // shortcut > no qos
+            _logger.LogDebug(() => $"No pipeline was detected by QoS provider for the route with downstream URL '{request.RequestUri}'.");
+            return await base.SendAsync(request, cancellationToken); // shortcut > no qos, TODO: No need to await here
         }
 
-        _logger.LogInformation(() => $"The {pipeline} {nameof(pipeline)} has detected by QoS provider for the route with downstream URL '{request.RequestUri}'. Going to execute request...");
-        return await pipeline.ExecuteAsync(async (token) => await base.SendAsync(request, token), cancellationToken);
+        _logger.LogInformation(() => $"The {pipeline} pipeline has detected by QoS provider for the route with downstream URL '{request.RequestUri}'. Going to execute request...");
+        return await pipeline.ExecuteAsync(async (token) => await base.SendAsync(request, token), cancellationToken); // TODO: No need to await here
     }
 }

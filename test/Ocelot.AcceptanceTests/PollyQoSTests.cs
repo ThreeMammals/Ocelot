@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests;
 
+[Trait("Feat", "23")] // https://github.com/ThreeMammals/Ocelot/issues/23
+[Trait("Feat", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
 public sealed class PollyQoSTests : TimeoutTestsBase
 {
     private FileRoute GivenRoute(int port, QoSOptions options, string httpMethod = null, string upstream = null)
@@ -22,6 +24,8 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     }
 
     [Fact]
+    [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
+    [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
     public void Should_not_timeout()
     {
         var qos = new QoSOptions()
@@ -45,6 +49,8 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     }
 
     [Fact]
+    [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
+    [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
     public void Should_timeout()
     {
         var qos = new QoSOptions(1000);
@@ -61,6 +67,9 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     }
 
     [Fact]
+    [Trait("Bug", "1550")] // https://github.com/ThreeMammals/Ocelot/issues/1550
+    [Trait("Bug", "1706")] // https://github.com/ThreeMammals/Ocelot/issues/1706
+    [Trait("PR", "1753")] // https://github.com/ThreeMammals/Ocelot/pull/1753
     public void Should_open_circuit_breaker_after_two_exceptions()
     {
         var qos = new QoSOptions(2, 1000)
@@ -84,7 +93,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     }
 
     [Fact]
-    [Trait("Bug", "2085")]
+    [Trait("Bug", "2085")] // https://github.com/ThreeMammals/Ocelot/issues/2085
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
@@ -119,6 +128,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
 
     [SkippableFact]
+    [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public void Should_open_circuit_breaker_then_close()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
@@ -144,14 +154,15 @@ public sealed class PollyQoSTests : TimeoutTestsBase
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .And(x => WhenIGetUrlOnTheApiGateway("/"))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
-            .And(x => GivenIWaitMilliseconds(3000))
+            .And(x => GivenIWaitMilliseconds(3000)) // qos.BreakDuration.Value
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
-    [SkippableFact] // [Fact]
+    [SkippableFact]
+    [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public void Open_circuit_should_not_effect_different_route()
     {
         Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
@@ -194,7 +205,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     // This issue may arise when transitioning all tests to parallel execution
     // This test must be sequential because of usage of the static DownstreamRoute.DefaultTimeoutSeconds
     [Fact]
-    [Trait("Bug", "1833")]
+    [Trait("Bug", "1833")] // https://github.com/ThreeMammals/Ocelot/issues/1833
     public async Task Should_timeout_per_default_after_90_seconds()
     {
         try
@@ -370,7 +381,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
     private void GivenOcelotIsRunningWithPolly() => GivenOcelotIsRunning(WithPolly);
     private static void WithPolly(IServiceCollection services) => services.AddOcelot().AddPolly();
 
-    private static void GivenIWaitMilliseconds(int ms) => Thread.Sleep(ms);
+    private static void GivenIWaitMilliseconds(int ms) => GivenIWait(ms);
 
     private HttpStatusCode _brokenServiceStatusCode;
     private void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode)
