@@ -25,7 +25,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
     }
 
-    protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
+    public static readonly IReadOnlySet<HttpStatusCode> DefaultServerErrorCodes = new HashSet<HttpStatusCode>()
     {
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
@@ -38,7 +38,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         HttpStatusCode.LoopDetected,
     };
 
-    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes;
+    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes as HashSet<HttpStatusCode>;
     protected virtual string GetRouteName(DownstreamRoute route) => route.Name();
 
     /// <summary>
@@ -196,6 +196,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             },
             OnHalfOpened = _ =>
             {
+                // TODO: But the OnCircuitHalfOpened telemetry best practice recommends Warning 8-)
+                // Read -> Circuit breaker Telemetry -> https://www.pollydocs.org/strategies/circuit-breaker.html#telemetry
                 _logger.LogInformation(info + "Half Opened");
                 return ValueTask.CompletedTask;
             },

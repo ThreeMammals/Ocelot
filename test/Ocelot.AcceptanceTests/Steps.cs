@@ -74,6 +74,15 @@ public class Steps : AcceptanceSteps
     protected override FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
 
     protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
-    public virtual string Body([CallerMemberName] string responseBody = nameof(Steps)) => responseBody;
-    public virtual string TestName([CallerMemberName] string testName = nameof(Steps)) => testName;
+
+    #region TODO: Move to Ocelot.Testing package
+    public virtual string Body([CallerMemberName] string responseBody = null) => responseBody ?? GetType().Name;
+    public virtual string TestName([CallerMemberName] string testName = null) => testName ?? GetType().Name;
+    public static Task GivenIWaitAsync(int wait) => Task.Delay(wait);
+    public Task ThenTheResponseShouldBeAsync(HttpStatusCode expected, [CallerMemberName] string expectedBody = null)
+    {
+        ThenTheStatusCodeShouldBe(expected);
+        return ThenTheResponseBodyShouldBeAsync(expectedBody ?? Body(expectedBody));
+    }
+    #endregion
 }
