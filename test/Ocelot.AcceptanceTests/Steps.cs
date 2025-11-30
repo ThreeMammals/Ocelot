@@ -84,5 +84,8 @@ public class Steps : AcceptanceSteps
         ThenTheStatusCodeShouldBe(expected);
         return ThenTheResponseBodyShouldBeAsync(expectedBody ?? Body(expectedBody));
     }
+    public Task ThenTheResponseBodyShouldBeEmpty() => ThenTheResponseBodyShouldBeAsync(string.Empty);
+    public Task<int> GivenOcelotIsRunningAsync(Action<IServiceCollection> configureServices)
+        => Task.Run(() => GivenOcelotIsRunning(configureServices)); // TODO Need async version in the lib
     #endregion
 }
