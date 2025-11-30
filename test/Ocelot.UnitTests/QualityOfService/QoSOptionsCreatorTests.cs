@@ -148,6 +148,13 @@ public class QoSOptionsCreatorTests : UnitTest
         Assert.Equal(5, actual.FailureRatio);
         Assert.Equal(6, actual.SamplingDuration);
         Assert.Equal(7, actual.Timeout);
+
+        // Scenario 2: Create from null
+        options = null;
+        actual = _creator.Create(options);
+        Assert.NotNull(actual);
+        Assert.Null(actual.MinimumThroughput);
+        Assert.Null(actual.Timeout);
     }
 
     [Fact]

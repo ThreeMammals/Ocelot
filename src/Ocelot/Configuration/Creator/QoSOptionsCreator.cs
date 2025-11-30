@@ -5,7 +5,7 @@ namespace Ocelot.Configuration.Creator;
 public class QoSOptionsCreator : IQoSOptionsCreator
 {
     public QoSOptions Create(FileQoSOptions options)
-        => new(options);
+        => new(options ?? new());
 
     public QoSOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
     {

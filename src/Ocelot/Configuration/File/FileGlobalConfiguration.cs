@@ -15,7 +15,7 @@ public class FileGlobalConfiguration
         LoadBalancerOptions = default;
         Metadata = default;
         MetadataOptions = new();
-        QoSOptions = new();
+        QoSOptions = default;
         RateLimitOptions = default;
         RequestIdKey = default;
         SecurityOptions = new();

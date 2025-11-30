@@ -28,7 +28,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         LoadBalancerOptions = null;
         Metadata = null;
         Priority = 1; // to be reviewed WTF?
-        QoSOptions = new FileQoSOptions();
+        QoSOptions = null;
         RateLimiting = null;
         RateLimitOptions = null;
         RequestIdKey = null;
