@@ -47,7 +47,9 @@ public class PollyResiliencePipelineDelegatingHandlerTests
         // Assert
         ShouldHaveTestHeaderWithoutContent(actual);
         ShouldHaveCalledThePipelineProviderOnce();
+#if DEBUG
         ShouldLogInformation("The Polly.ResiliencePipeline`1[System.Net.Http.HttpResponseMessage] pipeline has detected by QoS provider for the route with downstream URL ''. Going to execute request...");
+#endif
         ShouldHaveCalledTheInnerHandlerOnce();
     }
 
@@ -66,7 +68,9 @@ public class PollyResiliencePipelineDelegatingHandlerTests
         // Assert
         ShouldHaveTestHeaderWithoutContent(actual);
         ShouldHaveCalledThePipelineProviderOnce();
+#if DEBUG
         ShouldLogDebug("No pipeline was detected by QoS provider for the route with downstream URL ''.");
+#endif
         ShouldHaveCalledTheInnerHandlerOnce();
     }
 
