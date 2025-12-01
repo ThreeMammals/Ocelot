@@ -46,7 +46,9 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
         var pipeline = provider.GetResiliencePipeline(_route);
         if (pipeline == null)
         {
+#if DEBUG
             _logger.LogDebug(() => $"No pipeline was detected by QoS provider for the route with downstream URL '{request.RequestUri}'.");
+#endif
             return await base.SendAsync(request, cancellationToken); // shortcut > no qos, TODO: No need to await here
         }
 
