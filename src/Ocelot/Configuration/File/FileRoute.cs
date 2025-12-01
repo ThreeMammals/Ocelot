@@ -10,39 +10,16 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         AddClaimsToRequest = new Dictionary<string, string>();
         AddHeadersToRequest = new Dictionary<string, string>();
         AddQueriesToRequest = new Dictionary<string, string>();
-        AuthenticationOptions = null;
         ChangeDownstreamPathTemplate = new Dictionary<string, string>();
-        DangerousAcceptAnyServerCertificateValidator = false;
         DelegatingHandlers = new List<string>();
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHostAndPorts = new List<FileHostAndPort>();
-        DownstreamHttpMethod = null;
-        DownstreamHttpVersion = null;
-        DownstreamHttpVersionPolicy = null;
-        DownstreamPathTemplate = null;
-        DownstreamScheme = null; // to be reviewed 
-        CacheOptions = null;
-        FileCacheOptions = null;
-        HttpHandlerOptions = null;
-        Key = null;
-        LoadBalancerOptions = null;
-        Metadata = null;
         Priority = 1; // to be reviewed WTF?
-        QoSOptions = null;
-        RateLimiting = null;
-        RateLimitOptions = null;
-        RequestIdKey = null;
         RouteClaimsRequirement = new Dictionary<string, string>();
-        RouteIsCaseSensitive = false;
         SecurityOptions = new FileSecurityOptions();
-        ServiceName = null;
-        ServiceNamespace = null;
-        Timeout = null;
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
-        UpstreamHost = null;
         UpstreamHttpMethod = new();
-        UpstreamPathTemplate = null;
     }
 
     public FileRoute(FileRoute from)

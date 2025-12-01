@@ -14,7 +14,7 @@ namespace Ocelot.AcceptanceTests.QualityOfService;
 
 [Trait("Feat", "23")] // https://github.com/ThreeMammals/Ocelot/issues/23
 [Trait("Feat", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
-public sealed class PollyQoSTests : TimeoutTestsBase
+public sealed class PollyQoSTests : PollyQosSteps
 {
     [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
@@ -163,7 +163,7 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         await GivenOcelotIsRunningWithPolly();
-        await TestRouteCircuitBreaker(route);
+        await TestRouteCircuitBreaker(port, route.UpstreamPathTemplate, route.QoSOptions);
     }
 
     [Fact] // [SkippableFact]
@@ -416,8 +416,8 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         //    TestRouteCircuitBreaker(route1, 0, globalOptions), // test global scenario
         //    TestRouteCircuitBreaker(route2, 1), // test route-level scenario
         //    TestRouteTimeout(route3));
-        await TestRouteCircuitBreaker(route1, 0, globalOptions); // test global scenario
-        await TestRouteCircuitBreaker(route2, 1); // test route-level scenario
+        await TestRouteCircuitBreaker(ports[0], route1.UpstreamPathTemplate, globalOptions, 0); // test global scenario
+        await TestRouteCircuitBreaker(ports[1], route2.UpstreamPathTemplate, route2.QoSOptions, 1); // test route-level scenario
         await TestRouteTimeout(route3);
     }
 
@@ -458,56 +458,11 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         await GivenOcelotIsRunningWithPolly();
         GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, length: ports.Length);
 
-        await TestRouteCircuitBreaker(route1, 0); // no QoS scenario
+        await TestRouteCircuitBreaker(ports[0], route1.UpstreamPathTemplate, route1.QoSOptions, 0); // no QoS scenario
         await WhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate)
             .ContinueWith(t => ThenTheResponseShouldBeAsync(HttpStatusCode.OK, "OK"));
-        await TestRouteCircuitBreaker(route2, 1, globalOptions); // test global scenario
+        await TestRouteCircuitBreaker(ports[1], route2.UpstreamPathTemplate, globalOptions, 1); // test global scenario
         await TestRouteTimeout(route3);
-    }
-
-    private async Task TestRouteTimeout(FileRoute route)
-    {
-        int counter = 0;
-        bool notFailing() => false;
-        int firstHasTimeout()
-        {
-            int count = Interlocked.Increment(ref counter),
-                timeout = route.QoSOptions.Timeout.Value;
-            return count <= 1 ? timeout + 100 : timeout / 2;
-        }
-        int port = route.DownstreamHostAndPorts[0].Port;
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, firstHasTimeout, notFailing);
-        await WhenIGetUrlOnTheApiGateway(route.UpstreamPathTemplate);
-        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // OnTimeout
-        await WhenIGetUrlOnTheApiGateway(route.UpstreamPathTemplate);
-        await ThenTheResponseShouldBeAsync(HttpStatusCode.OK);
-    }
-
-    private async Task TestRouteCircuitBreaker(FileRoute route, int index = 0, FileQoSOptions qos = null)
-    {
-        qos ??= route.QoSOptions ?? new();
-        int port = route.DownstreamHostAndPorts[0].Port;
-        int count = PollyQoSResiliencePipelineProvider.DefaultServerErrorCodes.Count;
-        HttpStatusCode[] codes = PollyQoSResiliencePipelineProvider.DefaultServerErrorCodes.ToArray();
-        HttpStatusCode nextBadStatus = codes[DateTime.Now.Millisecond % count];
-        GivenThereIsABrokenServiceRunningOn(port, nextBadStatus, index);
-        for (int i = 0; qos.MinimumThroughput.HasValue && i < qos.MinimumThroughput.Value; i++)
-        {
-            nextBadStatus = codes[DateTime.Now.Millisecond % count];
-            GivenThereIsABrokenServiceOnline(nextBadStatus, index);
-            await WhenIGetUrlOnTheApiGateway(route.UpstreamPathTemplate);
-            await ThenTheResponseShouldBeAsync(nextBadStatus, nextBadStatus.ToString());
-        }
-        GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, index);
-        if (qos.MinimumThroughput.HasValue && qos.MinimumThroughput > 0)
-        {
-            await WhenIGetUrlOnTheApiGateway(route.UpstreamPathTemplate);
-            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // Circuit is open
-
-            await GivenIWaitMilliseconds(qos.BreakDuration.Value); // Wait until the circuit is either half-open or closed
-            await WhenIGetUrlOnTheApiGateway(route.UpstreamPathTemplate);
-            await ThenTheResponseShouldBeAsync(HttpStatusCode.OK, "OK");
-        }
     }
 
     private FileRoute GivenRoute(int port, QoSOptions options, string upstream = null, string method = null)
@@ -524,24 +479,6 @@ public sealed class PollyQoSTests : TimeoutTestsBase
         => services.AddOcelot().AddPolly();
 
     private static Task GivenIWaitMilliseconds(int ms) => GivenIWaitAsync(ms);
-
-    private HttpStatusCode[] _brokenServiceStatusCode;
-    private void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode, int index = 0)
-    {
-        GivenThereIsABrokenServiceOnline(brokenStatusCode, index);
-        handler.GivenThereIsAServiceRunningOn(port, async context =>
-        {
-            var code = _brokenServiceStatusCode[index];
-            context.Response.StatusCode = (int)code;
-            await context.Response.WriteAsync(code.ToString());
-        });
-    }
-
-    private void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode, int index = 0, int length = 1)
-    {
-        _brokenServiceStatusCode ??= new HttpStatusCode[length];
-        _brokenServiceStatusCode[index] = onlineStatusCode;
-    }
 
     private void GivenThereIsAPossiblyBrokenServiceRunningOn(int port, string responseBody, int millisecondsDelay, int requestNo = 2)
     {
@@ -568,18 +505,41 @@ public sealed class PollyQoSTests : TimeoutTestsBase
 
     protected override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(PollyQoSTests))
         => base.GivenThereIsAServiceRunningOn(port, statusCode, timeout, response);
+}
 
-    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, Func<int> timeoutStrategy, Func<bool> failingStrategy, [CallerMemberName] string response = nameof(PollyQoSTests))
+public class PollyQosSteps : TimeoutTestsBase, IQosSteps, IDisposable
+{
+    private readonly QosSteps steps;
+    public PollyQosSteps() => steps = new(this);
+
+    public override void Dispose()
     {
-        Task MapBodyWithTimeout(HttpContext context)
-        {
-            int delayMs = timeoutStrategy();
-            bool failed = failingStrategy();
-            HttpStatusCode status = failed ? HttpStatusCode.InternalServerError : statusCode;
-            context.Response.StatusCode = (int)status;
-            return Task.Delay(delayMs)
-                .ContinueWith(t => context.Response.WriteAsync(response));
-        }
-        handler.GivenThereIsAServiceRunningOn(port, MapBodyWithTimeout);
+        steps.Dispose();
+        base.Dispose();
+        GC.SuppressFinalize(this);
     }
+
+    public HttpStatusCode[] BrokenServiceStatusCode
+    {
+        get => steps.BrokenServiceStatusCode;
+        set => steps.BrokenServiceStatusCode = value;
+    }
+
+    public void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode, int index = 0, int length = 1)
+        => steps.GivenThereIsABrokenServiceOnline(onlineStatusCode, index, length);
+
+    public void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode, int index = 0)
+        => steps.GivenThereIsABrokenServiceRunningOn(port, brokenStatusCode, index);
+
+    public void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, Func<int> timeoutStrategy, Func<bool> failingStrategy, [CallerMemberName] string response = null)
+        => steps.GivenThereIsAServiceRunningOn(port, statusCode, timeoutStrategy, failingStrategy, response);
+
+    //public Task TestRouteCircuitBreaker(FileRoute route, int index = 0, FileQoSOptions qos = null)
+    //    => steps.TestRouteCircuitBreaker(route, index, qos);
+    public Task TestRouteCircuitBreaker(int port, string upstreamPath, FileQoSOptions qos = null, int index = 0)
+        => steps.TestRouteCircuitBreaker(port, upstreamPath, qos, index);
+
+    public Task TestRouteTimeout(FileRoute route)
+        => steps.TestRouteTimeout(route);
+
 }
