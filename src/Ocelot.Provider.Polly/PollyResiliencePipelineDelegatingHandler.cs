@@ -52,7 +52,9 @@ public class PollyResiliencePipelineDelegatingHandler : DelegatingHandler
             return await base.SendAsync(request, cancellationToken); // shortcut > no qos, TODO: No need to await here
         }
 
+#if DEBUG
         _logger.LogInformation(() => $"The {pipeline} pipeline has detected by QoS provider for the route with downstream URL '{request.RequestUri}'. Going to execute request...");
+#endif
         return await pipeline.ExecuteAsync(async (token) => await base.SendAsync(request, token), cancellationToken); // TODO: No need to await here
     }
 }
