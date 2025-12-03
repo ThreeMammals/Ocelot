@@ -163,7 +163,7 @@ public sealed class PollyQoSTests : PollyQosSteps
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         await GivenOcelotIsRunningWithPolly();
-        await TestRouteCircuitBreaker(port, route.UpstreamPathTemplate, route.QoSOptions);
+        await TestRouteCircuitBreaker([port], route.UpstreamPathTemplate, route.QoSOptions);
     }
 
     [Fact] // [SkippableFact]
@@ -408,7 +408,6 @@ public sealed class PollyQoSTests : PollyQosSteps
             = new(new QoSOptions(GlobalExceptions, GlobalBreakMs));
         GivenThereIsAConfiguration(configuration);
         await GivenOcelotIsRunningWithPolly();
-        GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, length: ports.Length);
 
         // TODO: Add acceptance steps that are more parallelism-friendly.
         // The code below failed due to a shared response object being used for sequential steps.
@@ -416,9 +415,9 @@ public sealed class PollyQoSTests : PollyQosSteps
         //    TestRouteCircuitBreaker(route1, 0, globalOptions), // test global scenario
         //    TestRouteCircuitBreaker(route2, 1), // test route-level scenario
         //    TestRouteTimeout(route3));
-        await TestRouteCircuitBreaker(ports[0], route1.UpstreamPathTemplate, globalOptions, 0); // test global scenario
-        await TestRouteCircuitBreaker(ports[1], route2.UpstreamPathTemplate, route2.QoSOptions, 1); // test route-level scenario
-        await TestRouteTimeout(route3);
+        await TestRouteCircuitBreaker([ports[0]], route1.UpstreamPathTemplate, globalOptions, 0); // test global scenario
+        await TestRouteCircuitBreaker([ports[1]], route2.UpstreamPathTemplate, route2.QoSOptions, 1); // test route-level scenario
+        await TestRouteTimeout([ports[2]], route3.UpstreamPathTemplate, route3.QoSOptions);
     }
 
     [Fact]
@@ -453,16 +452,15 @@ public sealed class PollyQoSTests : PollyQosSteps
             {
                 RouteKeys = ["R2"],
             };
-
         GivenThereIsAConfiguration(configuration);
         await GivenOcelotIsRunningWithPolly();
-        GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, length: ports.Length);
 
-        await TestRouteCircuitBreaker(ports[0], route1.UpstreamPathTemplate, route1.QoSOptions, 0); // no QoS scenario
+        await TestRouteCircuitBreaker([ports[0]], route1.UpstreamPathTemplate, route1.QoSOptions, 0); // no QoS scenario
+        GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, 0); // bring 1st service back online
         await WhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate)
             .ContinueWith(t => ThenTheResponseShouldBeAsync(HttpStatusCode.OK, "OK"));
-        await TestRouteCircuitBreaker(ports[1], route2.UpstreamPathTemplate, globalOptions, 1); // test global scenario
-        await TestRouteTimeout(route3);
+        await TestRouteCircuitBreaker([ports[1]], route2.UpstreamPathTemplate, globalOptions, 1); // test global scenario
+        await TestRouteTimeout([route3.DownstreamHostAndPorts[0].Port], route3.UpstreamPathTemplate, route3.QoSOptions);
     }
 
     private FileRoute GivenRoute(int port, QoSOptions options, string upstream = null, string method = null)
@@ -519,27 +517,19 @@ public class PollyQosSteps : TimeoutTestsBase, IQosSteps, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public HttpStatusCode[] BrokenServiceStatusCode
-    {
-        get => steps.BrokenServiceStatusCode;
-        set => steps.BrokenServiceStatusCode = value;
-    }
-
-    public void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode, int index = 0, int length = 1)
-        => steps.GivenThereIsABrokenServiceOnline(onlineStatusCode, index, length);
+    public void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode, int index = 0, int length = 1, bool isDiscovery = false)
+        => steps.GivenThereIsABrokenServiceOnline(onlineStatusCode, index, length, isDiscovery);
 
     public void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode, int index = 0)
         => steps.GivenThereIsABrokenServiceRunningOn(port, brokenStatusCode, index);
 
-    public void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, Func<int> timeoutStrategy, Func<bool> failingStrategy, [CallerMemberName] string response = null)
+    public void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode,
+        Func<int> timeoutStrategy, Func<bool> failingStrategy, [CallerMemberName] string response = null)
         => steps.GivenThereIsAServiceRunningOn(port, statusCode, timeoutStrategy, failingStrategy, response);
 
-    //public Task TestRouteCircuitBreaker(FileRoute route, int index = 0, FileQoSOptions qos = null)
-    //    => steps.TestRouteCircuitBreaker(route, index, qos);
-    public Task TestRouteCircuitBreaker(int port, string upstreamPath, FileQoSOptions qos = null, int index = 0)
-        => steps.TestRouteCircuitBreaker(port, upstreamPath, qos, index);
+    public Task TestRouteCircuitBreaker(int[] ports, string upstreamPath, FileQoSOptions qos, int index = 0, bool isDiscovery = false)
+        => steps.TestRouteCircuitBreaker(ports, upstreamPath, qos, index, isDiscovery);
 
-    public Task TestRouteTimeout(FileRoute route)
-        => steps.TestRouteTimeout(route);
-
+    public Task TestRouteTimeout(int[] ports, string upstreamPath, FileQoSOptions qos)
+        => steps.TestRouteTimeout(ports, upstreamPath, qos);
 }
