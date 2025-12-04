@@ -183,7 +183,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBe(string.Empty); // ThenTheResponseBodyShouldBeEmpty is a new helper?
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
@@ -235,6 +235,6 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBe(string.Empty); // ThenTheResponseBodyShouldBeEmpty is a new helper?
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 }

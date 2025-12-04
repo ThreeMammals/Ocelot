@@ -44,7 +44,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot.Testing" Version="24.0.3-beta.3" />
+    <PackageReference Include="Ocelot.Testing" Version="24.0.3-beta.4" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />

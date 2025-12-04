@@ -256,7 +256,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _upt = new UpstreamPathTemplateBuilder().Build();
         _ao = new AuthenticationOptions();
         _ctt = new List<ClaimToThing>();
-        _qoso = new QoSOptionsBuilder().Build();
+        _qoso = new QoSOptions();
         _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);

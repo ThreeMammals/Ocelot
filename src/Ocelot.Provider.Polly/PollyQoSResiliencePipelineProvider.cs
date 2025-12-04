@@ -25,7 +25,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
     }
 
-    protected static readonly HashSet<HttpStatusCode> DefaultServerErrorCodes = new()
+    public static readonly IReadOnlySet<HttpStatusCode> DefaultServerErrorCodes = new HashSet<HttpStatusCode>()
     {
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
@@ -38,7 +38,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         HttpStatusCode.LoopDetected,
     };
 
-    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes;
+    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = DefaultServerErrorCodes as HashSet<HttpStatusCode>;
     protected virtual string GetRouteName(DownstreamRoute route) => route.Name();
 
     /// <summary>
@@ -75,23 +75,23 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(route.QosOptions);
 
         var qos = route.QosOptions;
-        if (!qos.ExceptionsAllowedBeforeBreaking.HasValue || qos.ExceptionsAllowedBeforeBreaking <= 0)
+        if (!qos.MinimumThroughput.HasValue || qos.MinimumThroughput <= 0)
         {
             _logger.LogError(
-                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.ExceptionsAllowedBeforeBreaking)} value ({ToStr(qos.ExceptionsAllowedBeforeBreaking)}) is either undefined, negative, or zero.", null);
+                () => CircuitBreakerValidationMessage(route) + $"the circuit breaker is disabled because the {nameof(qos.MinimumThroughput)} value ({ToStr(qos.MinimumThroughput)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
         List<Func<string>> warnings = new(), w = warnings;
-        if (!qos.ExceptionsAllowedBeforeBreaking.Value.IsValidMinimumThroughput())
+        if (!qos.MinimumThroughput.Value.IsValidMinimumThroughput())
         {
-            string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.ExceptionsAllowedBeforeBreaking}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.ExceptionsAllowedBeforeBreaking)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
+            string msg1() => $"{The(w, msg1)} {nameof(CircuitBreakerStrategy.MinimumThroughput)} value ({qos.MinimumThroughput}) is less than the required {nameof(CircuitBreakerStrategy.LowMinimumThroughput)} threshold ({CircuitBreakerStrategy.LowMinimumThroughput}). Therefore, increase {nameof(qos.MinimumThroughput)} to at least {CircuitBreakerStrategy.LowMinimumThroughput} or higher. Until then, the default value ({CircuitBreakerStrategy.DefaultMinimumThroughput}) will be substituted.";
             warnings.Add(msg1);
         }
 
-        if (qos.DurationOfBreak.HasValue && !qos.DurationOfBreak.Value.IsValidBreakDuration())
+        if (qos.BreakDuration.HasValue && !qos.BreakDuration.Value.IsValidBreakDuration())
         {
-            string msg2() => $"{The(w, msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.DurationOfBreak}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
+            string msg2() => $"{The(w, msg2)} {nameof(CircuitBreakerStrategy.BreakDuration)} value ({qos.BreakDuration}) is outside the valid range ({CircuitBreakerStrategy.LowBreakDuration} to {CircuitBreakerStrategy.HighBreakDuration} milliseconds). Therefore, ensure the value falls within this range; otherwise, the default value ({CircuitBreakerStrategy.DefaultBreakDuration}) will be substituted.";
             warnings.Add(msg2);
         }
 
@@ -123,11 +123,11 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(route.QosOptions);
 
-        int? timeoutMs = route.QosOptions.TimeoutValue;
+        int? timeoutMs = route.QosOptions.Timeout;
         if (!timeoutMs.HasValue || timeoutMs.Value <= 0)
         {
             _logger.LogError(
-                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.TimeoutValue)} ({ToStr(timeoutMs)}) is either undefined, negative, or zero.", null);
+                () => TimeoutValidationMessage(route) + $"the timeout is disabled because the {nameof(QoSOptions.Timeout)} ({ToStr(timeoutMs)}) is either undefined, negative, or zero.", null);
             return false;
         }
 
@@ -168,8 +168,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
 
         var info = $"Circuit Breaker for the route: {GetRouteName(route)}: ";
         QoSOptions qos = route.QosOptions;
-        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.ExceptionsAllowedBeforeBreaking ?? 0); // 0 fallbacks to the default value
-        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.DurationOfBreak ?? 0); // 0 fallbacks to the default value
+        int minimumThroughput = CircuitBreakerStrategy.MinimumThroughput(qos.MinimumThroughput ?? 0); // 0 fallbacks to the default value
+        int breakDurationMs = CircuitBreakerStrategy.BreakDuration(qos.BreakDuration ?? 0); // 0 fallbacks to the default value
         double failureRatio = CircuitBreakerStrategy.FailureRatio(qos.FailureRatio ?? 0.0D); // 0 fallbacks to the default value
         int samplingDurationMs = CircuitBreakerStrategy.SamplingDuration(qos.SamplingDuration ?? 0); // 0 fallbacks to the default value
 
@@ -196,6 +196,8 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             },
             OnHalfOpened = _ =>
             {
+                // TODO: But the OnCircuitHalfOpened telemetry best practice recommends Warning 8-)
+                // Read -> Circuit breaker Telemetry -> https://www.pollydocs.org/strategies/circuit-breaker.html#telemetry
                 _logger.LogInformation(info + "Half Opened");
                 return ValueTask.CompletedTask;
             },
@@ -217,7 +219,7 @@ public class PollyQoSResiliencePipelineProvider : IPollyQoSResiliencePipelinePro
             return builder;
         }
 
-        int? timeoutMs = route.QosOptions.TimeoutValue ?? TimeoutStrategy.DefaultTimeout;
+        int? timeoutMs = route.QosOptions.Timeout ?? TimeoutStrategy.DefaultTimeout;
         timeoutMs = TimeoutStrategy.Timeout(timeoutMs.Value) ?? TimeoutStrategy.DefaultTimeout;
 
         var strategy = new TimeoutStrategyOptions
