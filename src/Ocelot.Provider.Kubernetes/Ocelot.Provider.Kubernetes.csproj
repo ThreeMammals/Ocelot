@@ -39,8 +39,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="KubeClient" Version="3.0.2" />
-    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="3.0.2" />
+    <PackageReference Include="KubeClient" Version="3.1.0" />
+    <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="3.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
