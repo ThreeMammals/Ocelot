@@ -271,6 +271,116 @@ public sealed class AuthorizationTests : AuthenticationSteps
         await ThenTheResponseBodyAsync();
     }
 
+    [Fact]
+    [Trait("Feature", "Space-separated scopes")]
+    public async Task Should_return_200_OK_with_space_separated_scope_single_match()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["api", "api.read", "api.write"];
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAConfiguration(configuration);
+
+        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from space-separated test");
+
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+
+        // Generate token with space-separated scopes
+        await GivenIHaveAToken(scope: "api.read api.write openid");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOK();
+        await ThenTheResponseBodyShouldBeAsync("Hello from space-separated test");
+    }
+
+    [Fact]
+    [Trait("Feature", "Space-separated scopes")]
+    public async Task Should_return_200_OK_with_space_separated_scope_multiple_matches()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["api.read", "api.write"];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Multiple scopes matched");
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+
+        // Generate token with space-separated scopes that includes both allowed scopes
+        await GivenIHaveAToken(scope: "api.read api.write openid offline_access");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Multiple scopes matched");
+    }
+
+    [Fact]
+    [Trait("Feature", "Space-separated scopes")]
+    public async Task Should_return_403_with_space_separated_scope_no_match()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["admin", "superuser"];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Should not reach here");
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+
+        // Generate token with space-separated scopes that don't match allowed scopes
+        await GivenIHaveAToken(scope: "api.read api.write openid");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    [Trait("Feature", "Space-separated scopes")]
+    public async Task Should_return_200_OK_with_space_separated_scope_with_extra_spaces()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Extra spaces handled");
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+
+        // Generate token with space-separated scopes that have extra spaces
+        await GivenIHaveAToken(scope: "  api.read   api.write  ");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Extra spaces handled");
+    }
+
+    [Fact]
+    [Trait("Feature", "Space-separated scopes")]
+    public async Task Should_return_200_OK_with_single_scope_without_spaces()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Single scope no spaces");
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+
+        // Generate token with single scope (no spaces) - should not be affected
+        await GivenIHaveAToken(scope: "api.read");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Single scope no spaces");
+    }
+
     private static void Void() { }
 
     private async Task GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
