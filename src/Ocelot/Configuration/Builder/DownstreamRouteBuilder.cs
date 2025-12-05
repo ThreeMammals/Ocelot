@@ -11,11 +11,9 @@ public class DownstreamRouteBuilder
     private string _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
     private HashSet<HttpMethod> _upstreamHttpMethod;
-    private bool _isAuthenticated;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
     private Dictionary<string, string> _routeClaimRequirement;
-    private bool _isAuthorized;
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
@@ -25,7 +23,6 @@ public class DownstreamRouteBuilder
     private QoSOptions _qosOptions;
     private HttpHandlerOptions _httpHandlerOptions;
     private RateLimitOptions _rateLimitOptions;
-    private bool _useServiceDiscovery;
     private string _serviceName;
     private string _serviceNamespace;
     private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
@@ -91,18 +88,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithUpstreamHttpMethod(IEnumerable<string> methods)
     {
         _upstreamHttpMethod = methods.ToHttpMethods();
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthenticated(bool input)
-    {
-        _isAuthenticated = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthorized(bool input)
-    {
-        _isAuthorized = input;
         return this;
     }
 
@@ -175,12 +160,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
     {
         _httpHandlerOptions = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
-    {
-        _useServiceDiscovery = useServiceDiscovery;
         return this;
     }
 
@@ -285,7 +264,6 @@ public class DownstreamRouteBuilder
             _serviceName,
             _serviceNamespace,
             _httpHandlerOptions,
-            _useServiceDiscovery,
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,
@@ -297,8 +275,6 @@ public class DownstreamRouteBuilder
             _claimsToHeaders,
             _claimToClaims,
             _claimToDownstreamPath,
-            _isAuthenticated,
-            _isAuthorized,
             _authenticationOptions,
             new DownstreamPathTemplate(_downstreamPathTemplate),
             _loadBalancerKey,

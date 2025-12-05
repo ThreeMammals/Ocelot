@@ -1,6 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Errors;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;

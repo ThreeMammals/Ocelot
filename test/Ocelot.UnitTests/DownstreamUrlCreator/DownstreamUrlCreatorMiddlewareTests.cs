@@ -4,11 +4,9 @@ using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
@@ -16,10 +14,10 @@ namespace Ocelot.UnitTests.DownstreamUrlCreator;
 public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 {
     // TODO: Convert to integration tests to use real IDownstreamPathPlaceholderReplacer service (no mocking). There are a lot of failings
-    // private readonly IDownstreamPathPlaceholderReplacer _downstreamUrlTemplateVariableReplacer;
-    private readonly Mock<IDownstreamPathPlaceholderReplacer> _downstreamUrlTemplateVariableReplacer;
+    // private readonly IDownstreamPathPlaceholderReplacer _replacer;
+    private readonly Mock<IDownstreamPathPlaceholderReplacer> _replacer;
 
-    private OkResponse<DownstreamPath> _downstreamPath;
+    private DownstreamPath _downstreamPath;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
     private DownstreamUrlCreatorMiddleware _middleware;
@@ -33,9 +31,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<DownstreamUrlCreatorMiddleware>()).Returns(_logger.Object);
-        _downstreamUrlTemplateVariableReplacer = new Mock<IDownstreamPathPlaceholderReplacer>();
+        _replacer = new Mock<IDownstreamPathPlaceholderReplacer>();
         _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
         _next = context => Task.CompletedTask;
+        _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _replacer.Object);
     }
 
     [Fact]
@@ -57,11 +56,38 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
         ThenTheQueryStringIs("?q=123");
+    }
+
+    [Fact]
+    public async Task ShouldThrowNotSupportedException_WhenReplacerReturnedEmpty()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/" + TestName())
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("https")
+            .Build();
+        var config = new ServiceProviderConfigurationBuilder()
+            .Build();
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(downstreamRoute, HttpMethod.Get)));
+        GivenTheDownstreamRequestUriIs("http://my.url/abc?q=123");
+        GivenTheServiceProviderConfigIs(config);
+        GivenTheUrlReplacerWillReturn("/api/products/1");
+        _downstreamPath = new DownstreamPath(string.Empty);
+        _replacer
+            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Returns(_downstreamPath);
+
+        // Act, Assert
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => _middleware.Invoke(_httpContext));
+        Assert.Equal("IDownstreamPathPlaceholderReplacerProxy returned an empty DownstreamPath for the route /ShouldThrowNotSupportedException_WhenReplacerReturnedEmpty.", ex.Message);
     }
 
     [Fact]
@@ -88,7 +114,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates");
@@ -119,7 +145,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -150,7 +176,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates?productId=2");
@@ -182,7 +208,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("api/units/1/2/updates/3");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates/3");
@@ -211,7 +237,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://my.url:80/api/products/1?q=123");
@@ -224,7 +250,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -240,7 +265,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1");
@@ -253,7 +278,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -269,7 +293,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?Tom=test&laura=1");
@@ -282,7 +306,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -298,7 +321,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
@@ -311,7 +334,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/products").Build())
-            .WithUseServiceDiscovery(true)
+            .WithServiceName("Service_1.0/Api")
             .Build();
         var routeHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -327,7 +350,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/products", "Service_1.0/Api");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:19081/Service_1.0/Api/products?PartitionKind=test&PartitionKey=1");
@@ -358,7 +381,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/Authorized/1?server=2");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000/Authorized/1?server=2&refreshToken=123456789");
@@ -372,7 +395,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme(string.Empty)
             .WithServiceName("Ocelot/OcelotApp")
-            .WithUseServiceDiscovery(true)
             .Build();
         var downstreamRouteHolder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
@@ -388,7 +410,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturnSequence("/api/products/1", "Ocelot/OcelotApp");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:19081/Ocelot/OcelotApp/api/products/1?PartitionKind=test&PartitionKey=1");
@@ -419,7 +441,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley");
@@ -451,7 +473,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/persons?personId=webley");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/persons?personId=webley&userId=webley");
@@ -485,7 +507,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/api/contracts?{everythingelse}");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         var query = everythingelse;
@@ -494,7 +516,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Theory]
-    [Trait("Bug", "748")]
+    [Trait("Bug", "748")] // https://github.com/ThreeMammals/Ocelot/issues/748
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123", "{url}", "123", "/api/v1/test/123", "")]
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/123?query=1", "{url}", "123", "/api/v1/test/123?query=1", "?query=1")]
     [InlineData("/test/{version}/{url}", "/api/{version}/test/{url}", "/test/v1/?query=1", "{url}", "", "/api/v1/test/?query=1", "?query=1")]
@@ -525,11 +547,44 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn(downstreamURI);
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs("http://localhost:5000" + downstreamURI);
         ThenTheQueryStringIs(queryString);
+    }
+
+    [Fact]
+    [Trait("Bug", "748")] // https://github.com/ThreeMammals/Ocelot/issues/748
+    public async Task Should_omit_the_ending_slash_from_the_downstream_path_when_the_upstream_path_has_no_ending_slash()
+    {
+        // Arrange
+        var methods = new List<string> { "Get" };
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder()
+                .WithOriginalValue("/test/{version}/{url}").Build())
+            .WithDownstreamPathTemplate("/api/{version}/test/{url}/") // !!! ending slash
+            .WithUpstreamHttpMethod(methods)
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>
+            {
+                new("{url}", "abcd"),
+                new("{version}", "v1"),
+            },
+            new Route(downstreamRoute) { UpstreamHttpMethod = AsHashSet(methods) }
+        ));
+        GivenTheDownstreamRequestUriIs("http://localhost:5000" + "/test/v1/abcd"); // upstream has no ending slash
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/api/v1/test/abcd/");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheDownstreamRequestUriIs("http://localhost:5000" + "/api/v1/test/abcd");
+        ThenTheQueryStringIs("");
     }
 
     [Fact]
@@ -565,7 +620,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
@@ -600,11 +655,95 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn($"routed/{urlPath}");
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
+    }
+
+    private static ReadOnlySpan<char> GetPath(string downstreamPath)
+        => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);
+
+    [Theory]
+    [InlineData("/api/resource?param=value", "/api/resource")]
+    [InlineData("/api/resource?x=1&y=2", "/api/resource")]
+    public void GetPath_ShouldReturnSubstringBeforeQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetPath(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("/api/resource", "/api/resource")]
+    [InlineData("/api/resource/123", "/api/resource/123")]
+    public void GetPath_ShouldReturnFullPath_WhenNoQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetPath(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void GetPath_ShouldHandleEmptyString()
+    {
+        // Act
+        var result = GetPath(string.Empty);
+
+        // Assert
+        Assert.Equal(string.Empty, result.ToString());
+    }
+
+    private static ReadOnlySpan<char> GetQueryString(string downstreamPath)
+        => DownstreamUrlCreatorMiddlewareTestWrapper.GetQueryString(downstreamPath);
+
+    [Theory]
+    [InlineData("/api/resource?param=value", "?param=value")]
+    [InlineData("/api/resource?x=1&y=2", "?x=1&y=2")]
+    public void GetQueryString_ShouldReturnSubstringStartingWithQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetQueryString(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    [InlineData("/api/resource", "")]
+    [InlineData("/api/resource/123", "")]
+    public void GetQueryString_ShouldReturnEmpty_WhenNoQuestionMark(string input, string expected)
+    {
+        // Act
+        var result = GetQueryString(input);
+
+        // Assert
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Fact]
+    public void GetQueryString_ShouldHandleEmptyString()
+    {
+        // Act
+        var result = GetQueryString(string.Empty);
+
+        // Assert
+        Assert.Equal(string.Empty, result.ToString());
+    }
+
+    [Fact]
+    public void GetQueryString_ShouldHandleOnlyQuestionMark()
+    {
+        // Act
+        var result = GetQueryString("?");
+
+        // Assert
+        Assert.Equal("?", result.ToString());
     }
 
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
@@ -617,12 +756,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             ServiceProviderConfiguration = config,
         };
         _httpContext.Items.SetIInternalConfiguration(configuration);
-    }
-
-    private async Task WhenICallTheMiddleware()
-    {
-        _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _downstreamUrlTemplateVariableReplacer.Object);
-        await _middleware.Invoke(_httpContext);
     }
 
     private void GivenTheDownStreamRouteIs(DownstreamRouteHolder downstreamRoute)
@@ -639,19 +772,18 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     private void GivenTheUrlReplacerWillReturnSequence(params string[] paths)
     {
-        var setup = _downstreamUrlTemplateVariableReplacer
+        var setup = _replacer
             .SetupSequence(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()));
         foreach (var path in paths)
         {
-            var response = new OkResponse<DownstreamPath>(new DownstreamPath(path));
-            setup.Returns(response);
+            setup.Returns(new DownstreamPath(path));
         }
     }
 
     private void GivenTheUrlReplacerWillReturn(string path)
     {
-        _downstreamPath = new OkResponse<DownstreamPath>(new DownstreamPath(path));
-        _downstreamUrlTemplateVariableReplacer
+        _downstreamPath = new DownstreamPath(path);
+        _replacer
             .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
             .Returns(_downstreamPath);
     }
@@ -665,4 +797,16 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         _httpContext.Items.DownstreamRequest().Query.ShouldBe(queryString);
     }
+}
+
+internal class DownstreamUrlCreatorMiddlewareTestWrapper : DownstreamUrlCreatorMiddleware
+{
+    public DownstreamUrlCreatorMiddlewareTestWrapper(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IDownstreamPathPlaceholderReplacer replacer)
+        : base(next, loggerFactory, replacer) { }
+
+    public static new ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
+        => DownstreamUrlCreatorMiddleware.GetPath(downstreamPath);
+
+    public static new ReadOnlySpan<char> GetQueryString(ReadOnlySpan<char> downstreamPath)
+        => DownstreamUrlCreatorMiddleware.GetQueryString(downstreamPath);
 }

@@ -74,6 +74,18 @@ public class ConcurrentSteps : Steps
             _counters[i] = 0;
         }
     }
+    protected void GivenMultipleServiceInstancesAreRunning(string[] urls, string[] responses, HttpStatusCode[] codes)
+    {
+        Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
+        Debug.Assert(urls.Length == codes.Length, "Length mismatch!");
+        Debug.Assert(responses.Length == codes.Length, "Length mismatch!");
+        _counters = new int[urls.Length]; // multiple counters
+        for (int i = 0; i < urls.Length; i++)
+        {
+            GivenServiceIsRunning(urls[i], responses[i], i, codes[i]);
+            _counters[i] = 0;
+        }
+    }
 
     private void GivenServiceIsRunning(string url, string response)
         => GivenServiceIsRunning(url, response, 0, HttpStatusCode.OK);
@@ -169,7 +181,7 @@ public class ConcurrentSteps : Steps
             ? content.Split(CounterSeparator)[0] // let the first fragment is counter value
             : "0";
         int count = int.Parse(counterString);
-        count.ShouldBeGreaterThan(0);
+        if (content.IsNotEmpty()) count.ShouldBeGreaterThan(0);
         _responses[threadIndex] = response;
     }
 

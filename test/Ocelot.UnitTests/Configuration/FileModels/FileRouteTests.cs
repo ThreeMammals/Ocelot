@@ -115,7 +115,7 @@ public class FileRouteTests : UnitTest
         expected.AddClaimsToRequest.Add("key1", "value1");
         expected.AddHeadersToRequest.Add("key2", "value2");
         expected.AddQueriesToRequest.Add("key3", "value3");
-        expected.AuthenticationOptions.AuthenticationProviderKeys = ["value4"];
+        expected.AuthenticationOptions = new("value4");
         expected.ChangeDownstreamPathTemplate.Add("key5", "value5");
         expected.DangerousAcceptAnyServerCertificateValidator = true;
         expected.DelegatingHandlers.Add("value6");
@@ -133,7 +133,7 @@ public class FileRouteTests : UnitTest
         expected.LoadBalancerOptions ??= new("value17");
         expected.Metadata ??= new Dictionary<string, string>() { { "key18", "value18" } };
         expected.Priority = 19;
-        expected.QoSOptions.DurationOfBreak = 20;
+        expected.QoSOptions = new() { DurationOfBreak = 20 };
         expected.RateLimitOptions ??= new() { Period = "value21" };
         expected.RequestIdKey = "value22";
         expected.RouteClaimsRequirement.Add("key23", "value23");

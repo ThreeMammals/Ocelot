@@ -8,6 +8,7 @@ public class InternalConfiguration : IInternalConfiguration
     public InternalConfiguration(Route[] routes) => Routes = routes ?? [];
 
     public string AdministrationPath { get; init; }
+    public AuthenticationOptions AuthenticationOptions { get; init; }
     public CacheOptions CacheOptions { get; set; }
     public Version DownstreamHttpVersion { get; init; }
 

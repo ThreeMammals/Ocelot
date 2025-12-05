@@ -49,9 +49,9 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
-            .WithUseServiceDiscovery(true)
             .WithServiceName(serviceName)
             .WithServiceNamespace(serviceNamespace)
+            .WithAuthenticationOptions(configuration.AuthenticationOptions)
             .WithCacheOptions(configuration.CacheOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
             .WithDownstreamHttpVersionPolicy(configuration.DownstreamHttpVersionPolicy)
@@ -70,6 +70,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
             routeBuilder
+                .WithAuthenticationOptions(dynamicRoute.AuthenticationOptions)
                 .WithCacheOptions(dynamicRoute.CacheOptions)
                 .WithDownstreamHttpVersion(dynamicRoute.DownstreamHttpVersion)
                 .WithDownstreamHttpVersionPolicy(dynamicRoute.DownstreamHttpVersionPolicy)

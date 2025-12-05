@@ -44,7 +44,7 @@
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot.Testing" Version="24.0.3-beta.2" />
+    <PackageReference Include="Ocelot.Testing" Version="24.0.3-beta.4" />
     <PackageReference Include="Ocelot.Administration.IdentityServer4" Version="24.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>

@@ -16,6 +16,7 @@ public class DynamicRoutesCreatorTests : UnitTest
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator = new();
     private readonly Mock<IMetadataCreator> _metadataCreator = new();
     private readonly Mock<ICacheOptionsCreator> _cacheCreator = new();
+    private readonly Mock<IAuthenticationOptionsCreator> _authCreator = new();
     private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
     private RateLimitOptions[] _rlo;
@@ -26,6 +27,7 @@ public class DynamicRoutesCreatorTests : UnitTest
     public DynamicRoutesCreatorTests()
     {
         _creator = new DynamicRoutesCreator(
+            _authCreator.Object,
             _cacheCreator.Object,
             _hhoCreator.Object,
             _lboCreator.Object,
@@ -47,14 +49,12 @@ public class DynamicRoutesCreatorTests : UnitTest
 
         // Assert
         _result.Count.ShouldBe(0);
-
-        // Assert: then the RloCreator is not called
         _lbKeyCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<LoadBalancerOptions>()), Times.Never);
         _lboCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
         _rloCreator.Verify(x => x.Create(It.IsAny<IRouteRateLimiting>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
-
-        // Assert: then the metadata creator is not called
         _metadataCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
+        _cacheCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<FileGlobalConfiguration>(), It.IsAny<string>()), Times.Never);
+        _authCreator.Verify(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<FileGlobalConfiguration>()), Times.Never);
     }
 
     [Fact]
@@ -80,8 +80,6 @@ public class DynamicRoutesCreatorTests : UnitTest
         // Assert
         ThenTheRoutesAreReturned();
         ThenTheBasicCreatorsAreCalledCorrectly();
-        ThenTheVersionCreatorIsCalledCorrectly();
-        ThenTheMetadataCreatorIsCalledCorrectly();
     }
 
     #region PR 2073
@@ -157,25 +155,14 @@ public class DynamicRoutesCreatorTests : UnitTest
     {
         _fileConfig.DynamicRoutes.ForEach(dynamicRoute =>
         {
+            _authCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
             _lbKeyCreator.Verify(x => x.Create(dynamicRoute, It.IsAny<LoadBalancerOptions>()), Times.Once);
             _lboCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
             _rloCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
-        });
-    }
-
-    private void ThenTheVersionCreatorIsCalledCorrectly()
-    {
-        _fileConfig.DynamicRoutes.ForEach(dynamicRoute =>
-        {
+            _metadataCreator.Verify(x => x.Create(dynamicRoute.Metadata, _fileConfig.GlobalConfiguration), Times.Once);
             _versionCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersion), Times.Once);
             _versionPolicyCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersionPolicy), Times.Exactly(2));
         });
-    }
-
-    private void ThenTheMetadataCreatorIsCalledCorrectly()
-    {
-        _fileConfig.DynamicRoutes.ForEach(dynamicRoute
-            => _metadataCreator.Verify(x => x.Create(dynamicRoute.Metadata, _fileConfig.GlobalConfiguration), Times.Once));
     }
 
     private void ThenTheRoutesAreReturned()

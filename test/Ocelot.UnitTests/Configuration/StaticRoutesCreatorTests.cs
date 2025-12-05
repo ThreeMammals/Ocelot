@@ -15,7 +15,6 @@ public class StaticRoutesCreatorTests : UnitTest
     private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _uhtpCreator;
     private readonly Mock<IRequestIdKeyCreator> _ridkCreator;
     private readonly Mock<IQoSOptionsCreator> _qosoCreator;
-    private readonly Mock<IRouteOptionsCreator> _rroCreator;
     private readonly Mock<IRateLimitOptionsCreator> _rloCreator;
     private readonly Mock<ICacheOptionsCreator> _coCreator;
     private readonly Mock<IHttpHandlerOptionsCreator> _hhoCreator;
@@ -28,7 +27,6 @@ public class StaticRoutesCreatorTests : UnitTest
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
     private readonly Mock<IMetadataCreator> _metadataCreator;
     private FileConfiguration _fileConfig;
-    private RouteOptions _rro;
     private string _requestId;
     private string _rrk;
     private UpstreamPathTemplate _upt;
@@ -54,7 +52,6 @@ public class StaticRoutesCreatorTests : UnitTest
         _utpCreator = new Mock<IUpstreamTemplatePatternCreator>();
         _ridkCreator = new Mock<IRequestIdKeyCreator>();
         _qosoCreator = new Mock<IQoSOptionsCreator>();
-        _rroCreator = new Mock<IRouteOptionsCreator>();
         _rloCreator = new Mock<IRateLimitOptionsCreator>();
         _coCreator = new Mock<ICacheOptionsCreator>();
         _hhoCreator = new Mock<IHttpHandlerOptionsCreator>();
@@ -74,7 +71,6 @@ public class StaticRoutesCreatorTests : UnitTest
             _utpCreator.Object,
             _ridkCreator.Object,
             _qosoCreator.Object,
-            _rroCreator.Object,
             _rloCreator.Object,
             _coCreator.Object,
             _hhoCreator.Object,
@@ -255,13 +251,12 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _expectedVersion = new Version("1.1");
         _expectedVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _rro = new RouteOptions(false, false, false);
         _requestId = "testy";
         _rrk = "besty";
         _upt = new UpstreamPathTemplateBuilder().Build();
-        _ao = new AuthenticationOptionsBuilder().Build();
+        _ao = new AuthenticationOptions();
         _ctt = new List<ClaimToThing>();
-        _qoso = new QoSOptionsBuilder().Build();
+        _qoso = new QoSOptions();
         _rlo = new RateLimitOptions();
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
@@ -275,7 +270,6 @@ public class StaticRoutesCreatorTests : UnitTest
             ["foo"] = "bar",
         };
 
-        _rroCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_rro);
         _ridkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_requestId);
         _rrkCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<LoadBalancerOptions>())).Returns(_rrk);
         _utpCreator.Setup(x => x.Create(It.IsAny<IRouteUpstream>())).Returns(_upt);
@@ -308,8 +302,8 @@ public class StaticRoutesCreatorTests : UnitTest
     {
         _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersion.ShouldBe(_expectedVersion);
         _result[routeIndex].DownstreamRoute[0].DownstreamHttpVersionPolicy.ShouldBe(_expectedVersionPolicy);
-        _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBe(_rro.IsAuthenticated);
-        _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBe(_rro.IsAuthorized);
+        _result[routeIndex].DownstreamRoute[0].IsAuthenticated.ShouldBeFalse();
+        _result[routeIndex].DownstreamRoute[0].IsAuthorized.ShouldBeFalse();
         _result[routeIndex].DownstreamRoute[0].CacheOptions.UseCache.ShouldBeFalse();
         _result[routeIndex].DownstreamRoute[0].RequestIdKey.ShouldBe(_requestId);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerKey.ShouldBe(_rrk);
@@ -329,7 +323,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].AddHeadersToDownstream.ShouldBe(_ht.AddHeadersToDownstream);
         _result[routeIndex].DownstreamRoute[0].DownstreamAddresses.ShouldBe(_dhp);
         _result[routeIndex].DownstreamRoute[0].LoadBalancerOptions.ShouldBe(_lbo);
-        _result[routeIndex].DownstreamRoute[0].UseServiceDiscovery.ShouldBe(_rro.UseServiceDiscovery);
+        _result[routeIndex].DownstreamRoute[0].UseServiceDiscovery.ShouldBeTrue();
         _result[routeIndex].DownstreamRoute[0].DangerousAcceptAnyServerCertificateValidator.ShouldBe(expected.DangerousAcceptAnyServerCertificateValidator);
         _result[routeIndex].DownstreamRoute[0].DelegatingHandlers.ShouldBe(expected.DelegatingHandlers);
         _result[routeIndex].DownstreamRoute[0].ServiceName.ShouldBe(expected.ServiceName);
@@ -348,7 +342,6 @@ public class StaticRoutesCreatorTests : UnitTest
 
     private void ThenTheDepsAreCalledFor(FileRoute fileRoute, FileGlobalConfiguration globalConfig)
     {
-        _rroCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _ridkCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _rrkCreator.Verify(x => x.Create(fileRoute, It.IsAny<LoadBalancerOptions>()), Times.Once);
         _utpCreator.Verify(x => x.Create(fileRoute), Times.Exactly(2));

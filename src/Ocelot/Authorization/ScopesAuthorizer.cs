@@ -1,5 +1,5 @@
-using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
+using Ocelot.Infrastructure.Claims;
 using System.Security.Claims;
 
 namespace Ocelot.Authorization;

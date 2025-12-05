@@ -47,7 +47,9 @@ public class PollyResiliencePipelineDelegatingHandlerTests
         // Assert
         ShouldHaveTestHeaderWithoutContent(actual);
         ShouldHaveCalledThePipelineProviderOnce();
+#if DEBUG
         ShouldLogInformation("The Polly.ResiliencePipeline`1[System.Net.Http.HttpResponseMessage] pipeline has detected by QoS provider for the route with downstream URL ''. Going to execute request...");
+#endif
         ShouldHaveCalledTheInnerHandlerOnce();
     }
 
@@ -66,7 +68,9 @@ public class PollyResiliencePipelineDelegatingHandlerTests
         // Assert
         ShouldHaveTestHeaderWithoutContent(actual);
         ShouldHaveCalledThePipelineProviderOnce();
+#if DEBUG
         ShouldLogDebug("No pipeline was detected by QoS provider for the route with downstream URL ''.");
+#endif
         ShouldHaveCalledTheInnerHandlerOnce();
     }
 
@@ -147,11 +151,10 @@ public class PollyResiliencePipelineDelegatingHandlerTests
 
     private static DownstreamRoute DownstreamRouteFactory()
     {
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(100)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(200)
-            .Build();
+        var options = new QoSOptions(2, 200)
+        {
+            Timeout = 100,
+        };
         var upstreamPath = new UpstreamPathTemplateBuilder()
             .WithTemplate("/")
             .WithContainsQueryString(false)

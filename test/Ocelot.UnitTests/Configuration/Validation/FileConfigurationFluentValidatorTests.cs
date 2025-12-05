@@ -7,7 +7,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Logging;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -176,7 +176,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
-        configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
+        configuration.GlobalConfiguration.QoSOptions = new()
         {
             TimeoutValue = 1,
             ExceptionsAllowedBeforeBreaking = 1,
@@ -218,7 +218,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Arrange
         var route = GivenDefaultRoute("/laura", "/").WithKey("Laura");
         var configuration = GivenAConfiguration(route);
-        configuration.GlobalConfiguration.QoSOptions = new FileQoSOptions
+        configuration.GlobalConfiguration.QoSOptions = new()
         {
             TimeoutValue = 1,
             ExceptionsAllowedBeforeBreaking = 1,
@@ -500,7 +500,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     {
         // Arrange
         var route = GivenDefaultRoute();
-        route.AuthenticationOptions.AuthenticationProviderKey = "Test";
+        route.AuthenticationOptions = new() { AuthenticationProviderKey = "Test" };
         GivenAConfiguration(route);
         GivenTheAuthSchemeExists("Test");
 
