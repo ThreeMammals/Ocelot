@@ -35,7 +35,7 @@ public class ScopesAuthorizer : IScopesAuthorizer
 
         // There should not be more than one scope claim that has space-separated value by design
         // Some providers use array value some space-separated value but not both
-        if (userScopes.Count == 1 && userScopes[0].Contains(' '))
+        if (userScopes.Count == 1 && userScopes[0].Contains(SpaceChar))
         {
             userScopes = userScopes[0].Split(SpaceChar, StringSplitOptions.RemoveEmptyEntries);
         }
