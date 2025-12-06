@@ -35,6 +35,7 @@ public class ScopesAuthorizer : IScopesAuthorizer
 
         // There should not be more than one scope claim that has space-separated value by design
         // Some providers use array value some space-separated value but not both
+        // https://datatracker.ietf.org/doc/html/rfc8693#name-scope-scopes-claim
         if (userScopes.Count == 1 && userScopes[0].Contains(SpaceChar))
         {
             userScopes = userScopes[0].Split(SpaceChar, StringSplitOptions.RemoveEmptyEntries);
@@ -51,3 +52,4 @@ public class ScopesAuthorizer : IScopesAuthorizer
         return new OkResponse<bool>(true);
     }
 }
+
