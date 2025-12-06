@@ -4,7 +4,7 @@ namespace Ocelot.Provider.Polly;
 
 /// <summary>
 /// Polly requirements for the <see href="https://www.pollydocs.org/strategies/circuit-breaker.html">Circuit breaker resilience strategy</see>.
-/// The subjects of this strategy are the <see cref="QoSOptions.ExceptionsAllowedBeforeBreaking"/> and <see cref="QoSOptions.DurationOfBreak"/> properties.
+/// The subjects of this strategy are the <see cref="QoSOptions.MinimumThroughput"/> and <see cref="QoSOptions.BreakDuration"/> properties.
 /// </summary>
 public static class CircuitBreakerStrategy
 {

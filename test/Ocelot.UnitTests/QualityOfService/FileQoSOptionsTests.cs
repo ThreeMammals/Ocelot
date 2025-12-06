@@ -1,8 +1,7 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration.FileModels;
+namespace Ocelot.UnitTests.QualityOfService;
 
 public class FileQoSOptionsTests
 {
@@ -16,10 +15,13 @@ public class FileQoSOptionsTests
 
         // Assert
         Assert.Null(actual.DurationOfBreak);
+        Assert.Null(actual.BreakDuration);
         Assert.Null(actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Null(actual.MinimumThroughput);
         Assert.Null(actual.FailureRatio);
         Assert.Null(actual.SamplingDuration);
         Assert.Null(actual.TimeoutValue);
+        Assert.Null(actual.Timeout);
     }
 
     [Fact]
@@ -31,10 +33,13 @@ public class FileQoSOptionsTests
         FileQoSOptions expected = new()
         {
             DurationOfBreak = 1,
-            ExceptionsAllowedBeforeBreaking = 2,
-            FailureRatio = 3.0D,
-            SamplingDuration = 4,
-            TimeoutValue = 5,
+            BreakDuration = 2,
+            ExceptionsAllowedBeforeBreaking = 3,
+            MinimumThroughput = 4,
+            FailureRatio = 5.0D,
+            SamplingDuration = 6,
+            TimeoutValue = 7,
+            Timeout = 8,
         };
 
         // Act
@@ -53,19 +58,21 @@ public class FileQoSOptionsTests
         // Arrange
         FileQoSOptions expected = new()
         {
-            DurationOfBreak = 1,
+            DurationOfBreak = 3,
+            BreakDuration = 3,
             ExceptionsAllowedBeforeBreaking = 2,
-            FailureRatio = 3.0D,
-            SamplingDuration = 4,
-            TimeoutValue = 5,
+            MinimumThroughput = 2,
+            FailureRatio = 4.0D,
+            SamplingDuration = 5,
+            TimeoutValue = 6,
+            Timeout = 6,
         };
-        QoSOptions from = new QoSOptionsBuilder()
-            .WithDurationOfBreak(1)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithFailureRatio(3.0D)
-            .WithSamplingDuration(4)
-            .WithTimeoutValue(5)
-            .Build();
+        QoSOptions from = new(2, 3)
+        {
+            FailureRatio = 4.0D,
+            SamplingDuration = 5,
+            Timeout = 6,
+        };
 
         // Act
         FileQoSOptions actual = new(from); // copying
@@ -78,9 +85,12 @@ public class FileQoSOptionsTests
     private static void AssertEquality(FileQoSOptions actual, FileQoSOptions expected)
     {
         Assert.Equal(expected.DurationOfBreak, actual.DurationOfBreak);
+        Assert.Equal(expected.BreakDuration, actual.BreakDuration);
         Assert.Equal(expected.ExceptionsAllowedBeforeBreaking, actual.ExceptionsAllowedBeforeBreaking);
+        Assert.Equal(expected.MinimumThroughput, actual.MinimumThroughput);
         Assert.Equal(expected.FailureRatio, actual.FailureRatio);
         Assert.Equal(expected.SamplingDuration, actual.SamplingDuration);
         Assert.Equal(expected.TimeoutValue, actual.TimeoutValue);
+        Assert.Equal(expected.Timeout, actual.Timeout);
     }
 }

@@ -1,9 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
-using Ocelot.Configuration.File;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
+using Ocelot.QualityOfService;
 
 namespace Ocelot.Requester;
 

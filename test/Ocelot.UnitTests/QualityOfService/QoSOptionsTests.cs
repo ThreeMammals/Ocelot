@@ -1,8 +1,7 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.UnitTests.Configuration;
+namespace Ocelot.UnitTests.QualityOfService;
 
 public class QoSOptionsTests
 {
@@ -10,22 +9,21 @@ public class QoSOptionsTests
     public void Ctor_Copy_ShouldCopy()
     {
         // Arrange
-        var copyee = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(1)
-            .WithDurationOfBreak(2)
-            .WithTimeoutValue(3)
-            .WithFailureRatio(4.0D)
-            .WithSamplingDuration(5)
-            .Build();
+        var copyee = new QoSOptions(1, 2)
+        {
+            FailureRatio = 3.0D,
+            SamplingDuration = 4,
+            Timeout = 5,
+        };
 
         // Act
         var actual = new QoSOptions(copyee);
 
         // Assert
         Assert.Equivalent(copyee, actual);
-        Assert.Equal(copyee.ExceptionsAllowedBeforeBreaking, actual.ExceptionsAllowedBeforeBreaking);
-        Assert.Equal(copyee.DurationOfBreak, actual.DurationOfBreak);
-        Assert.Equal(copyee.TimeoutValue, actual.TimeoutValue);
+        Assert.Equal(copyee.MinimumThroughput, actual.MinimumThroughput);
+        Assert.Equal(copyee.BreakDuration, actual.BreakDuration);
+        Assert.Equal(copyee.Timeout, actual.Timeout);
         Assert.Equal(copyee.FailureRatio, actual.FailureRatio);
         Assert.Equal(copyee.SamplingDuration, actual.SamplingDuration);
     }
@@ -49,9 +47,10 @@ public class QoSOptionsTests
     public void UseQos_ExceptionsAllowedBeforeBreaking_ShouldUse(int exceptionsAllowed, bool expected)
     {
         // Arrange
-        var opts = new QoSOptionsBuilder()
-            .WithExceptionsAllowedBeforeBreaking(exceptionsAllowed)
-            .Build(); // timeoutValue is null
+        var opts = new QoSOptions()
+        {
+            MinimumThroughput = exceptionsAllowed,
+        }; // timeoutValue is null
 
         // Act, Assert
         Assert.Equal(expected, opts.UseQos);
@@ -65,9 +64,7 @@ public class QoSOptionsTests
     public void UseQos_TimeoutValue_ShouldUse(int? timeout, bool expected)
     {
         // Arrange
-        var opts = new QoSOptionsBuilder()
-            .WithTimeoutValue(timeout)
-            .Build(); // no exceptionsAllowedBeforeBreaking
+        var opts = new QoSOptions(timeout); // no exceptionsAllowedBeforeBreaking
 
         // Act, Assert
         Assert.Equal(expected, opts.UseQos);

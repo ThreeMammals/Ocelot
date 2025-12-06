@@ -680,7 +680,7 @@ public class DownstreamRouteFinderTests : UnitTest
             DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
             HttpHandlerOptions = new(),
             LoadBalancerOptions = new(),
-            QoSOptions = new QoSOptionsBuilder().Build(),
+            QoSOptions = new(),
             ServiceProviderConfiguration = serviceProviderConfig,
         };
     }

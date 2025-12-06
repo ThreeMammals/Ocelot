@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DependencyInjection;
-using Ocelot.Errors.QoS;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Provider.Polly;
 using Ocelot.Provider.Polly.Interfaces;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 using Polly;
 
 namespace Ocelot.UnitTests.Polly;
@@ -112,11 +112,10 @@ public class OcelotBuilderExtensionsTests
     private static ServiceProvider GivenServiceProvider(Action<IOcelotBuilder> withAddPolly, out DownstreamRoute route)
     {
         var services = new ServiceCollection();
-        var options = new QoSOptionsBuilder()
-            .WithTimeoutValue(100)
-            .WithExceptionsAllowedBeforeBreaking(2)
-            .WithDurationOfBreak(200)
-            .Build();
+        var options = new QoSOptions(2, 200)
+        {
+            Timeout = 100,
+        };
         route = new DownstreamRouteBuilder()
             .WithQosOptions(options)
             .Build();
