@@ -309,7 +309,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
         await GivenIHaveAToken(scope: "api.read api.write openid offline_access");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheStatusCodeShouldBeOK();
         await ThenTheResponseBodyAsync();
     }
 
@@ -343,15 +343,15 @@ public sealed class AuthorizationTests : AuthenticationSteps
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Extra spaces handled");
+        await GivenThereIsExternalJwtSigningService("api.read", "api.write");
+        GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenIHaveAToken(scope: "  api.read   api.write  ");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        await ThenTheResponseBodyShouldBeAsync("Extra spaces handled");
+        ThenTheStatusCodeShouldBeOK();
+        await ThenTheResponseBodyAsync();
     }
 
     [Fact]
@@ -364,15 +364,15 @@ public sealed class AuthorizationTests : AuthenticationSteps
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(route.AuthenticationOptions.AllowedScopes.ToArray());
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Single scope no spaces");
+        await GivenThereIsExternalJwtSigningService("api.read");
+        GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenIHaveAToken(scope: "api.read");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        await ThenTheResponseBodyShouldBeAsync("Single scope no spaces");
+        ThenTheStatusCodeShouldBeOK();
+        await ThenTheResponseBodyAsync();
     }
 
     private static void Void() { }
