@@ -8,6 +8,8 @@ public class ScopesAuthorizer : IScopesAuthorizer
 {
     public const string Scope = "scope";
 
+    private const char SpaceChar = (char)32;
+
     private readonly IClaimsParser _claimsParser;
 
     public ScopesAuthorizer(IClaimsParser claimsParser)
@@ -31,14 +33,9 @@ public class ScopesAuthorizer : IScopesAuthorizer
 
         IList<string> userScopes = values.Data;
 
-        if (userScopes.Count == 1)
+        if (userScopes.Count == 1 && userScopes[0].Contains(' '))
         {
-            var scope = userScopes[0];
-
-            if (scope.Contains(' '))
-            {
-                userScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            }
+            userScopes = userScopes[0].Split(SpaceChar, StringSplitOptions.RemoveEmptyEntries);
         }
 
         var matchesScopes = routeAllowedScopes.Intersect(userScopes);
