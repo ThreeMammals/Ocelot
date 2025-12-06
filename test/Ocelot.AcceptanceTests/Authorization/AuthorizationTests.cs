@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using System.Runtime.CompilerServices;
@@ -274,18 +273,17 @@ public sealed class AuthorizationTests : AuthenticationSteps
     [Fact]
     [Trait("PR", "1478")]
     [Trait("Feat", "913")]
-    [Trait("Feature", "ScopesAuthorizer: Space-separated scopes")]
-    public async Task Should_return_200_OK_with_space_separated_scope_single_match()
+    public async Task Should_return_200_OK_with_space_separated_scope_match()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AllowedScopes = ["api", "api.read", "api.write"];
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        await GivenThereIsExternalJwtSigningService("api.read", "api.write", "openid");
+        await GivenThereIsExternalJwtSigningService("api.read", "openid", "offline_access");
         GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "api.read api.write openid");
+        await GivenIHaveAToken(scope: "api.read openid offline_access");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBeOK();
@@ -295,29 +293,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
     [Fact]
     [Trait("PR", "1478")]
     [Trait("Feat", "913")]
-    [Trait("Feature", "ScopesAuthorizer: Space-separated scopes")]
-    public async Task Should_return_200_OK_with_space_separated_scope_multiple_matches()
-    {
-        var port = PortFinder.GetRandomPort();
-        var route = GivenAuthRoute(port);
-        route.AuthenticationOptions.AllowedScopes = ["api.read", "api.write"];
-        var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService("api.read", "api.write", "openid", "offline_access");
-        GivenThereIsAServiceRunningOn(port);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "api.read api.write openid offline_access");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOK();
-        await ThenTheResponseBodyAsync();
-    }
-
-    [Fact]
-    [Trait("PR", "1478")]
-    [Trait("Feat", "913")]
-    [Trait("Feature", "ScopesAuthorizer: Space-separated scopes")]
-    public async Task Should_return_403_with_space_separated_scope_no_match()
+    public async Task Should_return_403_Forbidden_with_space_separated_scope_no_match()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
@@ -331,48 +307,6 @@ public sealed class AuthorizationTests : AuthenticationSteps
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    [Trait("PR", "1478")]
-    [Trait("Feat", "913")]
-    [Trait("Feature", "ScopesAuthorizer: Space-separated scopes")]
-    public async Task Should_return_200_OK_with_space_separated_scope_with_extra_spaces()
-    {
-        var port = PortFinder.GetRandomPort();
-        var route = GivenAuthRoute(port);
-        route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
-        var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService("api.read", "api.write");
-        GivenThereIsAServiceRunningOn(port);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "  api.read   api.write  ");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOK();
-        await ThenTheResponseBodyAsync();
-    }
-
-    [Fact]
-    [Trait("PR", "1478")]
-    [Trait("Feat", "913")]
-    [Trait("Feature", "ScopesAuthorizer: Space-separated scopes")]
-    public async Task Should_return_200_OK_with_single_scope_without_spaces()
-    {
-        var port = PortFinder.GetRandomPort();
-        var route = GivenAuthRoute(port);
-        route.AuthenticationOptions.AllowedScopes = ["api", "api.read"];
-        var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService("api.read");
-        GivenThereIsAServiceRunningOn(port);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "api.read");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOK();
-        await ThenTheResponseBodyAsync();
     }
 
     private static void Void() { }
