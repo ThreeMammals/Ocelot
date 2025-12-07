@@ -1,5 +1,6 @@
-using Ocelot.Responses;
 using Ocelot.Infrastructure.Claims;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.Responses;
 using System.Security.Claims;
 
 namespace Ocelot.Authorization;
@@ -7,8 +8,7 @@ namespace Ocelot.Authorization;
 public class ScopesAuthorizer : IScopesAuthorizer
 {
     public const string Scope = "scope";
-
-    private const char SpaceChar = (char)32;
+    public const char SpaceChar = (char)32;
 
     private readonly IClaimsParser _claimsParser;
 
@@ -17,6 +17,10 @@ public class ScopesAuthorizer : IScopesAuthorizer
         _claimsParser = claimsParser;
     }
 
+    /// <inheritdoc/>
+    public string ScopeClaim => Scope;
+
+    /// <inheritdoc/>
     public Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes)
     {
         if (routeAllowedScopes == null || routeAllowedScopes.Count == 0)
@@ -24,8 +28,7 @@ public class ScopesAuthorizer : IScopesAuthorizer
             return new OkResponse<bool>(true);
         }
 
-        var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, Scope);
-
+        var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, ScopeClaim);
         if (values.IsError)
         {
             return new ErrorResponse<bool>(values.Errors);
@@ -42,14 +45,12 @@ public class ScopesAuthorizer : IScopesAuthorizer
         }
 
         var matchesScopes = routeAllowedScopes.Intersect(userScopes);
-
         if (!matchesScopes.Any())
         {
             return new ErrorResponse<bool>(
-                new ScopeNotAuthorizedError($"no one user scope: '{string.Join(',', userScopes)}' match with some allowed scope: '{string.Join(',', routeAllowedScopes)}'"));
+                new ScopeNotAuthorizedError($"no one user scope: '{userScopes.Csv()}' match with some allowed scope: '{routeAllowedScopes.Csv()}'"));
         }
 
         return new OkResponse<bool>(true);
     }
 }
-

@@ -270,9 +270,10 @@ public sealed class AuthorizationTests : AuthenticationSteps
         await ThenTheResponseBodyAsync();
     }
 
+    #region PR 1478
     [Fact]
-    [Trait("PR", "1478")]
-    [Trait("Feat", "913")]
+    [Trait("Bug", "913")] // https://github.com/ThreeMammals/Ocelot/issues/913
+    [Trait("PR", "1478")] // https://github.com/ThreeMammals/Ocelot/pull/1478
     public async Task Should_return_200_OK_with_space_separated_scope_match()
     {
         var port = PortFinder.GetRandomPort();
@@ -283,7 +284,7 @@ public sealed class AuthorizationTests : AuthenticationSteps
         await GivenThereIsExternalJwtSigningService("api.read", "openid", "offline_access");
         GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "api.read openid offline_access");
+        await GivenIHaveATokenWithScope("api.read openid offline_access");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBeOK();
@@ -291,8 +292,8 @@ public sealed class AuthorizationTests : AuthenticationSteps
     }
 
     [Fact]
+    [Trait("Bug", "913")]
     [Trait("PR", "1478")]
-    [Trait("Feat", "913")]
     public async Task Should_return_403_Forbidden_with_space_separated_scope_no_match()
     {
         var port = PortFinder.GetRandomPort();
@@ -303,16 +304,17 @@ public sealed class AuthorizationTests : AuthenticationSteps
         GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "api.read api.write openid");
+        await GivenIHaveATokenWithScope("api.read api.write openid");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
     }
+    #endregion PR 1478
 
     private static void Void() { }
-
-    private async Task GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
-        => await GivenIHaveAToken(scope, null, JwtSigningServerUrl, null, testName);
-    private async Task GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
-        => await GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, null, testName);
+    private const string DefaultAudience = null;
+    private Task<BearerToken> GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
+        => GivenIHaveAToken(scope, null, JwtSigningServerUrl, DefaultAudience, testName);
+    private Task<BearerToken> GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
+        => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, DefaultAudience, testName);
 }

@@ -101,6 +101,9 @@ public class AuthenticationSteps : Steps
         app.MapGet("/connect", () => "Hello! Connected!");
         app.MapPost("/token", (AuthenticationTokenRequest model) =>
         {
+            // The signing server should be eligible to sign predefined claims as specified in its configuration.
+            // If an unknown scope or claim is requested for inclusion in a JWT, the server should reject the request.
+            // Therefore, the server configuration should be well-known to the client; otherwise, it poses a security risk.
             if (!apiScopes.Intersect(model.Scopes.Split(' ')).Any())
             {
                 return Results.BadRequest();
