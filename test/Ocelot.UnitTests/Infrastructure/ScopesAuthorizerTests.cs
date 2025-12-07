@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.Infrastructure;
 public class ScopesAuthorizerTests : UnitTest
 {
     private readonly ScopesAuthorizer _authorizer;
-    public Mock<IClaimsParser> _parser;
+    private readonly Mock<IClaimsParser> _parser;
 
     public ScopesAuthorizerTests()
     {
@@ -93,7 +93,10 @@ public class ScopesAuthorizerTests : UnitTest
         ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
     }
 
+    #region PR 1478
     [Fact]
+    [Trait("Bug", "913")] // https://github.com/ThreeMammals/Ocelot/issues/913
+    [Trait("PR", "1478")] // https://github.com/ThreeMammals/Ocelot/pull/1478
     public void Should_split_space_separated_scope_and_match()
     {
         // Arrange
@@ -110,6 +113,8 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
     public void Should_split_space_separated_scope_and_match_single_scope()
     {
         // Arrange
@@ -126,6 +131,8 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
     public void Should_split_space_separated_scope_but_not_match()
     {
         // Arrange
@@ -143,6 +150,8 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
     public void Should_handle_multiple_scope_claims_without_splitting()
     {
         // Arrange
@@ -159,6 +168,8 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
     public void Should_not_split_single_scope_without_spaces()
     {
         // Arrange
@@ -175,6 +186,8 @@ public class ScopesAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
     public void Should_handle_empty_string_after_splitting()
     {
         // Arrange
@@ -189,6 +202,7 @@ public class ScopesAuthorizerTests : UnitTest
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
     }
+    #endregion PR 1478
 
     private void GivenTheParserReturns(Response<List<string>> response)
     {
