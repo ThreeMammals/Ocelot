@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
 using System.Runtime.CompilerServices;
@@ -271,10 +270,51 @@ public sealed class AuthorizationTests : AuthenticationSteps
         await ThenTheResponseBodyAsync();
     }
 
-    private static void Void() { }
+    #region PR 1478
+    [Fact]
+    [Trait("Bug", "913")] // https://github.com/ThreeMammals/Ocelot/issues/913
+    [Trait("PR", "1478")] // https://github.com/ThreeMammals/Ocelot/pull/1478
+    public async Task Should_return_200_OK_with_space_separated_scope_match()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["api", "api.read", "api.write"];
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAConfiguration(configuration);
+        await GivenThereIsExternalJwtSigningService("api.read", "openid", "offline_access");
+        GivenThereIsAServiceRunningOn(port);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenIHaveATokenWithScope("api.read openid offline_access");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOK();
+        await ThenTheResponseBodyAsync();
+    }
 
-    private async Task GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
-        => await GivenIHaveAToken(scope, null, JwtSigningServerUrl, null, testName);
-    private async Task GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
-        => await GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, null, testName);
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public async Task Should_return_403_Forbidden_with_space_separated_scope_no_match()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        route.AuthenticationOptions.AllowedScopes = ["admin", "superuser"];
+        var configuration = GivenConfiguration(route);
+        await GivenThereIsExternalJwtSigningService("api.read", "api.write", "openid");
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenIHaveATokenWithScope("api.read api.write openid");
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+    }
+    #endregion PR 1478
+
+    private static void Void() { }
+    private const string DefaultAudience = null;
+    private Task<BearerToken> GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
+        => GivenIHaveAToken(scope, null, JwtSigningServerUrl, DefaultAudience, testName);
+    private Task<BearerToken> GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
+        => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, DefaultAudience, testName);
 }

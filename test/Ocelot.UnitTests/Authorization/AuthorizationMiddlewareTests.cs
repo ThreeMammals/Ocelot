@@ -30,7 +30,13 @@ public class AuthorizationMiddlewareTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<AuthorizationMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
         _middleware = new AuthorizationMiddleware(_next, _claimsAuthorizer.Object, _scopesAuthorizer.Object, _loggerFactory.Object);
+
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(_warnings.Add);
     }
+
+    private readonly List<Func<string>> _warnings = new();
+    private List<string> GetWarnings() => _warnings.Select(w => w()).ToList();
 
     [Fact]
     [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
@@ -73,6 +79,39 @@ public class AuthorizationMiddlewareTests : UnitTest
 
         // Assert
         ThenClaimsAuthorizerIsCalled();
+    }
+
+    [Fact]
+    [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
+    [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
+    [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
+    public async Task Invoke_RouteIsAuthenticated_WhenScopesAuthorizerError_ShouldUpsertErrors()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(new(new("authScheme")))
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/test").Build())
+            .Build();
+        var response = new ErrorResponse<bool>(new ScopeNotAuthorizedError("No match"));
+        GivenTheDownStreamRouteIs(new(), route);
+        GivenScopesAuthorizerReturns(response);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenScopesAuthorizerIsCalled();
+#if DEBUG
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once);
+        var warnings = GetWarnings();
+        Assert.Contains($"The '/test' route encountered authorization errors due to user scopes:{Environment.NewLine}ScopeNotAuthorizedError: No match", warnings);
+#endif
+        var errors = _httpContext.Items.Errors();
+        Assert.NotEmpty(errors);
+        Assert.Contains(response.Errors[0], errors);
+        var actual = Assert.Single(errors);
+        Assert.Same(response.Errors[0], actual);
+        Assert.Equal("No match", actual.Message);
     }
 
     private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamRoute downstreamRoute)
