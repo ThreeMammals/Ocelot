@@ -16,7 +16,6 @@ using System.Text.RegularExpressions;
 
 bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
-const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
 static string NL = Environment.NewLine;
@@ -65,7 +64,7 @@ Task("Default")
 	.IsDependentOn("Build");
 Task("Build")
 	.IsDependentOn("Tests");
-Task("PullRequest")
+Task("LatestFramework")
 	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
@@ -95,7 +94,7 @@ Task("Compile")
 		{
 			Configuration = compileConfig,
 		};
-		if (target == PullRequest)
+		if (target == "LatestFramework")
 		{
 			settings.Framework = LatestFramework; // build using .NET 9 SDK only
 		}
@@ -471,7 +470,7 @@ private void WriteReleaseNotes()
 private List<string> GetTFMs()
 {
 	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == PullRequest)
+	if (target == "LatestFramework")
     {
         tfms.Clear();
         tfms.Add(LatestFramework);
