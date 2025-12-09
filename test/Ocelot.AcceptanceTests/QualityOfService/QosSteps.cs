@@ -37,7 +37,7 @@ public class QosSteps : Steps, IQosSteps
             self.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // Circuit is open
 
             GivenThereIsABrokenServiceOnline(HttpStatusCode.OK, index, isDiscovery: isDiscovery);
-            int cicdMs = IsCiCd() ? 50 : 0;
+            int cicdMs = IsCiCd() ? 100 : 0;
             await GivenIWaitAsync(qos.BreakDuration.Value + cicdMs); // Wait until the circuit is either half-open or closed
             await self.WhenIGetUrlOnTheApiGateway(upstreamPath);
             await self.ThenTheResponseShouldBeAsync(HttpStatusCode.OK, "OK");
