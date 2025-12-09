@@ -7,8 +7,7 @@ on:
       - develop
       - 'release/**'
 jobs:
-  #1 Official required job to run utilizing GitHub Actions infrastructure
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -65,41 +64,108 @@ jobs:
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
+  # build-windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Setup .NET 9
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: 9.0.x
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Restore
+  #       run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+  #     - name: Build
+  #       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
+  #     - name: Add DNS-records & Install mycert.pfx certificate
+  #       run: |
+  #         sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+  #         ping -c 1 threemammals.com
+  #         # Install mycert.pfx certificate
+  #         pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+  #         openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+  #         cert='/usr/local/share/ca-certificates/mycert.crt'
+  #         sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+  #         sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+  #         sudo ls /etc/ssl/certs/ | grep mycert
+  #         sudo chmod 644 $cert # adjusting the permissions
+  #         ls -l $cert # verify ownership
+  #         openssl x509 -in $cert -text -noout
+  #         echo Installation is DONE
+  #     - name: Unit Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #     - name: Acceptance Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
+  # build-macos:
+  #   needs: build-windows
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Setup .NET 9
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: 9.0.x
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Restore
+  #       run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+  #     - name: Build
+  #       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
+  #     - name: Add DNS-records & Install mycert.pfx certificate
+  #       run: |
+  #         sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+  #         ping -c 1 threemammals.com
+  #         # Install mycert.pfx certificate
+  #         pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
+  #         openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
+  #         cert='/usr/local/share/ca-certificates/mycert.crt'
+  #         sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
+  #         sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+  #         sudo ls /etc/ssl/certs/ | grep mycert
+  #         sudo chmod 644 $cert # adjusting the permissions
+  #         ls -l $cert # verify ownership
+  #         openssl x509 -in $cert -text -noout
+  #         echo Installation is DONE
+  #     - name: Unit Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+  #     - name: Acceptance Tests
+  #       run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
   build-cake:
-    needs: build
+    needs: [build-linux]
     runs-on: ubuntu-latest
     # environment: build.cake
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       # NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet
-      # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      # GITHUB_SHA: ${{ github.sha }}
-      # GITHUB_REF: ${{ github.ref }}
-      # GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Info
       run: |
         dotnet --version
         echo ------------------------
         dotnet --info
-    - name: Check .NET 8
-      id: check-dotnet8
-      run: |
-        DOTNET8_INFO=$(dotnet --info)
-        echo "Checking for .NET 8 SDK in dotnet info output..."
-        echo "-----------------------------------------------"
-        echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
-        if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
-          echo "dotnet8_installed=true" >> $GITHUB_ENV
-        else
-          echo "dotnet8_installed=false" >> $GITHUB_ENV
-        fi
-    - name: Setup .NET 8
-      if: env.dotnet8_installed == 'false'
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
+    # - name: Check .NET 8
+    #   id: check-dotnet8
+    #   run: |
+    #     DOTNET8_INFO=$(dotnet --info)
+    #     echo "Checking for .NET 8 SDK in dotnet info output..."
+    #     echo "-----------------------------------------------"
+    #     echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+    #     if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
+    #       echo "dotnet8_installed=true" >> $GITHUB_ENV
+    #     else
+    #       echo "dotnet8_installed=false" >> $GITHUB_ENV
+    #     fi
+    # - name: Setup .NET 8
+    #   if: env.dotnet8_installed == 'false'
+    #   uses: actions/setup-dotnet@v3
+    #   with:
+    #     dotnet-version: 8.0.x
     - name: Check .NET 9
       id: check-dotnet9
       run: |
@@ -141,7 +207,7 @@ jobs:
     - name: Cake Build
       uses: cake-build/cake-action@v3
       with:
-        target: Build
+        target: LatestFramework # Build
     - name: Prepare Coveralls
       run: |
         # echo "GITHUB_REF is ${{ env.GITHUB_REF }}"

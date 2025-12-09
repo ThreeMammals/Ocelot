@@ -84,6 +84,7 @@ public sealed class PollyQoSTests : PollyQosSteps
     [Trait("Bug", "2085")] // https://github.com/ThreeMammals/Ocelot/issues/2085
     public async Task Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
+        int cicdMs = IsCiCd() ? 50 : 0;
         int invalidDuration = CircuitBreakerStrategy.LowBreakDuration; // valid value must be >500ms, exact 500ms is invalid
         var qos = new QoSOptions(2, invalidDuration)
         {
@@ -105,7 +106,7 @@ public sealed class PollyQoSTests : PollyQosSteps
         await WhenIGetUrlOnTheApiGateway("/"); // still opened
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // still opened
         GivenThereIsABrokenServiceOnline(HttpStatusCode.NotFound);
-        await GivenIWaitMilliseconds(500); // BreakDuration should elapse now
+        await GivenIWaitMilliseconds(500 + cicdMs); // BreakDuration should elapse now
         await WhenIGetUrlOnTheApiGateway("/"); // closed, service online
         ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // closed, service online
         ThenTheResponseBodyShouldBe(nameof(HttpStatusCode.NotFound));

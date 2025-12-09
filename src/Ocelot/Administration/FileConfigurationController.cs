@@ -50,7 +50,7 @@ public class FileConfigurationController : Controller
         }
         catch (Exception e)
         {
-            return new BadRequestObjectResult($"{e.Message}:{e.StackTrace}");
+            return new BadRequestObjectResult($"{e.Message}:{Environment.NewLine}{e.StackTrace}");
         }
     }
 }
