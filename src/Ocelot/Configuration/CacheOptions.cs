@@ -37,13 +37,14 @@ public class CacheOptions
     /// <param name="region">The region of caching.</param>
     /// <param name="header">The header name to control cached value.</param>
     /// <param name="enableContentHashing">The switcher for content hashing. If not speciefied, false value is used by default.</param>
+    /// <param name="statusCodes">Status codes to filter.</param>
     public CacheOptions(int? ttlSeconds, string region, string header, bool? enableContentHashing, int[] statusCodes)
     {
         TtlSeconds = ttlSeconds ?? NoSeconds;
         Region = region;
         Header = header.IfEmpty(Oc_Cache_Control);
         EnableContentHashing = enableContentHashing ?? false;
-        StatusCodes = statusCodes;
+        StatusCodes = ConvertToHttpStatusCodes(statusCodes);
     }
 
     /// <summary>Time-to-live seconds.</summary>
@@ -60,6 +61,23 @@ public class CacheOptions
 
     public bool UseCache => TtlSeconds > NoSeconds;
 
-    //public HttpStatusCode[] StatusCodes { get; }
-    public int[] StatusCodes { get; }
+    public HttpStatusCode[] StatusCodes { get; }
+
+    private static HttpStatusCode[] ConvertToHttpStatusCodes(int[] statusCodes)
+    {
+        if (statusCodes is null || statusCodes.Length == 0)
+        {
+            return [];
+        }
+
+        return statusCodes.Select(code =>
+        {
+            if (!Enum.IsDefined(typeof(HttpStatusCode), code))
+            {
+                throw new ArgumentException($"Invalid HTTP status code: {code}", nameof(statusCodes));
+            }
+
+            return (HttpStatusCode)code;
+        }).ToArray();
+    }
 }
