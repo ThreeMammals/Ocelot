@@ -60,7 +60,7 @@ public class OutputCacheMiddleware : OcelotMiddleware
         cached = await CreateCachedResponse(downstreamResponse);
 
         var ttl = TimeSpan.FromSeconds(options.TtlSeconds);
-        if (options.StatusCodes == null || options.StatusCodes.Contains((int)cached.StatusCode))
+        if (options.StatusCodes == null || options.StatusCodes.Length == 0 || options.StatusCodes.Contains(cached.StatusCode))
         {
             _outputCache.Add(downStreamRequestCacheKey, cached, options.Region, ttl);
             Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
