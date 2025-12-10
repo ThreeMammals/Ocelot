@@ -101,9 +101,12 @@ public class AuthenticationSteps : Steps
         app.MapGet("/connect", () => "Hello! Connected!");
         app.MapPost("/token", (AuthenticationTokenRequest model) =>
         {
-            if (!apiScopes.Contains(model.Scope))
+            // The signing server should be eligible to sign predefined claims as specified in its configuration.
+            // If an unknown scope or claim is requested for inclusion in a JWT, the server should reject the request.
+            // Therefore, the server configuration should be well-known to the client; otherwise, it poses a security risk.
+            if (!apiScopes.Intersect(model.Scopes.Split(' ')).Any())
             {
-                return Results.NotFound();
+                return Results.BadRequest();
             }
             var token = GenerateToken(url, model);
             return Results.Json(token);
@@ -144,7 +147,7 @@ public class AuthenticationSteps : Steps
         {
             Audience = ocelotClient?.BaseAddress.Authority, // Ocelot DNS is token audience
             ApiSecret = testName, // "secret",
-            Scope = scope ?? OcelotScopes.Api,
+            Scopes = scope ?? OcelotScopes.Api,
             Claims = claims is null ? new() : new(claims),
             UserId = testName,
             UserName = testName,
@@ -279,7 +282,7 @@ public class AuthenticationSteps : Steps
             new(JwtRegisteredClaimNames.Sub, auth.UserId),
             new(JwtRegisteredClaimNames.Email, auth.UserName),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ScopesAuthorizer.Scope, auth.Scope),
+            new(ScopesAuthorizer.Scope, auth.Scopes),
         };
         claims.AddRange(roleClaims);
         claims.AddRange(userClaims);

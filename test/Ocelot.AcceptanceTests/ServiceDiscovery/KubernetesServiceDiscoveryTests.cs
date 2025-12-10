@@ -391,13 +391,14 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             Host = u.Host,
             Port = u.Port,
             Type = type,
-            PollingInterval = 3, // 3ms is very fast polling, make sense for PollKube provider only
+            PollingInterval = 5 * MaxKubernetesDelay, // 3ms is very fast polling, make sense for PollKube provider only
             Namespace = ServiceNamespace(),
             Token = token ?? "Test",
         };
         return configuration;
     }
 
+    private const int MaxKubernetesDelay = 10; // ms
     private void GivenThereIsAFakeKubernetesProvider(EndpointsV1 endpoints,
         [CallerMemberName] string serviceName = nameof(KubernetesServiceDiscoveryTests))
         => GivenThereIsAFakeKubernetesProvider(endpoints, true, 0, 0, serviceName, ServiceNamespace());
@@ -410,7 +411,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         namespaces ??= ServiceNamespace();
         handler.GivenThereIsAServiceRunningOn(_kubernetesUrl, async context =>
         {
-            await Task.Delay(Random.Shared.Next(1, 10)); // emulate integration delay up to 10 milliseconds
+            await Task.Delay(Random.Shared.Next(1, MaxKubernetesDelay)); // emulate integration delay up to 10 milliseconds
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
             {
                 string json;

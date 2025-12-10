@@ -138,7 +138,7 @@ jobs:
     - name: Cake Build
       uses: cake-build/cake-action@v3
       with:
-        target: PullRequest
+        target: LatestFramework
     - name: Prepare Coveralls
       run: |
         echo "Listing environment variables:"
