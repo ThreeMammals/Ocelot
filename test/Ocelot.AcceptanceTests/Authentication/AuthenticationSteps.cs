@@ -20,13 +20,6 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 public class AuthenticationSteps : Steps
 {
-    public static class OcelotScopes
-    {
-        public const string Api = "api";
-        public const string Api2 = "api2";
-        public const string OcAdmin = "oc-admin";
-    }
-
     protected BearerToken token;
     private readonly Dictionary<string, WebApplication> _jwtSigningServers;
     protected string JwtSigningServerUrl => _jwtSigningServers.First().Key;
@@ -176,11 +169,22 @@ public class AuthenticationSteps : Steps
 
     protected readonly Dictionary<string, AuthenticationTokenRequest> AuthTokens = new();
     protected AuthenticationTokenRequest AuthToken => AuthTokens.First().Value;
+    public event EventHandler<AuthenticationTokenRequestEventArgs> AuthTokenRequesting;
+    protected virtual void OnAuthenticationTokenRequest(AuthenticationTokenRequestEventArgs e)
+        => AuthTokenRequesting?.Invoke(this, e);
+    public class AuthenticationTokenRequestEventArgs : EventArgs
+    {
+        public AuthenticationTokenRequest Request { get; }
+        public AuthenticationTokenRequestEventArgs(AuthenticationTokenRequest request) => Request = request;
+    }
+
     protected async Task<BearerToken> GivenToken(AuthenticationTokenRequest auth, string path = "", string issuerUrl = null)
     {
         using var http = new HttpClient();
         issuerUrl ??= JwtSigningServerUrl;
+
         AuthTokens[issuerUrl] = auth;
+        OnAuthenticationTokenRequest(new(auth));
 
         var tokenUrl = $"{issuerUrl + path}/token";
         var content = JsonContent.Create(auth);
@@ -200,14 +204,14 @@ public class AuthenticationSteps : Steps
     public FileRoute GivenAuthRoute(int port,
         string scheme = JwtBearerDefaults.AuthenticationScheme,
         bool allowAnonymous = false,
-        string validScope = null,
+        string[] scopes = null,
         string method = null)
     {
         var r = GivenDefaultRoute(port).WithMethods(method ?? HttpMethods.Get);
         r.AuthenticationOptions = new(scheme)
         {
             AllowAnonymous = allowAnonymous,
-            AllowedScopes = validScope is null ? null : [validScope],
+            AllowedScopes = scopes?.ToList(),
         };
         return r;
     }
@@ -280,7 +284,8 @@ public class AuthenticationSteps : Steps
         var claims = new List<Claim>(4 + auth.Claims.Count)
         {
             new(JwtRegisteredClaimNames.Sub, auth.UserId),
-            new(JwtRegisteredClaimNames.Email, auth.UserName),
+            new(OcelotClaims.OcSub, auth.UserId), // this is a handy lifehack to fix current authorization services like IScopesAuthorizer and IClaimsAuthorizer, which don't support JWT standard and claim types in URL form, aka the ':' delimiter issue with the JSON configuration provider
+            new(JwtRegisteredClaimNames.Email, $"{auth.UserName}@ocelot.net"),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ScopesAuthorizer.Scope, auth.Scopes),
         };
