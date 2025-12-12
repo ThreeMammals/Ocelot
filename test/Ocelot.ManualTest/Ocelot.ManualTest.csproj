@@ -20,10 +20,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Views;Areas\**\Views">
