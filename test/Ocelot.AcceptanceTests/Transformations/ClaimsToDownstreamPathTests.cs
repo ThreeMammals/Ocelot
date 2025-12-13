@@ -1,23 +1,20 @@
-﻿//using IdentityServer4.AccessTokenValidation;
-//using IdentityServer4.Models;
-//using IdentityServer4.Test;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
-using System.Security.Claims;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.AcceptanceTests.Transformations;
 
-public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
+public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
 {
     //private readonly IWebHost _identityServerBuilder;
     //private readonly Action<IdentityServerAuthenticationOptions> _options;
     private readonly string _identityServerRootUrl;
+    private string _downstreamFinalPath;
 
-    public ClaimsToHeadersForwardingTests()
+    public ClaimsToDownstreamPathTests()
     {
         var identityServerPort = PortFinder.GetRandomPort();
         _identityServerRootUrl = $"http://localhost:{identityServerPort}";
@@ -33,82 +30,73 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
     }
 
     [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
-    public void Should_return_response_200_and_foward_claim_as_header()
+    public void Should_return_200_and_change_downstream_path()
     {
         //var user = new TestUser
         //{
         //    Username = "test",
         //    Password = "test",
         //    SubjectId = "registered|1231231",
-        //    Claims = new List<Claim>
-        //    {
-        //        new("CustomerId", "123"),
-        //        new("LocationId", "1"),
-        //    },
         //};
         var port = PortFinder.GetRandomPort();
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    AuthenticationOptions = new FileAuthenticationOptions
-                    {
-                        AuthenticationProviderKey = "Test",
-                        AllowedScopes = new List<string>
-                        {
-                            "openid", "offline_access", "api",
-                        },
-                    },
-                    AddHeadersToRequest =
-                    {
-                        {"CustomerId", "Claims[CustomerId] > value"},
-                        {"LocationId", "Claims[LocationId] > value"},
-                        {"UserType", "Claims[sub] > value[0] > |"},
-                        {"UserId", "Claims[sub] > value[1] > |"},
-                    },
-                },
-            },
+               {
+                   new()
+                   {
+                       DownstreamPathTemplate = "/users/{userId}",
+                       DownstreamHostAndPorts = new List<FileHostAndPort>
+                       {
+                           Localhost(port),
+                       },
+                       DownstreamScheme = "http",
+                       UpstreamPathTemplate = "/users/{userId}",
+                       UpstreamHttpMethod = ["Get"],
+                       AuthenticationOptions = new FileAuthenticationOptions
+                       {
+                           AuthenticationProviderKeys = ["Test"],
+                           AllowedScopes = new List<string>
+                           {
+                               "openid", "offline_access", "api",
+                           },
+                       },
+                       ChangeDownstreamPathTemplate =
+                       {
+                           {"userId", "Claims[sub] > value[1] > |"},
+                       },
+                   },
+               },
         };
 
         this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(nameof(Should_return_response_200_and_foward_claim_as_header)))
+            .And(x => GivenIHaveAToken(nameof(Should_return_200_and_change_downstream_path)))
             .And(x => GivenThereIsAConfiguration(configuration))
 
             //.And(x => GivenOcelotIsRunning(_options, "Test"))
             .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/users"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("CustomerId: 123 LocationId: 1 UserType: registered UserId: 1231231"))
+            .And(x => ThenTheResponseBodyShouldBe("UserId: 1231231"))
+            .And(x => ThenTheDownstreamPathIs("/users/1231231"))
             .BDDfy();
+    }
+
+    private void ThenTheDownstreamPathIs(string path)
+    {
+        _downstreamFinalPath.ShouldBe(path);
     }
 
     private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
     {
-        handler.GivenThereIsAServiceRunningOn(port, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
-            var customerId = context.Request.Headers.First(x => x.Key == "CustomerId").Value.First();
-            var locationId = context.Request.Headers.First(x => x.Key == "LocationId").Value.First();
-            var userType = context.Request.Headers.First(x => x.Key == "UserType").Value.First();
-            var userId = context.Request.Headers.First(x => x.Key == "UserId").Value.First();
-
-            var responseBody = $"CustomerId: {customerId} LocationId: {locationId} UserType: {userType} UserId: {userId}";
+            _downstreamFinalPath = context.Request.Path.Value;
+            var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
+            var responseBody = $"UserId: {userId}";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(responseBody);
+            return context.Response.WriteAsync(responseBody);
         });
     }
 
@@ -182,6 +170,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthenticationSteps
     //            app.UseIdentityServer();
     //        })
     //        .Build();
+
     //    await _identityServerBuilder.StartAsync();
     //    await Steps.VerifyIdentityServerStarted(url);
     //}
