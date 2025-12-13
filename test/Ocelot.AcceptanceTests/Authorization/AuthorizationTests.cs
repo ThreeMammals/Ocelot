@@ -1,6 +1,5 @@
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authorization;
@@ -231,10 +230,4 @@ public sealed class AuthorizationTests : AuthorizationSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
     }
     #endregion PR 1478
-
-    private const string DefaultAudience = null;
-    private Task<BearerToken> GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
-        => GivenIHaveAToken(scope, null, JwtSigningServerUrl, DefaultAudience, testName);
-    private Task<BearerToken> GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
-        => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, DefaultAudience, testName);
 }
