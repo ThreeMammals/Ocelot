@@ -1,182 +1,59 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.AcceptanceTests.Authentication;
-using Ocelot.Configuration.File;
+using Ocelot.AcceptanceTests.Authorization;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
-public sealed class ClaimsToDownstreamPathTests : AuthenticationSteps
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-downstream-path">Claims to Downstream Path</see>.
+/// </summary>
+[Trait("Feat", "968")] // https://github.com/ThreeMammals/Ocelot/pull/968
+[Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
+public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
 {
-    //private readonly IWebHost _identityServerBuilder;
-    //private readonly Action<IdentityServerAuthenticationOptions> _options;
-    private readonly string _identityServerRootUrl;
-    private string _downstreamFinalPath;
-
-    public ClaimsToDownstreamPathTests()
+    [Fact]
+    public void Should_return_200_OK_and_change_downstream_path()
     {
-        var identityServerPort = PortFinder.GetRandomPort();
-        _identityServerRootUrl = $"http://localhost:{identityServerPort}";
-
-        //_options = o =>
-        //{
-        //    o.Authority = _identityServerRootUrl;
-        //    o.ApiName = "api";
-        //    o.RequireHttpsMetadata = false;
-        //    o.SupportedTokens = SupportedTokens.Both;
-        //    o.ApiSecret = "secret";
-        //};
-    }
-
-    [Fact(Skip = "TODO: Requires redevelopment because IdentityServer4 is deprecated")]
-    public void Should_return_200_and_change_downstream_path()
-    {
-        //var user = new TestUser
-        //{
-        //    Username = "test",
-        //    Password = "test",
-        //    SubjectId = "registered|1231231",
-        //};
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
+        string[] allowedScopes = ["openid", "offline_access", "api"];
+        var route = GivenAuthRoute(port, scopes: allowedScopes);
+        route.DownstreamPathTemplate = "/users/{userId}";
+        route.UpstreamPathTemplate = "/users/{userId}";
+        route.ChangeDownstreamPathTemplate = new()
         {
-            Routes = new List<FileRoute>
-               {
-                   new()
-                   {
-                       DownstreamPathTemplate = "/users/{userId}",
-                       DownstreamHostAndPorts = new List<FileHostAndPort>
-                       {
-                           Localhost(port),
-                       },
-                       DownstreamScheme = "http",
-                       UpstreamPathTemplate = "/users/{userId}",
-                       UpstreamHttpMethod = ["Get"],
-                       AuthenticationOptions = new FileAuthenticationOptions
-                       {
-                           AuthenticationProviderKeys = ["Test"],
-                           AllowedScopes = new List<string>
-                           {
-                               "openid", "offline_access", "api",
-                           },
-                       },
-                       ChangeDownstreamPathTemplate =
-                       {
-                           {"userId", "Claims[sub] > value[1] > |"},
-                       },
-                   },
-               },
+            { "userId", $"Claims[{OcelotClaims.OcSub}] > value[1] > |" },
         };
-
-        this.Given(x => null) //x.GivenThereIsAnIdentityServerOn(_identityServerRootUrl, "api", AccessTokenType.Jwt, user))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK))
-            .And(x => GivenIHaveAToken(nameof(Should_return_200_and_change_downstream_path)))
+        var configuration = GivenConfiguration(route);
+        var testName = TestName();
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
             .And(x => GivenThereIsAConfiguration(configuration))
-
-            //.And(x => GivenOcelotIsRunning(_options, "Test"))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))
+            .And(x => GivenIUpdateSubClaim())
+            .And(x => GivenIHaveAToken(testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/users"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("UserId: 1231231"))
-            .And(x => ThenTheDownstreamPathIs("/users/1231231"))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Victor"))
+            .And(x => ThenTheDownstreamPathIs("/users/1234567890"))
             .BDDfy();
     }
 
+    private const string UserId = "1234567890";
+    protected override void UpdateSubClaim(object sender, AuthenticationTokenRequestEventArgs e)
+    {
+        e.Request.UserId += "|" + UserId; // -> sub claim -> oc-sub claim
+    }
+
+    private string _downstreamFinalPath;
     private void ThenTheDownstreamPathIs(string path)
     {
         _downstreamFinalPath.ShouldBe(path);
     }
-
-    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode)
+    protected override Task MapStatus(HttpContext context)
     {
-        handler.GivenThereIsAServiceRunningOn(port, context =>
-        {
-            _downstreamFinalPath = context.Request.Path.Value;
-            var userId = _downstreamFinalPath.Replace("/users/", string.Empty);
-            var responseBody = $"UserId: {userId}";
-            context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(responseBody);
-        });
-    }
-
-    //private async Task GivenThereIsAnIdentityServerOn(string url, string apiName, AccessTokenType tokenType, TestUser user)
-    //{
-    //    _identityServerBuilder = TestHostBuilder.Create()
-    //        .UseUrls(url)
-    //        .UseKestrel()
-    //        .UseContentRoot(Directory.GetCurrentDirectory())
-    //        .UseIISIntegration()
-    //        .UseUrls(url)
-    //        .ConfigureServices(services =>
-    //        {
-    //            services.AddLogging();
-    //            services.AddIdentityServer()
-    //                .AddDeveloperSigningCredential()
-    //                .AddInMemoryApiScopes(new List<ApiScope>
-    //                {
-    //                    new(apiName, "test"),
-    //                    new("openid", "test"),
-    //                    new("offline_access", "test"),
-    //                    new("api.readOnly", "test"),
-    //                })
-    //                .AddInMemoryApiResources(new List<ApiResource>
-    //                {
-    //                    new()
-    //                    {
-    //                        Name = apiName,
-    //                        Description = "My API",
-    //                        Enabled = true,
-    //                        DisplayName = "test",
-    //                        Scopes = new List<string>
-    //                        {
-    //                            "api",
-    //                            "openid",
-    //                            "offline_access",
-    //                        },
-    //                        ApiSecrets = new List<Secret>
-    //                        {
-    //                            new()
-    //                            {
-    //                                Value = "secret".Sha256(),
-    //                            },
-    //                        },
-    //                        UserClaims = new List<string>
-    //                        {
-    //                            "CustomerId", "LocationId", "UserType", "UserId",
-    //                        },
-    //                    },
-    //                })
-    //                .AddInMemoryClients(new List<Client>
-    //                {
-    //                    new()
-    //                    {
-    //                        ClientId = "client",
-    //                        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-    //                        ClientSecrets = new List<Secret> {new("secret".Sha256())},
-    //                        AllowedScopes = new List<string> { apiName, "openid", "offline_access" },
-    //                        AccessTokenType = tokenType,
-    //                        Enabled = true,
-    //                        RequireClientSecret = false,
-    //                    },
-    //                })
-    //                .AddTestUsers(new List<TestUser>
-    //                {
-    //                    user,
-    //                });
-    //        })
-    //        .Configure(app =>
-    //        {
-    //            app.UseIdentityServer();
-    //        })
-    //        .Build();
-
-    //    await _identityServerBuilder.StartAsync();
-    //    await Steps.VerifyIdentityServerStarted(url);
-    //}
-    public override void Dispose()
-    {
-        //_identityServerBuilder?.Dispose();
-        base.Dispose();
+        _downstreamFinalPath = context.Request.Path.Value;
+        return base.MapStatus(context);
     }
 }

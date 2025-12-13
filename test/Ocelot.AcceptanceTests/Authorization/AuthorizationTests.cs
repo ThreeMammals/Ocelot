@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authorization;
 
-public sealed class AuthorizationTests : AuthenticationSteps
+public sealed class AuthorizationTests : AuthorizationSteps
 {
     private static Dictionary<string, string> GivenRouteClaimsRequirement(FileRoute route, string claimType, string claimValue)
     {
@@ -33,13 +33,6 @@ public sealed class AuthorizationTests : AuthenticationSteps
             [claimType] = claimValue, // but require exact claim with the scope after claims-to-claims transformation
         };
         return claims;
-    }
-
-    private void GivenIUpdateSubClaim() => AuthTokenRequesting += UpdateSubClaim;
-    private static void UpdateSubClaim(object sender, AuthenticationTokenRequestEventArgs e)
-    {
-        var uid = e.Request.UserId;
-        e.Request.UserId = string.Concat(OcelotScopes.OcAdmin, "|", uid); // -> sub claim -> oc-sub claim
     }
 
     [Fact]

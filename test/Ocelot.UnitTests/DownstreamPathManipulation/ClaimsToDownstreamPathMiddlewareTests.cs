@@ -13,6 +13,8 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation;
 
+[Trait("Feat", "968")] // https://github.com/ThreeMammals/Ocelot/pull/968
+[Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
 {
     private readonly Mock<IChangeDownstreamPathTemplate> _changePath;
