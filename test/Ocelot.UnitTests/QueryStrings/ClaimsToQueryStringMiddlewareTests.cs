@@ -5,13 +5,17 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings;
-using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using System.Security.Claims;
 
 namespace Ocelot.UnitTests.QueryStrings;
 
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-query-string-parameters">Claims to Query String Parameters</see>.
+/// </summary>
+[Trait("Commit", "f7f4a39")] // https://github.com/ThreeMammals/Ocelot/commit/f7f4a392f0743b38cd0206a81b4c094e60fe7b93
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public class ClaimsToQueryStringMiddlewareTests : UnitTest
 {
     private readonly Mock<IAddQueriesToRequest> _addQueries;

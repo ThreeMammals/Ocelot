@@ -11,7 +11,7 @@ using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer;
 using Ocelot.Multiplexer;
-using Ocelot.QueryStrings.Middleware;
+using Ocelot.QueryStrings;
 using Ocelot.RateLimiting;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
