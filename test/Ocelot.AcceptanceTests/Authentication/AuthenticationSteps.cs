@@ -85,7 +85,7 @@ public class AuthenticationSteps : Steps
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "threemammals.com", // see mycert.pfx
+                    ValidIssuer = "threemammals.com", // see mycert2.pfx
                     ValidAudience = "threemammals.com",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ocelot.AcceptanceTests.Authentication")),
                 };
