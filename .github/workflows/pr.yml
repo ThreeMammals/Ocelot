@@ -50,28 +50,7 @@ jobs:
         cat $hosts
         echo ------------------------
         ping -c 1 threemammals.com
-    # - name: Install mycert.pfx certificate
-    #   run: |
-    #     pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-    #     if [ -f "$pfx" ]; then
-    #       echo mycert.pfx file found
-    #     fi
-    #     echo Converting PFX to PEM format...
-    #     openssl version
-    #     openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-    #     echo Moving the certificate to the trusted CA store...
-    #     cert='/usr/local/share/ca-certificates/mycert.crt'
-    #     sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-    #     echo Updating the trusted certificates...
-    #     sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-    #     echo Verifying installation by listing in /etc/ssl/certs/ folder...
-    #     sudo ls /etc/ssl/certs/ | grep mycert
-    #     echo Verifying installation by openssl for $cert file...
-    #     sudo chmod 644 $cert # adjusting the permissions
-    #     ls -l $cert # verify ownership
-    #     openssl x509 -in $cert -text -noout
-    #     echo Installation is DONE
-    - name: Install mycert.pfx certificate
+    - name: Install mycert2.crt certificate
       run: |
         crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
         if [ -f "$crt" ]; then
@@ -79,7 +58,7 @@ jobs:
         fi
         openssl version
         echo Moving the certificate to the trusted CA store...
-        cert='/usr/local/share/ca-certificates/mycert.crt'
+        cert='/usr/local/share/ca-certificates/mycert2.crt'
         sudo cp $crt $cert # Copy the certificate to the system's trusted CA directory
         echo Updating the trusted certificates...
         sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
@@ -111,37 +90,42 @@ jobs:
         run: dotnet --info
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Restore
-        run: dotnet --version # restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
-      - name: Build
-        run: dotnet --version # build --no-restore ./Ocelot.Release.sln --framework net9.0
-      - name: Add DNS-records & Install mycert.pfx certificate
+      - name: Add DNS-records & Install certificate
         run: |
-          # sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
           # Append entry to hosts file
           Add-Content -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Value "127.0.0.1 threemammals.com"
-
-          # ping -c 1 threemammals.com
           # Ping 3 times
           Test-Connection -ComputerName "threemammals.com" -Count 3
-
-          # Install mycert.pfx certificate
+          # Install mycert2.crt certificate
+          $crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
+          if (Test-Path $crt) {
+              Write-Output "mycert2.crt file found"
+          }
           openssl version
-          # winget install ShiningLight.OpenSSL.Dev --accept-source-agreements --accept-package-agreements --silent #.Light
-          # openssl version
-          # pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-          # $pfxPath = ".\test\Ocelot.AcceptanceTests\mycert2.pfx"
-          # openssl pkcs12 -in $pfxPath -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-          # openssl pkcs12 -export -in mycert2_pub.pem -inkey mycert2_enc.pem -out mycert2.pfx
+          Write-Output "Moving the certificate to the trusted CA store..."
+          $crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
+          # Import-Certificate -FilePath $crt -CertStoreLocation Cert:\CurrentUser\Root
+          # Import into the Local Machine Trusted Root Certification Authorities store
+          Import-Certificate -FilePath $crt -CertStoreLocation Cert:\LocalMachine\Root
 
-          # cert='/usr/local/share/ca-certificates/mycert.crt'
-          # sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-          # sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-          # sudo ls /etc/ssl/certs/ | grep mycert
-          # sudo chmod 644 $cert # adjusting the permissions
-          # ls -l $cert # verify ownership
-          # openssl x509 -in $cert -text -noout
-          # echo Installation is DONE
+          Write-Output "Verifying installation by listing trusted root certificates..."
+          # List certificates in the Trusted Root store and filter for 'mycert'
+          Get-ChildItem -Path Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*threemammals*" }
+
+          Write-Output "Verifying installation by openssl for $crt file..."
+          $cert = Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*threemammals*" }
+          $cert_file = "C:\temp\mycert2_installed.cer"
+          Export-Certificate -Cert $cert -FilePath $cert_file
+          if (Test-Path $cert_file) {
+              Write-Output "$cert_file file found"
+          }
+          # Display certificate details using OpenSSL (if installed)
+          openssl x509 -in $cert_file -text -noout
+          Write-Output "Installation is DONE"
+      - name: Restore
+        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+      - name: Build
+        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
       - name: Unit Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
