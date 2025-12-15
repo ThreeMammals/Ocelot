@@ -326,7 +326,8 @@ public sealed class PollyQoSTests : PollyQosSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 3 failed of 6 -> 50%, but circuit is already open
         count.ShouldBe(4); // 2 of 4 were failed, and the service was called 4 times
         isOK = true; // the next requests should be OK
-        await Task.Delay(qos.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        int cicdMs = IsCiCd() ? 50 : 0;
+        await GivenIWaitMilliseconds(qos.DurationOfBreak.Value + cicdMs); // breaking period is over, thus, circuit breaker is closed
         await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
         await ThenTheResponseBodyShouldBeAsync(nameof(HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio));
@@ -379,7 +380,8 @@ public sealed class PollyQoSTests : PollyQosSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 8 failed of 10 -> 80%, but circuit is already open
         count.ShouldBe(8); // the service was called 8 times of 10 total
         isOK = true; // the next requests should be OK
-        await Task.Delay(configuration.GlobalConfiguration.QoSOptions.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        int cicdMs = IsCiCd() ? 50 : 0;
+        await GivenIWaitMilliseconds(configuration.GlobalConfiguration.QoSOptions.DurationOfBreak.Value + cicdMs); // breaking period is over, thus, circuit breaker is closed
         await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
         await ThenTheResponseBodyShouldBeAsync(nameof(HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio));

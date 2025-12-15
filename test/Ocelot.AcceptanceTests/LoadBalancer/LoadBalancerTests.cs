@@ -39,7 +39,9 @@ public sealed class LoadBalancerTests : ConcurrentSteps
             .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
             .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzer, ports, 99))
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(99, ports.Length), Top(99, ports.Length)))
-            .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion
+
+            // .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion, this is ideal case when load is not high
+            .And(x => _counters.ShouldAllBe(c => c == 50 || c == 49, CalledTimesMessage())) // LeastConnection algorithm distributes counters as 49/50 or 50/49 depending on thread synchronization
             .BDDfy();
     }
 
