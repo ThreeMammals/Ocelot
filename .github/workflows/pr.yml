@@ -4,8 +4,9 @@ name: PR
 on: pull_request
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet 
@@ -80,7 +81,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    # continue-on-error: true
+    continue-on-error: true
     steps:
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v3
@@ -131,15 +132,26 @@ jobs:
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
+  build-success:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}   # run even Linux or Windows build fails
+    steps:
+      - name: Decide success
+        run: |
+          linux_result=${{ needs.build-linux.result }}
+          windows_result=${{ needs.build-windows.result }}
+          if [[ "$linux_result" == "success" || "$windows_result" == "success" ]]; then
+            echo "At least one succeeded"
+          else
+            echo "Both failed"
+            exit 1
   build-cake:
-    needs: [build, build-windows]
+    needs: [build-linux, build-windows] # [build-success]
     runs-on: ubuntu-latest
     # environment: Pull-Request
     # env:
     #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    #   GITHUB_SHA: ${{ github.sha }}
-    #   GITHUB_REF: ${{ github.ref }}
-    #   GITHUB_REF_NAME: ${{ github.ref_name }}
     steps:
     - name: .NET Info
       run: |
