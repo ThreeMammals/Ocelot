@@ -80,7 +80,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    continue-on-error: true
+    # continue-on-error: true
     steps:
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v3
@@ -131,85 +131,92 @@ jobs:
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
-  # build-cake:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   # environment: Pull-Request
-  #   # env:
-  #   #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  #   #   GITHUB_SHA: ${{ github.sha }}
-  #   #   GITHUB_REF: ${{ github.ref }}
-  #   #   GITHUB_REF_NAME: ${{ github.ref_name }}
-  #   steps:
-  #   - name: .NET Info
-  #     run: |
-  #       dotnet --version
-  #       echo ------------------------
-  #       dotnet --info
-  #   - name: Check .NET 9
-  #     id: check-dotnet9
-  #     run: |
-  #       DOTNET9_INFO=$(dotnet --info)
-  #       echo "Checking for .NET 9 SDK in dotnet info output..."
-  #       echo "-----------------------------------------------"
-  #       echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
-  #       if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
-  #         echo "dotnet9_installed=true" >> $GITHUB_ENV
-  #       else
-  #         echo "dotnet9_installed=false" >> $GITHUB_ENV
-  #       fi
-  #   - name: Setup .NET 9
-  #     if: env.dotnet9_installed == 'false'
-  #     uses: actions/setup-dotnet@v3
-  #     with:
-  #       dotnet-version: 9.0.x
-  #   - name: .NET Info
-  #     run: dotnet --info
-  #   - name: Branch Name
-  #     run: echo "Branch name is ${{ github.ref_name }}"
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
-  #     with:
-  #       fetch-depth: 0
-  #   - name: Add threemammals.com DNS-record
-  #     run: |
-  #       sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-  #       ping -c 1 threemammals.com
-  #   - name: Install mycert.pfx certificate
-  #     run: |
-  #       pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-  #       openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-  #       cert='/usr/local/share/ca-certificates/mycert.crt'
-  #       sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-  #       sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-  #       sudo ls /etc/ssl/certs/ | grep mycert
-  #       sudo chmod 644 $cert # adjusting the permissions
-  #       ls -l $cert # verify ownership
-  #       openssl x509 -in $cert -text -noout
-  #       echo Installation is DONE
-  #   - name: Cake Build
-  #     uses: cake-build/cake-action@v3
-  #     with:
-  #       target: LatestFramework
-  #   - name: Prepare Coveralls
-  #     run: |
-  #       echo "Listing environment variables:"
-  #       env | sort
-  #       echo ------------ Detect coverage file ------------ 
-  #       coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
-  #       echo "Detected first folder : $coverage_1st_folder"
-  #       coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
-  #       echo "Detecting file $coverage_file ..."
-  #       if [ -f "$coverage_file" ]; then
-  #         echo "Coverage file exists."
-  #         echo "COVERALLS_coverage_file_exists=true" >> $GITHUB_ENV
-  #         echo "COVERALLS_coverage_file=$coverage_file" >> $GITHUB_ENV
-  #       else
-  #         echo "Coverage file DOES NOT exist!"
-  #         echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
-  #       fi
-  #   - name: Coveralls
-  #     if: env.COVERALLS_coverage_file_exists == 'true'
-  #     uses: coverallsapp/github-action@v2
-  #     with:
-  #       file: ${{ env.COVERALLS_coverage_file }}
+  build-cake:
+    needs: [build, build-windows]
+    runs-on: ubuntu-latest
+    # environment: Pull-Request
+    # env:
+    #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    #   GITHUB_SHA: ${{ github.sha }}
+    #   GITHUB_REF: ${{ github.ref }}
+    #   GITHUB_REF_NAME: ${{ github.ref_name }}
+    steps:
+    - name: .NET Info
+      run: |
+        dotnet --version
+        echo ------------------------
+        dotnet --info
+    - name: Check .NET 9
+      id: check-dotnet9
+      run: |
+        DOTNET9_INFO=$(dotnet --info)
+        echo "Checking for .NET 9 SDK in dotnet info output..."
+        echo "-----------------------------------------------"
+        echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
+        if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
+          echo "dotnet9_installed=true" >> $GITHUB_ENV
+        else
+          echo "dotnet9_installed=false" >> $GITHUB_ENV
+        fi
+    - name: Setup .NET 9
+      if: env.dotnet9_installed == 'false'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 9.0.x
+    - name: .NET Info
+      run: dotnet --info
+    - name: Branch Name
+      run: echo "Branch name is ${{ github.ref_name }}"
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Add threemammals.com DNS-record
+      run: |
+        sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
+        ping -c 1 threemammals.com
+    - name: Install mycert.pfx certificate
+      run: |
+        crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
+        if [ -f "$crt" ]; then
+          echo mycert2.crt file found
+        fi
+        openssl version
+        echo Moving the certificate to the trusted CA store...
+        cert='/usr/local/share/ca-certificates/mycert2.crt'
+        sudo cp $crt $cert # Copy the certificate to the system's trusted CA directory
+        echo Updating the trusted certificates...
+        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
+        echo Verifying installation by listing in /etc/ssl/certs/ folder...
+        sudo ls /etc/ssl/certs/ | grep mycert
+        echo Verifying installation by openssl for $cert file...
+        sudo chmod 644 $cert # adjusting the permissions
+        ls -l $cert # verify ownership
+        openssl x509 -in $cert -text -noout
+        echo Installation is DONE
+    - name: Cake Build
+      uses: cake-build/cake-action@v3
+      with:
+        target: LatestFramework
+    - name: Prepare Coveralls
+      run: |
+        echo "Listing environment variables:"
+        env | sort
+        echo ------------ Detect coverage file ------------ 
+        coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
+        echo "Detected first folder : $coverage_1st_folder"
+        coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
+        echo "Detecting file $coverage_file ..."
+        if [ -f "$coverage_file" ]; then
+          echo "Coverage file exists."
+          echo "COVERALLS_coverage_file_exists=true" >> $GITHUB_ENV
+          echo "COVERALLS_coverage_file=$coverage_file" >> $GITHUB_ENV
+        else
+          echo "Coverage file DOES NOT exist!"
+          echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
+        fi
+    - name: Coveralls
+      if: env.COVERALLS_coverage_file_exists == 'true'
+      uses: coverallsapp/github-action@v2
+      with:
+        file: ${{ env.COVERALLS_coverage_file }}
