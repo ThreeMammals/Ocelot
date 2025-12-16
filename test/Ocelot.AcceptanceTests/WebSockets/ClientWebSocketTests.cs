@@ -7,6 +7,7 @@ using Ocelot.Logging;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
@@ -65,6 +66,9 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
             PreAuthenticate = false,
             Credentials = new NetworkCredential("tom@threemammals.com", "password"),
         };
+        if (IsCiCd() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // MacOS
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // TODO Makes sense to log in console
+
         using var invoker = new HttpMessageInvoker(handler);
         await _ws.ConnectAsync(echoEndpoint, invoker, _cts.Token);
 

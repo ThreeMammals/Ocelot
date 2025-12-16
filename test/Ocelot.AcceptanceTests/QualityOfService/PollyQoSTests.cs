@@ -117,12 +117,10 @@ public sealed class PollyQoSTests : PollyQosSteps
     /// The <see cref="TimeoutRejectedException"/> objects are handled by the <see cref="CircuitBreakerStrategyOptions{HttpResponseMessage}.ShouldHandle"/> predicate, which is part of the default implementation of the <see cref="CircuitBreakerStrategy"/>.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous acceptance test.</returns>
-    //private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
-    [Fact] // [SkippableFact]
+    [Fact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public async Task Should_open_circuit_breaker_then_close()
     {
-        // Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var qos = new QoSOptions(CircuitBreakerStrategy.LowMinimumThroughput, CircuitBreakerStrategy.LowBreakDuration + 1) // 501
         {
             Timeout = 1000, // -> TimeoutRejectedException
