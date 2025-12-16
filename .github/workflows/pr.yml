@@ -79,6 +79,64 @@ jobs:
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity normal --framework net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
+  build-macos:
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+      - name: .NET Info
+        run: dotnet --info
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x .github/sh/add-dns-records.macos.sh
+      - name: Add DNS-records
+        run: ./.github/sh/add-dns-records.macos.sh
+          
+      - name: Install certificate
+        run: |
+          # Install mycert2.crt certificate
+          crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
+          openssl version
+          echo Moving the certificate to the trusted CA store...
+          if [ ! -f "$crt" ]; then
+            echo "Certificate file not found: $crt"
+            exit 1
+          fi
+          cert_root="/Library/Keychains/System.keychain"
+          sudo security add-trusted-cert -d -r trustRoot -k "$cert_root" "$crt"
+          echo Certificate added to trusted keychain.
+
+          echo Verifying installation by listing certificates in $cert_root ...
+          sudo security find-certificate -a -c "threemammals" -p "$cert_root"
+
+          echo Verifying installation by openssl for $crt in $cert_root ...
+          # Export the matching certificate(s) in PEM directly (security find-certificate -p)
+          tmpcert=$(mktemp /tmp/mycert.XXXXXX.pem)
+          # Use sudo + tee so the redirected file is written with appropriate permissions
+          sudo security find-certificate -a -c "threemammals" -p "$cert_root" | sudo tee "$tmpcert" >/dev/null
+          if [ ! -s "$tmpcert" ]; then
+            echo "Failed to export certificate to $tmpcert"
+            rm -f "$tmpcert"
+            exit 1
+          fi
+          chmod 644 "$tmpcert"
+          openssl x509 -in "$tmpcert" -text -noout
+          rm -f "$tmpcert"
+          echo Installation is DONE
+      - name: Restore
+        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+      - name: Build
+        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
+      - name: Unit Tests
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      - name: Acceptance Tests
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
   build-windows:
     runs-on: windows-latest
     continue-on-error: true
@@ -133,21 +191,23 @@ jobs:
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-success:
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
-    if: ${{ always() }}   # run even Linux or Windows build fails
+    if: ${{ always() }} # run even Linux / MacOS / Windows build fails
     steps:
       - name: Decide success
         run: |
-          linux_result=${{ needs.build-linux.result }}
-          windows_result=${{ needs.build-windows.result }}
-          if [[ "$linux_result" == "success" || "$windows_result" == "success" ]]; then
+          linux_result="${{ needs.build-linux.result }}"
+          macos_result="${{ needs.build-macos.result }}"
+          windows_result="${{ needs.build-windows.result }}"
+          if [[ $linux_result == "success" || $macos_result == "success" || $windows_result == "success" ]]; then
             echo "At least one succeeded"
           else
-            echo "Both failed"
+            echo "All failed"
             exit 1
+          fi
   build-cake:
-    needs: [build-linux, build-windows] # [build-success]
+    needs: [build-success] # [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     # environment: Pull-Request
     # env:
