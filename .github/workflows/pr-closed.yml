@@ -1,0 +1,12 @@
+name: PR Closed
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete caches via gh CLI
+        run: |
+          gh cache list --limit 100 | grep "refs/pull/${{ github.event.pull_request.number }}/merge" | awk '{print $1}' | xargs -n1 gh cache delete
