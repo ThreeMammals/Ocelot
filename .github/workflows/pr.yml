@@ -14,27 +14,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v5
-    # - name: .NET Info
-    #   run: |
-    #     dotnet --version
-    #     echo ------------------------
-    #     dotnet --info
-    # - name: Check .NET 8
-    #   id: check-dotnet8
-    #   run: |
-    #     DOTNET8_INFO=$(dotnet --info)
-    #     echo "Checking for .NET 8 SDK in dotnet info output..."
-    #     echo "-----------------------------------------------"
-    #     # Print matching lines
-    #     echo "$DOTNET8_INFO" | grep -E '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
-    #     # Set environment variable based on match
-    #     if echo "$DOTNET8_INFO" | grep -qE '^\s*8\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
-    #       echo "dotnet8_installed=true" >> $GITHUB_ENV
-    #     else
-    #       echo "dotnet8_installed=false" >> $GITHUB_ENV
-    #     fi
+    - name: SH-scripts executable
+      run: |
+        chmod +x .github/steps/*.sh
+        ls -l .github/steps/*.sh
+    - name: Check .NET 9
+      id: check-dotnet9
+      run: ./.github/steps/check-dotnet.sh 9
     - name: Setup .NET 9
-      # if: env.dotnet8_installed == 'false'
+      # if: env.DOTNET9_installed == 'false'
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 9.x
@@ -45,39 +33,12 @@ jobs:
           test/**/packages.lock.json
     - name: .NET Info
       run: dotnet --info
-    - name: Add threemammals.com DNS-record
-      run: |
-        hosts='/etc/hosts'
-        echo Content of $hosts
-        echo ------------------------
-        cat $hosts
-        sudo sed -i '$a 127.0.0.1 threemammals.com' $hosts
-        echo New content of $hosts
-        echo ------------------------
-        cat $hosts
-        echo ------------------------
-        ping -c 1 threemammals.com
-    - name: Install mycert2.crt certificate
-      run: |
-        crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
-        if [ -f "$crt" ]; then
-          echo mycert2.crt file found
-        fi
-        openssl version
-        echo Moving the certificate to the trusted CA store...
-        cert='/usr/local/share/ca-certificates/mycert2.crt'
-        sudo cp $crt $cert # Copy the certificate to the system's trusted CA directory
-        echo Updating the trusted certificates...
-        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-        echo Verifying installation by listing in /etc/ssl/certs/ folder...
-        sudo ls /etc/ssl/certs/ | grep mycert
-        echo Verifying installation by openssl for $cert file...
-        sudo chmod 644 $cert # adjusting the permissions
-        ls -l $cert # verify ownership
-        openssl x509 -in $cert -text -noout
-        echo Installation is DONE
+    - name: Add DNS-records
+      run: ./.github/steps/ubuntu.add-dns-records.sh  
+    - name: Install certificate
+      run: ./.github/steps/ubuntu.install-certificate.sh
     - name: Restore
-      run: dotnet restore --locked-mode ./Ocelot.sln # -p:TargetFramework=net8.0
+      run: dotnet restore --locked-mode ./Ocelot.sln
     - name: Build
       run: dotnet build --no-restore ./Ocelot.sln --framework net8.0
     - name: Unit Tests
@@ -93,6 +54,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      - name: SH-scripts executable
+        run: |
+          chmod +x .github/steps/*.sh
+          ls -l .github/steps/*.sh
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v5
         with:
@@ -104,58 +69,12 @@ jobs:
             test/**/packages.lock.json
       - name: .NET Info
         run: dotnet --info
-
-      - name: Make script executable
-        run: chmod +x .github/sh/add-dns-records.macos.sh
       - name: Add DNS-records
-        run: ./.github/sh/add-dns-records.macos.sh
-
-      - name: Additional Loopback IPs
-        run: |
-          echo Add multiple aliases in a loop
-          for i in {2..255}; do
-            sudo ifconfig lo0 alias 127.0.0.$i up
-          done
-
-          echo Test Loopback IPs
-          for i in {2..255}; do
-            echo ping 127.0.0.$i ...
-            ping -c 1 127.0.0.$i
-          done
-  
+        run: ./.github/steps/macos.add-dns-records.sh  
       - name: Install certificate
-        run: |
-          # Install mycert2.crt certificate
-          crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
-          openssl version
-          echo Moving the certificate to the trusted CA store...
-          if [ ! -f "$crt" ]; then
-            echo "Certificate file not found: $crt"
-            exit 1
-          fi
-          cert_root="/Library/Keychains/System.keychain"
-          sudo security add-trusted-cert -d -r trustRoot -k "$cert_root" "$crt"
-          echo Certificate added to trusted keychain.
-
-          echo Verifying installation by listing certificates in $cert_root ...
-          sudo security find-certificate -a -c "threemammals" -p "$cert_root"
-
-          echo Verifying installation by openssl for $crt in $cert_root ...
-          # Export the matching certificate(s) in PEM directly (security find-certificate -p)
-          tmpcert=$(mktemp /tmp/mycert.XXXXXX.pem)
-          # Use sudo + tee so the redirected file is written with appropriate permissions
-          sudo security find-certificate -a -c "threemammals" -p "$cert_root" | sudo tee "$tmpcert" >/dev/null
-          if [ ! -s "$tmpcert" ]; then
-            echo "Failed to export certificate to $tmpcert"
-            rm -f "$tmpcert"
-            exit 1
-          fi
-          chmod 644 "$tmpcert"
-          openssl x509 -in "$tmpcert" -text -noout
-          rm -f "$tmpcert"
-          echo Installation is DONE
+        run: ./.github/steps/macos.install-certificate.sh
       - name: Restore
-        run: dotnet restore --locked-mode ./Ocelot.sln # -p:TargetFramework=net9.0
+        run: dotnet restore --locked-mode ./Ocelot.sln
       - name: Build
         run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
       - name: Unit Tests
@@ -182,40 +101,12 @@ jobs:
             test/**/packages.lock.json
       - name: .NET Info
         run: dotnet --info
-      - name: Add DNS-records & Install certificate
-        run: |
-          # Append entry to hosts file
-          Add-Content -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Value "127.0.0.1 threemammals.com"
-          # Ping 3 times
-          Test-Connection -ComputerName "threemammals.com" -Count 3
-          # Install mycert2.crt certificate
-          $crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
-          if (Test-Path $crt) {
-              Write-Output "mycert2.crt file found"
-          }
-          openssl version
-          Write-Output "Moving the certificate to the trusted CA store..."
-          $crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
-          # Import-Certificate -FilePath $crt -CertStoreLocation Cert:\CurrentUser\Root
-          # Import into the Local Machine Trusted Root Certification Authorities store
-          Import-Certificate -FilePath $crt -CertStoreLocation Cert:\LocalMachine\Root
-
-          Write-Output "Verifying installation by listing trusted root certificates..."
-          # List certificates in the Trusted Root store and filter for 'mycert'
-          Get-ChildItem -Path Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*threemammals*" }
-
-          Write-Output "Verifying installation by openssl for $crt file..."
-          $cert = Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*threemammals*" }
-          $cert_file = "C:\temp\mycert2_installed.cer"
-          Export-Certificate -Cert $cert -FilePath $cert_file
-          if (Test-Path $cert_file) {
-              Write-Output "$cert_file file found"
-          }
-          # Display certificate details using OpenSSL (if installed)
-          openssl x509 -in $cert_file -text -noout
-          Write-Output "Installation is DONE"
+      - name: Add DNS-records
+        run: ./.github/steps/windows.add-dns-records.ps1  
+      - name: Install certificate
+        run: ./.github/steps/windows.install-certificate.ps1
       - name: Restore
-        run: dotnet restore --locked-mode ./Ocelot.sln # -p:TargetFramework=net9.0
+        run: dotnet restore --locked-mode ./Ocelot.sln
       - name: Build
         run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
       - name: Unit Tests
@@ -249,27 +140,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-    # - name: .NET Info
-    #   run: |
-    #     dotnet --version
-    #     echo ------------------------
-    #     dotnet --info
-    # - name: Check .NET 9
-    #   id: check-dotnet9
-    #   run: |
-    #     DOTNET9_INFO=$(dotnet --info)
-    #     echo "Checking for .NET 9 SDK in dotnet info output..."
-    #     echo "-----------------------------------------------"
-    #     echo "$DOTNET9_INFO" | grep -E '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'
-    #     if echo "$DOTNET9_INFO" | grep -qE '^\s*9\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]'; then
-    #       echo "dotnet9_installed=true" >> $GITHUB_ENV
-    #     else
-    #       echo "dotnet9_installed=false" >> $GITHUB_ENV
-    #     fi
+      - name: SH-scripts executable
+        run: |
+          chmod +x .github/steps/*.sh
+          ls -l .github/steps/*.sh
+      - name: Check .NET 9
+        id: check-dotnet9
+        run: ./.github/steps/check-dotnet.sh 9
       - name: Setup .NET 9
-        # if: env.dotnet9_installed == 'false'
+        # if: env.DOTNET9_installed == 'false'
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 9.x
@@ -278,29 +157,12 @@ jobs:
             samples/**/packages.lock.json
             src/**/packages.lock.json
             test/**/packages.lock.json
-      - name: Add threemammals.com DNS-record
-        run: |
-          sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-          ping -c 1 threemammals.com
-      - name: Install mycert.pfx certificate
-        run: |
-          crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
-          if [ -f "$crt" ]; then
-            echo mycert2.crt file found
-          fi
-          openssl version
-          echo Moving the certificate to the trusted CA store...
-          cert='/usr/local/share/ca-certificates/mycert2.crt'
-          sudo cp $crt $cert # Copy the certificate to the system's trusted CA directory
-          echo Updating the trusted certificates...
-          sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-          echo Verifying installation by listing in /etc/ssl/certs/ folder...
-          sudo ls /etc/ssl/certs/ | grep mycert
-          echo Verifying installation by openssl for $cert file...
-          sudo chmod 644 $cert # adjusting the permissions
-          ls -l $cert # verify ownership
-          openssl x509 -in $cert -text -noout
-          echo Installation is DONE
+      - name: .NET Info
+        run: dotnet --info
+      - name: Add DNS-records
+        run: ./.github/steps/ubuntu.add-dns-records.sh  
+      - name: Install certificate
+        run: ./.github/steps/ubuntu.install-certificate.sh
       - name: Cake Build
         uses: cake-build/cake-action@v3
         with:

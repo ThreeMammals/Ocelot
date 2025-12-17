@@ -34,3 +34,16 @@ echo ------------------------
 sudo killall -HUP mDNSResponder
 
 ping -c 3 threemammals.com
+
+# Additional Loopback IPs
+echo -n "Adding multiple aliases in a loop..."
+for i in {2..255}; do
+  sudo ifconfig lo0 alias 127.0.0.$i up
+done
+echo DONE
+echo ------------------------
+echo Test Loopback IPs
+for i in {2..255}; do
+  echo ping 127.0.0.$i ...
+  ping -c 1 127.0.0.$i
+done
