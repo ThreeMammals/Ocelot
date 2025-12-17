@@ -6,7 +6,7 @@
 // #addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
 
 #r "Spectre.Console"
-using Spectre.Console
+using Spectre.Console;
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,12 +18,29 @@ bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
-static string NL = Environment.NewLine;
+string NL = Environment.NewLine;
 
-CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
-CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+// Create a CultureInfo object for UK English
+CultureInfo ukCulture = new("en-GB");
+CultureInfo.DefaultThreadCurrentCulture = ukCulture;
+CultureInfo.DefaultThreadCurrentUICulture = ukCulture;
 Information("Current Culture: " + CultureInfo.CurrentCulture);
 Information("Current UI Culture: " + CultureInfo.CurrentUICulture);
+
+// Display culture properties
+Information("Culture Name: " + ukCulture.Name);              // en-GB
+Information("Display Name: " + ukCulture.DisplayName);       // English (United Kingdom)
+Information("English Name: " + ukCulture.EnglishName);       // English (United Kingdom)
+Information("Native Name: " + ukCulture.NativeName);         // English (United Kingdom)
+Information("Two-letter ISO Language Name: " + ukCulture.TwoLetterISOLanguageName); // en
+Information("Three-letter ISO Language Name: " + ukCulture.ThreeLetterISOLanguageName); // eng
+Information("Region ISO Code: " + new RegionInfo(ukCulture.Name).TwoLetterISORegionName); // GB
+
+// Example: format a date and currency in UK style
+DateTime now = DateTime.Now;
+decimal amount = 12345.67m;
+Information("Date (UK format): " + now.ToString("D", ukCulture));
+Information("Currency (UK format): " + amount.ToString("C", ukCulture));
 
 var compileConfig = Argument("configuration", Release); // compile
 var artifactsDir = Directory("artifacts"); // build artifacts
@@ -81,9 +98,22 @@ Task("Release")
 	.IsDependentOn("PublishGitHubRelease")
     .IsDependentOn("PublishToNuget");
 
+Task("Restore")
+    .Does(() =>
+	{
+		var settings = new DotNetRestoreSettings
+		{
+			LockedMode = true, // equivalent to --locked-mode
+			// UseLockFile = true, // equivalent to --use-lock-file
+			// Sources = new[] { "https://api.nuget.org/v3/index.json" }
+		};
+		DotNetRestore(slnFile, settings);
+	});
+
 Task("Compile")
 	.IsDependentOn("Clean")
 	.IsDependentOn("Version")
+	.IsDependentOn("Restore")
 	.Does(() =>
 	{	
 		PreprocessReadMe();
@@ -93,6 +123,7 @@ Task("Compile")
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
+			NoRestore = true,
 		};
 		if (target == "LatestFramework")
 		{
