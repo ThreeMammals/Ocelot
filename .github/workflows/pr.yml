@@ -96,7 +96,20 @@ jobs:
         run: chmod +x .github/sh/add-dns-records.macos.sh
       - name: Add DNS-records
         run: ./.github/sh/add-dns-records.macos.sh
-          
+
+      - name: Additional Loopback IPs
+        run: |
+          echo Add multiple aliases in a loop
+          for i in {2..255}; do
+            sudo ifconfig lo0 alias 127.0.0.$i up
+          done
+
+          echo Test Loopback IPs
+          for i in {2..255}; do
+            echo ping 127.0.0.$i ...
+            ping -c 1 127.0.0.$i
+          done
+  
       - name: Install certificate
         run: |
           # Install mycert2.crt certificate
@@ -129,9 +142,9 @@ jobs:
           rm -f "$tmpcert"
           echo Installation is DONE
       - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+        run: dotnet restore ./Ocelot.sln -p:TargetFramework=net9.0
       - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
+        run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
       - name: Unit Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
@@ -182,9 +195,9 @@ jobs:
           openssl x509 -in $cert_file -text -noout
           Write-Output "Installation is DONE"
       - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net9.0
+        run: dotnet restore ./Ocelot.sln -p:TargetFramework=net9.0
       - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net9.0
+        run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
       - name: Unit Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests

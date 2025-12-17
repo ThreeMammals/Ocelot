@@ -298,7 +298,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         serviceName ??= ServiceName();
         var servicePorts = PortFinder.GetPorts(totalServices);
         var downstreamUrls = servicePorts
-            .Select(port => LoopbackLocalhostUrl(port, Array.IndexOf(servicePorts, port)))
+            .Select(port => LoopbackLocalhostUrl(port, Array.IndexOf(servicePorts, port))) // TODO Develop thread-safe version of the method
             .ToArray(); // based on localhost aka loopback network interface
         var downstreams = downstreamUrls.Select(url => new Uri(url))
             .ToList();
@@ -313,7 +313,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         configure?.Invoke(configuration);
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, downstreamResponses);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(services ?? WithKubernetesAndRoundRobin);
+        int ocPort = GivenOcelotIsRunning(services ?? WithKubernetesAndRoundRobin);
         return (endpoints, servicePorts);
     }
 
