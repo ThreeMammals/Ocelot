@@ -474,6 +474,7 @@ struct InsertionsGroupingItem
 	public int Count;
 	public FilesChangedItem[] Contributors;
 }
+
 private List<string> GitHelper(string command)
 {
 	IEnumerable<string> output;
@@ -485,6 +486,7 @@ private List<string> GitHelper(string command)
 		throw new Exception("Failed to execute Git command: " + command);
 	return output.ToList();
 }
+
 private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
@@ -501,7 +503,7 @@ private void WriteReleaseNotes()
 private List<string> GetTFMs()
 {
 	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework")
+	if (target == "LatestFramework" || target == "UnitTests")
     {
         tfms.Clear();
         tfms.Add(LatestFramework);
