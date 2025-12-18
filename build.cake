@@ -1,9 +1,8 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // released on 1.04.2025 with TFMs net8.0 net9.0
-// #tool dotnet:?package=coveralls.net&version=4.0.1 // Outdated! released on 07.08.22 with TFM net6.0
-#tool nuget:?package=ReportGenerator&version=5.4.5 // released on 23.03.2025 with TFM netstandard2.0
-#addin nuget:?package=Newtonsoft.Json&version=13.0.3 // Switch to a MS lib! Outdated! released on 08.03.23 with TFMs net6.0 netstandard2.0
-#addin nuget:?package=System.Text.Encodings.Web&version=9.0.3 // released on 11.03.2025 with TFMs net8.0 net9.0 netstandard2.0
-// #addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.5.1
+#tool nuget:?package=ReportGenerator&version=5.5.1
+
+#addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
+#addin nuget:?package=System.Text.Encodings.Web&version=9.0.11
 
 #r "Spectre.Console"
 using Spectre.Console;
