@@ -1,0 +1,22 @@
+name: PR Closed
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Delete caches via gh CLI
+        run: |
+          pr_no="${{ github.event.pull_request.number }}"
+          echo Pull request $pr_no cache items to be deleted...
+          gh cache list --ref refs/pull/$pr_no/merge
+          echo --------------------------------------
+          gh cache list --ref refs/pull/$pr_no/merge --json id --jq '.[].id' | xargs -n1 gh cache delete
+          echo DONE
+  # To be added

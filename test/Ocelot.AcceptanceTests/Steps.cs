@@ -40,17 +40,17 @@ public class Steps : AcceptanceSteps
     protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
         => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
 
-    private HttpStatusCode pMapStatus_StatusCode = HttpStatusCode.OK;
-    private Func<string> pMapStatus_ResponseBody;
+    protected virtual HttpStatusCode MapStatus_StatusCode { get; set; } = HttpStatusCode.OK;
+    protected virtual Func<string> MapStatus_ResponseBody { get; set; }
     protected virtual Task MapStatus(HttpContext context)
     {
-        context.Response.StatusCode = (int)pMapStatus_StatusCode;
-        return context.Response.WriteAsync(pMapStatus_ResponseBody?.Invoke() ?? string.Empty);
+        context.Response.StatusCode = (int)MapStatus_StatusCode;
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke() ?? string.Empty);
     }
     protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
     {
-        pMapStatus_StatusCode = statusCode;
-        pMapStatus_ResponseBody = () => responseBody;
+        MapStatus_StatusCode = statusCode;
+        MapStatus_ResponseBody = () => responseBody;
         handler.GivenThereIsAServiceRunningOn(port, MapStatus);
     }
 

@@ -117,12 +117,10 @@ public sealed class PollyQoSTests : PollyQosSteps
     /// The <see cref="TimeoutRejectedException"/> objects are handled by the <see cref="CircuitBreakerStrategyOptions{HttpResponseMessage}.ShouldHandle"/> predicate, which is part of the default implementation of the <see cref="CircuitBreakerStrategy"/>.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous acceptance test.</returns>
-    //private const string SkippingOnMacOS = "Skipping the test on MacOS platform: the test is stable in Linux and Windows only!";
-    [Fact] // [SkippableFact]
+    [Fact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public async Task Should_open_circuit_breaker_then_close()
     {
-        // Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), SkippingOnMacOS);
         var qos = new QoSOptions(CircuitBreakerStrategy.LowMinimumThroughput, CircuitBreakerStrategy.LowBreakDuration + 1) // 501
         {
             Timeout = 1000, // -> TimeoutRejectedException
@@ -326,7 +324,8 @@ public sealed class PollyQoSTests : PollyQosSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 3 failed of 6 -> 50%, but circuit is already open
         count.ShouldBe(4); // 2 of 4 were failed, and the service was called 4 times
         isOK = true; // the next requests should be OK
-        await Task.Delay(qos.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        int cicdMs = IsCiCd() ? 50 : 0;
+        await GivenIWaitMilliseconds(qos.DurationOfBreak.Value + cicdMs); // breaking period is over, thus, circuit breaker is closed
         await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
         await ThenTheResponseBodyShouldBeAsync(nameof(HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio));
@@ -379,7 +378,8 @@ public sealed class PollyQoSTests : PollyQosSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // 8 failed of 10 -> 80%, but circuit is already open
         count.ShouldBe(8); // the service was called 8 times of 10 total
         isOK = true; // the next requests should be OK
-        await Task.Delay(configuration.GlobalConfiguration.QoSOptions.DurationOfBreak.Value); // breaking period is over, thus, circuit breaker is closed
+        int cicdMs = IsCiCd() ? 50 : 0;
+        await GivenIWaitMilliseconds(configuration.GlobalConfiguration.QoSOptions.DurationOfBreak.Value + cicdMs); // breaking period is over, thus, circuit breaker is closed
         await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
         await ThenTheResponseBodyShouldBeAsync(nameof(HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio));
