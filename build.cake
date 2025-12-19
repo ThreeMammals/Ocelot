@@ -151,7 +151,7 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release) ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD()) ? versioning.MajorMinorPatch : versioning.SemVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -162,15 +162,8 @@ Task("Version")
 		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
 		Information("#########################");
 
-		if (IsRunningInCICD())
-		{
-			Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
-			PersistVersion(committedVersion, versioning.NuGetVersion);
-		}
-		else
-		{
-			Information("We are not running on build server, so we will not persist the version number.");
-		}
+		Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
+		PersistVersion(committedVersion, versioning.NuGetVersion);
 	});
 
 Task("GitLogUniqContributors")
@@ -514,6 +507,11 @@ Task("UnitTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+		if (IsRunningInCICD() && target == Release)
+		{
+			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running unit tests this time!");
+		 	return;
+		}
         // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
@@ -543,41 +541,13 @@ Task("UnitTests")
 		Information("##############################");
 		Information("# Code coverage");
 		Information("#=============================");
+
+		// TODO Implement reporting to the Action Run summary as an attachment or artifact
 		const string CoverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
-		// if (IsRunningInCICD() && IsMainOrDevelop())
-		// {
-		// 	var repoToken = EnvironmentVariable("COVERALLS_REPO_TOKEN");
-		// 	if (string.IsNullOrEmpty(repoToken))
-		// 	{
-		// 		var err = "# Coveralls repo token was not found! Set environment variable: COVERALLS_REPO_TOKEN !";
-		// 		Warning(err);
-		// 		throw new Exception(err);
-		// 	}
-		// 	Information($"# Uploading test coverage to {CoverallsRepo}");
-		// 	var gitHEAD = string.Join(string.Empty, GitHelper("rev-parse HEAD")); // git rev-parse HEAD
-		// 	Information($"# HEAD commit is {gitHEAD}");
-		// 	// git log -1 --pretty=format:'%an <%ae>'
-		// 	var gitAuthor = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%an"));
-		// 	var gitEmail = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%ae"));
-		// 	var gitBranch = GetGitBranch();
-		// 	var gitMessage = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%s"));
-		// 	CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-		// 	{
-		// 		RepoToken = repoToken,
-		// 		CommitAuthor = gitAuthor,
-		// 		CommitBranch = gitBranch,
-		// 		CommitEmail = gitEmail,
-		// 		CommitId = gitHEAD,
-		// 		CommitMessage = gitMessage,
-		// 	});
-		// }
-		// else
-		// {
-			Information($"# CoverallsNet uploading is disabled in favor of Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
-		// }
+		Information($"# There is dedicated Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
 
 		// Apply code coverage threshold
-		const double MinCodeCoverage = 0.80D; // consider definition of an env var in GitHub Environment vars
+		const double MinCodeCoverage = 0.93D; // consider definition of an env var in GitHub Environment vars
 		var lineCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@branch-rate");
 		Information("# Line Coverage: " + lineCoverage);
@@ -597,6 +567,11 @@ Task("AcceptanceTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+		if (IsRunningInCICD() && target == Release)
+		{
+			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
+			return;
+		}
         // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
@@ -659,7 +634,7 @@ Task("PublishGitHubRelease")
 		if (!IsRunningInCICD())
 		{
 			Warning("We are not running on the CI/CD so we won't publish a GitHub release");
-			//return;
+			return;
 		}
 
 		dynamic release = CreateGitHubRelease();
@@ -940,7 +915,7 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": false }}";
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": true }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
