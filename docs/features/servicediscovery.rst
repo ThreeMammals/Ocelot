@@ -426,9 +426,9 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
           "Type": "LeastConnection"
         },
         "QoSOptions": {
-          "ExceptionsAllowedBeforeBreaking": 2,
-          "DurationOfBreak": 333,
-          "TimeoutValue": 3000 // ms
+          "MinimumThroughput": 2,
+          "BreakDuration": 333,
+          "Timeout": 3000 // ms
         },
         "RateLimitOptions": {
           "ClientIdHeader": "Oc-DynamicRouting-Client",
@@ -440,12 +440,12 @@ For instance, when exposing Ocelot publicly over HTTPS while routing to internal
 
 .. _sd-dynamic-routing-configuration:
 
-Configuration
-^^^^^^^^^^^^^
+Configuration [#f6]_
+^^^^^^^^^^^^^^^^^^^^
 
 Ocelot also allows configuration of a ``DynamicRoutes`` collection consisting of :ref:`config-dynamic-route-schema` objects.
 This enables overriding ``RateLimitOptions`` for each downstream service, along with other schema-level overrides.
-Dynamic route options are particularly useful when there are multiple services—such as a 'product' service and a 'search' service—and stricter rate limits need to be applied to one over the other.
+Dynamic route options are particularly useful when there are multiple services—such as a '``product``' service and a '``search``' service—and stricter rate limits need to be applied to one over the other.
 The final configuration looks like:
 
   .. code-block:: json
@@ -501,14 +501,14 @@ The final configuration looks like:
           "ClientWhitelist": ["ocelot-client1-preshared-key"],
           "Limit": 5,
           "Period": "10s", // fixed window
-          "QuotaExceededMessage": "No Quota!",
-          "HttpStatusCode": 499 // special shared status
+          "QuotaMessage": "No Quota!",
+          "StatusCode": 499 // special shared status
         }
       }
     }
 
-This configuration means that when a request is sent to Ocelot at ``/product/*``, *dynamic routing* is activated, and Ocelot applies the rate limiting rules defined for the 'product' service in the ``DynamicRoutes`` section, as described in the :doc:`../features/ratelimiting` documentation.
-The 'notification' service is unlimited because both caching, tracing, and rate limiting are disabled.
+This configuration means that when a request is sent to Ocelot at ``/product/*``, *dynamic routing* is activated, and Ocelot applies the rate limiting rules defined for the '``product``' service in the ``DynamicRoutes`` section, as described in the :doc:`../features/ratelimiting` documentation.
+The '``notification``' service is unlimited because both caching, tracing, and rate limiting are disabled.
 All other services use the global ``RateLimitOptions`` along with the other specified options.
 
 .. warning::
@@ -651,11 +651,12 @@ However, you can retain this ``Type`` option to maintain compatibility between b
 """"
 
 .. [#f1] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
-.. [#f2] The ":ref:`sd-consul-configuration-key`" feature was requested in issue `346`_ and introduced in version `7.0.0`_.
-.. [#f3] The customization of ":ref:`sd-consul-service-builder`" was implemented as part of bug fix `954`_, and the feature was delivered in version `23.3`_.
-.. [#f4] The :ref:`sd-eureka` feature, requested in issue `262`_ to add support for the Netflix `Eureka`_ *service discovery* provider, was released in version `5.5.4`_.
+.. [#f2] The ":ref:`Configuration Key <sd-consul-configuration-key>`" feature was requested in issue `346`_ and introduced in version `7.0.0`_.
+.. [#f3] The customization of ":ref:`Consul Service Builder <sd-consul-service-builder>`" was implemented as part of bug fix `954`_, and the feature was delivered in version `23.3`_.
+.. [#f4] The :ref:`Eureka <sd-eureka>` feature, requested in issue `262`_ to add support for the Netflix `Eureka`_ *service discovery* provider, was released in version `5.5.4`_.
 .. [#f5] The ":ref:`Dynamic Routing <sd-dynamic-routing>`" feature was requested in issue `340`_ (pull request `351`_) and released in version `7.0.1`_.
   Later, the new ``DynamicRoutes`` :doc:`../features/configuration` section was introduced in pull request `508`_ and released in version `8.0.4`_.
+.. [#f6] The :ref:`Configuration <sd-dynamic-routing-configuration>` feature of :ref:`Dynamic Routing <sd-dynamic-routing>` was requested in issue `585`_, then significantly redeveloped and released in version `24.1`_.
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/ApiGateway/ocelot.json
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/ApiGateway/Program.cs
@@ -669,6 +670,7 @@ However, you can retain this ``Type`` option to maintain compatibility between b
 .. _346: https://github.com/ThreeMammals/Ocelot/issues/346
 .. _351: https://github.com/ThreeMammals/Ocelot/pull/351
 .. _508: https://github.com/ThreeMammals/Ocelot/pull/508
+.. _585: https://github.com/ThreeMammals/Ocelot/issues/585
 .. _909: https://github.com/ThreeMammals/Ocelot/pull/909
 .. _954: https://github.com/ThreeMammals/Ocelot/issues/954
 .. _1154: https://github.com/ThreeMammals/Ocelot/pull/1154

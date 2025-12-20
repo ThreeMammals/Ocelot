@@ -3,7 +3,6 @@
 Middleware Injection
 ====================
 
-    **Warning**: Use with caution! If you notice any exceptions or strange behavior in your middleware pipeline and are using any of the following, remove your custom middlewares and try again.
 
 When setting up Ocelot in your `Program`_, you can provide additional middleware and override it with your custom middlewares. This is done as follows:
 
@@ -24,7 +23,10 @@ When setting up Ocelot in your `Program`_, you can provide additional middleware
 
 In the example above, the provided function will run before the first piece of Ocelot middleware.
 This allows users to supply any behavior they want before and after the Ocelot pipeline has run.
-Be cautious, as this means you can break everything — use at your own risk or pleasure!
+
+.. warning::
+    Be cautious, as this means you can break everything — use at your own risk or pleasure!
+    If you notice any exceptions or strange behavior in your middleware pipeline and are using any of the following, remove your custom middlewares and try again.
 
 .. _mi-ocelotpipelineconfiguration-class:
 
@@ -51,7 +53,7 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``ResponderMiddleware``
         | Prev: ``PreErrorResponderMiddleware``
         | Next: ``DownstreamRouteFinderMiddleware``
-      - This allows the user to completely override Ocelot's `ResponderMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Responder/Middleware/ResponderMiddleware.cs>`_. [#f1]_
+      - This allows the user to completely override Ocelot's `ResponderMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Responder/Middleware/ResponderMiddleware.cs>`_. :sup:`1`
     * - | ``PreAuthenticationMiddleware``
         | Prev: ``RequestIdMiddleware``
         | Next: ``AuthenticationMiddleware``
@@ -59,7 +61,7 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``AuthenticationMiddleware``
         | Prev: ``PreAuthenticationMiddleware``
         | Next: ``ClaimsToClaimsMiddleware``
-      - This allows the user to completely override Ocelot's `AuthenticationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authentication/Middleware/AuthenticationMiddleware.cs>`_. [#f1]_
+      - This allows the user to completely override Ocelot's `AuthenticationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authentication/Middleware/AuthenticationMiddleware.cs>`_. :sup:`1`
     * - | ``PreAuthorizationMiddleware``
         | Prev: ``ClaimsToClaimsMiddleware``
         | Next: ``AuthorizationMiddleware``
@@ -67,11 +69,11 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``AuthorizationMiddleware``
         | Prev: ``PreAuthorizationMiddleware``
         | Next: ``ClaimsToHeadersMiddleware``
-      - This allows the user to completely override Ocelot's `AuthorizationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authorization/Middleware/AuthorizationMiddleware.cs>`_. [#f1]_
+      - This allows the user to completely override Ocelot's `AuthorizationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authorization/Middleware/AuthorizationMiddleware.cs>`_. :sup:`1`
     * - | ``ClaimsToHeadersMiddleware``
         | Prev: ``AuthorizationMiddleware``
         | Next: ``PreQueryStringBuilderMiddleware``
-      - This allows the user to completely override Ocelot's `ClaimsToHeadersMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Headers/Middleware/ClaimsToHeadersMiddleware.cs>`_. [#f1]_
+      - This allows the user to completely override Ocelot's `ClaimsToHeadersMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Headers/Middleware/ClaimsToHeadersMiddleware.cs>`_. :sup:`1`
     * - | ``PreQueryStringBuilderMiddleware``
         | Prev: ``ClaimsToHeadersMiddleware``
         | Next: ``ClaimsToQueryStringMiddleware``
@@ -80,6 +82,10 @@ The user can set middleware-functions aka custom user's middleware against the f
 Obviously, you can add the mentioned Ocelot middleware overrides as normal before the call to ``app.UseOcelot``.
 They cannot be added afterward because Ocelot does not invoke subsequent middleware overrides based on the specified middleware configuration.
 As a result, the next-called middleware **will not** affect the Ocelot configuration.
+
+.. warning::
+  :sup:`1` Use the mentioned middleware overrides with caution! Overridden middleware removes the default implementation.
+  If you encounter any exceptions or strange behavior in your middleware pipeline, remove the overridden middleware and try again.
 
 .. _mi-ocelot-pipeline-builder:
 
@@ -141,8 +147,8 @@ Finally, do not confuse the distinction between system (private, non-overridden)
 Private middleware is hidden and cannot be overridden, but the entire ASP.NET pipeline can still be extended.
 The public middleware of the :ref:`mi-ocelotpipelineconfiguration-class` is fully customizable and can be overridden.
 
-Future
-------
+Roadmap
+-------
 
 The community has shown interest in adding more overridden middleware.
 One such request is pull request `1497 <https://github.com/ThreeMammals/Ocelot/pull/1497>`_, which may possibly be included in an upcoming release.
@@ -153,7 +159,3 @@ In any case, if the current overridden middleware does not provide enough pipeli
   :alt: octocat
   :height: 25
   :class: img-valign-middle
-
-""""
-
-.. [#f1] **Warning**: Use the mentioned middleware overrides with caution! Overridden middleware removes the default implementation. If you encounter any exceptions or strange behavior in your middleware pipeline, remove the overridden middleware and try again.

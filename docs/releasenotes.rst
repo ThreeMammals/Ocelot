@@ -46,25 +46,6 @@ Release Notes
 
 Global configuration for all features.
 
-Official Notice to the Community Regarding CircleCI
----------------------------------------------------
-
-Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
-But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
-This legal issue and technical incident were unforeseen on our part because Ocelot is *open-source software* (OSS), and forcibly stopping the project's build process and blocking accounts appears to be an unfortunate breach of OSS principles.
-We strongly believe that any developer or user, from any country, should be able to use software providers that support the OSS movement by offering free or other cost-free plans and serving the accounts of these users, OSS teams, and OSS projects 24/7, 365 days a year.
-We consider this legal issue and the resulting technical incidents involving CircleCI to be a serious breach of OSS principles and an act of discrimination against Ocelot users, developers, and customers who rely on Ocelot OSS, ultimately causing delays to the current release.
-As a team, **we do not recommend using CircleCI for OSS projects**, as there is no guarantee that these projects will not face discrimination from this U.S. company.
-
-For all developers, team leads, architects, and managers of any OSS projects—at least on GitHub—we recommend utilizing the built-in GitHub Actions CI/CD infrastructure.
-Since its founding, GitHub has supported OSS projects. Today, GitHub provides 2,000 minutes of free CI/CD build time per month for OSS repositories (public repos).
-Also, we strongly believe that GitHub will never violate its OSS policies without a notice period, nor fail to inform owners and maintainers that certain policies must be met by Ocelot's owners.
-In addition, we want to acknowledge that we are monitoring U.S. government regulations.
-Unfortunately, we must state that some GitHub products are unavailable in certain countries, even if the project is OSS and GitHub claims these products are free for OSS.
-Since the Ocelot team does not utilize these non-critical products (we prefer to energize our brains rather than rely on AI-driven products), and since the Ocelot project is currently well-served by GitHub Co, the Ocelot team affirms that Ocelot will remain on GitHub as long as its OSS-friendly policies continue.
-As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
-Regardless, we remain on GitHub!
-
 What's New?
 -----------
 
@@ -85,14 +66,6 @@ What's New?
   Starting from version `24.0`_, all pull requests, development commits, and releases will be built using `GitHub Actions`_ workflows (`documentation`_).
   We currently have `three workflows`_: one for pull requests (`PR`_), one for the ``develop`` branch (`Develop`_), and one for the ``main`` branch (`Release`_).
   All workflow runs are available on the `Actions dashboard <https://github.com/ThreeMammals/Ocelot/actions>`_.
-
-  The `PR`_ workflow will track code coverage using `Coveralls`_.
-  After opening a pull request or submitting a new commit to a pull request, `Coveralls`_ will publish a short message with the current code coverage once the top commit is built.
-  Considering that `Coveralls`_ retains the entire history but does not fail the build if coverage falls below the threshold, all workflows have a built-in 80% threshold,
-  applied internally within the ``build-cake`` job, particularly during the "Cake Build" step-action.
-  If the code coverage of a newly opened pull request drops below the 80% threshold, the ``build-cake`` job will fail, logging an appropriate message in the "Cake Build" step.
-  For your information, the current code coverage of the Ocelot project is around 85-86%. The coverage threshold is subject to change in upcoming releases.
-  All Coveralls builds can be viewed by navigating to the `ThreeMammals/Ocelot`_ project on Coveralls.io.
 
 What's Updated?
 ---------------
@@ -176,17 +149,6 @@ Documentation Summary
 
 Due to the major version increase to v24, all documentation chapters were reviewed to improve readability, eliminate ambiguity, provide more useful tables and data schemas, update code snippets with the syntax of `Top-level statements`_, and add handy samples, among other enhancements.
 The entire documentation is designed to be truly professional for senior developers while remaining easy to read for junior developers and newcomers who are starting to use the Ocelot gateway.
-
-We believe that Ocelot students will ask fewer questions in 2025 🙂
-For students, we always recommend finding answers in `Q&A`_ category first.
-Honestly, it is advised to read existing discussions before opening a new question in repo `Discussions`_.
-For true Ocelot patriots, we have added a `README link`_ to the smart `Ocelot AI Guru`_ assistant, which is always ready to answer any of your questions.
-Feel free to explore and interact with it! 😊
-
-.. _Q&A: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
-.. _Discussions: https://github.com/ThreeMammals/Ocelot/discussions
-.. _README link: https://github.com/ThreeMammals/Ocelot?tab=readme-ov-file#documentation
-.. _Ocelot AI Guru: https://gurubase.io/g/ocelot
 
 Contributing
 ------------

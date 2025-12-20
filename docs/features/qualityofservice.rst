@@ -21,7 +21,9 @@ It allows you to configure, on a per-route basis, the application of a circuit b
 This feature leverages a well-regarded .NET library known as `Polly`_.
 For more details, visit the `Polly`_ library's official `repository <https://github.com/App-vNext/Polly>`_.
 
-  **Note**: `Polly`_ v7 syntax is no longer supported as of version `23.2`_, when the Ocelot team upgraded Polly `from v7 to v8 <https://www.pollydocs.org/migration-v8.html>`_.
+.. note::
+  
+  `Polly`_ v7 syntax is no longer supported as of version `23.2`_, when the Ocelot team upgraded Polly `from v7 to v8 <https://www.pollydocs.org/migration-v8.html>`_.
 
 Installation
 ------------

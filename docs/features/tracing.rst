@@ -1,6 +1,8 @@
 Tracing
 =======
 
+  Feature of: :doc:`../features/logging`
+
   * `.NET logging and tracing | .NET | Microsoft Learn <https://learn.microsoft.com/en-us/dotnet/core/diagnostics/logging-tracing>`_
   * `.NET distributed tracing | .NET | Microsoft Learn <https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing>`_
 
@@ -102,7 +104,7 @@ Ocelot will now send tracing information to `Butterfly`_ whenever this route is 
 
   **Note**: The `Butterfly`_ project has not been supported for more than seven years, as of 2025.
   The latest release of the `Butterfly.Client <https://www.nuget.org/packages/Butterfly.Client>`_ package (version `0.0.8 <https://www.nuget.org/packages/Butterfly.Client/0.0.8>`_) was made on February 22, 2018.
-  The Ocelot team is planning to discontinue the `Ocelot.Tracing.Butterfly`_ package, which is scheduled to happen after the release of Ocelot version `24.0`_.
+  The Ocelot team is planning to discontinue the `Ocelot.Tracing.Butterfly`_ package, which is scheduled to happen after the release of Ocelot version `24.1`_.
 
 """"
 
@@ -110,4 +112,4 @@ Ocelot will now send tracing information to `Butterfly`_ whenever this route is 
 
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
-.. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
