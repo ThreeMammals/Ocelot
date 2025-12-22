@@ -75,6 +75,8 @@ Not all of these options need to be configured; however, the ``TtlSeconds`` opti
 
 The actual ``CacheOptions`` schema with all the properties can be found in the C# `FileCacheOptions`_ class.
 
+.. _caching-configuration:
+
 Configuration
 -------------
 

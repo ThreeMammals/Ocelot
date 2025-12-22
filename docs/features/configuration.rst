@@ -550,7 +550,9 @@ In summary, the final .NET 8+ solution should be written in `Program`_ using `to
 
 As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
 
-``HttpHandlerOptions`` 
+.. _config-http-handler-options:
+
+``HttpHandlerOptions``
 ----------------------
 
   | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
