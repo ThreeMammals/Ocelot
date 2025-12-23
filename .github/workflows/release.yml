@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - 'release/24.1'
+      - 'release/24.**'
 jobs:
   build-windows:
     strategy:

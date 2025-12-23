@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-      - 'release/**'
+      # - 'release/**' # for testing purposes
 jobs:
   build-windows:
     runs-on: windows-latest
