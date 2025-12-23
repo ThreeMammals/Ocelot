@@ -151,8 +151,8 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD())
-		    ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD()) ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion = versioning.SemVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
