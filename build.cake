@@ -911,8 +911,8 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	bool IsPreRelease = true;
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {IsPreRelease.ToString().ToLower()} }}";
+	bool isPreRelease = !IsMainBranch();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {isPreRelease.ToString().ToLower()} }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -959,10 +959,10 @@ private bool IsRunningOnCircleCI()
 private bool IsRunningInGitHubActions()
 	=> Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
-private bool IsMainOrDevelop()
+private bool IsMainBranch()
 {
 	var br = GetBranchName().ToLower();
-    return br == "main" || br == "develop";
+    return br == "main";
 }
 private string GetBranchName()
 {
