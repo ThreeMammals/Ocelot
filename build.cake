@@ -791,7 +791,7 @@ private void PersistVersion(string committedVersion, string newVersion)
 	}
 }
 
-/// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
+// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
 		Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
@@ -817,10 +817,10 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		var errors = new List<string>();
 		foreach (var artifact in artifacts)
 		{
-            // if (skippable.Exists(x => artifact.StartsWith(x)))
+			// if (skippable.Exists(x => artifact.StartsWith(x)))
 			// 	continue;
-            if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
-				continue;
+			// if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
+			// 	continue;
 
 			var codePackage = packagesDir + File(artifact);
 			Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
