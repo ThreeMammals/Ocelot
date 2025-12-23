@@ -9,7 +9,7 @@
 project = 'Ocelot Gateway'
 copyright = ' 2016-2025 Three Mammals'
 author = 'Tom Gardham-Pallister, Raman Maksimchuk'
-release = '"Globality"'
+release = '24.1 "Globality"'
 version = '24.1'
 
 # -- General configuration ---------------------------------------------------
