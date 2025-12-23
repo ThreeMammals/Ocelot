@@ -151,7 +151,8 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD()) ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD())
+		    ? versioning.MajorMinorPatch : versioning.SemVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -915,7 +916,8 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": true }}";
+	bool IsPreRelease = true;
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {IsPreRelease.ToString().ToLower()} }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
