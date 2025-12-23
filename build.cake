@@ -508,12 +508,7 @@ Task("UnitTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
-		if (IsRunningInCICD() && target == Release)
-		{
-			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running unit tests this time!");
-		 	return;
-		}
-        // Sequential processing as an emulation of Visual Studio Test Explorer
+		// Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
