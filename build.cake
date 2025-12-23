@@ -496,7 +496,7 @@ private void WriteReleaseNotes()
 private List<string> GetTFMs()
 {
 	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework" || target == "UnitTests")
+	if (target == "LatestFramework" || target == "UnitTests" || target == "Release")
     {
         tfms.Clear();
         tfms.Add(LatestFramework);
