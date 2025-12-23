@@ -827,7 +827,7 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			try
 			{
 				DotNetNuGetPush(codePackage,
-					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl });
+					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
 			}
 			catch (Exception e)
 			{
