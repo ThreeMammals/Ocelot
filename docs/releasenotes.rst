@@ -36,7 +36,7 @@ Release Notes
 In this minor release, the Ocelot team put the spotlight on the :doc:`../features/configuration` feature as part of their semi-annual 2025 effort, with a particular focus on the :ref:`config-global-configuration-schema`.
 This release enhances support for global configurations across both routing modes: the classic static :doc:`../features/routing` and the :doc:`service discovery <../features/servicediscovery>`-based :ref:`Dynamic Routing <sd-dynamic-routing>`.
 
-The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/develop/search.html?q=deprecated>`_ of certain options through multiple notes and warnings.
+The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated>`_ of certain options through multiple notes and warnings.
 This deprecation process will be completed in the upcoming `.NET 10`_ release.
 With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
@@ -105,7 +105,7 @@ What's Updated?
 .. _2342: https://github.com/ThreeMammals/Ocelot/pull/2342
 .. _2345: https://github.com/ThreeMammals/Ocelot/pull/2345
 .. _2347: https://github.com/ThreeMammals/Ocelot/pull/2347
-.. _File-model: https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot/Configuration/File
+.. _File-model: https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Configuration/File
 .. _deprecated options: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+deprecated+language%3AreStructuredText&type=code&l=reStructuredText
 .. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot/tree/24.0.0/test/Ocelot.Testing
 .. _extension packages: https://www.nuget.org/profiles/ThreeMammals
