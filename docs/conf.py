@@ -9,8 +9,8 @@
 project = 'Ocelot Gateway'
 copyright = ' 2016-2025 Three Mammals'
 author = 'Tom Gardham-Pallister, Raman Maksimchuk'
-release = '"Globality"'
-version = '24.1'
+release = '24.1 "Globality"' # OK displayed
+version = '24.1' # version is not displayed in either HTML pages or PDF docs
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

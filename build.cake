@@ -151,8 +151,8 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD())
-		    ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD()) ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion = versioning.SemVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -412,20 +412,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        // releaseNotes.Add("");
-        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        // releaseNotes.AddRange(starring);
-        // releaseNotes.Add("");
-        // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // releaseNotes.Add("");
-        // releaseNotes.Add("<details><summary>Logbook</summary>");
-        // releaseNotes.Add("");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
-        // releaseNotes.AddRange(commitsHistory);
-        // releaseNotes.Add("</details>");
-        //releaseNotes.Add("");
+        releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -496,7 +496,7 @@ private void WriteReleaseNotes()
 private List<string> GetTFMs()
 {
 	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework" || target == "UnitTests")
+	if (target == "LatestFramework" || target == "UnitTests" || target == "Release")
     {
         tfms.Clear();
         tfms.Add(LatestFramework);
@@ -508,12 +508,7 @@ Task("UnitTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
-		if (IsRunningInCICD() && target == Release)
-		{
-			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running unit tests this time!");
-		 	return;
-		}
-        // Sequential processing as an emulation of Visual Studio Test Explorer
+		// Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
@@ -796,7 +791,7 @@ private void PersistVersion(string committedVersion, string newVersion)
 	}
 }
 
-/// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
+// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
 		Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
@@ -822,17 +817,17 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 		var errors = new List<string>();
 		foreach (var artifact in artifacts)
 		{
-            // if (skippable.Exists(x => artifact.StartsWith(x)))
+			// if (skippable.Exists(x => artifact.StartsWith(x)))
 			// 	continue;
-            if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
-				continue;
+			// if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
+			// 	continue;
 
 			var codePackage = packagesDir + File(artifact);
 			Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
 			try
 			{
 				DotNetNuGetPush(codePackage,
-					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl });
+					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
 			}
 			catch (Exception e)
 			{
@@ -916,8 +911,8 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	bool IsPreRelease = true;
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {IsPreRelease.ToString().ToLower()} }}";
+	bool isPreRelease = !IsMainBranch();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {isPreRelease.ToString().ToLower()} }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -964,10 +959,10 @@ private bool IsRunningOnCircleCI()
 private bool IsRunningInGitHubActions()
 	=> Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
-private bool IsMainOrDevelop()
+private bool IsMainBranch()
 {
 	var br = GetBranchName().ToLower();
-    return br == "main" || br == "develop";
+    return br == "main";
 }
 private string GetBranchName()
 {
