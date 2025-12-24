@@ -794,53 +794,47 @@ private void PersistVersion(string committedVersion, string newVersion)
 // Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
-        var artifacts = System.IO.File
-            .ReadAllLines(artifactsFile)
-			.Distinct();
-        var skippable = new List<string>
-        {
-            "ReleaseNotes.md", // skip always
-            "Ocelot.24.0.0",
-            "Ocelot.Cache.CacheManager",
-            "Ocelot.Provider.Consul",
-            "Ocelot.Provider.Eureka",
-            //"Ocelot.Provider.Kubernetes",
-            "Ocelot.Provider.Polly",
-            "Ocelot.Tracing.Butterfly",
-            "Ocelot.Tracing.OpenTracing",
-        };
-        var includedInTheRelease = new List<string>
-        {
-            "Ocelot.Provider.Kubernetes",
-        };
-		var errors = new List<string>();
-		foreach (var artifact in artifacts)
-		{
-			// if (skippable.Exists(x => artifact.StartsWith(x)))
-			// 	continue;
-			// if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
-			// 	continue;
+	Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
+	var artifacts = System.IO.File
+		.ReadAllLines(artifactsFile)
+		.Distinct();
+	var skippable = new List<string>
+	{
+		"ReleaseNotes.md", // skip always
+		// "Ocelot.24.0.0",
+		// "Ocelot.Cache.CacheManager",
+		// "Ocelot.Provider.Consul",
+		// "Ocelot.Provider.Eureka",
+		// "Ocelot.Provider.Kubernetes",
+		// "Ocelot.Provider.Polly",
+		// "Ocelot.Tracing.Butterfly",
+		// "Ocelot.Tracing.OpenTracing",
+	};
+	var includedInTheRelease = new List<string>
+	{
+		"Ocelot.Provider.Kubernetes",
+	};
+	foreach (var artifact in artifacts)
+	{
+		if (skippable.Exists(x => artifact.StartsWith(x)))
+			continue;
+		//if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
+		//continue;
 
-			var codePackage = packagesDir + File(artifact);
-			Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
-			try
-			{
-				DotNetNuGetPush(codePackage,
-					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
-			}
-			catch (Exception e)
-			{
-				errors.Add(e.Message);
-			}
-		}
-		if (errors.Count > 0)
+		var codePackage = packagesDir + File(artifact);
+		Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
+		try
 		{
-			Information($"{nameof(PublishPackages)}: Errors >>>");
-			var err = string.Join(NL, errors);
-			Warning(err);
-			throw new Exception(err);
+			DotNetNuGetPush(codePackage,
+				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
 		}
+		catch (Exception ex)
+		{
+			Information("--------------------------------------------------------------");
+			Warning(ex.ToString());
+			throw; // exit task with non-zero result -> failed step -> failed job in Actions
+		}
+	}
 }
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)

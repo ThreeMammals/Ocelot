@@ -111,9 +111,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-cake:
     needs: build-linux
