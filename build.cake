@@ -151,8 +151,10 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release && IsRunningInCICD()) ? versioning.MajorMinorPatch : versioning.SemVer;
-		versioning.NuGetVersion = versioning.SemVer;
+		versioning.NuGetVersion ??= versioning.SemVer;
+		if (target == Release && IsRunningInCICD() && IsMainBranch() && versioning.SemVer.Contains("-")) // dash -> suffix in version
+			versioning.NuGetVersion = versioning.MajorMinorPatch; // when releasing from main branch the tag should not contain suffix after dash char
+
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
