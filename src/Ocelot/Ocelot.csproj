@@ -26,7 +26,7 @@
     <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
     <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
-    <PackageReleaseNotes>Upgrade to .NET 9 with supported TFMs (net8.0;net9.0)</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/ThreeMammals/Ocelot/blob/main/ReleaseNotes.md</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
