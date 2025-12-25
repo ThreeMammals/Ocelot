@@ -53,7 +53,7 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``ResponderMiddleware``
         | Prev: ``PreErrorResponderMiddleware``
         | Next: ``DownstreamRouteFinderMiddleware``
-      - This allows the user to completely override Ocelot's `ResponderMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Responder/Middleware/ResponderMiddleware.cs>`_. :sup:`1`
+      - This allows the user to completely override Ocelot's `ResponderMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Responder/Middleware/ResponderMiddleware.cs>`_. :sup:`1`
     * - | ``PreAuthenticationMiddleware``
         | Prev: ``RequestIdMiddleware``
         | Next: ``AuthenticationMiddleware``
@@ -61,7 +61,7 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``AuthenticationMiddleware``
         | Prev: ``PreAuthenticationMiddleware``
         | Next: ``ClaimsToClaimsMiddleware``
-      - This allows the user to completely override Ocelot's `AuthenticationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authentication/Middleware/AuthenticationMiddleware.cs>`_. :sup:`1`
+      - This allows the user to completely override Ocelot's `AuthenticationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Authentication/Middleware/AuthenticationMiddleware.cs>`_. :sup:`1`
     * - | ``PreAuthorizationMiddleware``
         | Prev: ``ClaimsToClaimsMiddleware``
         | Next: ``AuthorizationMiddleware``
@@ -69,11 +69,11 @@ The user can set middleware-functions aka custom user's middleware against the f
     * - | ``AuthorizationMiddleware``
         | Prev: ``PreAuthorizationMiddleware``
         | Next: ``ClaimsToHeadersMiddleware``
-      - This allows the user to completely override Ocelot's `AuthorizationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Authorization/Middleware/AuthorizationMiddleware.cs>`_. :sup:`1`
+      - This allows the user to completely override Ocelot's `AuthorizationMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Authorization/Middleware/AuthorizationMiddleware.cs>`_. :sup:`1`
     * - | ``ClaimsToHeadersMiddleware``
         | Prev: ``AuthorizationMiddleware``
         | Next: ``PreQueryStringBuilderMiddleware``
-      - This allows the user to completely override Ocelot's `ClaimsToHeadersMiddleware <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Headers/Middleware/ClaimsToHeadersMiddleware.cs>`_. :sup:`1`
+      - This allows the user to completely override Ocelot's `ClaimsToHeadersMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Headers/Middleware/ClaimsToHeadersMiddleware.cs>`_. :sup:`1`
     * - | ``PreQueryStringBuilderMiddleware``
         | Prev: ``ClaimsToHeadersMiddleware``
         | Next: ``ClaimsToQueryStringMiddleware``

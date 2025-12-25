@@ -1,13 +1,13 @@
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
-.. _ServiceCollectionExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ServiceCollectionExtensions.cs
-.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _ServiceCollectionExtensions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/ServiceCollectionExtensions.cs
+.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
 
 Dependency Injection
 ====================
 
     | Namespace: ``Ocelot.DependencyInjection``
-    | Source code: `DependencyInjection <https://github.com/ThreeMammals/Ocelot/tree/develop/src/Ocelot/DependencyInjection>`_
+    | Source code: `DependencyInjection <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/DependencyInjection>`_
 
 .. _di-services-overview:
 
@@ -79,7 +79,7 @@ In this custom scenario, you control everything during the ASP.NET Core build pr
 ``OcelotBuilder`` class
 -----------------------
 
-The `OcelotBuilder <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/OcelotBuilder.cs>`_ class is the core of Ocelot which does the following:
+The `OcelotBuilder <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/OcelotBuilder.cs>`_ class is the core of Ocelot which does the following:
 
 - Contructs itself by single public constructor:
 
