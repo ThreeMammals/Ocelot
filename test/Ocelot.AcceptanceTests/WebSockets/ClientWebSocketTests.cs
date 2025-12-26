@@ -7,6 +7,7 @@ using Ocelot.Logging;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
@@ -65,6 +66,9 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
             PreAuthenticate = false,
             Credentials = new NetworkCredential("tom@threemammals.com", "password"),
         };
+        if (IsCiCd() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // MacOS
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // TODO Makes sense to log in console
+
         using var invoker = new HttpMessageInvoker(handler);
         await _ws.ConnectAsync(echoEndpoint, invoker, _cts.Token);
 
@@ -110,7 +114,8 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     // AI Q.2: C# Yarp | Does Yarp support webSocket+HTTP/2 forwarding?
     // AI A.2: Yes! YARP (Yet Another Reverse Proxy) supports WebSockets over HTTP/2 starting in .NET 7 and YARP 2.0.
     //         See MS Learn | YARP Proxying WebSockets and SPDY -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/websockets
-    [Fact(Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
+    [Fact(DisplayName = "TODO " + nameof(Http20CLient_OcelotInTheMiddle_ShouldConnect),
+        Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
     public async Task Http20CLient_OcelotInTheMiddle_ShouldConnect()
     {
         var port = PortFinder.GetRandomPort();

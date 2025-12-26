@@ -1,6 +1,6 @@
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Configuration/Program.cs
-.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
 .. _Consul: https://www.consul.io/
 .. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
 
@@ -502,7 +502,7 @@ For further details on managing Ocelot configurations via a Consul instance, ple
 Build From Scratch
 ------------------
 
-  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
+  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
 
 Storing, reading, and writing static configurations may have limitations.
 Therefore, for more flexible and advanced scenarios the ``FileConfiguration`` object can be built from scratch in C# code of Ocelot application startup.
@@ -550,10 +550,12 @@ In summary, the final .NET 8+ solution should be written in `Program`_ using `to
 
 As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
 
-``HttpHandlerOptions`` 
+.. _config-http-handler-options:
+
+``HttpHandlerOptions``
 ----------------------
 
-  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
+  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
 This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
@@ -605,7 +607,7 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
 .. note::
 
   1. If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds,
-  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
+  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
 
   2. If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
   This means that all requests to that downstream service will share the same cookies.

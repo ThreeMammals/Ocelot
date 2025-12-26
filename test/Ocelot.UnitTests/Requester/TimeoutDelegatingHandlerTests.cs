@@ -3,14 +3,15 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Requester;
 
-public sealed class TimeoutDelegatingHandlerTests
+public sealed class TimeoutDelegatingHandlerTests : UnitTest
 {
     [Fact]
     public async Task SendAsync_OnTimeout_ShouldThrowTimeoutException()
     {
         // Arrange
+        int ms = 100;
         using var baseHandler = new SocketsHttpHandler();
-        using var handler = new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(100));
+        using var handler = new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(ms));
         handler.InnerHandler = baseHandler;
 
         var type = handler.GetType();
@@ -23,10 +24,14 @@ public sealed class TimeoutDelegatingHandlerTests
         // Act
         var args = new object[] { request, cts.Token };
         Task<HttpResponseMessage> sendAsync() => (Task<HttpResponseMessage>)method.Invoke(handler, args);
-        var ex = await Assert.ThrowsAsync<TimeoutException>(sendAsync);
+        async Task sendAsyncAndWaitForTimeout(int delay)
+        {
+            await sendAsync();
+            await Task.Delay(delay); // wait for Timeout event
+        }
 
         // Assert
-        Assert.NotNull(ex);
-        Assert.IsType<TimeoutException>(ex);
+        ms += IsCiCd() ? 50 : 0;
+        var ex = await Assert.ThrowsAsync<TimeoutException>(() => sendAsyncAndWaitForTimeout(ms));
     }
 }

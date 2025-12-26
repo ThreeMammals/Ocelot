@@ -1,12 +1,11 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.2.0 // released on 1.04.2025 with TFMs net8.0 net9.0
-// #tool dotnet:?package=coveralls.net&version=4.0.1 // Outdated! released on 07.08.22 with TFM net6.0
-#tool nuget:?package=ReportGenerator&version=5.4.5 // released on 23.03.2025 with TFM netstandard2.0
-#addin nuget:?package=Newtonsoft.Json&version=13.0.3 // Switch to a MS lib! Outdated! released on 08.03.23 with TFMs net6.0 netstandard2.0
-#addin nuget:?package=System.Text.Encodings.Web&version=9.0.3 // released on 11.03.2025 with TFMs net8.0 net9.0 netstandard2.0
-// #addin nuget:?package=Cake.Coveralls&version=4.0.0 // Outdated! released on 9.07.2024 with TFMs net6.0 net7.0 net8.0
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.5.1
+#tool nuget:?package=ReportGenerator&version=5.5.1
+
+#addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
+#addin nuget:?package=System.Text.Encodings.Web&version=9.0.11
 
 #r "Spectre.Console"
-using Spectre.Console
+using Spectre.Console;
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,12 +17,29 @@ bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
-static string NL = Environment.NewLine;
+string NL = Environment.NewLine;
 
-CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
-CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+// Create a CultureInfo object for UK English
+CultureInfo ukCulture = new("en-GB");
+CultureInfo.DefaultThreadCurrentCulture = ukCulture;
+CultureInfo.DefaultThreadCurrentUICulture = ukCulture;
 Information("Current Culture: " + CultureInfo.CurrentCulture);
 Information("Current UI Culture: " + CultureInfo.CurrentUICulture);
+
+// Display culture properties
+Information("Culture Name: " + ukCulture.Name);              // en-GB
+Information("Display Name: " + ukCulture.DisplayName);       // English (United Kingdom)
+Information("English Name: " + ukCulture.EnglishName);       // English (United Kingdom)
+Information("Native Name: " + ukCulture.NativeName);         // English (United Kingdom)
+Information("Two-letter ISO Language Name: " + ukCulture.TwoLetterISOLanguageName); // en
+Information("Three-letter ISO Language Name: " + ukCulture.ThreeLetterISOLanguageName); // eng
+Information("Region ISO Code: " + new RegionInfo(ukCulture.Name).TwoLetterISORegionName); // GB
+
+// Example: format a date and currency in UK style
+DateTime now = DateTime.Now;
+decimal amount = 12345.67m;
+Information("Date (UK format): " + now.ToString("D", ukCulture));
+Information("Currency (UK format): " + amount.ToString("C", ukCulture));
 
 var compileConfig = Argument("configuration", Release); // compile
 var artifactsDir = Directory("artifacts"); // build artifacts
@@ -81,9 +97,22 @@ Task("Release")
 	.IsDependentOn("PublishGitHubRelease")
     .IsDependentOn("PublishToNuget");
 
+Task("Restore")
+    .Does(() =>
+	{
+		var settings = new DotNetRestoreSettings
+		{
+			LockedMode = true, // equivalent to --locked-mode
+			// UseLockFile = true, // equivalent to --use-lock-file
+			// Sources = new[] { "https://api.nuget.org/v3/index.json" }
+		};
+		DotNetRestore(slnFile, settings);
+	});
+
 Task("Compile")
 	.IsDependentOn("Clean")
 	.IsDependentOn("Version")
+	.IsDependentOn("Restore")
 	.Does(() =>
 	{	
 		PreprocessReadMe();
@@ -93,6 +122,7 @@ Task("Compile")
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
+			NoRestore = true,
 		};
 		if (target == "LatestFramework")
 		{
@@ -121,7 +151,10 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		versioning.NuGetVersion ??= (target == Release) ? versioning.MajorMinorPatch : versioning.SemVer;
+		versioning.NuGetVersion ??= versioning.SemVer;
+		if (target == Release && IsRunningInCICD() && IsMainBranch() && versioning.SemVer.Contains("-")) // dash -> suffix in version
+			versioning.NuGetVersion = versioning.MajorMinorPatch; // when releasing from main branch the tag should not contain suffix after dash char
+
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -132,15 +165,8 @@ Task("Version")
 		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
 		Information("#########################");
 
-		if (IsRunningInCICD())
-		{
-			Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
-			PersistVersion(committedVersion, versioning.NuGetVersion);
-		}
-		else
-		{
-			Information("We are not running on build server, so we will not persist the version number.");
-		}
+		Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
+		PersistVersion(committedVersion, versioning.NuGetVersion);
 	});
 
 Task("GitLogUniqContributors")
@@ -388,20 +414,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        // releaseNotes.Add("");
-        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        // releaseNotes.AddRange(starring);
-        // releaseNotes.Add("");
-        // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // releaseNotes.Add("");
-        // releaseNotes.Add("<details><summary>Logbook</summary>");
-        // releaseNotes.Add("");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
-        // releaseNotes.AddRange(commitsHistory);
-        // releaseNotes.Add("</details>");
-        //releaseNotes.Add("");
+        releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -443,6 +469,7 @@ struct InsertionsGroupingItem
 	public int Count;
 	public FilesChangedItem[] Contributors;
 }
+
 private List<string> GitHelper(string command)
 {
 	IEnumerable<string> output;
@@ -454,6 +481,7 @@ private List<string> GitHelper(string command)
 		throw new Exception("Failed to execute Git command: " + command);
 	return output.ToList();
 }
+
 private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
@@ -470,7 +498,7 @@ private void WriteReleaseNotes()
 private List<string> GetTFMs()
 {
 	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework")
+	if (target == "LatestFramework" || target == "UnitTests" || target == "Release")
     {
         tfms.Clear();
         tfms.Add(LatestFramework);
@@ -482,7 +510,7 @@ Task("UnitTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
-        // Sequential processing as an emulation of Visual Studio Test Explorer
+		// Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
@@ -511,41 +539,13 @@ Task("UnitTests")
 		Information("##############################");
 		Information("# Code coverage");
 		Information("#=============================");
+
+		// TODO Implement reporting to the Action Run summary as an attachment or artifact
 		const string CoverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
-		// if (IsRunningInCICD() && IsMainOrDevelop())
-		// {
-		// 	var repoToken = EnvironmentVariable("COVERALLS_REPO_TOKEN");
-		// 	if (string.IsNullOrEmpty(repoToken))
-		// 	{
-		// 		var err = "# Coveralls repo token was not found! Set environment variable: COVERALLS_REPO_TOKEN !";
-		// 		Warning(err);
-		// 		throw new Exception(err);
-		// 	}
-		// 	Information($"# Uploading test coverage to {CoverallsRepo}");
-		// 	var gitHEAD = string.Join(string.Empty, GitHelper("rev-parse HEAD")); // git rev-parse HEAD
-		// 	Information($"# HEAD commit is {gitHEAD}");
-		// 	// git log -1 --pretty=format:'%an <%ae>'
-		// 	var gitAuthor = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%an"));
-		// 	var gitEmail = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%ae"));
-		// 	var gitBranch = GetGitBranch();
-		// 	var gitMessage = string.Join(string.Empty, GitHelper("log -1 --pretty=format:%s"));
-		// 	CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-		// 	{
-		// 		RepoToken = repoToken,
-		// 		CommitAuthor = gitAuthor,
-		// 		CommitBranch = gitBranch,
-		// 		CommitEmail = gitEmail,
-		// 		CommitId = gitHEAD,
-		// 		CommitMessage = gitMessage,
-		// 	});
-		// }
-		// else
-		// {
-			Information($"# CoverallsNet uploading is disabled in favor of Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
-		// }
+		Information($"# There is dedicated Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
 
 		// Apply code coverage threshold
-		const double MinCodeCoverage = 0.80D; // consider definition of an env var in GitHub Environment vars
+		const double MinCodeCoverage = 0.93D; // consider definition of an env var in GitHub Environment vars
 		var lineCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
 		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@branch-rate");
 		Information("# Line Coverage: " + lineCoverage);
@@ -565,6 +565,11 @@ Task("AcceptanceTests")
 	.Does(() =>
 	{
 		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+		if (IsRunningInCICD() && target == Release)
+		{
+			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
+			return;
+		}
         // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
@@ -627,7 +632,7 @@ Task("PublishGitHubRelease")
 		if (!IsRunningInCICD())
 		{
 			Warning("We are not running on the CI/CD so we won't publish a GitHub release");
-			//return;
+			return;
 		}
 
 		dynamic release = CreateGitHubRelease();
@@ -788,56 +793,50 @@ private void PersistVersion(string committedVersion, string newVersion)
 	}
 }
 
-/// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
+// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
-        var artifacts = System.IO.File
-            .ReadAllLines(artifactsFile)
-			.Distinct();
-        var skippable = new List<string>
-        {
-            "ReleaseNotes.md", // skip always
-            "Ocelot.24.0.0",
-            "Ocelot.Cache.CacheManager",
-            "Ocelot.Provider.Consul",
-            "Ocelot.Provider.Eureka",
-            //"Ocelot.Provider.Kubernetes",
-            "Ocelot.Provider.Polly",
-            "Ocelot.Tracing.Butterfly",
-            "Ocelot.Tracing.OpenTracing",
-        };
-        var includedInTheRelease = new List<string>
-        {
-            "Ocelot.Provider.Kubernetes",
-        };
-		var errors = new List<string>();
-		foreach (var artifact in artifacts)
-		{
-            // if (skippable.Exists(x => artifact.StartsWith(x)))
-			// 	continue;
-            if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
-				continue;
+	Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
+	var artifacts = System.IO.File
+		.ReadAllLines(artifactsFile)
+		.Distinct();
+	var skippable = new List<string>
+	{
+		"ReleaseNotes.md", // skip always
+		// "Ocelot.24.0.0",
+		// "Ocelot.Cache.CacheManager",
+		// "Ocelot.Provider.Consul",
+		// "Ocelot.Provider.Eureka",
+		// "Ocelot.Provider.Kubernetes",
+		// "Ocelot.Provider.Polly",
+		// "Ocelot.Tracing.Butterfly",
+		// "Ocelot.Tracing.OpenTracing",
+	};
+	var includedInTheRelease = new List<string>
+	{
+		"Ocelot.Provider.Kubernetes",
+	};
+	foreach (var artifact in artifacts)
+	{
+		if (skippable.Exists(x => artifact.StartsWith(x)))
+			continue;
+		//if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
+		//continue;
 
-			var codePackage = packagesDir + File(artifact);
-			Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
-			try
-			{
-				DotNetNuGetPush(codePackage,
-					new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl });
-			}
-			catch (Exception e)
-			{
-				errors.Add(e.Message);
-			}
-		}
-		if (errors.Count > 0)
+		var codePackage = packagesDir + File(artifact);
+		Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
+		try
 		{
-			Information($"{nameof(PublishPackages)}: Errors >>>");
-			var err = string.Join(NL, errors);
-			Warning(err);
-			throw new Exception(err);
+			DotNetNuGetPush(codePackage,
+				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
 		}
+		catch (Exception ex)
+		{
+			Information("--------------------------------------------------------------");
+			Warning(ex.ToString());
+			throw; // exit task with non-zero result -> failed step -> failed job in Actions
+		}
+	}
 }
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)
@@ -908,7 +907,8 @@ private void CompleteGitHubRelease(dynamic release)
 	int releaseId = release.id;
 	string url = release.url.ToString();
 	string body = ReleaseNotesAsJson();
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": false }}";
+	bool isPreRelease = !IsMainBranch();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {isPreRelease.ToString().ToLower()} }}";
 	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
@@ -955,10 +955,10 @@ private bool IsRunningOnCircleCI()
 private bool IsRunningInGitHubActions()
 	=> Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
-private bool IsMainOrDevelop()
+private bool IsMainBranch()
 {
 	var br = GetBranchName().ToLower();
-    return br == "main" || br == "develop";
+    return br == "main";
 }
 private string GetBranchName()
 {

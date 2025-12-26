@@ -99,7 +99,7 @@ Configuration can be done as follows:
   .. code-block:: json
 
       "GlobalConfiguration": {
-        "BaseUrl": "http://mydns.com"
+        "BaseUrl": "http://mydns.net"
       }
 
 Now, if you went with the configuration options above and want to access the API, you can use the Postman scripts called `Ocelot.postman_collection.json`_ in the solution to change the Ocelot configuration. 
@@ -158,5 +158,5 @@ Administration API
 
 """"
 
-.. [#f1] The ":ref:`ad-your-own-identityserver`" feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
+.. [#f1] The ":ref:`Your Own IdentityServer <ad-your-own-identityserver>`" feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
 .. [#f2] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
