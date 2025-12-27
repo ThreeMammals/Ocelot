@@ -45,7 +45,7 @@ public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         _logger.LogInformation(() => $"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
 
-        if (config.Type?.ToLower() == "servicefabric")
+        if (ServiceFabricServiceDiscoveryProvider.Type.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
         {
             var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
             return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
@@ -54,8 +54,7 @@ public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
         if (_delegates != null)
         {
             var provider = _delegates?.Invoke(_provider, config, route);
-
-            if (provider.GetType().Name.ToLower() == config.Type.ToLower())
+            if (provider.GetType().Name.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
             {
                 return new OkResponse<IServiceDiscoveryProvider>(provider);
             }

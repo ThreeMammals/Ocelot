@@ -5,63 +5,64 @@ namespace Ocelot.Cache;
 public class DefaultMemoryCache<T> : IOcelotCache<T>
 {
     private readonly IMemoryCache _memoryCache;
-    private readonly Dictionary<string, List<string>> _regions;
+    private readonly ConcurrentDictionary<string, ConcurrentBag<string>> _regions;
 
     public DefaultMemoryCache(IMemoryCache memoryCache)
     {
         _memoryCache = memoryCache;
-        _regions = new Dictionary<string, List<string>>();
+        _regions = new();
     }
 
-    public void Add(string key, T value, TimeSpan ttl, string region)
+    public bool Add(string key, T value, string region, TimeSpan ttl)
     {
         if (ttl.TotalMilliseconds <= 0)
         {
-            return;
+            return false;
         }
 
         _memoryCache.Set(key, value, ttl);
-
         SetRegion(region, key);
+        return true;
     }
 
-    public T Get(string key, string region)
+    public T AddOrUpdate(string key, T value, string region, TimeSpan ttl)
     {
-        if (_memoryCache.TryGetValue(key, out T value))
-        {
-            return value;
-        }
-
-        return default(T);
-    }
-
-    public void ClearRegion(string region)
-    {
-        if (_regions.ContainsKey(region))
-        {
-            var keys = _regions[region];
-            foreach (var key in keys)
-            {
-                _memoryCache.Remove(key);
-            }
-        }
-    }
-
-    public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
-    {
-        if (_memoryCache.TryGetValue(key, out T _))
+        if (_memoryCache.TryGetValue(key, out var cached))
         {
             _memoryCache.Remove(key);
         }
 
-        Add(key, value, ttl, region);
+        Add(key, value, region, ttl);
+        return value;
+    }
+
+    public T Get(string key, string region)
+    {
+        if (TryGetValue(key, region, out T value))
+        {
+            return value;
+        }
+
+        return default;
+    }
+
+    public void ClearRegion(string region)
+    {
+        if (_regions.TryGetValue(region, out var keys))
+        {
+            foreach (var key in keys)
+            {
+                _memoryCache.Remove(key);
+            }
+
+            keys.Clear();
+        }
     }
 
     private void SetRegion(string region, string key)
     {
-        if (_regions.ContainsKey(region))
+        if (_regions.TryGetValue(region, out var current))
         {
-            var current = _regions[region];
             if (!current.Contains(key))
             {
                 current.Add(key);
@@ -69,7 +70,12 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
         }
         else
         {
-            _regions.Add(region, new List<string> { key });
+            _regions.TryAdd(region, new() { key });
         }
+    }
+
+    public bool TryGetValue(string key, string region, out T value)
+    {
+        return _memoryCache.TryGetValue(key, out value);
     }
 }

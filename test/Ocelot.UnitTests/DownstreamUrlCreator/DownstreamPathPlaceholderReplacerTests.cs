@@ -1,205 +1,183 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
-using Ocelot.Responses;
-using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
 
 public class DownstreamPathPlaceholderReplacerTests : UnitTest
 {
-    private DownstreamRouteHolder _downstreamRoute;
-    private Response<DownstreamPath> _result;
-    private readonly IDownstreamPathPlaceholderReplacer _downstreamPathReplacer;
-
-    public DownstreamPathPlaceholderReplacerTests()
-    {
-        _downstreamPathReplacer = new DownstreamPathPlaceholderReplacer();
-    }
+    private readonly DownstreamPathPlaceholderReplacer _replacer = new();
 
     [Fact]
-    public void can_replace_no_template_variables()
+    public void Can_replace_no_template_variables()
     {
-        this.Given(x => x.GivenThereIsAUrlMatch(
-            new DownstreamRouteHolder(
+        // Arrange
+        var holder = new DownstreamRouteHolder(
                 new List<PlaceholderNameAndValue>(),
-                new RouteBuilder()
-                    .WithDownstreamRoute(new DownstreamRouteBuilder()
-                        .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .Build())
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())))
-            .When(x => x.WhenIReplaceTheTemplateVariables())
-            .Then(x => x.ThenTheDownstreamUrlPathIsReturned(string.Empty))
-            .BDDfy();
+                GivenRoute());
+
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
-    public void can_replace_no_template_variables_with_slash()
+    public void Can_replace_no_template_variables_with_slash()
     {
-        this.Given(x => x.GivenThereIsAUrlMatch(
-            new DownstreamRouteHolder(
+        // Arrange
+        var holder = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("/")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-            .When(x => x.WhenIReplaceTheTemplateVariables())
-            .Then(x => x.ThenTheDownstreamUrlPathIsReturned("/"))
-            .BDDfy();
+            GivenRoute("/"));
+
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("/");
     }
 
     [Fact]
-    public void can_replace_url_no_slash()
+    public void Can_replace_url_no_slash()
     {
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("api")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-            .When(x => x.WhenIReplaceTheTemplateVariables())
-            .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api"))
-            .BDDfy();
+        // Arrange
+        var holder = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            GivenRoute("api"));
+
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("api");
     }
 
     [Fact]
-    public void can_replace_url_one_slash()
+    public void Can_replace_url_one_slash()
     {
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("api/")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-            .When(x => x.WhenIReplaceTheTemplateVariables())
-            .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/"))
-            .BDDfy();
+        // Arrange
+        var holder = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            GivenRoute("api/"));
+
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("api/");
     }
 
     [Fact]
-    public void can_replace_url_multiple_slash()
+    public void Can_replace_url_multiple_slash()
     {
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("api/product/products/")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-            .When(x => x.WhenIReplaceTheTemplateVariables())
-            .Then(x => x.ThenTheDownstreamUrlPathIsReturned("api/product/products/"))
-            .BDDfy();
+        // Arrange
+        var holder = new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            GivenRoute("api/product/products/"));
+
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("api/product/products/");
     }
 
     [Fact]
-    public void can_replace_url_one_template_variable()
+    public void Can_replace_url_one_template_variable()
     {
+        // Arrange
         var templateVariables = new List<PlaceholderNameAndValue>
         {
             new("{productId}", "1"),
         };
+        var holder = new DownstreamRouteHolder(
+            templateVariables,
+            GivenRoute("productservice/products/{productId}/"));
 
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("productservice/products/{productId}/")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-         .When(x => x.WhenIReplaceTheTemplateVariables())
-         .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/"))
-         .BDDfy();
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("productservice/products/1/");
     }
 
     [Fact]
-    public void can_replace_url_one_template_variable_with_path_after()
+    public void Can_replace_url_one_template_variable_with_path_after()
     {
+        // Arrange
         var templateVariables = new List<PlaceholderNameAndValue>
         {
             new("{productId}", "1"),
         };
+        var holder = new DownstreamRouteHolder(
+            templateVariables,
+            GivenRoute("productservice/products/{productId}/variants"));
 
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("productservice/products/{productId}/variants")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-         .When(x => x.WhenIReplaceTheTemplateVariables())
-         .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants"))
-         .BDDfy();
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("productservice/products/1/variants");
     }
 
     [Fact]
-    public void can_replace_url_two_template_variable()
+    public void Can_replace_url_two_template_variable()
     {
+        // Arrange
         var templateVariables = new List<PlaceholderNameAndValue>
         {
             new("{productId}", "1"),
             new("{variantId}", "12"),
         };
+        var holder = new DownstreamRouteHolder(
+            templateVariables,
+            GivenRoute("productservice/products/{productId}/variants/{variantId}"));
 
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("productservice/products/{productId}/variants/{variantId}")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build())))
-         .When(x => x.WhenIReplaceTheTemplateVariables())
-         .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/products/1/variants/12"))
-         .BDDfy();
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("productservice/products/1/variants/12");
     }
 
     [Fact]
-    public void can_replace_url_three_template_variable()
+    public void Can_replace_url_three_template_variable()
     {
+        // Arrange
         var templateVariables = new List<PlaceholderNameAndValue>
         {
             new("{productId}", "1"),
             new("{variantId}", "12"),
             new("{categoryId}", "34"),
         };
+        var holder = new DownstreamRouteHolder(
+            templateVariables,
+            GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}"));
 
-        this.Given(x => x.GivenThereIsAUrlMatch(new DownstreamRouteHolder(templateVariables,
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("productservice/category/{categoryId}/products/{productId}/variants/{variantId}")
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .Build())))
-         .When(x => x.WhenIReplaceTheTemplateVariables())
-         .Then(x => x.ThenTheDownstreamUrlPathIsReturned("productservice/category/34/products/1/variants/12"))
-         .BDDfy();
+        // Act
+        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+
+        // Assert
+        dsPath.Value.ShouldBe("productservice/category/34/products/1/variants/12");
     }
 
-    private void GivenThereIsAUrlMatch(DownstreamRouteHolder downstreamRoute)
+    private static Route GivenRoute(string downstream = null, string method = null)
     {
-        _downstreamRoute = downstreamRoute;
+        var route = GivenDownstreamRoute(downstream, method);
+        return new()
+        {
+            DownstreamRoute = [route],
+            UpstreamHttpMethod = [method is null ? HttpMethod.Get : new(method)],
+        };
     }
 
-    private void WhenIReplaceTheTemplateVariables()
-    {
-        _result = _downstreamPathReplacer.Replace(_downstreamRoute.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, _downstreamRoute.TemplatePlaceholderNameAndValues);
-    }
-
-    private void ThenTheDownstreamUrlPathIsReturned(string expected)
-    {
-        _result.Data.Value.ShouldBe(expected);
-    }
+    private static DownstreamRoute GivenDownstreamRoute(string downstream = null, string method = null)
+        => new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate(downstream)
+            .WithUpstreamHttpMethod([method ?? HttpMethods.Get])
+            .Build();
 }

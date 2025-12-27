@@ -26,25 +26,31 @@ public class PollingConsulServiceDiscoveryProviderTests : UnitTest
     }
 
     [Fact]
-    public void should_return_service_from_consul()
+    public void Should_return_service_from_consul()
     {
+        // Arrange
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
+        GivenConsulReturns(service);
 
-        this.Given(x => GivenConsulReturns(service))
-            .When(x => WhenIGetTheServices(1))
-            .Then(x => ThenTheCountIs(1))
-            .BDDfy();
+        // Act
+        WhenIGetTheServices(1);
+
+        // Assert
+        _result.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void should_return_service_from_consul_without_delay()
+    public async Task Should_return_service_from_consul_without_delay()
     {
+        // Arrange
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
+        GivenConsulReturns(service);
 
-        this.Given(x => GivenConsulReturns(service))
-            .When(x => WhenIGetTheServicesWithoutDelay(1))
-            .Then(x => ThenTheCountIs(1))
-            .BDDfy();
+        // Act
+        await WhenIGetTheServicesWithoutDelay(1);
+
+        // Assert
+        _result.Count.ShouldBe(1);
     }
 
     private void GivenConsulReturns(Service service)
@@ -53,15 +59,10 @@ public class PollingConsulServiceDiscoveryProviderTests : UnitTest
         _consulServiceDiscoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(_services);
     }
 
-    private void ThenTheCountIs(int count)
-    {
-        _result.Count.ShouldBe(count);
-    }
-
     private void WhenIGetTheServices(int expected)
     {
         var provider = new PollConsul(_delay, "test", _factory.Object, _consulServiceDiscoveryProvider.Object);
-        var result = Wait.WaitFor(3000).Until(() =>
+        var result = Wait.For(3_000).Until(() =>
         {
             try
             {
@@ -73,7 +74,6 @@ public class PollingConsulServiceDiscoveryProviderTests : UnitTest
                 return false;
             }
         });
-
         result.ShouldBeTrue();
     }
 

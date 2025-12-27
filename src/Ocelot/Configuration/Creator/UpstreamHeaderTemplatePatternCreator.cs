@@ -10,20 +10,14 @@ namespace Ocelot.Configuration.Creator;
 /// <remarks>Ocelot feature: Routing based on request header.</remarks>
 public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTemplatePatternCreator
 {
-    private const string PlaceHolderPattern = @"(\{header:.*?\})";
-#if NET7_0_OR_GREATER
-    [GeneratedRegex(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
+    [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegexPlaceholders();
-#else
-    private static readonly Regex _regexPlaceholders = RegexGlobal.New(PlaceHolderPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-    private static Regex RegexPlaceholders() => _regexPlaceholders;
-#endif
 
-    public IDictionary<string, UpstreamHeaderTemplate> Create(IRoute route)
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)
     {
         var result = new Dictionary<string, UpstreamHeaderTemplate>();
 
-        foreach (var headerTemplate in route.UpstreamHeaderTemplates)
+        foreach (var headerTemplate in upstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
             var matches = RegexPlaceholders().Matches(headerTemplateValue);
@@ -39,7 +33,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
                 }
             }
 
-            var template = route.RouteIsCaseSensitive
+            var template = routeIsCaseSensitive
                 ? $"^{headerTemplateValue}$"
                 : $"^(?i){headerTemplateValue}$"; // ignore case
 
@@ -48,4 +42,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
         return result;
     }
+
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
+        => Create(route.UpstreamHeaderTemplates, route.RouteIsCaseSensitive);
 }

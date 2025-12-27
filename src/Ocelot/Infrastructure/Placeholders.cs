@@ -1,13 +1,18 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using System.Net.Sockets;
 
 namespace Ocelot.Infrastructure;
 
 public class Placeholders : IPlaceholders
 {
+    public const char OpeningBrace = '{';
+    public const char ClosingBrace = '}';
+
     private readonly Dictionary<string, Func<Response<string>>> _placeholders;
     private readonly Dictionary<string, Func<DownstreamRequest, string>> _requestPlaceholders;
     private readonly IBaseUrlFinder _finder;
@@ -36,9 +41,9 @@ public class Placeholders : IPlaceholders
 
     public Response<string> Get(string key)
     {
-        if (_placeholders.ContainsKey(key))
+        if (_placeholders.TryGetValue(key, out Func<Response<string>> valueFunc))
         {
-            var response = _placeholders[key].Invoke();
+            var response = valueFunc.Invoke();
             if (!response.IsError)
             {
                 return new OkResponse<string>(response.Data);
@@ -78,8 +83,11 @@ public class Placeholders : IPlaceholders
         // this can blow up so adding try catch and return error
         try
         {
-            var remoteIdAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            return new OkResponse<string>(remoteIdAddress);
+            var ip = _contextAccessor.HttpContext.Connection.RemoteIpAddress
+                ?? Dns.GetHostAddresses(string.Empty).FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6); // detect localhost network interface, a lifehack
+            return ip != null
+                ? new OkResponse<string>(ip.ToString())
+                : new ErrorResponse<string>(new CouldNotFindPlaceholderError("{RemoteIpAddress}"));
         }
         catch
         {
@@ -100,7 +108,7 @@ public class Placeholders : IPlaceholders
 
     private Response<string> GetTraceId()
     {
-        var traceId = _repo.Get<string>("TraceId");
+        var traceId = _repo.Get<string>(OcelotHttpTracingHandler.TraceId);
         return traceId.IsError
             ? new ErrorResponse<string>(traceId.Errors)
             : new OkResponse<string>(traceId.Data);

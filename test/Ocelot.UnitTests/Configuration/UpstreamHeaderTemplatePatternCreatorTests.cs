@@ -1,17 +1,11 @@
 ﻿using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Values;
 
 namespace Ocelot.UnitTests.Configuration;
 
 public class UpstreamHeaderTemplatePatternCreatorTests
 {
-    private readonly UpstreamHeaderTemplatePatternCreator _creator;
-
-    public UpstreamHeaderTemplatePatternCreatorTests()
-    {
-        _creator = new();
-    }
+    private readonly UpstreamHeaderTemplatePatternCreator _creator = new();
 
     [Trait("PR", "1312")]
     [Trait("Feat", "360")]

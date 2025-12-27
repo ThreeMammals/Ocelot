@@ -43,13 +43,8 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     }
 
     private const int PlaceholdersMilliseconds = 1000;
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"\{(.*?)\}", RegexOptions.None, PlaceholdersMilliseconds)]
     private static partial Regex RegexPlaceholders();
-#else
-    private static readonly Regex _regexPlaceholders = RegexGlobal.New(@"\{(.*?)\}", RegexOptions.None, TimeSpan.FromMilliseconds(PlaceholdersMilliseconds));
-    private static Regex RegexPlaceholders() => _regexPlaceholders;
-#endif
 
     /// <summary>Finds the placeholders in the request path and query.
     /// We use a <see cref="Regex"/> pattern to match the placeholders in the path template.
@@ -107,13 +102,8 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     }
 
     private const int CatchAllQueryMilliseconds = 300;
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"^[^{{}}]*\?\{(.*?)\}$", RegexOptions.None, CatchAllQueryMilliseconds)]
     private static partial Regex RegexCatchAllQuery();
-#else
-    private static readonly Regex _regexCatchAllQuery = RegexGlobal.New(@"^[^{{}}]*\?\{(.*?)\}$", RegexOptions.None, TimeSpan.FromMilliseconds(CatchAllQueryMilliseconds));
-    private static Regex RegexCatchAllQuery() => _regexCatchAllQuery;
-#endif
 
     /// <summary>Checks if the path template contains a Catch-All query parameter.
     /// <para>It means that the path template ends with a question mark and a placeholder.
@@ -129,13 +119,8 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     }
 
     private const int CatchAllPathMilliseconds = 300;
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"^[^{{}}]*\{(.*?)\}/?$", RegexOptions.None, CatchAllPathMilliseconds)]
     private static partial Regex RegexCatchAllPath();
-#else
-    private static readonly Regex _regexCatchAllPath = RegexGlobal.New(@"^[^{{}}]*\{(.*?)\}/?$", RegexOptions.None, TimeSpan.FromMilliseconds(CatchAllPathMilliseconds));
-    private static Regex RegexCatchAllPath() => _regexCatchAllPath;
-#endif
 
     /// <summary>Check if the path template contains a Catch-All path parameter.
     /// <para>It means that the path template ends with a placeholder and no other placeholders are present in the path template, without a question mark (query parameters).</para>

@@ -28,45 +28,43 @@ public class ClaimsToThingCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_claims_to_things()
+    public void Should_return_claims_to_things()
     {
+        // Arrange
         var userInput = new Dictionary<string, string>
         {
             {"CustomerId", "Claims[CustomerId] > value"},
         };
-
         var claimsToThing = new OkResponse<ClaimToThing>(new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0));
+        GivenTheFollowingDictionary(userInput);
+        GivenTheConfigHeaderExtractorReturns(claimsToThing);
 
-        this.Given(x => x.GivenTheFollowingDictionary(userInput))
-            .And(x => x.GivenTheConfigHeaderExtractorReturns(claimsToThing))
-            .When(x => x.WhenIGetTheThings())
-            .Then(x => x.ThenTheConfigParserIsCalledCorrectly())
-            .And(x => x.ThenClaimsToThingsAreReturned())
-            .BDDfy();
+        // Act
+        WhenIGetTheThings();
+
+        // Assert
+        ThenTheConfigParserIsCalledCorrectly();
+        ThenClaimsToThingsAreReturned();
     }
 
     [Fact]
-    public void should_log_error_if_cannot_parse_claim_to_thing()
+    public void Should_log_error_if_cannot_parse_claim_to_thing()
     {
+        // Arrange
         var userInput = new Dictionary<string, string>
         {
             {"CustomerId", "Claims[CustomerId] > value"},
         };
-
         var claimsToThing = new ErrorResponse<ClaimToThing>(It.IsAny<Error>());
+        GivenTheFollowingDictionary(userInput);
+        GivenTheConfigHeaderExtractorReturns(claimsToThing);
 
-        this.Given(x => x.GivenTheFollowingDictionary(userInput))
-            .And(x => x.GivenTheConfigHeaderExtractorReturns(claimsToThing))
-            .When(x => x.WhenIGetTheThings())
-            .Then(x => x.ThenTheConfigParserIsCalledCorrectly())
-            .And(x => x.ThenNoClaimsToThingsAreReturned())
-            .BDDfy();
-    }
+        // Act
+        WhenIGetTheThings();
 
-    private void ThenTheLoggerIsCalledCorrectly()
-    {
-        _logger
-            .Verify(x => x.LogDebug(It.IsAny<string>), Times.Once);
+        // Assert
+        ThenTheConfigParserIsCalledCorrectly();
+        ThenNoClaimsToThingsAreReturned();
     }
 
     private void ThenClaimsToThingsAreReturned()

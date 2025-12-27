@@ -5,6 +5,8 @@ namespace Ocelot.ServiceDiscovery.Providers;
 
 public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
+    public const string Type = "ServiceFabric"; // TODO This property should be defined in the IServiceDiscoveryProvider interface
+
     private readonly ServiceFabricConfiguration _configuration;
 
     public ServiceFabricServiceDiscoveryProvider(ServiceFabricConfiguration configuration)

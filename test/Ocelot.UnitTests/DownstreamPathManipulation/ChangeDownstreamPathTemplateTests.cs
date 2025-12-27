@@ -2,7 +2,7 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.PathManipulation;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
@@ -11,6 +11,8 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation;
 
+[Trait("Feat", "968")] // https://github.com/ThreeMammals/Ocelot/pull/968
+[Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public class ChangeDownstreamPathTemplateTests : UnitTest
 {
     private readonly ChangeDownstreamPathTemplate _changeDownstreamPath;
@@ -29,156 +31,116 @@ public class ChangeDownstreamPathTemplateTests : UnitTest
     }
 
     [Fact]
-    public void should_change_downstream_path_request()
+    public void Should_change_downstream_path_request()
     {
-        var claims = new List<Claim>
+        // Arrange
+        _claims = new List<Claim>
         {
             new("test", "data"),
         };
-        var placeHolderValues = new List<PlaceholderNameAndValue>();
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("path-key", string.Empty, string.Empty, 0),
-            }))
-            .And(x => x.GivenClaims(claims))
-            .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))
-            .And(x => x.GivenPlaceholderNameAndValues(placeHolderValues))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIChangeDownstreamPath())
-            .Then(x => x.ThenTheResultIsSuccess())
-            .And(x => x.ThenClaimDataIsContainedInPlaceHolder("{path-key}", "value"))
-            .BDDfy();
+        _placeholderValues = new List<PlaceholderNameAndValue>();
+        _configuration = new List<ClaimToThing>
+        {
+            new("path-key", string.Empty, string.Empty, 0),
+        };
+        _downstreamPathTemplate = new DownstreamPathTemplate("/api/test/{path-key}");
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        WhenIChangeDownstreamPath();
+
+        // Assert
+        _result.IsError.ShouldBeFalse();
+        ThenClaimDataIsContainedInPlaceHolder("{path-key}", "value");
     }
 
     [Fact]
-    public void should_replace_existing_placeholder_value()
+    public void Should_replace_existing_placeholder_value()
     {
-        var claims = new List<Claim>
+        // Arrange
+        _claims = new List<Claim>
         {
             new("test", "data"),
         };
-        var placeHolderValues = new List<PlaceholderNameAndValue>
+        _placeholderValues = new List<PlaceholderNameAndValue>
         {
             new("{path-key}", "old_value"),
         };
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("path-key", string.Empty, string.Empty, 0),
-            }))
-            .And(x => x.GivenClaims(claims))
-            .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))
-            .And(x => x.GivenPlaceholderNameAndValues(placeHolderValues))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIChangeDownstreamPath())
-            .Then(x => x.ThenTheResultIsSuccess())
-            .And(x => x.ThenClaimDataIsContainedInPlaceHolder("{path-key}", "value"))
-            .BDDfy();
+        _configuration = new List<ClaimToThing>
+        {
+            new("path-key", string.Empty, string.Empty, 0),
+        };
+        _downstreamPathTemplate = new DownstreamPathTemplate("/api/test/{path-key}");
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
+
+        // Act
+        WhenIChangeDownstreamPath();
+
+        // Assert
+        _result.IsError.ShouldBeFalse();
+        ThenClaimDataIsContainedInPlaceHolder("{path-key}", "value");
     }
 
     [Fact]
-    public void should_return_error_when_no_placeholder_in_downstream_path()
+    public void Should_return_error_when_no_placeholder_in_downstream_path()
     {
-        var claims = new List<Claim>
+        // Arrange
+        _claims = new List<Claim>
         {
             new("test", "data"),
         };
-        var placeHolderValues = new List<PlaceholderNameAndValue>();
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("path-key", string.Empty, string.Empty, 0),
-            }))
-            .And(x => x.GivenClaims(claims))
-            .And(x => x.GivenDownstreamPathTemplate("/api/test"))
-            .And(x => x.GivenPlaceholderNameAndValues(placeHolderValues))
-            .And(x => x.GivenTheClaimParserReturns(new OkResponse<string>("value")))
-            .When(x => x.WhenIChangeDownstreamPath())
-            .Then(x => x.ThenTheResultIsCouldNotFindPlaceholderError())
-            .BDDfy();
-    }
-
-    [Fact]
-    private void should_return_error_when_claim_parser_returns_error()
-    {
-        var claims = new List<Claim>
+        _placeholderValues = new List<PlaceholderNameAndValue>();
+        _configuration = new List<ClaimToThing>
         {
-            new("test", "data"),
+            new("path-key", string.Empty, string.Empty, 0),
         };
-        var placeHolderValues = new List<PlaceholderNameAndValue>();
-        this.Given(
-            x => x.GivenAClaimToThing(new List<ClaimToThing>
-            {
-                new("path-key", string.Empty, string.Empty, 0),
-            }))
-            .And(x => x.GivenClaims(claims))
-            .And(x => x.GivenDownstreamPathTemplate("/api/test/{path-key}"))
-            .And(x => x.GivenPlaceholderNameAndValues(placeHolderValues))
-            .And(x => x.GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
-            {
-               new AnyError(),
-            })))
-            .When(x => x.WhenIChangeDownstreamPath())
-            .Then(x => x.ThenTheResultIsError())
-            .BDDfy();
-    }
+        _downstreamPathTemplate = new DownstreamPathTemplate("/api/test");
+        GivenTheClaimParserReturns(new OkResponse<string>("value"));
 
-    private void GivenAClaimToThing(List<ClaimToThing> configuration)
-    {
-        _configuration = configuration;
-    }
+        // Act
+        WhenIChangeDownstreamPath();
 
-    private void GivenClaims(List<Claim> claims)
-    {
-        _claims = claims;
-    }
-
-    private void GivenDownstreamPathTemplate(string template)
-    {
-        _downstreamPathTemplate = new DownstreamPathTemplate(template);
-    }
-
-    private void GivenPlaceholderNameAndValues(List<PlaceholderNameAndValue> placeholders)
-    {
-        _placeholderValues = placeholders;
-    }
-
-    private void GivenTheClaimParserReturns(Response<string> claimValue)
-    {
-        _claimValue = claimValue;
-        _parser
-            .Setup(
-                x =>
-                    x.GetValue(It.IsAny<IEnumerable<Claim>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<int>()))
-            .Returns(_claimValue);
-    }
-
-    private void WhenIChangeDownstreamPath()
-    {
-        _result = _changeDownstreamPath.ChangeDownstreamPath(_configuration, _claims,
-                    _downstreamPathTemplate, _placeholderValues);
-    }
-
-    private void ThenTheResultIsSuccess()
-    {
-        _result.IsError.ShouldBe(false);
-    }
-
-    private void ThenTheResultIsCouldNotFindPlaceholderError()
-    {
+        // Assert
         _result.IsError.ShouldBe(true);
         _result.Errors.Count.ShouldBe(1);
         _result.Errors.First().ShouldBeOfType<CouldNotFindPlaceholderError>();
     }
 
-    private void ThenTheResultIsError()
+    [Fact]
+    public void Should_return_error_when_claim_parser_returns_error()
     {
+        // Arrange
+        _claims = new List<Claim>
+        {
+            new("test", "data"),
+        };
+        _placeholderValues = new List<PlaceholderNameAndValue>();
+        _configuration = new List<ClaimToThing>
+        {
+            new("path-key", string.Empty, string.Empty, 0),
+        };
+        _downstreamPathTemplate = new DownstreamPathTemplate("/api/test/{path-key}");
+        GivenTheClaimParserReturns(new ErrorResponse<string>(new List<Error>
+            {
+               new AnyError(),
+            }));
+
+        // Act
+        WhenIChangeDownstreamPath();
+
+        // Assert
         _result.IsError.ShouldBe(true);
     }
+
+    private void GivenTheClaimParserReturns(Response<string> claimValue)
+    {
+        _claimValue = claimValue;
+        _parser.Setup(x => x.GetValue(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .Returns(_claimValue);
+    }
+
+    private void WhenIChangeDownstreamPath()
+        => _result = _changeDownstreamPath.ChangeDownstreamPath(_configuration, _claims, _downstreamPathTemplate, _placeholderValues);
 
     private void ThenClaimDataIsContainedInPlaceHolder(string name, string value)
     {

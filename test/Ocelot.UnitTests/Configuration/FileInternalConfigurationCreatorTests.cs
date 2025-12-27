@@ -36,28 +36,32 @@ public class FileInternalConfigurationCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_validation_error()
+    public async Task Should_return_validation_error()
     {
-        var fileConfiguration = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheValidationFails();
 
-        this.Given(_ => GivenThe(fileConfiguration))
-            .And(_ => GivenTheValidationFails())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenAnErrorIsReturned())
-            .BDDfy();
+        // Act
+        _result = await _creator.Create(_fileConfiguration);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
     }
 
     [Fact]
-    public void should_return_internal_configuration()
+    public async Task Should_return_internal_configuration()
     {
-        var fileConfiguration = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheValidationSucceeds();
+        GivenTheDependenciesAreSetUp();
 
-        this.Given(_ => GivenThe(fileConfiguration))
-            .And(_ => GivenTheValidationSucceeds())
-            .And(_ => GivenTheDependenciesAreSetUp())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheDependenciesAreCalledCorrectly())
-            .BDDfy();
+        // Act
+        _result = await _creator.Create(_fileConfiguration);
+
+        // Assert
+        ThenTheDependenciesAreCalledCorrectly();
     }
 
     private void ThenTheDependenciesAreCalledCorrectly()
@@ -69,22 +73,22 @@ public class FileInternalConfigurationCreatorTests : UnitTest
         var mergedRoutes = _routes
             .Union(_aggregates)
             .Union(_dynamics)
-            .ToList();
+            .ToArray();
 
-        _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<List<Route>>(y => y.Count == mergedRoutes.Count)), Times.Once);
+        _configCreator.Verify(x => x.Create(_fileConfiguration, It.Is<Route[]>(y => y.Length == mergedRoutes.Length)), Times.Once);
     }
 
     private void GivenTheDependenciesAreSetUp()
     {
-        _routes = new List<Route> { new RouteBuilder().Build() };
-        _aggregates = new List<Route> { new RouteBuilder().Build() };
-        _dynamics = new List<Route> { new RouteBuilder().Build() };
-        _internalConfig = new InternalConfiguration(null, string.Empty, null, string.Empty, null, string.Empty, null, null, null, null);
+        _routes = new List<Route> { new() };
+        _aggregates = new List<Route> { new() };
+        _dynamics = new List<Route> { new() };
+        _internalConfig = new InternalConfiguration();
 
         _routesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_routes);
         _aggregatesCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_aggregates);
         _dynamicsCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).Returns(_dynamics);
-        _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<List<Route>>())).Returns(_internalConfig);
+        _configCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>(), It.IsAny<Route[]>())).Returns(_internalConfig);
     }
 
     private void GivenTheValidationSucceeds()
@@ -94,25 +98,10 @@ public class FileInternalConfigurationCreatorTests : UnitTest
         _validator.Setup(x => x.IsValid(It.IsAny<FileConfiguration>())).ReturnsAsync(response);
     }
 
-    private void ThenAnErrorIsReturned()
-    {
-        _result.IsError.ShouldBeTrue();
-    }
-
-    private async Task WhenICreate()
-    {
-        _result = await _creator.Create(_fileConfiguration);
-    }
-
     private void GivenTheValidationFails()
     {
         var error = new ConfigurationValidationResult(true, new List<Error> { new AnyError() });
         var response = new OkResponse<ConfigurationValidationResult>(error);
         _validator.Setup(x => x.IsValid(It.IsAny<FileConfiguration>())).ReturnsAsync(response);
-    }
-
-    private void GivenThe(FileConfiguration fileConfiguration)
-    {
-        _fileConfiguration = fileConfiguration;
     }
 }

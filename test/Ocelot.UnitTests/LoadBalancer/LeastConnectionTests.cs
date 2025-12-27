@@ -1,42 +1,36 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Errors;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.Responses;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Values;
+using Ocelot.LoadBalancer.Interfaces;
+using Ocelot.LoadBalancer;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 
 public class LeastConnectionTests : UnitTest
 {
-    private ServiceHostAndPort _hostAndPort;
-    private Response<ServiceHostAndPort> _result;
     private LeastConnection _leastConnection;
-    private List<Service> _services;
     private readonly Random _random;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public LeastConnectionTests()
     {
-        _httpContext = new DefaultHttpContext();
-        _random = new Random();
+        _httpContext = new();
+        _random = new();
     }
 
     [Fact]
     public async Task Should_be_able_to_lease_and_release_concurrently()
     {
-        var serviceName = "products";
-
+        const string ServiceName = "products";
         var availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
-
-        _services = availableServices;
-        _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
         var tasks = new Task[100];
-
         for (var i = 0; i < tasks.Length; i++)
         {
             tasks[i] = LeaseDelayAndRelease();
@@ -48,15 +42,15 @@ public class LeastConnectionTests : UnitTest
     [Fact]
     public async Task Should_handle_service_returning_to_available()
     {
-        var serviceName = "products";
+        const string ServiceName = "products";
 
         var availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), serviceName);
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
         var hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
         hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
@@ -67,7 +61,7 @@ public class LeastConnectionTests : UnitTest
 
         availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
         hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
@@ -79,8 +73,8 @@ public class LeastConnectionTests : UnitTest
 
         availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
         hostAndPortOne = await _leastConnection.LeaseAsync(_httpContext);
@@ -99,38 +93,37 @@ public class LeastConnectionTests : UnitTest
     }
 
     [Fact]
-    public void Should_get_next_url()
+    public async Task Should_get_next_url()
     {
-        var serviceName = "products";
-
+        // Arrange
+        const string ServiceName = "products";
         var hostAndPort = new ServiceHostAndPort("localhost", 80);
-
         var availableServices = new List<Service>
         {
-            new(serviceName, hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, hostAndPort, string.Empty, string.Empty, Array.Empty<string>()),
         };
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
-        this.Given(x => x.GivenAHostAndPort(hostAndPort))
-        .And(x => x.GivenTheLoadBalancerStarts(availableServices, serviceName))
-        .When(x => x.WhenIGetTheNextHostAndPort())
-        .Then(x => x.ThenTheNextHostAndPortIsReturned())
-        .BDDfy();
+        // Act
+        var result = await _leastConnection.LeaseAsync(_httpContext);
+
+        // Assert
+        result.Data.DownstreamHost.ShouldBe(hostAndPort.DownstreamHost);
+        result.Data.DownstreamPort.ShouldBe(hostAndPort.DownstreamPort);
     }
 
     [Fact]
     public async Task Should_serve_from_service_with_least_connections()
     {
-        var serviceName = "products";
-
+        const string ServiceName = "products";
         var availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.3", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.3", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        _services = availableServices;
-        _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
         var response = await _leastConnection.LeaseAsync(_httpContext);
 
@@ -148,16 +141,14 @@ public class LeastConnectionTests : UnitTest
     [Fact]
     public async Task Should_build_connections_per_service()
     {
-        var serviceName = "products";
-
+        const string ServiceName = "products";
         var availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        _services = availableServices;
-        _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
         var response = await _leastConnection.LeaseAsync(_httpContext);
 
@@ -179,16 +170,14 @@ public class LeastConnectionTests : UnitTest
     [Fact]
     public async Task Should_release_connection()
     {
-        var serviceName = "products";
-
+        const string ServiceName = "products";
         var availableServices = new List<Service>
         {
-            new(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
-            new(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+            new(ServiceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, Array.Empty<string>()),
         };
 
-        _services = availableServices;
-        _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
+        _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
         var response = await _leastConnection.LeaseAsync(_httpContext);
 
@@ -215,57 +204,61 @@ public class LeastConnectionTests : UnitTest
     }
 
     [Fact]
-    public void Should_return_error_if_services_are_null()
+    public async Task Should_return_error_if_services_are_null()
     {
-        var serviceName = "products";
-
+        // Arrange
+        const string ServiceName = "products";
         var hostAndPort = new ServiceHostAndPort("localhost", 80);
-        this.Given(x => x.GivenAHostAndPort(hostAndPort))
-         .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
-         .When(x => x.WhenIGetTheNextHostAndPort())
-         .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
-         .BDDfy();
+        _leastConnection = new LeastConnection(() => Task.FromResult((List<Service>)null), ServiceName);
+
+        // Act
+        var result = await _leastConnection.LeaseAsync(_httpContext);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
     }
 
     [Fact]
-    public void Should_return_error_if_services_are_empty()
+    public async Task Should_return_error_if_services_are_empty()
     {
-        var serviceName = "products";
+        // Arrange
+        const string ServiceName = "products";
+        _leastConnection = new LeastConnection(() => Task.FromResult(new List<Service>()), ServiceName);
 
-        var hostAndPort = new ServiceHostAndPort("localhost", 80);
-        this.Given(x => x.GivenAHostAndPort(hostAndPort))
-         .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
-         .When(x => x.WhenIGetTheNextHostAndPort())
-         .Then(x => x.ThenErrorIsReturned<ServicesAreNullError>())
-         .BDDfy();
+        // Act
+        var result = await _leastConnection.LeaseAsync(_httpContext);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.Errors[0].ShouldBeOfType<ServicesAreNullError>();
     }
 
-    private void ThenErrorIsReturned<TError>()
-        where TError : Error
+    [Fact]
+    public async Task OnLeased()
     {
-        _result.IsError.ShouldBeTrue();
-        _result.Errors[0].ShouldBeOfType<TError>();
-    }
+        // Arrange
+        const string ServiceName = "products";
+        var availableServices = new List<Service>
+        {
+            new(ServiceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, Array.Empty<string>()),
+        };
+        var leastConnection = new TestLeastConnection(() => Task.FromResult(availableServices), ServiceName);
 
-    private void GivenTheLoadBalancerStarts(List<Service> services, string serviceName)
-    {
-        _services = services;
-        _leastConnection = new LeastConnection(() => Task.FromResult(_services), serviceName);
-    }
+        // Act
+        var result = await leastConnection.LeaseAsync(_httpContext);
 
-    private void GivenAHostAndPort(ServiceHostAndPort hostAndPort)
-    {
-        _hostAndPort = hostAndPort;
+        // Assert
+        leastConnection.Events.ShouldNotBeEmpty();
+        var args = leastConnection.Events[0].ShouldNotBeNull();
+        args.Service.Name.ShouldBe(ServiceName);
     }
+}
 
-    private async Task WhenIGetTheNextHostAndPort()
-    {
-        _result = await _leastConnection.LeaseAsync(_httpContext);
-    }
-
-    private void ThenTheNextHostAndPortIsReturned()
-    {
-        _result.Data.DownstreamHost.ShouldBe(_hostAndPort.DownstreamHost);
-        _result.Data.DownstreamPort.ShouldBe(_hostAndPort.DownstreamPort);
-    }
+internal sealed class TestLeastConnection : LeastConnection, ILoadBalancer
+{
+    public readonly List<LeaseEventArgs> Events = new();
+    public TestLeastConnection(Func<Task<List<Service>>> services, string serviceName)
+        : base(services, serviceName) => Leased += Me_Leased;
+    private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
 }

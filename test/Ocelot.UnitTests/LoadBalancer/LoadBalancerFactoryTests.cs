@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -12,13 +15,10 @@ namespace Ocelot.UnitTests.LoadBalancer;
 
 public class LoadBalancerFactoryTests : UnitTest
 {
-    private DownstreamRoute _route;
     private readonly LoadBalancerFactory _factory;
-    private Response<ILoadBalancer> _result;
     private readonly Mock<IServiceDiscoveryProviderFactory> _serviceProviderFactory;
     private readonly IEnumerable<ILoadBalancerCreator> _loadBalancerCreators;
     private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
-    private ServiceProviderConfiguration _serviceProviderConfig;
 
     public LoadBalancerFactoryTests()
     {
@@ -35,104 +35,111 @@ public class LoadBalancerFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_return_no_load_balancer_by_default()
+    public void Should_return_no_load_balancer_by_default()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryReturns();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeNoLoadBalancer>())
-            .BDDfy();
+        // Act
+        var result = _factory.Get(route, config);
+
+        // Assert
+        result.Data.ShouldBeOfType<FakeNoLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_matching_load_balancer()
+    public void Should_return_matching_load_balancer()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerTwo", string.Empty, 0))
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerTwo), string.Empty, 0))
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryReturns();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancerTwo>())
-            .BDDfy();
+        // Act
+        var result = _factory.Get(route, config);
+
+        // Assert
+        result.Data.ShouldBeOfType<FakeLoadBalancerTwo>();
     }
 
     [Fact]
-    public void should_return_error_response_if_cannot_find_load_balancer_creator()
+    public void Should_return_error_response_if_cannot_find_load_balancer_creator()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerOptions(new LoadBalancerOptions("DoesntExistLoadBalancer", string.Empty, 0))
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryReturns();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .And(x => x.ThenTheErrorMessageIsCorrect())
-            .BDDfy();
+        // Act
+        var result = _factory.Get(route, config);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.Errors[0].Message.ShouldBe("Could not find load balancer creator for Type: DoesntExistLoadBalancer, please check your config specified the correct load balancer and that you have registered a class with the same name.");
     }
 
     [Fact]
-    public void should_return_error_response_if_creator_errors()
+    public void Should_return_error_response_if_creator_errors()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("BrokenLoadBalancer", string.Empty, 0))
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(BrokenLoadBalancer), string.Empty, 0))
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryReturns();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .BDDfy();
+        // Act
+        var result = _factory.Get(route, config);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
     }
 
     [Fact]
-    public void should_call_service_provider()
+    public void Should_call_service_provider()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", string.Empty, 0))
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerOne), string.Empty, 0))
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryReturns();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryReturns())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheServiceProviderIsCalledCorrectly())
-            .BDDfy();
+        // Act
+        var result = _factory.Get(route, config);
+
+        // Assert
+        ThenTheServiceProviderIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_return_error_response_when_call_to_service_provider_fails()
+    public void Should_return_error_response_when_call_to_service_provider_fails()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancerOne", string.Empty, 0))
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancerOne), string.Empty, 0))
+            .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
+        var config = new ServiceProviderConfigurationBuilder().Build();
+        GivenTheServiceProviderFactoryFails();
 
-        this.Given(x => x.GivenARoute(route))
-            .And(x => GivenAServiceProviderConfig(new ServiceProviderConfigurationBuilder().Build()))
-            .And(x => x.GivenTheServiceProviderFactoryFails())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorResponseIsReturned())
-            .BDDfy();
-    }
+        // Act
+        var result = _factory.Get(route, config);
 
-    private void GivenAServiceProviderConfig(ServiceProviderConfiguration serviceProviderConfig)
-    {
-        _serviceProviderConfig = serviceProviderConfig;
+        // Assert
+        result.IsError.ShouldBeTrue();
     }
 
     private void GivenTheServiceProviderFactoryReturns()
@@ -155,65 +162,21 @@ public class LoadBalancerFactoryTests : UnitTest
             .Verify(x => x.Get(It.IsAny<ServiceProviderConfiguration>(), It.IsAny<DownstreamRoute>()), Times.Once);
     }
 
-    private void GivenARoute(DownstreamRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenIGetTheLoadBalancer()
-    {
-        _result = _factory.Get(_route, _serviceProviderConfig);
-    }
-
-    private void ThenTheLoadBalancerIsReturned<T>()
-    {
-        _result.Data.ShouldBeOfType<T>();
-    }
-
-    private void ThenAnErrorResponseIsReturned()
-    {
-        _result.IsError.ShouldBeTrue();
-    }
-
-    private void ThenTheErrorMessageIsCorrect()
-    {
-        _result.Errors[0].Message.ShouldBe("Could not find load balancer creator for Type: DoesntExistLoadBalancer, please check your config specified the correct load balancer and that you have registered a class with the same name.");
-    }
-
     private class FakeLoadBalancerCreator<T> : ILoadBalancerCreator
         where T : ILoadBalancer, new()
     {
-        public FakeLoadBalancerCreator()
-        {
-            Type = typeof(T).Name;
-        }
-
-        public FakeLoadBalancerCreator(string type)
-        {
-            Type = type;
-        }
-
-        public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
-        {
-            return new OkResponse<ILoadBalancer>(new T());
-        }
-
+        public FakeLoadBalancerCreator() => Type = typeof(T).Name;
+        public FakeLoadBalancerCreator(string type) => Type = type;
+        public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider) => new OkResponse<ILoadBalancer>(new T());
         public string Type { get; }
     }
 
     private class BrokenLoadBalancerCreator<T> : ILoadBalancerCreator
         where T : ILoadBalancer, new()
     {
-        public BrokenLoadBalancerCreator()
-        {
-            Type = typeof(T).Name;
-        }
-
+        public BrokenLoadBalancerCreator() => Type = typeof(T).Name;
         public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
-        {
-            return new ErrorResponse<ILoadBalancer>(new ErrorInvokingLoadBalancerCreator(new Exception()));
-        }
-
+            => new ErrorResponse<ILoadBalancer>(new InvokingLoadBalancerCreatorError(new Exception()));
         public string Type { get; }
     }
 

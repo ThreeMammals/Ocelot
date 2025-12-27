@@ -1,23 +1,21 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator;
 
+/// <summary>
+/// TODO Move this service to the middleware as a protected virtual method. Having a separate interface is absolutely useless.
+/// </summary>
 public class DownstreamPathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
 {
-    public Response<DownstreamPath> Replace(string downstreamPathTemplate,
-        List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
+    public DownstreamPath Replace(string downstreamPathTemplate, List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
     {
-        var downstreamPath = new StringBuilder();
-
-        downstreamPath.Append(downstreamPathTemplate);
-
+        var downstreamPath = new StringBuilder(downstreamPathTemplate);
         foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)
         {
             downstreamPath.Replace(placeholderVariableAndValue.Name, placeholderVariableAndValue.Value);
         }
 
-        return new OkResponse<DownstreamPath>(new DownstreamPath(downstreamPath.ToString()));
+        return new(downstreamPath.ToString());
     }
 }

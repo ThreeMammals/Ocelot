@@ -1,159 +1,317 @@
+.. _Logging in .NET Core and ASP.NET Core: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging
+.. _Serilog: https://serilog.net
+
 Logging
 =======
 
-Ocelot uses the standard logging interfaces ``ILoggerFactory`` and ``ILogger<T>`` at the moment.
-This is encapsulated in ``IOcelotLogger`` and ``IOcelotLoggerFactory`` with the implementation for the standard `ASP.NET Core logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_ stuff at the moment.
-This is because Ocelot adds some extra info to the logs such as **RequestId** if it is configured.
+  | MS Learn: `Logging in .NET Core and ASP.NET Core`_
+  | Interfaces: `ILoggerFactory <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.iloggerfactory>`_ and `ILogger<T> <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger-1>`_
 
-There is a global `error handler middleware <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20ExceptionHandlerMiddleware&type=code>`_ that should catch any exceptions thrown and log them as errors.
+Ocelot uses the standard ASP.NET Core logging interfaces ``ILoggerFactory`` and ``ILogger<T>`` at the moment.
+This is encapsulated in `IOcelotLogger <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Logging/IOcelotLogger.cs>`_ and `IOcelotLoggerFactory <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Logging/IOcelotLoggerFactory.cs>`_ with the implementation for the standard `ASP.NET Core logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_ stuff at the moment.
+This is because Ocelot adds some extra info to the logs such as :ref:`lg-request-id` if it is configured.
 
-Finally, if logging is set to ``Trace`` level, Ocelot will log starting, finishing and any middlewares that throw an exception which can be quite useful.
+There is a global :doc:`../features/errorcodes` :ref:`eh-middleware` that catches any exceptions thrown and logs them as errors.
+Finally, if logging is set to the ``Trace`` level, Ocelot will log the start, finish, and any middlewares that throw an exception, which can be quite useful.
 
-Request ID
-----------
-
-The reason for not just using `bog standard <https://notoneoffbritishisms.com/2015/03/27/bog-standard/>`_ framework logging is that
-we could not work out how to override the **RequestId** that get's logged when setting **IncludeScopes** to ``true`` for logging settings.
-Nicely onto the next feature.
-
-Every log record has these 2 properties:
-
-* **RequestId** represents ID of the current request as plain string, for example ``0HMVD33IIJRFR:00000001``
-* **PreviousRequestId** represents ID of the previous request
-
-As an ``IOcelotLogger`` interface object being injected to constructors of service classes, current default Ocelot logger (``OcelotLogger`` class) reads these 2 properties from the ``IRequestScopedDataRepository`` interface object.
-Find out more about these properties and other details on the *Request ID* logging feature in the  :doc:`../features/requestid` chapter.
-
-.. _logging-warning:
+.. _lg-warning:
 
 Warning
 -------
 
-If you are logging to MS `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_, you will get terrible performance.
-The team has had so many issues about performance issues with Ocelot and it is always logging level ``Debug``, logging to `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_.
+If you are logging to the MS `Console <https://learn.microsoft.com/en-us/dotnet/api/system.console>`_, you will experience terrible performance.
+The community has encountered many performance issues with Ocelot, and it is always related to the ``Debug`` logging level when logging to the console/terminal.
 
-* **Warning!** Make sure you are logging to something proper in production environment!
-* Use ``Error`` and ``Critical`` levels in production environment!
-* Use ``Warning`` level in testing & staging environments!
+- **Warning**! Make sure you are logging to an appropriate destination/storage in the production environment!
+- Use ``Error`` and ``Critical`` levels in the production environment!
+- Use the ``Warning`` level in testing & staging environments!
 
-These and other recommendations are below in the :ref:`logging-best-practices` section.
+These and other recommendations can be found below in the :ref:`lg-best-practices` section.
 
-.. _logging-best-practices:
+.. _lg-best-practices:
 
 Best Practices
 --------------
 
-    | Microsoft Learn сomplete reference: `Logging in .NET Core and ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/>`_
+  Microsoft Learn complete reference: `Logging in .NET Core and ASP.NET Core`_
 
-Our recommendations to gain Ocelot best logging are the following.
+Our recommendations for achieving the best logging with Ocelot are as follows.
 
-First
-^^^^^
+1. Ensure the minimum log level while `Configure logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/#configure-logging>`_.
+   The minimum log level is set in the application's ``appsettings.json`` file.
+   This level is defined in the ``Logging`` section, for example:
 
-Ensure minimum level while `Configure logging <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/#configure-logging>`_.
-The minimum log level is set in the application's ``appsettings.json`` file. This level is defined in the **Logging** section, for example:
+   .. code-block:: json
 
-.. code-block:: json
-
-  {
-    "Logging": {
-      "LogLevel": {
-        "Default": "Information",
-        "Microsoft.AspNetCore": "Warning"
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
       }
     }
-  }
 
-Whether using `Serilog <https://serilog.net/>`_ or the standard Microsoft providers, the logging configuration will be retrieved from this section.
+   Whether you are using `Serilog`_ or the standard Microsoft providers, the logging configuration will be retrieved from this section.
 
-.. code-block:: csharp
+   .. code-block:: csharp
+    :emphasize-lines: 3
 
-    .ConfigureAppConfiguration((_, config) =>
+    builder.Configuration
+        .SetBasePath(builder.Environment.ContentRootPath)
+        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", false, false) // read logging settings of the environment
+        .AddOcelot(builder.Environment);
+
+   However, there is one thing to be aware of. It is possible to use the ``SetMinimumLevel()`` method to define the minimum logging level.
+   Be careful and make sure you set the log level in only one place, like this:
+
+   .. code-block:: csharp
+
+    builder.Logging
+        .ClearProviders()
+        .SetMinimumLevel(LogLevel.Warning);
+    // MS Console for Development and/or Testing environments only
+    if (!builder.Environment.IsProduction())
     {
-        config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", false, false);
-        // ...
-    })
+        builder.Logging.AddConsole();
+    }
 
-However, there is one thing to be aware of. It is possible to use the ``SetMinimumLevel()`` method to define the minimum logging level.
-Be careful and make sure you set the log level in one place only, like:
+   Please also use the ``ClearProviders()`` method so that only the providers you wish to use are taken into account, such as the console in the example above.
 
-.. code-block:: csharp
+2. Ensure the proper usage of the minimum logging level for each environment: development, testing, production, etc.
+   So, once again, read the important notes in the :ref:`lg-warning` section!
 
-    ConfigureLogging(logging =>
-    {
-        logging.ClearProviders();
-        logging.SetMinimumLevel(minLogLevel);
-        logging.AddConsole(); // MS Console for Development and/or Testing environments only
-    })
+3. Ocelot's logging has been improved in version `22.0`_:
+   it is now possible to use a factory method for message strings that will only be executed if the minimum log level allows it.
 
-Please also use the ``ClearProviders()`` method, so that only the providers you wish to use are taken into account, as in the example above, the console.
+   For example, let's take a message containing information about several variables that should only be generated if the minimum log level is ``Debug``.
+   If the minimum log level is ``Warning``, then the string is never generated.
 
-Second
-^^^^^^
+   Therefore, when the string contains dynamic information (e.g., ``string.Format``), or the string value is generated by a `string interpolation <https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/string-interpolation>`_ expression,
+   it is recommended to call the ``LogX`` method using an anonymous delegate via an ``=>`` expression function:
 
-Ensure proper usage of minimum logging level for each environment: development, testing, production, etc.
-So, once again, read important notes of the :ref:`logging-warning` section! 
+   .. code-block:: csharp
 
-Third
-^^^^^
+    Logger.LogDebug(
+        () => $"Downstream template is {httpContext.Items.DownstreamRoute().DownstreamPathTemplate.Value}");
 
-Ocelot's logging has been improved in `22.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0>`_ version:
-it is now possible to use a factory method for message strings that will only be executed if the minimum log level allows it.
+   otherwise a constant string is sufficient
 
-For example, let's take a message containing information about several variables that should only be generated if the minimum log level is ``Debug``.
-If the minimum log level is ``Warning`` then the string is never generated.
-
-Therefore, when the string contains dynamic information aka ``string.Format``, or string value is generated by `string interpolation <https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/string-interpolation>`_ expression,
-it is recommended to call the log method using anonymous delegate via an ``=>`` expression function:
-
-.. code-block:: csharp
-
-    Logger.LogDebug(() => $"downstream templates are {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
-
-otherwise a constant string is sufficient
-
-.. code-block:: csharp
+   .. code-block:: csharp
 
     Logger.LogDebug("My const string");
 
-Performance Review
+.. _lg-request-id:
+
+Request ID
+----------
+
+  Also known as "Correlation ID" or `HttpContext.TraceIdentifier <https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.httpcontext.traceidentifier>`_
+
+Ocelot allows a client to send a *Request ID* through an HTTP header.
+If provided, Ocelot uses the *Request ID* for logging as soon as it becomes available in the middleware pipeline.
+Additionally, Ocelot forwards the *Request ID* via the specified header to the downstream service.
+
+  * You can still obtain the ASP.NET Core *Request ID* in the logs if you set ``IncludeScopes`` to ``true`` in your logging configuration.
+  * The reason for not just using the `bog standard <https://notoneoffbritishisms.com/2015/03/27/bog-standard/>`_ framework logging is that
+    we could not work out how to override the ``RequestId`` that gets logged when setting ``IncludeScopes`` to ``true`` in the logging settings.
+    Nicely onto the next feature.
+
+Every log record has these 2 properties:
+
+.. list-table::
+  :widths: 25 75
+  :header-rows: 1
+
+  * - *Property*
+    - *Description*
+  * - ``RequestId``
+    - This represents ID of the current request as plain string, for example ``0HMVD33IIJRFR:00000001``
+  * - ``PreviousRequestId``
+    - This represents ID of the previous request
+
+.. _break: http://break.do
+
+  As an ``IOcelotLogger`` interface object is injected into the constructors of service classes, the current default Ocelot logger (``OcelotLogger`` class) reads these two properties from the ``IRequestScopedDataRepository`` interface object.
+
+Find out more about these properties and other details on the *Request ID* logging feature below.
+
+Configuration
+^^^^^^^^^^^^^
+
+In order to use the *Request ID* feature, you have two options: specifying it globally or for the route.
+
+In your `ocelot.json`_, set the following configuration in the ``GlobalConfiguration`` section.
+This setting will apply to all requests processed by Ocelot.
+
+.. code-block:: json
+
+  "GlobalConfiguration": {
+    "RequestIdKey": "Oc-RequestId"
+  }
+
+.. _break: http://break.do
+
+  We recommend using the ``GlobalConfiguration`` unless it is absolutely necessary to make it route-specific.
+
+If you want to override this for a specific route, add the following to `ocelot.json`_:
+
+.. code-block:: json
+
+  "RequestIdKey": "Oc-RequestId"
+
+Once Ocelot identifies incoming requests that match a route, it will set the *Request ID* based on the route configuration.
+
+Problem
+^^^^^^^
+
+This can lead to a small issue.
+If you set a ``GlobalConfiguration``, it is possible to use one *Request ID* until the route is identified and then another afterward, as the *Request ID* key can change.
+This behavior is intentional and represents the best solution we have devised for now.
+In this case, the ``OcelotLogger`` will display both the current *Request ID* and the previous *Request ID* in the logs.
+
+Below is an example of the logging when the ``Debug`` level is set for a normal request:
+
+  .. code-block:: text
+
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+            Request starting HTTP/1.1 GET https://localhost:7778/ocelot2/posts/3 - - -
+      dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Ocelot pipeline started
+      dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Upstream URL path: /ocelot2/posts/3
+      dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Downstream templates: /ocelot/posts/{id}
+      info: Ocelot.RateLimiting.Middleware.RateLimitingMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            EnableEndpointEndpointRateLimiting is not enabled for downstream path: /ocelot/posts/{id}
+      info: Ocelot.Authentication.Middleware.AuthenticationMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            No authentication needed for path: /ocelot2/posts/3
+      info: Ocelot.Authorization.Middleware.AuthorizationMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            No authorization needed for upstream path: /ocelot2/posts/{id}
+      dbug: Ocelot.DownstreamUrlCreator.Middleware.DownstreamUrlCreatorMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Downstream URL: http://localhost:5555/ocelot/posts/3
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+            Request starting HTTP/1.1 GET https://localhost:7778/ocelot2/posts/5 - - -
+      dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Ocelot pipeline started
+      dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Upstream URL path: /ocelot2/posts/5
+      dbug: Ocelot.DownstreamRouteFinder.Middleware.DownstreamRouteFinderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Downstream templates: /ocelot/posts/{id}
+      info: Ocelot.RateLimiting.Middleware.RateLimitingMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            EnableEndpointEndpointRateLimiting is not enabled for downstream path: /ocelot/posts/{id}
+      info: Ocelot.Authentication.Middleware.AuthenticationMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            No authentication needed for path: /ocelot2/posts/5
+      info: Ocelot.Authorization.Middleware.AuthorizationMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            No authorization needed for upstream path: /ocelot2/posts/{id}
+      dbug: Ocelot.DownstreamUrlCreator.Middleware.DownstreamUrlCreatorMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Downstream URL: http://localhost:5555/ocelot/posts/5
+      info: Ocelot.Requester.Middleware.HttpRequesterMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            200 OK status code of request URI: http://localhost:5555/ocelot/posts/3
+      dbug: Ocelot.Requester.Middleware.HttpRequesterMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Setting HTTP response message...
+      dbug: Ocelot.Responder.Middleware.ResponderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            No pipeline errors: setting and returning completed response...
+      dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+            RequestId: 0HNBA3NEIQUNJ:11111111, PreviousRequestId: -
+            Ocelot pipeline finished
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+            Request finished HTTP/1.1 GET https://localhost:7778/ocelot2/posts/3 - 200 84 application/json;+charset=utf-8 404.7256ms
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[16]
+            Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:7778/ocelot2/posts/3, Response status code: 200
+      info: Ocelot.Requester.Middleware.HttpRequesterMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            200 OK status code of request URI: http://localhost:5555/ocelot/posts/5
+      dbug: Ocelot.Requester.Middleware.HttpRequesterMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Setting HTTP response message...
+      dbug: Ocelot.Responder.Middleware.ResponderMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            No pipeline errors: setting and returning completed response...
+      dbug: Ocelot.Errors.Middleware.ExceptionHandlerMiddleware[0]
+            RequestId: 0HNBA3NEIQUNK:AAAAAAAA, PreviousRequestId: 0HNBA3NEIQUNJ:11111111
+            Ocelot pipeline finished
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+            Request finished HTTP/1.1 GET https://localhost:7778/ocelot2/posts/5 - 200 128 application/json;+charset=utf-8 347.2607ms
+      info: Microsoft.AspNetCore.Hosting.Diagnostics[16]
+            Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:7778/ocelot2/posts/5, Response status code: 200
+
+.. Note by Maintainer:
+..   The PreviousRequestId feature requires review and possible redesign, as it may not be implemented or could be broken.
+..   Typically, PreviousRequestId is '-' for all requests.
+
+Technical Facts
+^^^^^^^^^^^^^^^
+
+* Every log record has these 2 properties:
+
+  * ``RequestId`` represents ID of the current request as plain string, for example ``0HNBA3NEIQUNJ:00000001``.
+  * ``PreviousRequestId`` represents ID of the previous request.
+* As an ``IOcelotLogger`` interface object is injected into the constructors of service classes, the current default Ocelot logger (the ``OcelotLogger`` class) retrieves these two properties from the ``IRequestScopedDataRepository`` service.
+
+.. _lg-performance:
+
+Performance [#f1]_
 ------------------
 
-Ocelot's logging performance has been improved in version `22.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0>`__ (see PR `1745 <https://github.com/ThreeMammals/Ocelot/pull/1745>`_).
-These changes were requested as part of issue `1744 <https://github.com/ThreeMammals/Ocelot/issues/1744>`_ after team's `discussion <https://github.com/ThreeMammals/Ocelot/discussions/1736>`_.
+Here is a quick recipe for your production environment to achieve top *performance*.
+You need to ensure the minimum log level is ``Critical`` or ``None``. Nothing more!
+Having top logging *performance* means having fewer log records written by the logging provider. So, the logs should be pretty empty.
 
-Top Logging Performance?
-^^^^^^^^^^^^^^^^^^^^^^^^
+Anyway, during the initial period after a version release to production, we recommend monitoring the system and the current version's app behavior by specifying the minimum log level as ``Error``.
+If the release engineer ensures the stability of the version in production, then the minimum log level can be increased to ``Critical`` or ``None`` to achieve top *performance*.
+Technically, this will disable the logging feature entirely.
 
-Here is a quick recipe for your Production environment!
-You need to ensure the minimal level is ``Critical`` or ``None``. Nothing more!
-For sure, having top logging performance means having less log records written by logging provider. So, logs should be pretty empty.
+Benchmarks
+----------
 
-Anyway, during the first time after a version release to production, we recommend to watch the system and current version app behavior by specifying ``Error`` minimum level.
-If release engineer will ensure stability of the version in production then minimum level can be increased to ``Critical`` or ``None`` to gain top performance.
-Technically this will switch off the logging feature at all.
+We currently have two types of benchmarks:
 
-Run Benchmarks
-^^^^^^^^^^^^^^
-
-We have 2 types of benchmarks currently
-
-* ``SerilogBenchmarks`` with Serilog logging to a file. See ``ConfigureLogging`` method with ``logging.AddSerilog(_logger);``
-* ``MsLoggerBenchmarks`` with MS default logging to MS Console. See ``ConfigureLogging`` method with ``logging.AddConsole();``
+- ``SerilogBenchmarks`` with `Serilog`_ logging to a file. See the ``ConfigureLogging`` method with ``logging.AddSerilog(_logger)``.
+- ``MsLoggerBenchmarks`` with MS default logging to the MS Console. See the ``ConfigureLogging`` method with ``logging.AddConsole()``.
 
 Benchmark results largely depend on the environment and hardware on which they run.
-We are pleased to invite you to run Logging benchmarks on your machine by the following instructions below.
+We are pleased to invite you to run logging benchmarks on your machine by following the instructions below.
 
 1. Open PowerShell or Command Prompt console
-2. Build Ocelot solution in Release mode: ``dotnet build --configuration Release``
-3. Go to ``test\Ocelot.Benchmarks\bin\Release\`` folder.
-4. Choose .NET version changing the folder, for example to ``net8.0``
-5. Run **Ocelot.Benchmarks.exe**: ``.\Ocelot.Benchmarks.exe``
-6. Run ``SerilogBenchmarks`` or ``MsLoggerBenchmarks`` by pressing appropriate number of a benchmark: ``5`` or ``6``, + Enter
-7. Wait for 3+ minutes to complete benchmark, and get final results.
-8. Read and analize your benchmark session results.
+2. Build the Ocelot solution in Release mode: ``dotnet build --configuration Release``
+3. Go to the ``test\Ocelot.Benchmarks\bin\Release\`` folder
+4. Choose the .NET version by changing the folder, for example, to ``net9.0``
+5. Run benchmarks: ``.\Ocelot.Benchmarks.exe``
+6. Run ``SerilogBenchmarks`` or ``MsLoggerBenchmarks`` by pressing the appropriate number of a benchmark (5 or 6), then press Enter.
+7. Wait for 3+ minutes to complete the benchmark and get the final results.
+8. Read and analyze your benchmark session results.
 
-Indicators
-^^^^^^^^^^
+..
+      Indicators
+      ^^^^^^^^^^
+      To be developed...
 
-``To be developed...``
+""""
+
+.. [#f1] Logging :ref:`performance <lg-performance>` was improved in pull request `1745`_ and released in version `22.0`_.
+  These changes were requested as part of issue `1744`_ following the team's discussion in thread `1736`_.
+
+.. _22.0: https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0
+.. _1745: https://github.com/ThreeMammals/Ocelot/pull/1745
+.. _1744: https://github.com/ThreeMammals/Ocelot/issues/1744
+.. _1736: https://github.com/ThreeMammals/Ocelot/discussions/1736
+
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json

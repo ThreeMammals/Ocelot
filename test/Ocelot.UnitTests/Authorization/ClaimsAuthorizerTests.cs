@@ -1,6 +1,6 @@
 ﻿using Ocelot.Authorization;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
@@ -20,89 +20,109 @@ public class ClaimsAuthorizerTests : UnitTest
     }
 
     [Fact]
-    public void should_authorize_user()
+    public void Should_authorize_user()
     {
-        this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new("UserType", "registered"),
-            }))))
-            .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
-            {
-                {"UserType", "registered"},
-            }))
-            .When(x => x.WhenICallTheAuthorizer())
-            .Then(x => x.ThenTheUserIsAuthorized())
-            .BDDfy();
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        {
+            new("UserType", "registered"),
+        })));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            {"UserType", "registered"},
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsAuthorized();
     }
 
     [Fact]
-    public void should_authorize_dynamic_user()
+    public void Should_authorize_dynamic_user()
     {
-        this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new("userid", "14"),
-            }))))
-           .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
-            {
-                {"userid", "{userId}"},
-            }))
-           .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
-            {
-               new("{userId}", "14"),
-            }))
-           .When(x => x.WhenICallTheAuthorizer())
-           .Then(x => x.ThenTheUserIsAuthorized())
-           .BDDfy();
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        {
+            new("userid", "14"),
+        })));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            {"userid", "{userId}"},
+        });
+        GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
+        {
+            new("{userId}", "14"),
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsAuthorized();
     }
 
     [Fact]
-    public void should_not_authorize_dynamic_user()
+    public void Should_not_authorize_dynamic_user()
     {
-        this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new("userid", "15"),
-            }))))
-           .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
-            {
-                {"userid", "{userId}"},
-            }))
-           .And(x => x.GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
-            {
-                new("{userId}", "14"),
-            }))
-           .When(x => x.WhenICallTheAuthorizer())
-           .Then(x => x.ThenTheUserIsntAuthorized())
-           .BDDfy();
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        {
+            new("userid", "15"),
+        })));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            {"userid", "{userId}"},
+        });
+        GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
+        {
+            new("{userId}", "14"),
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsntAuthorized();
     }
 
     [Fact]
-    public void should_authorize_user_multiple_claims_of_same_type()
+    public void Should_authorize_user_multiple_claims_of_same_type()
     {
-        this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new("UserType", "guest"),
-                new("UserType", "registered"),
-            }))))
-            .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
-            {
-                {"UserType", "registered"},
-            }))
-            .When(x => x.WhenICallTheAuthorizer())
-            .Then(x => x.ThenTheUserIsAuthorized())
-            .BDDfy();
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        {
+            new("UserType", "guest"),
+            new("UserType", "registered"),
+        })));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            {"UserType", "registered"},
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsAuthorized();
     }
 
     [Fact]
-    public void should_not_authorize_user()
+    public void Should_not_authorize_user()
     {
-        this.Given(x => x.GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()))))
-        .And(x => x.GivenARouteClaimsRequirement(new Dictionary<string, string>
-            {
-                { "UserType", "registered" },
-            }))
-        .When(x => x.WhenICallTheAuthorizer())
-        .Then(x => x.ThenTheUserIsntAuthorized())
-        .BDDfy();
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>())));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            { "UserType", "registered" },
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsntAuthorized();
     }
 
     private void GivenAClaimsPrincipal(ClaimsPrincipal claimsPrincipal)

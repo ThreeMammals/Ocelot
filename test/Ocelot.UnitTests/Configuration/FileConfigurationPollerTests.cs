@@ -5,11 +5,10 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration;
 
-public class FileConfigurationPollerTests : UnitTest, IDisposable
+public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 {
     private readonly FileConfigurationPoller _poller;
     private readonly Mock<IOcelotLoggerFactory> _factory;
@@ -38,101 +37,98 @@ public class FileConfigurationPollerTests : UnitTest, IDisposable
     }
 
     [Fact]
-    public void should_start()
+    public void Should_start()
     {
-        this.Given(x => GivenPollerHasStarted())
-            .Given(x => ThenTheSetterIsCalled(_fileConfig, 1))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_call_setter_when_gets_new_config()
-    {
-        var newConfig = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "test",
-                        },
-                    },
-                },
-            },
-        };
-
-        this.Given(x => GivenPollerHasStarted())
-            .Given(x => WhenTheConfigIsChanged(newConfig, 0))
-            .Then(x => ThenTheSetterIsCalledAtLeast(newConfig, 1))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_not_poll_if_already_polling()
-    {
-        var newConfig = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "test",
-                        },
-                    },
-                },
-            },
-        };
-
-        this.Given(x => GivenPollerHasStarted())
-            .Given(x => WhenTheConfigIsChanged(newConfig, 10))
-            .Then(x => ThenTheSetterIsCalled(newConfig, 1))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_do_nothing_if_call_to_provider_fails()
-    {
-        var newConfig = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "test",
-                        },
-                    },
-                },
-            },
-        };
-
-        this.Given(x => GivenPollerHasStarted())
-            .Given(x => WhenProviderErrors())
-            .Then(x => ThenTheSetterIsCalled(newConfig, 0))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_dispose_cleanly_without_starting()
-    {
-        this.When(x => WhenPollerIsDisposed())
-            .BDDfy();
-    }
-
-    private void GivenPollerHasStarted()
-    {
+        // Arrange, Act
         _poller.StartAsync(CancellationToken.None);
+
+        // Assert
+        ThenTheSetterIsCalled(_fileConfig, 1);
+    }
+
+    [Fact]
+    public void Should_call_setter_when_gets_new_config()
+    {
+        // Arrange
+        var newConfig = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new("test", 80),
+                    },
+                },
+            },
+        };
+
+        // Act
+        _poller.StartAsync(CancellationToken.None);
+
+        // Assert
+        WhenTheConfigIsChanged(newConfig, 0);
+        ThenTheSetterIsCalledAtLeast(newConfig, 1);
+    }
+
+    [Fact]
+    public void Should_not_poll_if_already_polling()
+    {
+        // Arrange
+        var newConfig = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new("test", 80),
+                    },
+                },
+            },
+        };
+
+        // Act
+        _poller.StartAsync(CancellationToken.None);
+
+        // Assert
+        WhenTheConfigIsChanged(newConfig, 10);
+        ThenTheSetterIsCalled(newConfig, 1);
+    }
+
+    [Fact]
+    public void Should_do_nothing_if_call_to_provider_fails()
+    {
+        // Arrange
+        var newConfig = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new()
+                {
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new("test", 80),
+                    },
+                },
+            },
+        };
+
+        // Act
+        _poller.StartAsync(CancellationToken.None);
+        WhenProviderErrors();
+
+        // Assert
+        ThenTheSetterIsCalled(newConfig, 0);
+    }
+
+    [Fact]
+    public void Should_dispose_cleanly_without_starting()
+    {
+        // Arrange, Act, Assert
+        _poller.Dispose(); // when poller is disposed
     }
 
     private void WhenProviderErrors()
@@ -150,14 +146,9 @@ public class FileConfigurationPollerTests : UnitTest, IDisposable
             .ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
     }
 
-    private void WhenPollerIsDisposed()
-    {
-        _poller.Dispose();
-    }
-
     private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
     {
-        var result = WaitFor(4000).Until(() =>
+        var result = Wait.For(4_000).Until(() =>
         {
             try
             {
@@ -175,7 +166,7 @@ public class FileConfigurationPollerTests : UnitTest, IDisposable
 
     private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
     {
-        var result = WaitFor(4000).Until(() =>
+        var result = Wait.For(4_000).Until(() =>
         {
             try
             {

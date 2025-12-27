@@ -10,7 +10,6 @@ public class EurekaServiceDiscoveryProviderTests : UnitTest
     private readonly _Eureka_ _provider;
     private readonly Mock<IDiscoveryClient> _client;
     private readonly string _serviceId;
-    private List<IServiceInstance> _instances;
     private List<Service> _result;
 
     public EurekaServiceDiscoveryProviderTests()
@@ -21,71 +20,55 @@ public class EurekaServiceDiscoveryProviderTests : UnitTest
     }
 
     [Fact]
-    public void should_return_empty_services()
+    public async Task Should_return_empty_services()
     {
-        this.When(_ => WhenIGet())
-            .Then(_ => ThenTheCountIs(0))
-            .BDDfy();
+        // Arrange, Act
+        _result = await _provider.GetAsync();
+
+        // Assert
+        _result.Count.ShouldBe(0);
     }
 
     [Fact]
-    public void should_return_service_from_client()
+    public async Task Should_return_service_from_client()
     {
+        // Arrange
         var instances = new List<IServiceInstance>
         {
             new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
         };
+        _client.Setup(x => x.GetInstances(It.IsAny<string>())).Returns(instances);
 
-        this.Given(_ => GivenThe(instances))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheCountIs(1))
-            .And(_ => ThenTheClientIsCalledCorrectly())
-            .And(_ => ThenTheServiceIsMapped())
-            .BDDfy();
-    }
+        // Act
+        _result = await _provider.GetAsync();
+        _result.Count.ShouldBe(1);
 
-    [Fact]
-    public void should_return_services_from_client()
-    {
-        var instances = new List<IServiceInstance>
-        {
-            new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
-            new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
-        };
+        // Assert
+        _client.Verify(x => x.GetInstances(_serviceId), Times.Once);
 
-        this.Given(_ => GivenThe(instances))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheCountIs(2))
-            .And(_ => ThenTheClientIsCalledCorrectly())
-            .BDDfy();
-    }
-
-    private void ThenTheServiceIsMapped()
-    {
+        // Assert: Then The Service Is Mapped
         _result[0].HostAndPort.DownstreamHost.ShouldBe("somehost");
         _result[0].HostAndPort.DownstreamPort.ShouldBe(801);
         _result[0].Name.ShouldBe(_serviceId);
     }
 
-    private void ThenTheCountIs(int expected)
+    [Fact]
+    public async Task Should_return_services_from_client()
     {
-        _result.Count.ShouldBe(expected);
-    }
-
-    private void ThenTheClientIsCalledCorrectly()
-    {
-        _client.Verify(x => x.GetInstances(_serviceId), Times.Once);
-    }
-
-    private async Task WhenIGet()
-    {
-        _result = await _provider.GetAsync();
-    }
-
-    private void GivenThe(List<IServiceInstance> instances)
-    {
-        _instances = instances;
+        // Arrange
+        var instances = new List<IServiceInstance>
+        {
+            new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
+            new EurekaService(_serviceId, "somehost", 801, false, new Uri("http://somehost:801"), new Dictionary<string, string>()),
+        };
         _client.Setup(x => x.GetInstances(It.IsAny<string>())).Returns(instances);
+
+        // Act
+        _result = await _provider.GetAsync();
+
+        // Assert
+        _result.Count.ShouldBe(2);
+        _client.Verify(x => x.GetInstances(_serviceId), Times.Once);
     }
 }
 

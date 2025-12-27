@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.Values;
 
@@ -9,142 +12,171 @@ namespace Ocelot.UnitTests.LoadBalancer;
 
 public class LoadBalancerHouseTests : UnitTest
 {
-    private DownstreamRoute _route;
-    private ILoadBalancer _loadBalancer;
-    private readonly LoadBalancerHouse _loadBalancerHouse;
-    private Response<ILoadBalancer> _getResult;
+    private readonly LoadBalancerHouse _house;
     private readonly Mock<ILoadBalancerFactory> _factory;
     private readonly ServiceProviderConfiguration _serviceProviderConfig;
 
     public LoadBalancerHouseTests()
     {
         _factory = new Mock<ILoadBalancerFactory>();
-        _loadBalancerHouse = new LoadBalancerHouse(_factory.Object);
+        _house = new LoadBalancerHouse(_factory.Object);
         _serviceProviderConfig = new ServiceProviderConfiguration("myType", "myScheme", "myHost", 123, string.Empty, "configKey", 0);
     }
 
     [Fact]
-    public void should_store_load_balancer_on_first_request()
+    public void Should_store_load_balancer_on_first_request()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
             .WithLoadBalancerKey("test")
             .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .Then(x => x.ThenItIsAdded())
-            .BDDfy();
+        // Act
+        var result = _house.Get(route, _serviceProviderConfig);
+
+        // Assert: Then It Is Added
+        result.IsError.ShouldBe(false);
+        result.ShouldBeOfType<OkResponse<ILoadBalancer>>();
+        result.Data.ShouldBe(loadBalancer);
+        _factory.Verify(x => x.Get(route, _serviceProviderConfig), Times.Once);
     }
 
     [Fact]
-    public void should_not_store_load_balancer_on_second_request()
+    public void Should_not_store_load_balancer_on_second_request()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancer), string.Empty, 0))
             .WithLoadBalancerKey("test")
             .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenItIsReturned())
-            .BDDfy();
+        // Act
+        var result = _house.Get(route, _serviceProviderConfig);
+
+        // Assert
+        result.Data.ShouldBe(loadBalancer);
+        _factory.Verify(x => x.Get(route, _serviceProviderConfig), Times.Once);
     }
 
     [Fact]
-    public void should_store_load_balancers_by_key()
+    public void Should_store_load_balancers_by_key()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancer), string.Empty, 0))
             .WithLoadBalancerKey("test")
             .Build();
-
-        var routeTwo = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeRoundRobinLoadBalancer", string.Empty, 0))
+        var route2 = new DownstreamRouteBuilder()
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeRoundRobinLoadBalancer), string.Empty, 0))
             .WithLoadBalancerKey("testtwo")
             .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        var loadBalancer2 = new FakeRoundRobinLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
+        _factory.Setup(x => x.Get(route2, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer2));
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .And(x => x.GivenThereIsALoadBalancer(routeTwo, new FakeRoundRobinLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
-            .When(x => x.WhenWeGetTheLoadBalancer(routeTwo))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeRoundRobinLoadBalancer>())
-            .BDDfy();
+        // Act, Assert
+        var result = _house.Get(route, _serviceProviderConfig);
+        result.Data.ShouldBeOfType<FakeLoadBalancer>();
+
+        // Act, Assert
+        result = _house.Get(route2, _serviceProviderConfig);
+        result.Data.ShouldBeOfType<FakeRoundRobinLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_error_if_exception()
+    public void Should_return_error_if_exception()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder().Build();
 
-        this.When(x => x.WhenWeGetTheLoadBalancer(route))
-        .Then(x => x.ThenAnErrorIsReturned())
-        .BDDfy();
+        // Act
+        var result = _house.Get(route, _serviceProviderConfig);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.Errors[0].ShouldBeOfType<UnableToFindLoadBalancerError>();
     }
 
     [Fact]
-    public void should_get_new_load_balancer_if_route_load_balancer_has_changed()
+    public void Should_get_new_load_balancer_if_route_load_balancer_has_changed()
     {
+        // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("FakeLoadBalancer", string.Empty, 0))
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(FakeLoadBalancer), string.Empty, 0))
             .WithLoadBalancerKey("test")
             .Build();
-
-        var routeTwo = new DownstreamRouteBuilder()
-            .WithLoadBalancerOptions(new LoadBalancerOptions("LeastConnection", string.Empty, 0))
+        var route2 = new DownstreamRouteBuilder()
+            .WithLoadBalancerOptions(new LoadBalancerOptions(nameof(LeastConnection), string.Empty, 0))
             .WithLoadBalancerKey("test")
             .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
 
-        this.Given(x => x.GivenThereIsALoadBalancer(route, new FakeLoadBalancer()))
-            .When(x => x.WhenWeGetTheLoadBalancer(route))
-            .Then(x => x.ThenTheLoadBalancerIs<FakeLoadBalancer>())
-            .When(x => x.WhenIGetTheRouteWithTheSameKeyButDifferentLoadBalancer(routeTwo))
-            .Then(x => x.ThenTheLoadBalancerIs<LeastConnection>())
-            .BDDfy();
+        // Act, Assert
+        var result = _house.Get(route, _serviceProviderConfig);
+        result.Data.ShouldBeOfType<FakeLoadBalancer>();
+        _factory.Setup(x => x.Get(route2, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(new LeastConnection(null, null)));
+
+        // Act, Assert
+        result = _house.Get(route2, _serviceProviderConfig);
+        result.Data.ShouldBeOfType<LeastConnection>();
     }
 
-    private void WhenIGetTheRouteWithTheSameKeyButDifferentLoadBalancer(DownstreamRoute route)
+    [Fact]
+    public void GetResponse_IsError()
     {
-        _route = route;
-        _factory.Setup(x => x.Get(_route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(new LeastConnection(null, null)));
-        _getResult = _loadBalancerHouse.Get(_route, _serviceProviderConfig);
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("test")
+            .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig))
+            .Returns(new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreatorError($"Could not find load balancer creator for Type: FakeLoadBalancer, please check your config specified the correct load balancer and that you have registered a class with the same name.")));
+
+        // Act
+        var result = _house.Get(route, _serviceProviderConfig);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.ShouldBeOfType<ErrorResponse<ILoadBalancer>>();
+        result.Data.ShouldBeNull();
+        _factory.Verify(x => x.Get(route, _serviceProviderConfig), Times.Once);
+        result.Errors.Single().ShouldBeOfType<CouldNotFindLoadBalancerCreatorError>();
     }
 
-    private void ThenAnErrorIsReturned()
+    [Fact]
+    public void TypesMismatched_ShouldReturnError()
     {
-        _getResult.IsError.ShouldBeTrue();
-        _getResult.Errors[0].ShouldBeOfType<UnableToFindLoadBalancerError>();
-    }
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("test")
+            .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
 
-    private void ThenTheLoadBalancerIs<T>()
-    {
-        _getResult.Data.ShouldBeOfType<T>();
-    }
+        // Other route has the same LoadBalancerKey but types are different
+        var route2 = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey(route.LoadBalancerKey)
+            .WithLoadBalancerOptions(new() { Type = "bla-bla" })
+            .Build();
+        _factory.Setup(x => x.Get(route2, _serviceProviderConfig))
+            .Returns(new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreatorError($"Could not find load balancer creator for Type: {route2.LoadBalancerOptions.Type}, please check your config specified the correct load balancer and that you have registered a class with the same name.")));
 
-    private void ThenItIsAdded()
-    {
-        _getResult.IsError.ShouldBe(false);
-        _getResult.ShouldBeOfType<OkResponse<ILoadBalancer>>();
-        _getResult.Data.ShouldBe(_loadBalancer);
-        _factory.Verify(x => x.Get(_route, _serviceProviderConfig), Times.Once);
-    }
+        // Act
+        var result = _house.Get(route2, _serviceProviderConfig);
 
-    private void GivenThereIsALoadBalancer(DownstreamRoute route, ILoadBalancer loadBalancer)
-    {
-        _route = route;
-        _loadBalancer = loadBalancer;
-        _factory.Setup(x => x.Get(_route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
-        _getResult = _loadBalancerHouse.Get(route, _serviceProviderConfig);
-    }
-
-    private void WhenWeGetTheLoadBalancer(DownstreamRoute route)
-    {
-        _getResult = _loadBalancerHouse.Get(route, _serviceProviderConfig);
-    }
-
-    private void ThenItIsReturned()
-    {
-        _getResult.Data.ShouldBe(_loadBalancer);
-        _factory.Verify(x => x.Get(_route, _serviceProviderConfig), Times.Once);
+        // Assert: Then It Is Added
+        result.IsError.ShouldBeTrue();
+        result.ShouldBeOfType<ErrorResponse<ILoadBalancer>>();
+        result.Data.ShouldBeNull();
+        _factory.Verify(x => x.Get(route2, _serviceProviderConfig), Times.Once);
+        result.Errors.Single().ShouldBeOfType<CouldNotFindLoadBalancerCreatorError>()
+            .Message.ShouldBe("Could not find load balancer creator for Type: bla-bla, please check your config specified the correct load balancer and that you have registered a class with the same name.");
     }
 
     private class FakeLoadBalancer : ILoadBalancer

@@ -21,7 +21,6 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     private readonly Mock<IConsulClient> _client;
     private readonly Mock<IKVEndpoint> _kvEndpoint;
     private FileConfiguration _fileConfiguration;
-    private Response _setResult;
     private Response<FileConfiguration> _getResult;
 
     public ConsulFileConfigurationRepositoryTests()
@@ -33,108 +32,111 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
         _factory = new Mock<IConsulClientFactory>();
         _client = new Mock<IConsulClient>();
         _kvEndpoint = new Mock<IKVEndpoint>();
-
         _client
             .Setup(x => x.KV)
             .Returns(_kvEndpoint.Object);
-
         _factory
             .Setup(x => x.Get(It.IsAny<ConsulRegistryConfiguration>()))
             .Returns(_client.Object);
-
         _options
             .SetupGet(x => x.Value)
             .Returns(() => _fileConfiguration);
     }
 
     [Fact]
-    public void should_set_config()
+    public async Task Should_set_config()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        var config = GivenFakeFileConfiguration();
+        GivenWritingToConsulSucceeds();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-            .And(_ => GivenWritingToConsulSucceeds())
-            .When(_ => WhenISetTheConfiguration())
-            .Then(_ => ThenTheConfigurationIsStoredAs(config))
-            .BDDfy();
+        // Act
+        _ = await _repo.Set(config);
+
+        // Assert
+        ThenTheConfigurationIsStoredAs(config);
     }
 
     [Fact]
-    public void should_get_config()
+    public async Task Should_get_config()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        var config = _fileConfiguration = GivenFakeFileConfiguration();
+        GivenFetchFromConsulSucceeds();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-           .And(_ => GivenFetchFromConsulSucceeds())
-           .When(_ => WhenIGetTheConfiguration())
-           .Then(_ => ThenTheConfigurationIs(config))
-           .BDDfy();
+        // Act
+        _getResult = await _repo.Get();
+
+        // Assert
+        ThenTheConfigurationIs(config);
     }
 
     [Fact]
-    public void should_get_null_config()
+    public async Task Should_get_null_config()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        _fileConfiguration = GivenFakeFileConfiguration();
+        GivenFetchFromConsulReturnsNull();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-           .Given(_ => GivenFetchFromConsulReturnsNull())
-           .When(_ => WhenIGetTheConfiguration())
-           .Then(_ => ThenTheConfigurationIsNull())
-           .BDDfy();
+        // Act
+        _getResult = await _repo.Get();
+
+        // Assert
+        _getResult.Data.ShouldBeNull();
     }
 
     [Fact]
-    public void should_get_config_from_cache()
+    public async Task Should_get_config_from_cache()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        var config = _fileConfiguration = GivenFakeFileConfiguration();
+        GivenFetchFromCacheSucceeds();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-           .And(_ => GivenFetchFromCacheSucceeds())
-           .When(_ => WhenIGetTheConfiguration())
-           .Then(_ => ThenTheConfigurationIs(config))
-           .BDDfy();
+        // Act
+        _getResult = await _repo.Get();
+
+        // Assert
+        ThenTheConfigurationIs(config);
     }
 
     [Fact]
-    public void should_set_config_key()
+    public async Task Should_set_config_key()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        _fileConfiguration = GivenFakeFileConfiguration();
+        GivenTheConfigKeyComesFromFileConfig("Tom");
+        GivenFetchFromConsulSucceeds();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-            .And(_ => GivenTheConfigKeyComesFromFileConfig("Tom"))
-            .And(_ => GivenFetchFromConsulSucceeds())
-            .When(_ => WhenIGetTheConfiguration())
-            .And(_ => ThenTheConfigKeyIs("Tom"))
-            .BDDfy();
+        // Act
+        _getResult = await _repo.Get();
+
+        // Assert
+        ThenTheConfigKeyIs("Tom");
     }
 
     [Fact]
-    public void should_set_default_config_key()
+    public async Task Should_set_default_config_key()
     {
-        var config = FakeFileConfiguration();
+        // Arrange
+        _fileConfiguration = GivenFakeFileConfiguration();
+        GivenFetchFromConsulSucceeds();
 
-        this.Given(_ => GivenIHaveAConfiguration(config))
-            .And(_ => GivenFetchFromConsulSucceeds())
-            .When(_ => WhenIGetTheConfiguration())
-            .And(_ => ThenTheConfigKeyIs("InternalConfiguration"))
-            .BDDfy();
+        // Act
+        _getResult = await _repo.Get();
+
+        // Assert
+        ThenTheConfigKeyIs("InternalConfiguration");
     }
 
     private void ThenTheConfigKeyIs(string expected)
     {
-        _kvEndpoint
-            .Verify(x => x.Get(expected, It.IsAny<CancellationToken>()), Times.Once);
+        _kvEndpoint.Verify(x => x.Get(expected, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private void GivenTheConfigKeyComesFromFileConfig(string key)
     {
         _fileConfiguration.GlobalConfiguration.ServiceDiscoveryProvider.ConfigurationKey = key;
         _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
-    }
-
-    private void ThenTheConfigurationIsNull()
-    {
-        _getResult.Data.ShouldBeNull();
     }
 
     private void ThenTheConfigurationIs(FileConfiguration config)
@@ -144,20 +146,13 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
         result.ShouldBe(expected);
     }
 
-    private async Task WhenIGetTheConfiguration()
-    {
-        _getResult = await _repo.Get();
-    }
-
     private void GivenWritingToConsulSucceeds()
     {
         var response = new WriteResult<bool>
         {
             Response = true,
         };
-
-        _kvEndpoint
-            .Setup(x => x.Put(It.IsAny<KVPair>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
+        _kvEndpoint.Setup(x => x.Put(It.IsAny<KVPair>(), It.IsAny<CancellationToken>())).ReturnsAsync(response);
     }
 
     private void GivenFetchFromCacheSucceeds()
@@ -168,56 +163,34 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
     private void GivenFetchFromConsulReturnsNull()
     {
         var result = new QueryResult<KVPair>();
-
-        _kvEndpoint
-            .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _kvEndpoint.Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
     }
 
     private void GivenFetchFromConsulSucceeds()
     {
         var json = JsonConvert.SerializeObject(_fileConfiguration, Formatting.Indented);
-
         var bytes = Encoding.UTF8.GetBytes(json);
-
         var kvp = new KVPair("OcelotConfiguration")
         {
             Value = bytes,
         };
-
         var query = new QueryResult<KVPair>
         {
             Response = kvp,
         };
-
-        _kvEndpoint
-            .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _kvEndpoint.Setup(x => x.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(query);
     }
 
     private void ThenTheConfigurationIsStoredAs(FileConfiguration config)
     {
         var json = JsonConvert.SerializeObject(config, Formatting.Indented);
-
         var bytes = Encoding.UTF8.GetBytes(json);
-
-        _kvEndpoint
-            .Verify(x => x.Put(It.Is<KVPair>(k => k.Value.SequenceEqual(bytes)), It.IsAny<CancellationToken>()), Times.Once);
+        _kvEndpoint.Verify(x => x.Put(It.Is<KVPair>(k => k.Value.SequenceEqual(bytes)), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    private async Task WhenISetTheConfiguration()
-    {
-        _setResult = await _repo.Set(_fileConfiguration);
-    }
-
-    private void GivenIHaveAConfiguration(FileConfiguration config)
-    {
-        _fileConfiguration = config;
-
-        _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
-    }
-
-    private static FileConfiguration FakeFileConfiguration()
+    private FileConfiguration GivenFakeFileConfiguration()
     {
         var routes = new List<FileRoute>
         {
@@ -225,31 +198,27 @@ public class ConsulFileConfigurationRepositoryTests : UnitTest
             {
                 DownstreamHostAndPorts = new List<FileHostAndPort>
                 {
-                    new()
-                    {
-                        Host = "123.12.12.12",
-                        Port = 80,
-                    },
+                    new("123.12.12.12", 80),
                 },
-                DownstreamScheme = "https",
+                DownstreamScheme = Uri.UriSchemeHttps,
                 DownstreamPathTemplate = "/asdfs/test/{test}",
             },
         };
-
         var globalConfiguration = new FileGlobalConfiguration
         {
             ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
             {
-                Scheme = "https",
+                Scheme = Uri.UriSchemeHttps,
                 Port = 198,
                 Host = "blah",
             },
         };
-
-        return new FileConfiguration
+        _fileConfiguration = new FileConfiguration
         {
             GlobalConfiguration = globalConfiguration,
             Routes = routes,
         };
+        _repo = new ConsulFileConfigurationRepository(_options.Object, _cache.Object, _factory.Object, _loggerFactory.Object);
+        return _fileConfiguration;
     }
 }

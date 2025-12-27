@@ -1,20 +1,9 @@
-﻿// ------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
-// ------------------------------------------------------------
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
+﻿using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.Web;
-using System;
 using System.Fabric;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ocelot.Samples.ServiceFabric.ApiGateway;
 
@@ -26,7 +15,7 @@ public class WebCommunicationListener : ICommunicationListener
     private string _publishAddress;
 
     // OWIN server handle.
-    private IWebHost _webHost;
+    private WebApplication _webApp;
 
     public WebCommunicationListener(string appRoot, ServiceContext serviceInitializationParameters)
     {
@@ -34,7 +23,7 @@ public class WebCommunicationListener : ICommunicationListener
         _serviceInitializationParameters = serviceInitializationParameters;
     }
 
-    public Task<string> OpenAsync(CancellationToken cancellationToken)
+    public async Task<string> OpenAsync(CancellationToken cancellationToken)
     {
         ServiceEventSource.Current.Message("Initialize");
 
@@ -55,68 +44,47 @@ public class WebCommunicationListener : ICommunicationListener
 
         try
         {
-            _webHost = OcelotHostBuilder.Create()
-           .UseUrls(_listeningAddress)
-            .ConfigureAppConfiguration((hostingContext, config) =>
+            _ = OcelotHostBuilder.Create();
+            var builder = WebApplication.CreateBuilder(); //(args);
+            builder.WebHost.UseUrls(_listeningAddress);
+            builder.Configuration
+                .SetBasePath(builder.Environment.ContentRootPath)
+                .AddOcelot();
+            builder.Services
+                .AddOcelot(builder.Configuration);
+            if (builder.Environment.IsDevelopment())
             {
-                config
-                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                    .AddJsonFile("appsettings.json", true, true)
-                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                    .AddJsonFile("ocelot.json", false, false)
-                    .AddEnvironmentVariables();
-            })
-           .ConfigureLogging((hostingContext, logging) =>
-            {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot();
-            })
-            .Configure(a =>
-            {
-                a.UseOcelot().Wait(cancellationToken);
-            })
-           .Build();
+                builder.Logging.AddConsole();
+            }
 
-            _webHost.Start();
+            _webApp = builder.Build();
+            await _webApp.UseOcelot();
+            await _webApp.RunAsync(); // .Start();
         }
         catch (Exception ex)
         {
             ServiceEventSource.Current.ServiceWebHostBuilderFailed(ex);
         }
-
-        return Task.FromResult(_publishAddress);
+        return _publishAddress;
     }
 
-    public Task CloseAsync(CancellationToken cancellationToken)
-    {
-        StopAll();
-        return Task.FromResult(true);
-    }
+    public Task CloseAsync(CancellationToken cancellationToken) => StopAll(cancellationToken);
+    public void Abort() => StopAll().GetAwaiter().GetResult();
 
-    public void Abort()
-    {
-        StopAll();
-    }
-
-    /// <summary>
-    /// Stops, cancels, and disposes everything.
-    /// </summary>
-    private void StopAll()
+    /// <summary>Stops, cancels, and disposes everything.</summary>
+    private Task StopAll(CancellationToken cancellationToken = default)
     {
         try
         {
-            if (_webHost != null)
+            if (_webApp != null)
             {
                 ServiceEventSource.Current.Message("Stopping web server.");
-                _webHost.Dispose();
+                return _webApp.StopAsync(cancellationToken);
             }
         }
         catch (ObjectDisposedException)
         {
         }
+        return Task.CompletedTask;
     }
 }

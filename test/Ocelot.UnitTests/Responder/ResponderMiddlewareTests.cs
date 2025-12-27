@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responder;
@@ -16,7 +15,7 @@ public class ResponderMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly ResponderMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public ResponderMiddlewareTests()
     {
@@ -31,52 +30,44 @@ public class ResponderMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_not_return_any_errors()
+    public async Task Should_not_return_any_errors()
     {
-        this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenThereAreNoErrors())
-            .BDDfy();
-    }
+        // Arrange
+        _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
 
-    [Fact]
-    public void should_return_any_errors()
-    {
-        this.Given(x => x.GivenTheHttpResponseMessageIs(new DownstreamResponse(new HttpResponseMessage())))
-            .And(x => x.GivenThereArePipelineErrors(new UnableToFindDownstreamRouteError("/path", "GET")))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenThereAreNoErrors())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_not_call_responder_when_null_downstream_response()
-    {
-        this._responder.Reset();
-        this.Given(x => x.GivenTheHttpResponseMessageIs(null))
-            .When(x => x.WhenICallTheMiddleware())
-            .Then(x => x.ThenThereAreNoErrors())
-            .Then(x => x._responder.VerifyNoOtherCalls())
-            .BDDfy();
-    }
-
-    private async Task WhenICallTheMiddleware()
-    {
+        // Act
         await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Items.Errors().ShouldBeEmpty();
     }
 
-    private void GivenTheHttpResponseMessageIs(DownstreamResponse response)
+    [Fact]
+    public async Task Should_return_any_errors()
     {
-        _httpContext.Items.UpsertDownstreamResponse(response);
+        // Arrange
+        _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
+        _httpContext.Items.SetError(new UnableToFindDownstreamRouteError("/path", "GET"));
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Items.Errors().Count.ShouldBe(1);
     }
 
-    private void ThenThereAreNoErrors()
+    [Fact]
+    public async Task Should_not_call_responder_when_null_downstream_response()
     {
-        //todo a better assert?
-    }
+        // Arrange
+        this._responder.Reset();
+        _httpContext.Items.UpsertDownstreamResponse(null);
 
-    private void GivenThereArePipelineErrors(Error error)
-    {
-        _httpContext.Items.SetError(error);
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Items.Errors().ShouldBeEmpty();
+        _responder.VerifyNoOtherCalls();
     }
 }

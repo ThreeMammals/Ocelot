@@ -1,118 +1,112 @@
 ﻿using Ocelot.Errors;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Infrastructure;
 
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-headers">Claims to Headers</see>.
+/// </summary>
+[Trait("Commit", "84256e7")] // https://github.com/ThreeMammals/Ocelot/commit/84256e7bac0fa2c8ceba92bd8fe64c8015a37cea
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public class ClaimParserTests : UnitTest
 {
-    private readonly IClaimsParser _claimsParser;
+    private readonly ClaimsParser _claimsParser;
     private readonly List<Claim> _claims;
-    private string _key;
-    private Response<string> _result;
-    private string _delimiter;
-    private int _index;
 
     public ClaimParserTests()
     {
-        _claims = new List<Claim>();
-        _claimsParser = new ClaimsParser();
+        _claimsParser = new();
+        _claims = new();
     }
 
     [Fact]
-    public void can_parse_claims_dictionary_access_string_returning_value_to_function()
+    public void Can_parse_claims_dictionary_access_string_returning_value_to_function()
     {
-        this.Given(x => x.GivenAClaimOf(new Claim("CustomerId", "1234")))
-            .And(x => x.GivenTheKeyIs("CustomerId"))
-            .When(x => x.WhenICallTheParser())
-            .Then(x => x.ThenTheResultIs(new OkResponse<string>("1234")))
-            .BDDfy();
+        // Arrange
+        const string key = "CustomerId";
+        _claims.Add(new Claim(key, "1234"));
+
+        // Act
+        var result = _claimsParser.GetValue(_claims, key, default, default);
+
+        // Assert
+        ThenTheResultIs(result, new OkResponse<string>("1234"));
     }
 
     [Fact]
-    public void should_return_error_response_when_cannot_find_requested_claim()
+    public void Should_return_error_response_when_cannot_find_requested_claim()
     {
-        this.Given(x => x.GivenAClaimOf(new Claim("BallsId", "1234")))
-            .And(x => x.GivenTheKeyIs("CustomerId"))
-            .When(x => x.WhenICallTheParser())
-            .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
-            {
-                new CannotFindClaimError($"Cannot find claim for key: {_key}"),
-            })))
-            .BDDfy();
+        // Arrange
+        const string key = "CustomerId";
+        _claims.Add(new Claim("BallsId", "1234"));
+
+        // Act
+        var result = _claimsParser.GetValue(_claims, key, default, default);
+
+        // Assert
+        ThenTheResultIs(result, new ErrorResponse<string>(new List<Error>
+        {
+            new CannotFindClaimError($"Cannot find claim for key: {key}"),
+        }));
     }
 
     [Fact]
-    public void can_parse_claims_dictionary_access_string_using_delimiter_and_retuning_at_correct_index()
+    public void Can_parse_claims_dictionary_access_string_using_delimiter_and_retuning_at_correct_index()
     {
-        this.Given(x => x.GivenAClaimOf(new Claim("Subject", "registered|4321")))
-            .And(x => x.GivenTheDelimiterIs("|"))
-            .And(x => x.GivenTheIndexIs(1))
-            .And(x => x.GivenTheKeyIs("Subject"))
-            .When(x => x.WhenICallTheParser())
-            .Then(x => x.ThenTheResultIs(new OkResponse<string>("4321")))
-            .BDDfy();
+        // Arrange
+        const string key = "Subject";
+        _claims.Add(new Claim("Subject", "registered|4321"));
+
+        // Act
+        var result = _claimsParser.GetValue(_claims, key, "|", 1);
+
+        // Assert
+        ThenTheResultIs(result, new OkResponse<string>("4321"));
     }
 
     [Fact]
-    public void should_return_error_response_if_index_too_large()
+    public void Should_return_error_response_if_index_too_large()
     {
-        this.Given(x => x.GivenAClaimOf(new Claim("Subject", "registered|4321")))
-            .And(x => x.GivenTheDelimiterIs("|"))
-            .And(x => x.GivenTheIndexIs(24))
-            .And(x => x.GivenTheKeyIs("Subject"))
-            .When(x => x.WhenICallTheParser())
-            .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
-            {
-                new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}"),
-            })))
-            .BDDfy();
+        // Arrange
+        const string key = "Subject";
+        const string delimiter = "|";
+        const int index = 24;
+        _claims.Add(new Claim("Subject", "registered|4321"));
+
+        // Act
+        var result = _claimsParser.GetValue(_claims, key, delimiter, index);
+
+        // Assert
+        ThenTheResultIs(result, new ErrorResponse<string>(new List<Error>
+        {
+            new CannotFindClaimError($"Cannot find claim for key: {key}, delimiter: {delimiter}, index: {index}"),
+        }));
     }
 
     [Fact]
-    public void should_return_error_response_if_index_too_small()
+    public void Should_return_error_response_if_index_too_small()
     {
-        this.Given(x => x.GivenAClaimOf(new Claim("Subject", "registered|4321")))
-            .And(x => x.GivenTheDelimiterIs("|"))
-            .And(x => x.GivenTheIndexIs(-1))
-            .And(x => x.GivenTheKeyIs("Subject"))
-            .When(x => x.WhenICallTheParser())
-            .Then(x => x.ThenTheResultIs(new ErrorResponse<string>(new List<Error>
-            {
-                new CannotFindClaimError($"Cannot find claim for key: {_key}, delimiter: {_delimiter}, index: {_index}"),
-            })))
-            .BDDfy();
+        // Arrange
+        const string key = "Subject";
+        const string delimiter = "|";
+        const int index = -1;
+        _claims.Add(new Claim("Subject", "registered|4321"));
+
+        // Act
+        var result = _claimsParser.GetValue(_claims, key, delimiter, index);
+
+        // Assert
+        ThenTheResultIs(result, new ErrorResponse<string>(new List<Error>
+        {
+            new CannotFindClaimError($"Cannot find claim for key: {key}, delimiter: {delimiter}, index: {index}"),
+        }));
     }
 
-    private void GivenTheIndexIs(int index)
+    private static void ThenTheResultIs(Response<string> actual, Response<string> expected)
     {
-        _index = index;
-    }
-
-    private void GivenTheDelimiterIs(string delimiter)
-    {
-        _delimiter = delimiter;
-    }
-
-    private void GivenAClaimOf(Claim claim)
-    {
-        _claims.Add(claim);
-    }
-
-    private void GivenTheKeyIs(string key)
-    {
-        _key = key;
-    }
-
-    private void WhenICallTheParser()
-    {
-        _result = _claimsParser.GetValue(_claims, _key, _delimiter, _index);
-    }
-
-    private void ThenTheResultIs(Response<string> expected)
-    {
-        _result.Data.ShouldBe(expected.Data);
-        _result.IsError.ShouldBe(expected.IsError);
+        actual.Data.ShouldBe(expected.Data);
+        actual.IsError.ShouldBe(expected.IsError);
     }
 }

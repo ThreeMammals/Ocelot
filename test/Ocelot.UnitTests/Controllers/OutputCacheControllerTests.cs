@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Ocelot.Administration;
 using Ocelot.Cache;
 
 namespace Ocelot.UnitTests.Controllers;
@@ -7,31 +8,21 @@ public class OutputCacheControllerTests : UnitTest
 {
     private readonly OutputCacheController _controller;
     private readonly Mock<IOcelotCache<CachedResponse>> _cache;
-    private IActionResult _result;
 
     public OutputCacheControllerTests()
     {
-        _cache = new Mock<IOcelotCache<CachedResponse>>();
-        _controller = new OutputCacheController(_cache.Object);
+        _cache = new();
+        _controller = new(_cache.Object);
     }
 
     [Fact]
-    public void should_delete_key()
+    public void Delete_ByKey_ClearedRegion()
     {
-        this.When(_ => WhenIDeleteTheKey("a"))
-           .Then(_ => ThenTheKeyIsDeleted("a"))
-           .BDDfy();
-    }
+        // Arrange, Act
+        var result = _controller.Delete("a");
 
-    private void ThenTheKeyIsDeleted(string key)
-    {
-        _result.ShouldBeOfType<NoContentResult>();
-        _cache
-            .Verify(x => x.ClearRegion(key), Times.Once);
-    }
-
-    private void WhenIDeleteTheKey(string key)
-    {
-        _result = _controller.Delete(key);
+        // Assert
+        result.ShouldBeOfType<NoContentResult>();
+        _cache.Verify(x => x.ClearRegion("a"), Times.Once);
     }
 }

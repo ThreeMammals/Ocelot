@@ -12,9 +12,6 @@ public class UserDefinedResponseAggregatorTests : UnitTest
 {
     private readonly UserDefinedResponseAggregator _aggregator;
     private readonly Mock<IDefinedAggregatorProvider> _provider;
-    private Route _route;
-    private List<HttpContext> _contexts;
-    private HttpContext _context;
 
     public UserDefinedResponseAggregatorTests()
     {
@@ -23,10 +20,10 @@ public class UserDefinedResponseAggregatorTests : UnitTest
     }
 
     [Fact]
-    public void should_call_aggregator()
+    public async Task Should_call_aggregator()
     {
-        var route = new RouteBuilder().Build();
-
+        // Arrange
+        var route = new Route();
         var context = new DefaultHttpContext();
 
         var contextA = new DefaultHttpContext();
@@ -41,91 +38,48 @@ public class UserDefinedResponseAggregatorTests : UnitTest
             contextB,
         };
 
-        this.Given(_ => GivenTheProviderReturnsAggregator())
-            .And(_ => GivenRoute(route))
-            .And(_ => GivenContexts(contexts))
-            .And(_ => GivenContext(context))
-            .When(_ => WhenIAggregate())
-            .Then(_ => ThenTheProviderIsCalled())
-            .And(_ => ThenTheContentIsCorrect())
-            .BDDfy();
-    }
+        // Arrange: Given The Provider Returns Aggregator
+        var aggregator = new TestDefinedAggregator();
+        _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new OkResponse<IDefinedAggregator>(aggregator));
 
-    [Fact]
-    public void should_not_find_aggregator()
-    {
-        var route = new RouteBuilder().Build();
+        // Act
+        await _aggregator.Aggregate(route, context, contexts);
 
-        var context = new DefaultHttpContext();
-
-        var contextA = new DefaultHttpContext();
-        contextA.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-
-        var contextB = new DefaultHttpContext();
-        contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-
-        var contexts = new List<HttpContext>
-        {
-            contextA,
-            contextB,
-        };
-
-        this.Given(_ => GivenTheProviderReturnsError())
-            .And(_ => GivenRoute(route))
-            .And(_ => GivenContexts(contexts))
-            .And(_ => GivenContext(context))
-            .When(_ => WhenIAggregate())
-            .Then(_ => ThenTheProviderIsCalled())
-            .And(_ => ThenTheErrorIsReturned())
-            .BDDfy();
-    }
-
-    private void ThenTheErrorIsReturned()
-    {
-        _context.Items.Errors().Count.ShouldBeGreaterThan(0);
-        _context.Items.Errors().Count.ShouldBe(1);
-    }
-
-    private void GivenTheProviderReturnsError()
-    {
-        _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new ErrorResponse<IDefinedAggregator>(new AnyError()));
-    }
-
-    private async Task ThenTheContentIsCorrect()
-    {
-        var content = await _context.Items.DownstreamResponse().Content.ReadAsStringAsync();
+        // Assert
+        _provider.Verify(x => x.Get(route), Times.Once);
+        var content = await context.Items.DownstreamResponse().Content.ReadAsStringAsync();
         content.ShouldBe("Tom, Laura");
     }
 
-    private void ThenTheProviderIsCalled()
+    [Fact]
+    public async Task Should_not_find_aggregator()
     {
-        _provider.Verify(x => x.Get(_route), Times.Once);
-    }
+        // Arrange
+        var route = new Route();
+        var context = new DefaultHttpContext();
 
-    private void GivenContext(HttpContext context)
-    {
-        _context = context;
-    }
+        var contextA = new DefaultHttpContext();
+        contextA.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Tom"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
-    private void GivenContexts(List<HttpContext> contexts)
-    {
-        _contexts = contexts;
-    }
+        var contextB = new DefaultHttpContext();
+        contextB.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Laura"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
 
-    private async Task WhenIAggregate()
-    {
-        await _aggregator.Aggregate(_route, _context, _contexts);
-    }
+        var contexts = new List<HttpContext>
+        {
+            contextA,
+            contextB,
+        };
 
-    private void GivenTheProviderReturnsAggregator()
-    {
-        var aggregator = new TestDefinedAggregator();
-        _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new OkResponse<IDefinedAggregator>(aggregator));
-    }
+        // Arrange: Given The Provider Returns Error
+        _provider.Setup(x => x.Get(It.IsAny<Route>())).Returns(new ErrorResponse<IDefinedAggregator>(new AnyError()));
 
-    private void GivenRoute(Route route)
-    {
-        _route = route;
+        // Act
+        await _aggregator.Aggregate(route, context, contexts);
+
+        // Assert
+        _provider.Verify(x => x.Get(route), Times.Once);
+        context.Items.Errors().Count.ShouldBeGreaterThan(0);
+        context.Items.Errors().Count.ShouldBe(1);
     }
 
     public class TestDefinedAggregator : IDefinedAggregator

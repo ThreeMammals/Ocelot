@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -13,9 +14,6 @@ public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
     private DelegateInvokingLoadBalancerCreator<FakeLoadBalancer> _creator;
     private Func<DownstreamRoute, IServiceDiscoveryProvider, ILoadBalancer> _creatorFunc;
     private readonly Mock<IServiceDiscoveryProvider> _serviceProvider;
-    private DownstreamRoute _route;
-    private Response<ILoadBalancer> _loadBalancer;
-    private string _typeName;
 
     public DelegateInvokingLoadBalancerCreatorTests()
     {
@@ -26,74 +24,51 @@ public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_expected_name()
+    public void Should_return_expected_name()
     {
-        this.When(x => x.WhenIGetTheLoadBalancerTypeName())
-            .Then(x => x.ThenTheLoadBalancerTypeIs("FakeLoadBalancer"))
-            .BDDfy();
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+
+        // Act
+        var loadBalancer = _creator.Create(route, _serviceProvider.Object);
+
+        // Assert
+        loadBalancer.Data.Type.ShouldBe(nameof(FakeLoadBalancer));
     }
 
     [Fact]
-    public void should_return_result_of_specified_creator_func()
+    public void Should_return_result_of_specified_creator_func()
     {
-        var route = new DownstreamRouteBuilder()
-            .Build();
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
 
-        this.Given(x => x.GivenARoute(route))
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenTheLoadBalancerIsReturned<FakeLoadBalancer>())
-            .BDDfy();
+        // Act
+        var loadBalancer = _creator.Create(route, _serviceProvider.Object);
+
+        // Assert
+        loadBalancer.Data.ShouldBeOfType<FakeLoadBalancer>();
     }
 
     [Fact]
-    public void should_return_error()
+    public void Should_return_error()
     {
-        var route = new DownstreamRouteBuilder()
-            .Build();
-
-        this.Given(x => x.GivenARoute(route))
-            .And(x => x.GivenTheCreatorFuncThrows())
-            .When(x => x.WhenIGetTheLoadBalancer())
-            .Then(x => x.ThenAnErrorIsReturned())
-            .BDDfy();
-    }
-
-    private void GivenTheCreatorFuncThrows()
-    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
         _creatorFunc = (route, serviceDiscoveryProvider) => throw new Exception();
-
         _creator = new DelegateInvokingLoadBalancerCreator<FakeLoadBalancer>(_creatorFunc);
+
+        // Act
+        var loadBalancer = _creator.Create(route, _serviceProvider.Object);
+
+        // Assert
+        loadBalancer.IsError.ShouldBeTrue();
     }
 
-    private void ThenAnErrorIsReturned()
+    [Fact]
+    public void Type()
     {
-        _loadBalancer.IsError.ShouldBeTrue();
-    }
-
-    private void GivenARoute(DownstreamRoute route)
-    {
-        _route = route;
-    }
-
-    private void WhenIGetTheLoadBalancer()
-    {
-        _loadBalancer = _creator.Create(_route, _serviceProvider.Object);
-    }
-
-    private void WhenIGetTheLoadBalancerTypeName()
-    {
-        _typeName = _creator.Type;
-    }
-
-    private void ThenTheLoadBalancerIsReturned<T>()
-        where T : ILoadBalancer
-    {
-        _loadBalancer.Data.ShouldBeOfType<T>();
-    }
-
-    private void ThenTheLoadBalancerTypeIs(string type)
-    {
-        _typeName.ShouldBe(type);
+        // Arrange, Act, Assert
+        Assert.Equal(nameof(FakeLoadBalancer), _creator.Type);
     }
 
     private class FakeLoadBalancer : ILoadBalancer
@@ -106,7 +81,6 @@ public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
 
         public DownstreamRoute DownstreamRoute { get; }
         public IServiceDiscoveryProvider ServiceDiscoveryProvider { get; }
-
         public string Type => nameof(FakeLoadBalancer);
         public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
         public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();

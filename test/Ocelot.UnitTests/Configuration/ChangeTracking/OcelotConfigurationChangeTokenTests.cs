@@ -5,27 +5,35 @@ namespace Ocelot.UnitTests.Configuration.ChangeTracking;
 public class OcelotConfigurationChangeTokenTests : UnitTest
 {
     [Fact]
-    public void should_call_callback_with_state()
+    public void Should_call_callback_with_state()
     {
-        this.Given(_ => GivenIHaveAChangeToken())
-            .And(_ => AndIRegisterACallback())
-            .Then(_ => ThenIShouldGetADisposableWrapper())
-            .Given(_ => GivenIActivateTheToken())
-            .Then(_ => ThenTheCallbackShouldBeCalled())
-            .BDDfy();
+        // Arrange
+        GivenIHaveAChangeToken();
+        AndIRegisterACallback();
+        ThenIShouldGetADisposableWrapper();
+
+        // Act
+        GivenIActivateTheToken();
+
+        // Assert
+        ThenTheCallbackShouldBeCalled();
     }
 
     [Fact]
-    public void should_not_call_callback_if_it_is_disposed()
+    public void Should_not_call_callback_if_it_is_disposed()
     {
-        this.Given(_ => GivenIHaveAChangeToken())
-            .And(_ => AndIRegisterACallback())
-            .Then(_ => ThenIShouldGetADisposableWrapper())
-            .And(_ => GivenIActivateTheToken())
-            .And(_ => AndIDisposeTheCallbackWrapper())
-            .And(_ => GivenIActivateTheToken())
-            .Then(_ => ThenTheCallbackShouldNotBeCalled())
-            .BDDfy();
+        // Arrange
+        GivenIHaveAChangeToken();
+        AndIRegisterACallback();
+        ThenIShouldGetADisposableWrapper();
+
+        // Act, Assert
+        GivenIActivateTheToken();
+        AndIDisposeTheCallbackWrapper();
+
+        // Act, Assert
+        GivenIActivateTheToken();
+        ThenTheCallbackShouldNotBeCalled();
     }
 
     private OcelotConfigurationChangeToken _changeToken;

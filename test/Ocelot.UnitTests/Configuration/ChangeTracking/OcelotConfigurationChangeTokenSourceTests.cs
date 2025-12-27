@@ -4,7 +4,7 @@ namespace Ocelot.UnitTests.Configuration.ChangeTracking;
 
 public class OcelotConfigurationChangeTokenSourceTests : UnitTest
 {
-    private readonly IOcelotConfigurationChangeTokenSource _source;
+    private readonly OcelotConfigurationChangeTokenSource _source;
 
     public OcelotConfigurationChangeTokenSourceTests()
     {
@@ -12,20 +12,12 @@ public class OcelotConfigurationChangeTokenSourceTests : UnitTest
     }
 
     [Fact]
-    public void should_activate_change_token()
+    public void Should_activate_change_token()
     {
-        this.Given(_ => GivenIActivateTheChangeTokenSource())
-            .Then(_ => ThenTheChangeTokenShouldBeActivated())
-            .BDDfy();
-    }
-
-    private void GivenIActivateTheChangeTokenSource()
-    {
+        // Arrange, Act
         _source.Activate();
-    }
 
-    private void ThenTheChangeTokenShouldBeActivated()
-    {
+        // Assert
         _source.ChangeToken.HasChanged.ShouldBeTrue();
     }
 }

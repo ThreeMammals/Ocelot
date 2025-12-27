@@ -12,13 +12,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
@@ -33,7 +36,6 @@ public class OcelotBuilderTests : UnitTest
     private readonly IServiceCollection _services;
     private IServiceProvider _serviceProvider;
     private IOcelotBuilder _ocelotBuilder;
-    private Exception _ex;
 
     public OcelotBuilderTests()
     {
@@ -46,172 +48,263 @@ public class OcelotBuilderTests : UnitTest
     private static IWebHostEnvironment GetHostingEnvironment()
     {
         var environment = new Mock<IWebHostEnvironment>();
-        environment
-            .Setup(e => e.ApplicationName)
+        environment.Setup(e => e.ApplicationName)
             .Returns(typeof(OcelotBuilderTests).GetTypeInfo().Assembly.GetName().Name);
-
         return environment.Object;
     }
 
     [Fact]
-    public void Should_add_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_NotGlobal()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddSpecificTransientDelegatingHandler<FakeDelegatingHandler>())
-            .And(x => AddSpecificTransientDelegatingHandler<FakeDelegatingHandlerTwo>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => ThenTheSpecificHandlersAreTransient())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>();
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>();
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheSpecificHandlersAreTransient();
     }
 
     [Fact]
-    public void Should_add_type_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_Global()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandler)))
-            .And(x => AddTypeSpecificTransientDelegatingHandler(typeof(FakeDelegatingHandlerTwo)))
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => ThenTheSpecificHandlersAreTransient())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
     }
 
     [Fact]
-    public void Should_add_global_delegating_handlers_transient()
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_TypeCheck()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
-            .And(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => ThenTheGlobalHandlersAreTransient())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(
+            () => _ocelotBuilder.AddDelegatingHandler(typeof(OcelotBuilderTests))); // OcelotBuilderTests type is not DelegatingHandler one
+
+        // Assert
+        Assert.Equal("delegateType", ex.ParamName);
+        Assert.Equal(nameof(OcelotBuilderTests), (string)ex.ActualValue);
+        Assert.Equal($"It is not a delegating handler (Parameter 'delegateType'){Environment.NewLine}Actual value was OcelotBuilderTests.", ex.Message);
     }
 
     [Fact]
-    public void Should_add_global_type_delegating_handlers_transient()
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_Global()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandler>())
-            .And(x => AddTransientGlobalDelegatingHandler<FakeDelegatingHandlerTwo>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>())
-            .And(x => ThenTheGlobalHandlersAreTransient())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandler), true);
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandlerTwo), true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_NotGlobal()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandler));
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandlerTwo));
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheSpecificHandlersAreTransient();
     }
 
     [Fact]
     public void Should_set_up_services()
     {
-        this.When(x => WhenISetUpOcelotServices())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .BDDfy();
+        // Arrange, Act, Assert
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
     }
 
     [Fact]
     public void Should_return_ocelot_builder()
     {
-        this.When(x => WhenISetUpOcelotServices())
-            .Then(x => ThenAnOcelotBuilderIsReturned())
-            .BDDfy();
+        // Arrange, Act
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Assert
+        _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
     }
 
     [Fact]
     public void Should_use_logger_factory()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => WhenIValidateScopes())
-            .When(x => WhenIAccessLoggerFactory())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Act
+        var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
+
+        // Assert
+        logger.ShouldNotBeNull();
     }
 
     [Fact]
     public void Should_set_up_without_passing_in_config()
     {
-        this.When(x => WhenISetUpOcelotServicesWithoutConfig())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .BDDfy();
+        // Arrange, Act, Assert
+        _ocelotBuilder = _services.AddOcelot();
     }
 
     [Fact]
     public void Should_add_singleton_defined_aggregators()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
-            .When(x => AddSingletonDefinedAggregator<TestDefinedAggregator>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
-            .And(x => ThenTheAggregatorsAreSingleton<TestDefinedAggregator, TestDefinedAggregator>())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddSingletonDefinedAggregator<TestDefinedAggregator>();
+        _ocelotBuilder.AddSingletonDefinedAggregator<TestDefinedAggregator>();
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>();
+
+        // Then The Aggregators Are Singleton<TestDefinedAggregator, TestDefinedAggregator>
+        var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+        var first = aggregators[0];
+        aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+        var second = aggregators[0];
+        first.ShouldBe(second);
     }
 
     [Fact]
     public void Should_add_transient_defined_aggregators()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
-            .When(x => AddTransientDefinedAggregator<TestDefinedAggregator>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>())
-            .And(x => ThenTheAggregatorsAreTransient<TestDefinedAggregator, TestDefinedAggregator>())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddTransientDefinedAggregator<TestDefinedAggregator>();
+        _ocelotBuilder.AddTransientDefinedAggregator<TestDefinedAggregator>();
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsSpecificAggregators<TestDefinedAggregator, TestDefinedAggregator>();
+
+        // Then The Aggregators Are Transient<TestDefinedAggregator, TestDefinedAggregator>
+        var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+        var first = aggregators[0];
+        aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
+        var second = aggregators[0];
+        first.ShouldNotBe(second);
     }
 
     [Fact]
     public void Should_add_custom_load_balancer_creators_by_default_ctor()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => _ocelotBuilder.AddCustomLoadBalancer<FakeCustomLoadBalancer>())
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddCustomLoadBalancer<FakeCustomLoadBalancer>();
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators();
     }
 
     [Fact]
     public void Should_add_custom_load_balancer_creators_by_factory_method()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => _ocelotBuilder.AddCustomLoadBalancer(() => new FakeCustomLoadBalancer()))
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddCustomLoadBalancer(() => new FakeCustomLoadBalancer());
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators();
     }
 
     [Fact]
     public void Should_add_custom_load_balancer_creators_by_di_factory_method()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => _ocelotBuilder.AddCustomLoadBalancer(provider => new FakeCustomLoadBalancer()))
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddCustomLoadBalancer(provider => new FakeCustomLoadBalancer());
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators();
     }
 
     [Fact]
     public void Should_add_custom_load_balancer_creators_by_factory_method_with_arguments()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => _ocelotBuilder.AddCustomLoadBalancer((route, discoveryProvider) => new FakeCustomLoadBalancer()))
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddCustomLoadBalancer((route, discoveryProvider) => new FakeCustomLoadBalancer());
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators();
     }
 
     [Fact]
     public void Should_replace_iplaceholder()
     {
-        this.Given(x => x.WhenISetUpOcelotServices())
-            .When(x => AddConfigPlaceholders())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .And(x => ThenTheIPlaceholderInstanceIsReplaced())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddConfigPlaceholders();
+
+        // Assert
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var placeholders = _serviceProvider.GetService<IPlaceholders>();
+        placeholders.ShouldBeOfType<ConfigAwarePlaceholders>();
     }
 
     [Fact]
     public void Should_add_custom_load_balancer_creators()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => _ocelotBuilder.AddCustomLoadBalancer((provider, route, discoveryProvider) => new FakeCustomLoadBalancer()))
-            .Then(x => ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators())
-            .BDDfy();
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddCustomLoadBalancer((provider, route, discoveryProvider) => new FakeCustomLoadBalancer());
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsBothBuiltInAndCustomLoadBalancerCreators();
     }
 
     [Fact]
     public void Should_use_default_mvc_builder()
     {
-        WhenISetUpOcelotServicesWithoutConfig();
+        // Arrange, Act
+        _ocelotBuilder = _services.AddOcelot();
+
+        // Assert
         CstorShouldUseDefaultBuilderToInitMvcCoreBuilder();
     }
 
@@ -299,14 +392,45 @@ public class OcelotBuilderTests : UnitTest
         ShouldFindConfiguration();
     }
 
-    private bool _fakeCustomBuilderCalled;
+    [Fact]
+    public void CreateInstance_CreatedFromImplementationInstance()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+        ServiceDescriptor descriptor = new(GetType(), this);
 
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    [Fact]
+    public void CreateInstance_CreatedByImplementationFactory()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+
+        object factory(IServiceProvider p) => this;
+        ServiceDescriptor descriptor = new(GetType(), factory, ServiceLifetime.Singleton);
+
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    private bool _fakeCustomBuilderCalled;
     private IMvcCoreBuilder FakeCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
     {
         _fakeCustomBuilderCalled = true;
-
-        return builder
-            .AddJsonOptions(options =>
+        return builder.AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.WriteIndented = true;
             });
@@ -315,16 +439,9 @@ public class OcelotBuilderTests : UnitTest
     private void WhenISetupOcelotServicesWithCustomMvcBuider(IConfiguration configuration = null, bool useConfigParam = false)
     {
         _fakeCustomBuilderCalled = false;
-        try
-        {
-            _ocelotBuilder = !useConfigParam
-                ? _services.AddOcelotUsingBuilder(FakeCustomBuilder)
-                : _services.AddOcelotUsingBuilder(configuration, FakeCustomBuilder);
-        }
-        catch (Exception e)
-        {
-            _ex = e;
-        }
+        _ocelotBuilder = !useConfigParam
+            ? _services.AddOcelotUsingBuilder(FakeCustomBuilder)
+            : _services.AddOcelotUsingBuilder(configuration, FakeCustomBuilder);
     }
 
     private void CstorShouldUseCustomBuilderToInitMvcCoreBuilder()
@@ -355,23 +472,6 @@ public class OcelotBuilderTests : UnitTest
         actual.ShouldBe(_configRoot);
     }
 
-    private void AddSingletonDefinedAggregator<T>()
-        where T : class, IDefinedAggregator
-    {
-        _ocelotBuilder.AddSingletonDefinedAggregator<T>();
-    }
-
-    private void AddTransientDefinedAggregator<T>()
-        where T : class, IDefinedAggregator
-    {
-        _ocelotBuilder.AddTransientDefinedAggregator<T>();
-    }
-
-    private void AddConfigPlaceholders()
-    {
-        _ocelotBuilder.AddConfigPlaceholders();
-    }
-
     private void ThenTheSpecificHandlersAreTransient()
     {
         var handlers = _serviceProvider.GetServices<DelegatingHandler>().ToList();
@@ -388,28 +488,6 @@ public class OcelotBuilderTests : UnitTest
         handlers = _serviceProvider.GetServices<GlobalDelegatingHandler>().ToList();
         var second = handlers[0].DelegatingHandler;
         first.ShouldNotBe(second);
-    }
-
-    private void AddTransientGlobalDelegatingHandler<T>()
-        where T : DelegatingHandler
-    {
-        _ocelotBuilder.AddDelegatingHandler<T>(true);
-    }
-
-    private void AddSpecificTransientDelegatingHandler<T>()
-        where T : DelegatingHandler
-    {
-        _ocelotBuilder.AddDelegatingHandler<T>();
-    }
-
-    private void AddTypeTransientGlobalDelegatingHandler(Type type)
-    {
-        _ocelotBuilder.AddDelegatingHandler(type, true);
-    }
-
-    private void AddTypeSpecificTransientDelegatingHandler(Type type)
-    {
-        _ocelotBuilder.AddDelegatingHandler(type);
     }
 
     private void ThenTheProviderIsRegisteredAndReturnsHandlers<TOne, TWo>()
@@ -445,101 +523,23 @@ public class OcelotBuilderTests : UnitTest
         creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>)).ShouldBe(1);
-    }
 
-    private void ThenTheAggregatorsAreTransient<TOne, TWo>()
-    {
-        var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
-        var first = aggregators[0];
-        aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
-        var second = aggregators[0];
-        first.ShouldNotBe(second);
-    }
-
-    private void ThenTheAggregatorsAreSingleton<TOne, TWo>()
-    {
-        var aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
-        var first = aggregators[0];
-        aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
-        var second = aggregators[0];
-        first.ShouldBe(second);
-    }
-
-    private void ThenAnOcelotBuilderIsReturned()
-    {
-        _ocelotBuilder.ShouldBeOfType<OcelotBuilder>();
-    }
-
-    private void ThenTheIPlaceholderInstanceIsReplaced()
-    {
-        _serviceProvider = _services.BuildServiceProvider(true);
-        var placeholders = _serviceProvider.GetService<IPlaceholders>();
-        placeholders.ShouldBeOfType<ConfigAwarePlaceholders>();
-    }
-
-    private void WhenISetUpOcelotServices()
-    {
-        try
-        {
-            _ocelotBuilder = _services.AddOcelot(_configRoot);
-        }
-        catch (Exception e)
-        {
-            _ex = e;
-        }
-    }
-
-    private void WhenISetUpOcelotServicesWithoutConfig()
-    {
-        try
-        {
-            _ocelotBuilder = _services.AddOcelot();
-        }
-        catch (Exception e)
-        {
-            _ex = e;
-        }
-    }
-
-    private void WhenIAccessLoggerFactory()
-    {
-        try
-        {
-            _serviceProvider = _services.BuildServiceProvider(true);
-            var logger = _serviceProvider.GetService<IFileConfigurationSetter>();
-            logger.ShouldNotBeNull();
-        }
-        catch (Exception e)
-        {
-            _ex = e;
-        }
-    }
-
-    private void WhenIValidateScopes()
-    {
-        try
-        {
-            _serviceProvider = _services.BuildServiceProvider(true);
-        }
-        catch (Exception e)
-        {
-            _ex = e;
-        }
-    }
-
-    private void ThenAnExceptionIsntThrown()
-    {
-        _ex.ShouldBeNull();
+        // Call Create
+        var creator = creators.Single(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>));
+        Assert.NotNull(creator);
+        var route = new DownstreamRouteBuilder().Build();
+        var provider = _serviceProvider.GetService<IServiceDiscoveryProvider>();
+        var response = creator.Create(route, provider);
+        Assert.NotNull(response);
+        Assert.False(response.IsError);
+        Assert.NotNull(response.Data);
+        Assert.IsType<FakeCustomLoadBalancer>(response.Data);
     }
 
     private class FakeCustomLoadBalancer : ILoadBalancer
     {
         public string Type => nameof(FakeCustomLoadBalancer);
-
-        // Not relevant for these tests
         public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
-
-        // Not relevant for these tests
         public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
     }
 }

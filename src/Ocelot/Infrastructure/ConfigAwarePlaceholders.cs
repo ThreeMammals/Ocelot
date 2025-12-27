@@ -48,13 +48,9 @@ public partial class ConfigAwarePlaceholders : IPlaceholders
     public Response Remove(string key)
         => _placeholders.Remove(key);
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"[{}]", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex Regex();
-#else
-    private static readonly Regex _regex = RegexGlobal.New(@"[{}]");
-    private static Regex Regex() => _regex;
-#endif
+
     private static string CleanKey(string key)
         => Regex().Replace(key, string.Empty);
 

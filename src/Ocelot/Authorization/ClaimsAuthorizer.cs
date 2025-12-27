@@ -1,6 +1,6 @@
 ﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
@@ -18,13 +18,9 @@ public partial class ClaimsAuthorizer : IClaimsAuthorizer
         _claimsParser = claimsParser;
     }
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"^{(?<variable>.+)}$", RegexOptions.None, RegexGlobal.DefaultMatchTimeoutMilliseconds)]
     private static partial Regex RegexAuthorize();
-#else
-    private static readonly Regex _regexAuthorize = RegexGlobal.New(@"^{(?<variable>.+)}$");
-    private static Regex RegexAuthorize() => _regexAuthorize;
-#endif
+
     public Response<bool> Authorize(
         ClaimsPrincipal claimsPrincipal,
         Dictionary<string, string> routeClaimsRequirement,

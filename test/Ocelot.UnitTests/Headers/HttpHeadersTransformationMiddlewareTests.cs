@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Authorization.Middleware;
+using Ocelot.Authorization;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Headers;
@@ -20,7 +20,7 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
     private readonly RequestDelegate _next;
     private readonly Mock<IAddHeadersToResponse> _addHeadersToResponse;
     private readonly Mock<IAddHeadersToRequest> _addHeadersToRequest;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public HttpHeadersTransformationMiddlewareTests()
     {
@@ -39,18 +39,22 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
     }
 
     [Fact]
-    public void should_call_pre_and_post_header_transforms()
+    public async Task Should_call_pre_and_post_header_transforms()
     {
-        this.Given(x => GivenTheFollowingRequest())
-            .And(x => GivenTheDownstreamRequestIs())
-            .And(x => GivenTheRouteHasPreFindAndReplaceSetUp())
-            .And(x => GivenTheHttpResponseMessageIs())
-            .When(x => WhenICallTheMiddleware())
-            .Then(x => ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly())
-            .Then(x => ThenAddHeadersToRequestIsCalledCorrectly())
-            .And(x => ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly())
-            .And(x => ThenAddHeadersToResponseIsCalledCorrectly())
-            .BDDfy();
+        // Arrange
+        GivenTheFollowingRequest();
+        GivenTheDownstreamRequestIs();
+        GivenTheRouteHasPreFindAndReplaceSetUp();
+        GivenTheHttpResponseMessageIs();
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly();
+        ThenAddHeadersToRequestIsCalledCorrectly();
+        ThenTheIHttpResponseHeaderReplacerIsCalledCorrectly();
+        ThenAddHeadersToResponseIsCalledCorrectly();
     }
 
     private void ThenAddHeadersToResponseIsCalledCorrectly()
@@ -63,11 +67,6 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
     {
         _addHeadersToRequest
             .Verify(x => x.SetHeadersOnDownstreamRequest(_httpContext.Items.DownstreamRoute().AddHeadersToUpstream, _httpContext), Times.Once);
-    }
-
-    private async Task WhenICallTheMiddleware()
-    {
-        await _middleware.Invoke(_httpContext);
     }
 
     private void GivenTheDownstreamRequestIs()
@@ -83,11 +82,11 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
     private void GivenTheRouteHasPreFindAndReplaceSetUp()
     {
         var fAndRs = new List<HeaderFindAndReplace>();
-        var route = new RouteBuilder()
-            .WithDownstreamRoute(new DownstreamRouteBuilder().WithUpstreamHeaderFindAndReplace(fAndRs)
-                .WithDownstreamHeaderFindAndReplace(fAndRs).Build())
+        var dRoute = new DownstreamRouteBuilder()
+            .WithUpstreamHeaderFindAndReplace(fAndRs)
+            .WithDownstreamHeaderFindAndReplace(fAndRs)
             .Build();
-
+        var route = new Route(dRoute);
         var dR = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(null, route);
 
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);

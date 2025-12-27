@@ -7,15 +7,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
 [Trait("Feat", "360")]
 public class HeadersToHeaderTemplatesMatcherTests : UnitTest
 {
-    private readonly IHeadersToHeaderTemplatesMatcher _headerMatcher;
-    private Dictionary<string, string> _upstreamHeaders;
-    private Dictionary<string, UpstreamHeaderTemplate> _templateHeaders;
-    private bool _result;
-
-    public HeadersToHeaderTemplatesMatcherTests()
-    {
-        _headerMatcher = new HeadersToHeaderTemplatesMatcher();
-    }
+    private readonly HeadersToHeaderTemplatesMatcher _matcher = new();
 
     [Fact]
     public void Should_match_when_no_template_headers()
@@ -26,14 +18,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
             ["anyHeader"] = "anyHeaderValue",
         };
         var templateHeaders = new Dictionary<string, UpstreamHeaderTemplate>();
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -48,14 +38,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -70,14 +58,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -92,14 +78,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -114,14 +98,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -136,14 +118,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -163,14 +143,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
             ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -190,14 +168,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
             ["thirdHeader"] = new("^(?i)thirdHeaderValue$", "thirdHeaderValue"),
             ["anyHeader"] = new("^(?i)anyHeaderValue$", "anyHeaderValue"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -212,14 +188,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -234,14 +208,12 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -256,38 +228,11 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
         {
             ["anyHeader"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
-        GivenIHaveUpstreamHeaders(upstreamHeaders);
-        GivenIHaveTemplateHeadersInRoute(templateHeaders);
 
         // Act
-        WhenIMatchTheHeaders();
+        var result = _matcher.Match(upstreamHeaders, templateHeaders);
 
         // Assert
-        ThenTheResultIsFalse();
-    }
-
-    private void GivenIHaveUpstreamHeaders(Dictionary<string, string> upstreamHeaders)
-    {
-        _upstreamHeaders = upstreamHeaders;
-    }
-
-    private void GivenIHaveTemplateHeadersInRoute(Dictionary<string, UpstreamHeaderTemplate> templateHeaders)
-    {
-        _templateHeaders = templateHeaders;
-    }
-
-    private void WhenIMatchTheHeaders()
-    {
-        _result = _headerMatcher.Match(_upstreamHeaders, _templateHeaders);
-    }
-
-    private void ThenTheResultIsTrue()
-    {
-        _result.ShouldBeTrue();
-    }
-
-    private void ThenTheResultIsFalse()
-    {
-        _result.ShouldBeFalse();
+        result.ShouldBeFalse();
     }
 }

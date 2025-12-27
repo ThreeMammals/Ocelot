@@ -5,14 +5,9 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.UrlMatcher;
 
 public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
 {
-    private readonly UrlPathPlaceholderNameAndValueFinder _finder;
+    private readonly UrlPathPlaceholderNameAndValueFinder _finder = new();
     private Response<List<PlaceholderNameAndValue>> _result;
     private static readonly string Empty = string.Empty;
-
-    public UrlPathPlaceholderNameAndValueFinderTests()
-    {
-        _finder = new UrlPathPlaceholderNameAndValueFinder();
-    }
 
     [Fact]
     public void Can_match_down_stream_url()
@@ -402,6 +397,7 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
         string placeholderName3, string placeholderValue3, string placeholderName4, string placeholderValue4)
     {
+        // Arrange
         var expectedTemplates = new List<PlaceholderNameAndValue>
         {
             new(placeholderName1, placeholderValue1),
@@ -429,6 +425,7 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         string placeholderName1, string placeholderValue1, string placeholderName2, string placeholderValue2,
         string placeholderName3 = null, string placeholderValue3 = null, string placeholderName4 = null, string placeholderValue4 = null)
     {
+        // Arrange
         var expectedTemplates = new List<PlaceholderNameAndValue>
         {
             new(placeholderName1, placeholderValue1),

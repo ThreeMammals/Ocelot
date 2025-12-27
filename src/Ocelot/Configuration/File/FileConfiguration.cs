@@ -4,10 +4,10 @@ public class FileConfiguration
 {
     public FileConfiguration()
     {
-        Routes = new List<FileRoute>();
-        GlobalConfiguration = new FileGlobalConfiguration();
-        Aggregates = new List<FileAggregateRoute>();
-        DynamicRoutes = new List<FileDynamicRoute>();
+        Routes = new();
+        DynamicRoutes = new();
+        Aggregates = new();
+        GlobalConfiguration = new();
     }
 
     public List<FileRoute> Routes { get; set; }

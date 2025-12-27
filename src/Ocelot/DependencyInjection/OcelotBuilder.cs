@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Ocelot.Administration;
 using Ocelot.Authorization;
 using Ocelot.Claims;
 using Ocelot.Configuration;
@@ -11,24 +12,25 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
-using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.PathManipulation;
+using Ocelot.QualityOfService;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
 using Ocelot.Requester;
-using Ocelot.Requester.QoS;
 using Ocelot.Responder;
 using Ocelot.Security;
 using Ocelot.Security.IPSecurity;
@@ -50,30 +52,26 @@ public class OcelotBuilder : IOcelotBuilder
         Configuration = configurationRoot;
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
+        Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
+        Services.AddConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
 
         Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
         Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
         Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
-        Services.TryAddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>();
-        Services.TryAddSingleton<HostAndPortValidator>();
-        Services.TryAddSingleton<IRoutesCreator, RoutesCreator>();
+        Services.TryAddSingleton<IRoutesCreator, StaticRoutesCreator>();
+        Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
         Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
         Services.TryAddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         Services.TryAddSingleton<IConfigurationCreator, ConfigurationCreator>();
-        Services.TryAddSingleton<IDynamicsCreator, DynamicsCreator>();
         Services.TryAddSingleton<ILoadBalancerOptionsCreator, LoadBalancerOptionsCreator>();
-        Services.TryAddSingleton<RouteFluentValidator>();
-        Services.TryAddSingleton<FileGlobalConfigurationFluentValidator>();
-        Services.TryAddSingleton<FileQoSOptionsFluentValidator>();
         Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
         Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
         Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
         Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
         Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
-        Services.TryAddSingleton<IRouteOptionsCreator, RouteOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
         Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
@@ -85,7 +83,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
         Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
         Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
-        Services.TryAddSingleton<IOcelotLoggerFactory, OcelotLoggerFactory>();
         Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
         Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
         Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
@@ -99,28 +96,21 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
         Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamPathPlaceholderReplacer>();
         Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
-        Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteCreator>();
+        Services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
         Services.TryAddSingleton<IHttpResponder, HttpContextResponder>();
         Services.TryAddSingleton<IErrorsToHttpStatusCodeMapper, ErrorsToHttpStatusCodeMapper>();
-        Services.AddRateLimiting(); // Feature: Rate Limiting
         Services.TryAddSingleton<IRequestMapper, RequestMapper>();
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
-        Services.TryAddSingleton<IDelegatingHandlerHandlerFactory, DelegatingHandlerHandlerFactory>();
+        Services.TryAddSingleton<IDelegatingHandlerFactory, DelegatingHandlerFactory>();
         
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
-        Services.AddOcelotCache();
-        Services.AddOcelotMetadata();
-        Services.AddOcelotMessageInvokerPool();
-
         // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
         Services.AddHttpContextAccessor();
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
-        Services.AddMemoryCache();
-        Services.TryAddSingleton<OcelotDiagnosticListener>();
         Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
         Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
@@ -141,7 +131,12 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
         // Features
-        Services.AddHeaderRouting();
+        Services.AddOcelotCache();
+        Services.AddOcelotHeaderRouting();
+        Services.AddOcelotLogging();
+        Services.AddOcelotMessageInvokerPool();
+        Services.AddOcelotMetadata();
+        Services.AddOcelotRateLimiting();
 
         // Add ASP.NET services
         var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
@@ -159,7 +154,6 @@ public class OcelotBuilder : IOcelotBuilder
     /// <remarks>
     /// Note that the following <see cref="IServiceCollection"/> extensions being called:<br/>
     /// - <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>, impossible to remove.<br/>
-    /// - <see cref="LoggingServiceCollectionExtensions.AddLogging(IServiceCollection)"/><br/>
     /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
     /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
     /// <para>
@@ -176,7 +170,6 @@ public class OcelotBuilder : IOcelotBuilder
     protected IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
     {
         Services
-            .AddLogging()
             .AddMiddlewareAnalysis()
             .AddWebEncoders();
 
@@ -204,8 +197,8 @@ public class OcelotBuilder : IOcelotBuilder
     public IOcelotBuilder AddCustomLoadBalancer<TLoadBalancer>()
         where TLoadBalancer : ILoadBalancer, new()
     {
-        TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
-            => new();
+        static TLoadBalancer Create(IServiceProvider provider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+            => new(); // TODO Not tested by acceptance tests, Assert another constructors with injected params?
         return AddCustomLoadBalancer<TLoadBalancer>(Create);
     }
 
@@ -248,6 +241,13 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a <see cref="DelegatingHandler"/> of the <paramref name="delegateType"/> type as a transient service, with the <paramref name="global"/> option to make the handler globally available.
+    /// </summary>
+    /// <param name="delegateType">The type of a <see cref="DelegatingHandler"/> to be registered.</param>
+    /// <param name="global">True if the handler should be globally available.</param>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Generates an exception if the <paramref name="delegateType"/> type does not inherit from the <see cref="DelegatingHandler"/>.</exception>
     public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
     {
         if (!typeof(DelegatingHandler).IsAssignableFrom(delegateType))
@@ -272,6 +272,12 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a <see cref="DelegatingHandler"/> of the <typeparamref name="THandler"/> type as a transient service, with the <paramref name="global"/> option to make the handler globally available.
+    /// </summary>
+    /// <typeparam name="THandler">The type of a <see cref="DelegatingHandler"/> to be registered.</typeparam>
+    /// <param name="global">True if the handler should be globally available.</param>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {

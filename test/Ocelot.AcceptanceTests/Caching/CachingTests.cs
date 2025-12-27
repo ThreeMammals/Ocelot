@@ -1,23 +1,25 @@
+using CacheManager.Core;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Ocelot.AcceptanceTests.Caching;
 
-public sealed class CachingTests : IDisposable
+public sealed class CachingTests : Steps
 {
-    private readonly Steps _steps;
-    private readonly ServiceHandler _serviceHandler;
-
     private const string HelloTomContent = "Hello from Tom";
     private const string HelloLauraContent = "Hello from Laura";
     private int _counter = 0;
 
     public CachingTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
@@ -30,17 +32,17 @@ public sealed class CachingTests : IDisposable
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
             .BDDfy();
     }
 
@@ -54,18 +56,18 @@ public sealed class CachingTests : IDisposable
         };
         var configuration = GivenFileConfiguration(port, options);
         var headerExpires = "Expires";
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
-            .And(x => _steps.ThenTheResponseBodyHeaderIs(headerExpires, "-1"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
+            .And(x => ThenTheResponseContentHeaderIs(headerExpires, "-1"))
             .BDDfy();
     }
 
@@ -79,17 +81,45 @@ public sealed class CachingTests : IDisposable
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningUsingJsonSerializedCache())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => x.GivenOcelotIsRunningUsingJsonSerializedCache())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
             .BDDfy();
+    }
+
+    private void GivenOcelotIsRunningUsingJsonSerializedCache()
+    {
+        var builder = TestHostBuilder.Create()
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", true, false)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureServices(s =>
+            {
+                s.AddOcelot()
+                    .AddCacheManager((x) =>
+                    {
+                        //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
+                        x.WithJsonSerializer();
+                        x.WithHandle(typeof(InMemoryJsonHandle<>));
+                    });
+            })
+            .Configure(async app => await app.UseOcelot());
+
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
     }
 
     [Fact]
@@ -102,17 +132,17 @@ public sealed class CachingTests : IDisposable
         };
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, null, null))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
             .And(x => GivenTheCacheExpires())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloTomContent))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
             .BDDfy();
     }
 
@@ -132,21 +162,21 @@ public sealed class CachingTests : IDisposable
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody2String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody2String))
+        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody2String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody2String))
             .And(x => ThenTheCounterValueShouldBe(2))
             .BDDfy();
     }
@@ -166,21 +196,21 @@ public sealed class CachingTests : IDisposable
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
 
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => _steps.WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(testBody1String))
+        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(testBody1String))
             .And(x => ThenTheCounterValueShouldBe(1))
             .BDDfy();
     }
@@ -200,27 +230,27 @@ public sealed class CachingTests : IDisposable
         var headerExpires = "Expires";
 
         // Add to cache
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
 
             // Read from cache
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => _steps.ThenTheContentLengthIs(HelloLauraContent.Length))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
 
             // Clean cache by the header and cache new content
-            .Given(x => x.GivenTheServiceNowReturns($"http://localhost:{port}", HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
-            .And(x => _steps.GivenIAddAHeader(options.Header, "123"))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => _steps.ThenTheContentLengthIs(HelloTomContent.Length))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
+            .And(x => GivenIAddAHeader(options.Header, "123"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
+            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
             .BDDfy();
     }
 
@@ -238,11 +268,15 @@ public sealed class CachingTests : IDisposable
                 DownstreamHttpMethod = "Post",
                 DownstreamScheme = Uri.UriSchemeHttp,
                 UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post },
+                UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post ],
                 FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
             },
         },
-        GlobalConfiguration = asGlobalConfig ? new FileGlobalConfiguration { CacheOptions = cacheOptions } : null,
+        GlobalConfiguration = !asGlobalConfig ? null :
+            new()
+            {
+                CacheOptions = new(cacheOptions),
+            },
     };
 
     private static void GivenTheCacheExpires()
@@ -250,15 +284,15 @@ public sealed class CachingTests : IDisposable
         Thread.Sleep(1000);
     }
 
-    private void GivenTheServiceNowReturns(string url, HttpStatusCode statusCode, string responseBody, string key, object value)
+    private void GivenTheServiceNowReturns(int port, HttpStatusCode statusCode, string responseBody, string key, object value)
     {
-        _serviceHandler.Dispose();
-        GivenThereIsAServiceRunningOn(url, statusCode, responseBody, key, value);
+        handler.Dispose();
+        GivenThereIsAServiceRunningOn(port, statusCode, responseBody, key, value);
     }
 
-    private void GivenThereIsAServiceRunningOn(string url, HttpStatusCode statusCode, string responseBody, string key, object value)
+    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody, string key, object value)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             if (!string.IsNullOrEmpty(key) && value != null)
             {
@@ -266,17 +300,18 @@ public sealed class CachingTests : IDisposable
             }
 
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(responseBody);
+            return context.Response.WriteAsync(responseBody);
         });
     }
 
-    private void GivenThereIsAnEchoServiceRunningOn(string url)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1013:Public method should be marked as test", Justification = "Steps")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Steps")]
+    public void GivenThereIsAnEchoServiceRunningOn(int port)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, async context =>
         {
             using var streamReader = new StreamReader(context.Request.Body);
             var requestBody = await streamReader.ReadToEndAsync();
-
             _counter++;
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             await context.Response.WriteAsync(requestBody);
@@ -288,13 +323,13 @@ public sealed class CachingTests : IDisposable
         Assert.Equal(expected, _counter);
     }
 
-    private (string TestBody1String, string TestBody2String) TestBodiesFactory()
+    public static (string TestBody1String, string TestBody2String) TestBodiesFactory()
     {
         var testBody1 = new TestBody
         {
-            Age = 30,
-            Email = "test.test@email.com",
-            FirstName = "Jean",
+            Age = 19,
+            Email = "tom@ocelot.net",
+            FirstName = "Tom",
             LastName = "Test",
         };
 
@@ -302,21 +337,15 @@ public sealed class CachingTests : IDisposable
 
         var testBody2 = new TestBody
         {
-            Age = 31,
-            Email = "test.test@email.com",
-            FirstName = "Jean",
+            Age = 25,
+            Email = "laura@ocelot.net",
+            FirstName = "Laura",
             LastName = "Test",
         };
 
         var testBody2String = JsonSerializer.Serialize(testBody2);
 
         return (testBody1String, testBody2String);
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
     }
 }
 

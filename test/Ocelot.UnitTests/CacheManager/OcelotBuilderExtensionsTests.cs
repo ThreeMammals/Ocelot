@@ -39,13 +39,12 @@ public class OcelotBuilderExtensionsTests : UnitTest
     }
 
     [Fact]
-    public void should_set_up_cache_manager()
+    public void Should_set_up_cache_manager()
     {
-        this.Given(x => WhenISetUpOcelotServices())
-            .When(x => WhenISetUpCacheManager())
-            .Then(x => ThenAnExceptionIsntThrown())
-            .And(x => OnlyOneVersionOfEachCacheIsRegistered())
-            .BDDfy();
+        WhenISetUpOcelotServices();
+        WhenISetUpCacheManager();
+        ThenAnExceptionIsntThrown();
+        OnlyOneVersionOfEachCacheIsRegistered();
     }
 
     private void OnlyOneVersionOfEachCacheIsRegistered()

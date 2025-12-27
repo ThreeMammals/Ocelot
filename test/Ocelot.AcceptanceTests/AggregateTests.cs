@@ -1,6 +1,6 @@
-using IdentityServer4.AccessTokenValidation;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
+//using IdentityServer4.AccessTokenValidation;
+//using IdentityServer4.Extensions;
+//using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -19,21 +19,13 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class AggregateTests : Steps, IDisposable
+public sealed class AggregateTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
     private readonly string[] _downstreamPaths;
 
     public AggregateTests()
     {
-        _serviceHandler = new ServiceHandler();
         _downstreamPaths = new string[3];
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -49,7 +41,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key1data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -65,7 +57,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key2data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -81,7 +73,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key3data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -97,7 +89,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key4data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -114,12 +106,12 @@ public sealed class AggregateTests : Steps, IDisposable
             {
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2", "key3", "key4" },
+                    RouteKeys = ["key1", "key2", "key3", "key4"],
                     UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                 },
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2" },
+                    RouteKeys = ["key1", "key2"],
                     UpstreamPathTemplate = "/EmpDetail/US/{userid}",
                 },
             },
@@ -130,8 +122,7 @@ public sealed class AggregateTests : Steps, IDisposable
         };
 
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-
-        this.Given(x => x.GivenServiceIsRunning($"http://localhost:{port}", 200, "some_data"))
+        this.Given(x => x.GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
@@ -163,7 +154,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/Comments",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Comments",
                 },
                 new FileRoute
@@ -179,7 +170,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/UserDetails/{userId}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "UserDetails",
                 },
                 new FileRoute
@@ -195,7 +186,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/PostDetails/{postId}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "PostDetails",
                 },
             },
@@ -205,7 +196,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Comments", "UserDetails", "PostDetails" },
+                    RouteKeys = ["Comments", "UserDetails", "PostDetails"],
                     RouteKeysConfig = new()
                     {
                         new AggregateRouteConfig
@@ -256,7 +247,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
 
@@ -273,7 +264,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -283,7 +274,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                     Aggregator = "FakeDefinedAggregator",
                 },
             },
@@ -344,7 +335,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -360,7 +351,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -370,7 +361,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -410,7 +401,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -426,7 +417,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -436,7 +427,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -476,7 +467,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -492,7 +483,7 @@ public sealed class AggregateTests : Steps, IDisposable
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -502,7 +493,7 @@ public sealed class AggregateTests : Steps, IDisposable
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -516,89 +507,130 @@ public sealed class AggregateTests : Steps, IDisposable
             .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "1396")]
-    public void Should_return_response_200_with_user_forwarding()
+    private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
     {
-        var port1 = PortFinder.GetRandomPort();
-        var port2 = PortFinder.GetRandomPort();
-        var port3 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/laura", "Laura");
-        var route2 = GivenRoute(port2, "/tom", "Tom");
-        var configuration = GivenConfiguration(route1, route2);
-        var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
-        Action<IdentityServerAuthenticationOptions> options = o =>
+        var numberOfRequests = 100;
+        var aggregateUrl = "/";
+        var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
+        var tomUrl = "/tom";
+        var tomExpected = "{Hello from Tom}";
+        var lauraUrl = "/laura";
+        var lauraExpected = "{Hello from Laura}";
+
+        var aggregateTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
         {
-            o.Authority = identityServerUrl;
-            o.ApiName = "api";
-            o.RequireHttpsMetadata = false;
-            o.SupportedTokens = SupportedTokens.Both;
-            o.ApiSecret = "secret";
-            o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-        };
-        Action<IServiceCollection> configureServices = s =>
-        {
-            s.AddOcelot();
-            s.AddMvcCore(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .RequireClaim("scope", "api")
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
-            });
-            s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(options);
-        };
-        var count = 0;
-        var actualContexts = new HttpContext[2];
-        Action<IApplicationBuilder> configureApp = async (app) =>
-        {
-            var configuration = new OcelotPipelineConfiguration
-            {
-                PreErrorResponderMiddleware = async (context, next) =>
-                {
-                    var auth = await context.AuthenticateAsync();
-                    context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
-                        ? auth.Principal : null;
-                    await next.Invoke();
-                },
-                AuthorizationMiddleware = (context, next) =>
-                {
-                    actualContexts[count++] = context;
-                    return next.Invoke();
-                },
-            };
-            await app.UseOcelot(configuration);
-        };
-        using (var auth = new AuthenticationTests())
-        {
-            this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
-                .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-                .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-                .And(x => auth.GivenIHaveAToken(identityServerUrl))
-                .And(x => auth.GivenThereIsAConfiguration(configuration))
-                .And(x => auth.GivenOcelotIsRunningWithServices(configureServices, configureApp))
-                .And(x => auth.GivenIHaveAddedATokenToMyRequest())
-                .When(x => auth.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-                .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
-                .BDDfy();
+            aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
         }
 
-        // Assert
-        for (var i = 0; i < actualContexts.Length; i++)
+        var tomTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
         {
-            var ctx = actualContexts[i].ShouldNotBeNull();
-            ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
-            var user = ctx.User.ShouldNotBeNull();
-            user.IsAuthenticated().ShouldBeTrue();
-            user.Claims.Count().ShouldBeGreaterThan(1);
-            user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
+            tomTasks[i] = Fire(tomUrl, tomExpected, random);
         }
+
+        var lauraTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
+        }
+
+        Task.WaitAll(lauraTasks);
+        Task.WaitAll(tomTasks);
+        Task.WaitAll(aggregateTasks);
     }
 
+    private async Task Fire(string url, string expectedBody, Random random)
+    {
+        var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+        await Task.Delay(random.Next(0, 2));
+        var response = await ocelotClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+        content.ShouldBe(expectedBody);
+    }
+
+    //[Fact]
+    //[Trait("Bug", "1396")]
+    //public void Should_return_response_200_with_user_forwarding()
+    //{
+    //    var port1 = PortFinder.GetRandomPort();
+    //    var port2 = PortFinder.GetRandomPort();
+    //    var port3 = PortFinder.GetRandomPort();
+    //    var route1 = GivenRouteWithKey(port1, "/laura", "Laura");
+    //    var route2 = GivenRouteWithKey(port2, "/tom", "Tom");
+    //    var configuration = GivenConfiguration(route1, route2);
+    //    var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
+    //    void configureOptions(IdentityServerAuthenticationOptions o)
+    //    {
+    //        o.Authority = identityServerUrl;
+    //        o.ApiName = "api";
+    //        o.RequireHttpsMetadata = false;
+    //        o.SupportedTokens = SupportedTokens.Both;
+    //        o.ApiSecret = "secret";
+    //        o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+    //    }
+    //    Action<IServiceCollection> configureServices = s =>
+    //    {
+    //        s.AddOcelot();
+    //        s.AddMvcCore(mvc =>
+    //        {
+    //            var policy = new AuthorizationPolicyBuilder()
+    //                .RequireAuthenticatedUser()
+    //                .RequireClaim("scope", "api")
+    //                .Build();
+    //            mvc.Filters.Add(new AuthorizeFilter(policy));
+    //        });
+    //        s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+    //            .AddIdentityServerAuthentication(configureOptions);
+    //    };
+    //    var count = 0;
+    //    var actualContexts = new HttpContext[2];
+    //    Action<IApplicationBuilder> configureApp = async (app) =>
+    //    {
+    //        var configuration = new OcelotPipelineConfiguration
+    //        {
+    //            PreErrorResponderMiddleware = async (context, next) =>
+    //            {
+    //                var auth = await context.AuthenticateAsync();
+    //                context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
+    //                    ? auth.Principal : null;
+    //                await next.Invoke();
+    //            },
+    //            AuthorizationMiddleware = (context, next) =>
+    //            {
+    //                actualContexts[count++] = context;
+    //                return next.Invoke();
+    //            },
+    //        };
+    //        await app.UseOcelot(configuration);
+    //    };
+    //    using (var auth = new AuthenticationTests())
+    //    {
+    //        this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
+    //            .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+    //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+    //            .And(x => auth.GivenToken(identityServerUrl))
+    //            .And(x => auth.GivenThereIsAConfiguration(configuration))
+    //            .And(x => auth.GivenOcelotIsRunning(configureServices, configureApp))
+    //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
+    //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
+    //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+    //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
+    //            .BDDfy();
+    //    }
+
+    //    // Assert
+    //    for (var i = 0; i < actualContexts.Length; i++)
+    //    {
+    //        var ctx = actualContexts[i].ShouldNotBeNull();
+    //        ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
+    //        var user = ctx.User.ShouldNotBeNull();
+    //        user.IsAuthenticated().ShouldBeTrue();
+    //        user.Claims.Count().ShouldBeGreaterThan(1);
+    //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
+    //    }
+    //}
     [Fact]
     [Trait("Bug", "2039")]
     public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
@@ -617,7 +649,7 @@ public sealed class AggregateTests : Steps, IDisposable
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlWithBodyOnTheApiGateway("/", requestBody))
+            .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
@@ -647,7 +679,7 @@ public sealed class AggregateTests : Steps, IDisposable
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlWithFormOnTheApiGateway("/", "key", formValues))
+            .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
             .BDDfy();
@@ -668,12 +700,12 @@ public sealed class AggregateTests : Steps, IDisposable
             .ToString();
     }
 
-    private void GivenServiceIsRunning(string baseUrl, int statusCode, string responseBody)
+    private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
-            context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsync(responseBody);
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
         });
     }
 
@@ -703,8 +735,7 @@ public sealed class AggregateTests : Steps, IDisposable
 
     private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Action<HttpContext> processContext)
     {
-        var baseUrl = DownstreamUrl(port);
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value
@@ -727,27 +758,11 @@ public sealed class AggregateTests : Steps, IDisposable
         where TAggregator : class, IDefinedAggregator
         where TDependency : class
     {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(_webHostBuilder);
-                s.AddSingleton<TDependency>();
-                s.AddOcelot()
-                    .AddSingletonDefinedAggregator<TAggregator>();
-            })
-            .Configure(async b => await b.UseOcelot());
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
+        static void WithSpecificAggregators(IServiceCollection services) => services
+            .AddSingleton<TDependency>()
+            .AddOcelot()
+            .AddSingletonDefinedAggregator<TAggregator>();
+        GivenOcelotIsRunning(WithSpecificAggregators);
     }
 
     private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
@@ -762,19 +777,19 @@ public sealed class AggregateTests : Steps, IDisposable
         DownstreamScheme = Uri.UriSchemeHttp,
         DownstreamHostAndPorts = new() { new("localhost", port) },
         UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         Key = key,
     };
 
-    private static new FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
-        var obj = Steps.GivenConfiguration(routes);
+        var obj = base.GivenConfiguration(routes);
         obj.Aggregates.Add(
             new()
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+                RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
             }
         );
         return obj;

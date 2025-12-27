@@ -1,21 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.DependencyInjection;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.Provider.Eureka;
 using Steeltoe.Common.Discovery;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public class EurekaServiceDiscoveryTests : IDisposable
+public sealed class EurekaServiceDiscoveryTests : Steps
 {
-    private readonly Steps _steps;
     private readonly List<IServiceInstance> _eurekaInstances;
-    private readonly ServiceHandler _serviceHandler;
 
     public EurekaServiceDiscoveryTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
         _eurekaInstances = new List<IServiceInstance>();
     }
 
@@ -23,17 +22,15 @@ public class EurekaServiceDiscoveryTests : IDisposable
     [Trait("Feat", "262")]
     [InlineData(true)]
     [InlineData(false)]
-    public void Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
+    public async Task Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)
     {
         Environment.SetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER", dotnetRunningInContainer.ToString());
-        var eurekaPort = 8761;
         var serviceName = "product";
-        var downstreamServicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-        var fakeEurekaServiceDiscoveryUrl = $"http://localhost:{eurekaPort}";
+        var eurekaPort = 8761;
+        var port = PortFinder.GetRandomPort();
 
-        var instanceOne = new FakeEurekaService(serviceName, "localhost", downstreamServicePort, false,
-            new Uri($"http://localhost:{downstreamServicePort}"), new Dictionary<string, string>());
+        var instanceOne = new FakeEurekaService(serviceName, "localhost", port, false,
+            new Uri(DownstreamUrl(port)), new Dictionary<string, string>());
 
         var configuration = new FileConfiguration
         {
@@ -42,32 +39,34 @@ public class EurekaServiceDiscoveryTests : IDisposable
                 new()
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
+                    DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = [HttpMethods.Get],
                     ServiceName = serviceName,
-                    LoadBalancerOptions = new FileLoadBalancerOptions { Type = nameof(LeastConnection) },
+                    LoadBalancerOptions = new() { Type = nameof(LeastConnection) },
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
-                    Type = "Eureka",
+                    Type = nameof(Eureka),
                 },
             },
         };
 
-        this.Given(x => x.GivenEurekaProductServiceOneIsRunning(downstreamServiceOneUrl))
-            .And(x => x.GivenThereIsAFakeEurekaServiceDiscoveryProvider(fakeEurekaServiceDiscoveryUrl, serviceName))
-            .And(x => x.GivenTheServicesAreRegisteredWithEureka(instanceOne))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithEureka())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => _steps.ThenTheResponseBodyShouldBe(nameof(EurekaServiceDiscoveryTests)))
-            .BDDfy();
+        GivenEurekaProductServiceOneIsRunning(port, HttpStatusCode.OK);
+        GivenThereIsAFakeEurekaServiceDiscoveryProvider(eurekaPort, serviceName);
+        GivenTheServicesAreRegisteredWithEureka(instanceOne);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithEureka();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(nameof(Should_use_eureka_service_discovery_and_make_request));
     }
+
+    private void GivenOcelotIsRunningWithEureka()
+        => GivenOcelotIsRunning(s => s.AddOcelot().AddEureka());
 
     private void GivenTheServicesAreRegisteredWithEureka(params IServiceInstance[] serviceInstances)
     {
@@ -77,98 +76,92 @@ public class EurekaServiceDiscoveryTests : IDisposable
         }
     }
 
-    private void GivenThereIsAFakeEurekaServiceDiscoveryProvider(string url, string serviceName)
+    private void GivenThereIsAFakeEurekaServiceDiscoveryProvider(int port, string serviceName)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        Task MapEurekaService(HttpContext context)
         {
-            if (context.Request.Path.Value == "/eureka/apps/")
+            if (context.Request.Path.Value != "/eureka/apps/")
+                return Task.CompletedTask;
+
+            var apps = new List<Application>();
+            foreach (var serviceInstance in _eurekaInstances)
             {
-                var apps = new List<Application>();
-
-                foreach (var serviceInstance in _eurekaInstances)
+                var a = new Application
                 {
-                    var a = new Application
+                    name = serviceName,
+                    instance = new List<Instance>
                     {
-                        name = serviceName,
-                        instance = new List<Instance>
+                        new()
                         {
-                            new()
+                            instanceId = $"{serviceInstance.Host}:{serviceInstance}",
+                            hostName = serviceInstance.Host,
+                            app = serviceName,
+                            ipAddr = "127.0.0.1",
+                            status = "UP",
+                            overriddenstatus = "UNKNOWN",
+                            port = new Port {value = serviceInstance.Port, enabled = "true"},
+                            securePort = new SecurePort {value = serviceInstance.Port, enabled = "true"},
+                            countryId = 1,
+                            dataCenterInfo = new DataCenterInfo {value = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", name = "MyOwn"},
+                            leaseInfo = new LeaseInfo
                             {
-                                instanceId = $"{serviceInstance.Host}:{serviceInstance}",
-                                hostName = serviceInstance.Host,
-                                app = serviceName,
-                                ipAddr = "127.0.0.1",
-                                status = "UP",
-                                overriddenstatus = "UNKNOWN",
-                                port = new Port {value = serviceInstance.Port, enabled = "true"},
-                                securePort = new SecurePort {value = serviceInstance.Port, enabled = "true"},
-                                countryId = 1,
-                                dataCenterInfo = new DataCenterInfo {value = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", name = "MyOwn"},
-                                leaseInfo = new LeaseInfo
-                                {
-                                    renewalIntervalInSecs = 30,
-                                    durationInSecs = 90,
-                                    registrationTimestamp = 1457714988223,
-                                    lastRenewalTimestamp= 1457716158319,
-                                    evictionTimestamp = 0,
-                                    serviceUpTimestamp = 1457714988223,
-                                },
-                                metadata = new()
-                                {
-                                    value = "java.util.Collections$EmptyMap",
-                                },
-                                homePageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                statusPageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                healthCheckUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
-                                vipAddress = serviceName,
-                                isCoordinatingDiscoveryServer = "false",
-                                lastUpdatedTimestamp = "1457714988223",
-                                lastDirtyTimestamp = "1457714988172",
-                                actionType = "ADDED",
+                                renewalIntervalInSecs = 30,
+                                durationInSecs = 90,
+                                registrationTimestamp = 1457714988223,
+                                lastRenewalTimestamp= 1457716158319,
+                                evictionTimestamp = 0,
+                                serviceUpTimestamp = 1457714988223,
                             },
+                            metadata = new()
+                            {
+                                value = "java.util.Collections$EmptyMap",
+                            },
+                            homePageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                            statusPageUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                            healthCheckUrl = $"{serviceInstance.Host}:{serviceInstance.Port}",
+                            vipAddress = serviceName,
+                            isCoordinatingDiscoveryServer = "false",
+                            lastUpdatedTimestamp = "1457714988223",
+                            lastDirtyTimestamp = "1457714988172",
+                            actionType = "ADDED",
                         },
-                    };
-
-                    apps.Add(a);
-                }
-
-                var applications = new EurekaApplications
-                {
-                    applications = new Applications
-                    {
-                        application = apps,
-                        apps__hashcode = "UP_1_",
-                        versions__delta = "1",
                     },
                 };
-
-                var json = JsonConvert.SerializeObject(applications);
-                context.Response.Headers.Append("Content-Type", "application/json");
-                await context.Response.WriteAsync(json);
+                apps.Add(a);
             }
-        });
+
+            var applications = new EurekaApplications
+            {
+                applications = new Applications
+                {
+                    application = apps,
+                    apps__hashcode = "UP_1_",
+                    versions__delta = "1",
+                },
+            };
+            var json = JsonConvert.SerializeObject(applications);
+            context.Response.Headers.Append("Content-Type", "application/json");
+            return context.Response.WriteAsync(json);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapEurekaService);
     }
 
-    private void GivenEurekaProductServiceOneIsRunning(string url)
+    private void GivenEurekaProductServiceOneIsRunning(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = null)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
+        Task MapStatusAndError(HttpContext context)
         {
             try
             {
-                context.Response.StatusCode = 200;
-                await context.Response.WriteAsync(nameof(EurekaServiceDiscoveryTests));
+                context.Response.StatusCode = (int)statusCode;
+                return context.Response.WriteAsync(responseBody);
             }
             catch (Exception exception)
             {
-                await context.Response.WriteAsync(exception.StackTrace);
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return context.Response.WriteAsync(exception.StackTrace);
             }
-        });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
+        }
+        handler.GivenThereIsAServiceRunningOn(port, MapStatusAndError);
     }
 }
 
@@ -192,6 +185,7 @@ public class FakeEurekaService : IServiceInstance
     public IDictionary<string, string> Metadata { get; }
 }
 
+#pragma warning disable IDE1006 // Naming Styles
 public class Port
 {
     [JsonProperty("$")]
@@ -200,7 +194,6 @@ public class Port
     [JsonProperty("@enabled")]
     public string enabled { get; set; }
 }
-
 public class SecurePort
 {
     [JsonProperty("$")]
@@ -209,36 +202,26 @@ public class SecurePort
     [JsonProperty("@enabled")]
     public string enabled { get; set; }
 }
-
 public class DataCenterInfo
 {
     [JsonProperty("@class")]
     public string value { get; set; }
-
     public string name { get; set; }
 }
-
 public class LeaseInfo
 {
     public int renewalIntervalInSecs { get; set; }
-
     public int durationInSecs { get; set; }
-
     public long registrationTimestamp { get; set; }
-
     public long lastRenewalTimestamp { get; set; }
-
     public int evictionTimestamp { get; set; }
-
     public long serviceUpTimestamp { get; set; }
 }
-
 public class ValueMetadata
 {
     [JsonProperty("@class")]
     public string value { get; set; }
 }
-
 public class Instance
 {
     public string instanceId { get; set; }
@@ -262,21 +245,19 @@ public class Instance
     public string lastDirtyTimestamp { get; set; }
     public string actionType { get; set; }
 }
-
 public class Application
 {
     public string name { get; set; }
     public List<Instance> instance { get; set; }
 }
-
 public class Applications
 {
     public string versions__delta { get; set; }
     public string apps__hashcode { get; set; }
     public List<Application> application { get; set; }
 }
-
 public class EurekaApplications
 {
     public Applications applications { get; set; }
 }
+#pragma warning restore IDE1006 // Naming Styles

@@ -28,53 +28,63 @@ public class FileConfigurationSetterTests : UnitTest
     }
 
     [Fact]
-    public void should_set_configuration()
+    public async Task Should_set_configuration()
     {
-        var fileConfig = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        var config = new InternalConfiguration(
-            new List<Route>(),
-            string.Empty,
-            serviceProviderConfig,
-            "asdf",
-            new LoadBalancerOptionsBuilder().Build(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+        var config = new InternalConfiguration()
+        {
+            AdministrationPath = string.Empty,
+            ServiceProviderConfiguration = serviceProviderConfig,
+            RequestId = "asdf",
+            LoadBalancerOptions = new(),
+            DownstreamScheme = string.Empty,
+            QoSOptions = new(),
+            HttpHandlerOptions = new(),
+            DownstreamHttpVersion = new Version("1.1"),
+            DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
+            MetadataOptions = new(),
+            RateLimitOptions = new(),
+            Timeout = 111,
+        };
+        GivenTheRepoReturns(new OkResponse());
+        GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config));
 
-        this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-            .And(x => GivenTheRepoReturns(new OkResponse()))
-            .And(x => GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config)))
-            .When(x => WhenISetTheConfiguration())
-            .Then(x => ThenTheConfigurationRepositoryIsCalledCorrectly())
-            .BDDfy();
+        // Act
+        _result = await _configSetter.Set(_fileConfiguration);
+
+        // Assert
+        ThenTheConfigurationRepositoryIsCalledCorrectly();
     }
 
     [Fact]
-    public void should_return_error_if_unable_to_set_file_configuration()
+    public async Task Should_return_error_if_unable_to_set_file_configuration()
     {
-        var fileConfig = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>()));
 
-        this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-            .And(x => GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>())))
-            .When(x => WhenISetTheConfiguration())
-            .And(x => ThenAnErrorResponseIsReturned())
-            .BDDfy();
+        // Act
+        _result = await _configSetter.Set(_fileConfiguration);
+
+        // Assert
+        _result.ShouldBeOfType<ErrorResponse>();
     }
 
     [Fact]
-    public void should_return_error_if_unable_to_set_ocelot_configuration()
+    public async Task Should_return_error_if_unable_to_set_ocelot_configuration()
     {
-        var fileConfig = new FileConfiguration();
+        // Arrange
+        _fileConfiguration = new FileConfiguration();
+        GivenTheRepoReturns(new OkResponse());
+        GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>()));
 
-        this.Given(x => GivenTheFollowingConfiguration(fileConfig))
-            .And(x => GivenTheRepoReturns(new OkResponse()))
-            .And(x => GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>())))
-            .When(x => WhenISetTheConfiguration())
-            .And(x => ThenAnErrorResponseIsReturned())
-            .BDDfy();
+        // Act
+        _result = await _configSetter.Set(_fileConfiguration);
+
+        // Assert
+        _result.ShouldBeOfType<ErrorResponse>();
     }
 
     private void GivenTheRepoReturns(Response response)
@@ -84,27 +94,12 @@ public class FileConfigurationSetterTests : UnitTest
             .ReturnsAsync(response);
     }
 
-    private void ThenAnErrorResponseIsReturned()
-    {
-        _result.ShouldBeOfType<ErrorResponse>();
-    }
-
     private void GivenTheCreatorReturns(Response<IInternalConfiguration> configuration)
     {
         _configuration = configuration;
         _configCreator
             .Setup(x => x.Create(_fileConfiguration))
             .ReturnsAsync(_configuration);
-    }
-
-    private void GivenTheFollowingConfiguration(FileConfiguration fileConfiguration)
-    {
-        _fileConfiguration = fileConfiguration;
-    }
-
-    private async Task WhenISetTheConfiguration()
-    {
-        _result = await _configSetter.Set(_fileConfiguration);
     }
 
     private void ThenTheConfigurationRepositoryIsCalledCorrectly()

@@ -3,11 +3,8 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
 using System.Diagnostics.Tracing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Ocelot.Samples.ServiceFabric.ApiGateway;
@@ -34,18 +31,16 @@ internal class ServiceEventListener : EventListener
     /// <param name="eventData">The event arguments that describe the event.</param>
     protected override void OnEventWritten(EventWrittenEventArgs eventData)
     {
-        using (var writer = new StreamWriter(new FileStream(_filepath + _fileName, FileMode.Append)))
-        {
-            // report all event information
-            writer.Write(" {0} ", Write(eventData.Task.ToString(),
-            eventData.EventName,
+        using var writer = new StreamWriter(new FileStream(_filepath + _fileName, FileMode.Append));
+        // report all event information
+        writer.Write(" {0} ", Write(
+            eventData.Task.ToString(),
+            eventData.EventName!,
             eventData.EventId.ToString(),
             eventData.Level));
-
-            if (eventData.Message != null)
-            {
-                writer.WriteLine(string.Format(CultureInfo.InvariantCulture, eventData.Message, eventData.Payload.ToArray()));
-            }
+        if (eventData.Message != null)
+        {
+            writer.WriteLine(string.Format(CultureInfo.InvariantCulture, eventData.Message, eventData.Payload!.ToArray()));
         }
     }
 
@@ -78,12 +73,10 @@ internal class ServiceEventListener : EventListener
 
     private static string ConvertLevelToString(EventLevel level)
     {
-        switch (level)
+        return level switch
         {
-            case EventLevel.Informational:
-                return "Info";
-            default:
-                return level.ToString();
-        }
+            EventLevel.Informational => "Info",
+            _ => level.ToString(),
+        };
     }
 }

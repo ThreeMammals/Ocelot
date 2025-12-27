@@ -15,7 +15,7 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     private readonly Mock<IOcelotLogger> _logger;
     private readonly ExceptionHandlerMiddleware _middleware;
     private readonly RequestDelegate _next;
-    private readonly HttpContext _httpContext;
+    private readonly DefaultHttpContext _httpContext;
 
     public ExceptionHandlerMiddlewareTests()
     {
@@ -27,7 +27,6 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
         _next = async context =>
         {
             await Task.CompletedTask;
-
             if (_shouldThrowAnException)
             {
                 throw new Exception("BOOM");
@@ -35,126 +34,92 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
 
             _httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
         };
-
         _middleware = new ExceptionHandlerMiddleware(_next, _loggerFactory.Object, _repo.Object);
     }
 
     [Fact]
-    public void NoDownstreamException()
+    public async Task NoDownstreamException()
     {
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
+        // Arrange
+        _shouldThrowAnException = false;
+        var config = new InternalConfiguration();
+        _httpContext.Items.Add(nameof(IInternalConfiguration), config);
 
-        this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-            .And(_ => GivenTheConfigurationIs(config))
-            .When(_ => WhenICallTheMiddleware())
-            .Then(_ => ThenTheResponseIsOk())
-            .And(_ => TheAspDotnetRequestIdIsSet())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void DownstreamException()
-    {
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
-
-        this.Given(_ => GivenAnExceptionWillBeThrownDownstream())
-            .And(_ => GivenTheConfigurationIs(config))
-            .When(_ => WhenICallTheMiddleware())
-            .Then(_ => ThenTheResponseIsError())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void ShouldSetRequestId()
-    {
-        var config = new InternalConfiguration(null, null, null, "requestidkey", null, null, null, null, null, null);
-
-        this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-            .And(_ => GivenTheConfigurationIs(config))
-            .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-            .Then(_ => ThenTheResponseIsOk())
-            .And(_ => TheRequestIdIsSet("RequestId", "1234"))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void ShouldSetAspDotNetRequestId()
-    {
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
-
-        this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-            .And(_ => GivenTheConfigurationIs(config))
-            .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-            .Then(_ => ThenTheResponseIsOk())
-            .And(_ => TheAspDotnetRequestIdIsSet())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_throw_exception_if_config_provider_throws()
-    {
-        this.Given(_ => GivenAnExceptionWillNotBeThrownDownstream())
-           .And(_ => GivenTheConfigThrows())
-           .When(_ => WhenICallTheMiddlewareWithTheRequestIdKey("requestidkey", "1234"))
-           .Then(_ => ThenAnExceptionIsThrown())
-           .BDDfy();
-    }
-
-    private async Task WhenICallTheMiddlewareWithTheRequestIdKey(string key, string value)
-    {
-        _httpContext.Request.Headers.Append(key, value);
+        // Act
         await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe((int)HttpStatusCode.OK);
+        _repo.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
-    private async Task WhenICallTheMiddleware()
+    [Fact]
+    public async Task DownstreamException()
     {
+        // Arrange
+        _shouldThrowAnException = true;
+        var config = new InternalConfiguration();
+        _httpContext.Items.Add(nameof(IInternalConfiguration), config);
+
+        // Act
         await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
     }
 
-    private void GivenTheConfigThrows()
+    [Fact]
+    public async Task ShouldSetRequestId()
     {
+        // Arrange
+        _shouldThrowAnException = false;
+        var config = new InternalConfiguration()
+        {
+            RequestId = "requestidkey",
+        };
+        _httpContext.Items.Add(nameof(IInternalConfiguration), config);
+        _httpContext.Request.Headers.Append("requestidkey", "1234");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe((int)HttpStatusCode.OK);
+        _repo.Verify(x => x.Add("RequestId", "1234"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ShouldSetAspDotNetRequestId()
+    {
+        // Arrange
+        _shouldThrowAnException = false;
+        var config = new InternalConfiguration();
+        _httpContext.Items.Add(nameof(IInternalConfiguration), config);
+        _httpContext.Request.Headers.Append("requestidkey", "1234");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe((int)HttpStatusCode.OK);
+        _repo.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Should_throw_exception_if_config_provider_throws()
+    {
+        // Arrange
+        _shouldThrowAnException = false;
+
         // this will break when we handle not having the configuratio in the items dictionary
         _httpContext.Items = new Dictionary<object, object>();
-    }
+        _httpContext.Request.Headers.Append("requestidkey", "1234");
 
-    private void ThenAnExceptionIsThrown()
-    {
-        _httpContext.Response.StatusCode.ShouldBe(500);
-    }
+        // Act
+        await _middleware.Invoke(_httpContext);
 
-    private void TheRequestIdIsSet(string key, string value)
-    {
-        _repo.Verify(x => x.Add(key, value), Times.Once);
-    }
-
-    private void GivenTheConfigurationIs(IInternalConfiguration config)
-    {
-        _httpContext.Items.Add("IInternalConfiguration", config);
-    }
-
-    private void GivenAnExceptionWillNotBeThrownDownstream()
-    {
-        _shouldThrowAnException = false;
-    }
-
-    private void GivenAnExceptionWillBeThrownDownstream()
-    {
-        _shouldThrowAnException = true;
-    }
-
-    private void ThenTheResponseIsOk()
-    {
-        _httpContext.Response.StatusCode.ShouldBe(200);
-    }
-
-    private void ThenTheResponseIsError()
-    {
-        _httpContext.Response.StatusCode.ShouldBe(500);
-    }
-
-    private void TheAspDotnetRequestIdIsSet()
-    {
-        _repo.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
     }
 
     private class FakeError : Error

@@ -15,6 +15,8 @@ namespace Ocelot.Provider.Kubernetes;
 /// </remarks>
 public class Kube : IServiceDiscoveryProvider
 {
+    private static readonly (string ResourceKind, string ResourceApiVersion) EndPointsKubeKind = KubeObjectV1.GetKubeKind<EndpointsV1>();
+
     private readonly KubeRegistryConfiguration _configuration;
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
@@ -46,9 +48,44 @@ public class Kube : IServiceDiscoveryProvider
             .ToList();
     }
 
-    private Task<EndpointsV1> GetEndpoint() => _kubeApi
-        .ResourceClient<IEndPointClient>(client => new EndPointClientV1(client))
-        .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+    private string Message(string details)
+        => $"Failed to retrieve {EndPointsKubeKind.ResourceApiVersion}/{EndPointsKubeKind.ResourceKind} '{_configuration.KeyOfServiceInK8s}' in namespace '{_configuration.KubeNamespace}': {details}";
+
+    private async Task<EndpointsV1> GetEndpoint()
+    {
+        try
+        {
+            return await _kubeApi
+                .EndpointsV1()
+                .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
+        }
+        catch (KubeApiException ex)
+        {
+            string Msg()
+            {
+                StatusV1 status = ex.Status;
+                string httpStatusCode = "-"; // Unknown
+                if (ex.InnerException is HttpRequestException e)
+                {
+                    httpStatusCode = e.StatusCode.ToString();
+                }
+
+                return Message($"(HTTP.{httpStatusCode}/{status.Status}/{status.Reason}): {status.Message}");
+            }
+
+            _logger.LogError(Msg, ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(() => Message($"({ex.HttpRequestError}/HTTP.{ex.StatusCode})."), ex);
+        }
+        catch (Exception unexpected)
+        {
+            _logger.LogError(() => Message($"(an unexpected ex occurred)."), unexpected);
+        }
+
+        return null;
+    }
 
     private bool CheckErroneousState(EndpointsV1 endpoint)
         => (endpoint?.Subsets?.Count ?? 0) == 0; // null or count is zero

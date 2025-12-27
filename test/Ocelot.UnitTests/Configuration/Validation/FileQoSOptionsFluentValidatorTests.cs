@@ -1,11 +1,10 @@
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.Logging;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 
 namespace Ocelot.UnitTests.Configuration.Validation;
 
@@ -13,8 +12,6 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
 {
     private FileQoSOptionsFluentValidator _validator;
     private readonly ServiceCollection _services;
-    private ValidationResult _result;
-    private FileQoSOptions _qosOptions;
 
     public FileQoSOptionsFluentValidatorTests()
     {
@@ -24,76 +21,59 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
     }
 
     [Fact]
-    public void should_be_valid_as_nothing_set()
+    public void Should_be_valid_as_nothing_set()
     {
-        this.Given(_ => GivenThe(new FileQoSOptions()))
-            .When(_ => WhenIValidate())
-            .Then(_ => ThenTheResultIsValid())
-            .BDDfy();
+        // Arrange
+        var qosOptions = new FileQoSOptions();
+
+        // Act
+        var result = _validator.Validate(qosOptions);
+
+        // Assert
+        result.IsValid.ShouldBeTrue();
     }
 
     [Fact]
-    public void should_be_valid_as_qos_delegate_set()
+    public void Should_be_valid_as_qos_delegate_set()
     {
+        // Arrange
+        var qosOptions = new FileQoSOptions
+        {
+            TimeoutValue = 1,
+            ExceptionsAllowedBeforeBreaking = 1,
+        };
+        GivenAQosDelegate();
+
+        // Act
+        var result = _validator.Validate(qosOptions);
+
+        // Assert
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Should_be_invalid_as_no_qos_delegate()
+    {
+        // Arrange
         var qosOptions = new FileQoSOptions
         {
             TimeoutValue = 1,
             ExceptionsAllowedBeforeBreaking = 1,
         };
 
-        this.Given(_ => GivenThe(qosOptions))
-            .And(_ => GivenAQosDelegate())
-            .When(_ => WhenIValidate())
-            .Then(_ => ThenTheResultIsValid())
-            .BDDfy();
-    }
+        // Act
+        var result = _validator.Validate(qosOptions);
 
-    [Fact]
-    public void should_be_invalid_as_no_qos_delegate()
-    {
-        var qosOptions = new FileQoSOptions
-        {
-            TimeoutValue = 1,
-            ExceptionsAllowedBeforeBreaking = 1,
-        };
-
-        this.Given(_ => GivenThe(qosOptions))
-            .When(_ => WhenIValidate())
-            .Then(_ => ThenTheResultIsInValid())
-            .And(_ => ThenTheErrorIs())
-            .BDDfy();
-    }
-
-    private void ThenTheErrorIs()
-    {
-        _result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
-    }
-
-    private void ThenTheResultIsInValid()
-    {
-        _result.IsValid.ShouldBeFalse();
+        // Assert
+        result.IsValid.ShouldBeFalse();
+        result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
     }
 
     private void GivenAQosDelegate()
     {
-        DelegatingHandler Fake(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => null;
+        static DelegatingHandler Fake(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => null;
         _services.AddSingleton((QosDelegatingHandlerDelegate)Fake);
         var provider = _services.BuildServiceProvider(true);
         _validator = new FileQoSOptionsFluentValidator(provider);
-    }
-
-    private void GivenThe(FileQoSOptions qosOptions)
-    {
-        _qosOptions = qosOptions;
-    }
-
-    private void WhenIValidate()
-    {
-        _result = _validator.Validate(_qosOptions);
-    }
-
-    private void ThenTheResultIsValid()
-    {
-        _result.IsValid.ShouldBeTrue();
     }
 }

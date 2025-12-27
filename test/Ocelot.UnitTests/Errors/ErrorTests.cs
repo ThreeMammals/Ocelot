@@ -5,10 +5,15 @@ namespace Ocelot.UnitTests.Errors;
 public class ErrorTests
 {
     [Fact]
-    public void should_return_message()
+    public void Should_return_message()
     {
+        // Arrange
         var error = new CannotAddDataError("message");
+
+        // Act
         var result = error.ToString();
-        result.ShouldBe("message");
+
+        // Assert
+        result.ShouldBe("CannotAddDataError: message");
     }
 }

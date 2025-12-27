@@ -5,13 +5,13 @@ using Ocelot.Errors;
 using Ocelot.Infrastructure;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Configuration.Validator;
 
 /// <summary>Validation of a <see cref="FileConfiguration"/> objects.</summary>
 public partial class FileConfigurationFluentValidator : AbstractValidator<FileConfiguration>, IConfigurationValidator
 {
-    private const string Servicefabric = "servicefabric";
     private readonly List<ServiceDiscoveryFinderDelegate> _serviceDiscoveryFinderDelegates;
 
     public FileConfigurationFluentValidator(IServiceProvider provider, RouteFluentValidator routeFluentValidator, FileGlobalConfigurationFluentValidator fileGlobalConfigurationFluentValidator)
@@ -62,17 +62,18 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
             .WithMessage((_, aggregateRoute) => $"{nameof(aggregateRoute)} {aggregateRoute.UpstreamPathTemplate} contains Route with specific RequestIdKey, this is not possible with Aggregates");
     }
 
+    private const string ServiceFabric = ServiceFabricServiceDiscoveryProvider.Type;
     private bool HaveServiceDiscoveryProviderRegistered(FileRoute route, FileServiceDiscoveryProvider serviceDiscoveryProvider)
     {
         return string.IsNullOrEmpty(route.ServiceName) ||
-               serviceDiscoveryProvider?.Type?.ToLower() == Servicefabric ||
+               ServiceFabric.Equals(serviceDiscoveryProvider?.Type, StringComparison.OrdinalIgnoreCase) ||
                _serviceDiscoveryFinderDelegates.Any();
     }
 
     private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
     {
         return serviceDiscoveryProvider == null ||
-            Servicefabric.Equals(serviceDiscoveryProvider.Type, StringComparison.InvariantCultureIgnoreCase) ||
+            ServiceFabric.Equals(serviceDiscoveryProvider.Type, StringComparison.OrdinalIgnoreCase) ||
             string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
     }
 
@@ -99,13 +100,8 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
         return routesForAggregate.Count() == fileAggregateRoute.RouteKeys.Count;
     }
 
-#if NET7_0_OR_GREATER
     [GeneratedRegex(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex PlaceholderRegex();
-#else
-    private static readonly Regex _placeholderRegex = RegexGlobal.New(@"\{\w+\}", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-    private static Regex PlaceholderRegex() => _placeholderRegex;
-#endif
 
     private static bool IsPlaceholderNotDuplicatedIn(string pathTemplate)
     {

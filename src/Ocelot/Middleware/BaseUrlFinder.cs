@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.Middleware;
 
@@ -13,10 +14,13 @@ public class BaseUrlFinder : IBaseUrlFinder
 
     public string Find()
     {
-        //tries to get base url out of file...
-        var baseUrl = _config.GetValue("GlobalConfiguration:BaseUrl", string.Empty);
+        // Tries to get base url out of file...
+        var key = $"{nameof(FileConfiguration.GlobalConfiguration)}:{nameof(FileGlobalConfiguration.BaseUrl)}";
+        var baseUrl = _config.GetValue(key, string.Empty);
 
-        //falls back to memory config then finally default..
-        return string.IsNullOrEmpty(baseUrl) ? _config.GetValue("BaseUrl", "http://localhost:5000") : baseUrl;
+        // Falls back to memory config then finally default..
+        return string.IsNullOrEmpty(baseUrl)
+            ? _config.GetValue(nameof(FileGlobalConfiguration.BaseUrl), "http://localhost:5000")
+            : baseUrl;
     }
 }

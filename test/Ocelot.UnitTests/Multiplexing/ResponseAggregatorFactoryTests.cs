@@ -1,5 +1,4 @@
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Multiplexer;
 
 namespace Ocelot.UnitTests.Multiplexing;
@@ -8,7 +7,6 @@ public class ResponseAggregatorFactoryTests : UnitTest
 {
     private readonly InMemoryResponseAggregatorFactory _factory;
     private readonly Mock<IDefinedAggregatorProvider> _provider;
-    private Route _route;
     private IResponseAggregator _aggregator;
 
     public ResponseAggregatorFactoryTests()
@@ -19,42 +17,31 @@ public class ResponseAggregatorFactoryTests : UnitTest
     }
 
     [Fact]
-    public void should_return_simple_json_aggregator()
+    public void Should_return_simple_json_aggregator()
     {
-        var route = new RouteBuilder()
-            .Build();
+        // Arrange
+        var route = new Route();
 
-        this.Given(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheAggregatorIs<SimpleJsonResponseAggregator>())
-            .BDDfy();
+        // Act
+        _aggregator = _factory.Get(route);
+
+        // Assert
+        _aggregator.ShouldBeOfType<SimpleJsonResponseAggregator>();
     }
 
     [Fact]
-    public void should_return_user_defined_aggregator()
+    public void Should_return_user_defined_aggregator()
     {
-        var route = new RouteBuilder()
-            .WithAggregator("doesntmatter")
-            .Build();
+        // Arrange
+        var route = new Route()
+        {
+            Aggregator = "doesntmatter",
+        };
 
-        this.Given(_ => GivenRoute(route))
-            .When(_ => WhenIGet())
-            .Then(_ => ThenTheAggregatorIs<UserDefinedResponseAggregator>())
-            .BDDfy();
-    }
+        // Act
+        _aggregator = _factory.Get(route);
 
-    private void GivenRoute(Route route)
-    {
-        _route = route;
-    }
-
-    private void WhenIGet()
-    {
-        _aggregator = _factory.Get(_route);
-    }
-
-    private void ThenTheAggregatorIs<T>()
-    {
-        _aggregator.ShouldBeOfType<T>();
+        // Assert
+        _aggregator.ShouldBeOfType<UserDefinedResponseAggregator>();
     }
 }

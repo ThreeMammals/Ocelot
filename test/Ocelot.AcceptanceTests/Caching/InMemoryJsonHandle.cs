@@ -1,8 +1,9 @@
 ﻿using CacheManager.Core;
 using CacheManager.Core.Internal;
-using CacheManager.Core.Logging;
+using CacheManager.Core.Configuration;
 using CacheManager.Core.Utility;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 
 namespace Ocelot.AcceptanceTests.Caching;
 
@@ -19,7 +20,7 @@ public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
     {
         _cache = new ConcurrentDictionary<string, Tuple<Type, byte[]>>();
         _serializer = serializer;
-        Logger = loggerFactory.CreateLogger(this);
+        Logger = loggerFactory.CreateLogger<InMemoryJsonHandle<TCacheValue>>();
     }
 
     public override int Count => _cache.Count;
@@ -30,8 +31,7 @@ public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
 
     public override void ClearRegion(string region)
     {
-        Guard.NotNullOrWhiteSpace(region, nameof(region));
-
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(region, nameof(region));
         var key = string.Concat(region, ":");
         foreach (var item in _cache.Where(p => p.Key.StartsWith(key, StringComparison.OrdinalIgnoreCase)))
         {
@@ -41,26 +41,22 @@ public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
 
     public override bool Exists(string key)
     {
-        Guard.NotNullOrWhiteSpace(key, nameof(key));
-
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
         return _cache.ContainsKey(key);
     }
 
     public override bool Exists(string key, string region)
     {
-        Guard.NotNullOrWhiteSpace(region, nameof(region));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(region, nameof(region));
         var fullKey = GetKey(key, region);
         return _cache.ContainsKey(fullKey);
     }
 
     protected override bool AddInternalPrepared(CacheItem<TCacheValue> item)
     {
-        Guard.NotNull(item, nameof(item));
-
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
         var key = GetKey(item.Key, item.Region);
-
         var serializedItem = _serializer.SerializeCacheItem(item);
-
         return _cache.TryAdd(key, new Tuple<Type, byte[]>(item.Value.GetType(), serializedItem));
     }
 
@@ -89,10 +85,9 @@ public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
 
     protected override void PutInternalPrepared(CacheItem<TCacheValue> item)
     {
-        Guard.NotNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
 
         var serializedItem = _serializer.SerializeCacheItem(item);
-
         _cache[GetKey(item.Key, item.Region)] = new Tuple<Type, byte[]>(item.Value.GetType(), serializedItem);
     }
 
@@ -106,8 +101,7 @@ public class InMemoryJsonHandle<TCacheValue> : BaseCacheHandle<TCacheValue>
 
     private static string GetKey(string key, string region)
     {
-        Guard.NotNullOrWhiteSpace(key, nameof(key));
-
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
         if (string.IsNullOrWhiteSpace(region))
         {
             return key;

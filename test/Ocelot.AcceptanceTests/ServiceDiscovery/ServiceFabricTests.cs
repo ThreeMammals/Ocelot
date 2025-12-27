@@ -3,25 +3,20 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public class ServiceFabricTests : IDisposable
+public sealed class ServiceFabricTests : Steps
 {
-    private readonly Steps _steps;
     private string _downstreamPath;
-    private readonly ServiceHandler _serviceHandler;
 
     public ServiceFabricTests()
     {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
     }
 
     [Fact]
     [Trait("PR", "570")]
     [Trait("Bug", "555")]
-    public void should_fix_issue_555()
+    public void Should_fix_issue_555()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -31,7 +26,7 @@ public class ServiceFabricTests : IDisposable
                         DownstreamPathTemplate = "/{everything}",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/{everything}",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                         ServiceName = "OcelotServiceApplication/OcelotApplicationService",
                     },
                 },
@@ -46,20 +41,19 @@ public class ServiceFabricTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/a?b=c"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/a?b=c"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
     [Fact]
-    public void should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
+    public void Should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -69,7 +63,7 @@ public class ServiceFabricTests : IDisposable
                         DownstreamPathTemplate = "/api/values",
                         DownstreamScheme = "http",
                         UpstreamPathTemplate = "/EquipmentInterfaces",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                         ServiceName = "OcelotServiceApplication/OcelotApplicationService",
                     },
                 },
@@ -84,20 +78,19 @@ public class ServiceFabricTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
     [Fact]
-    public void should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
+    public void Should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
     {
         var port = PortFinder.GetRandomPort();
-
         var configuration = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -107,7 +100,7 @@ public class ServiceFabricTests : IDisposable
                     DownstreamPathTemplate = "/api/values",
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/EquipmentInterfaces",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     ServiceName = "OcelotServiceApplication/OcelotApplicationService",
                 },
             },
@@ -122,12 +115,12 @@ public class ServiceFabricTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .BDDfy();
     }
 
@@ -149,7 +142,7 @@ public class ServiceFabricTests : IDisposable
                         DownstreamPathTemplate = downstream,
                         DownstreamScheme = Uri.UriSchemeHttp,
                         UpstreamPathTemplate = upstream,
-                        UpstreamHttpMethod = new() { HttpMethods.Get },
+                        UpstreamHttpMethod = [HttpMethods.Get],
                         ServiceName = serviceName,
                     },
                 },
@@ -164,18 +157,18 @@ public class ServiceFabricTests : IDisposable
             },
         };
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", downstreamUrl, 200, "Hello from Felix Boers", query))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway(url))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Felix Boers"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, downstreamUrl, 200, "Hello from Felix Boers", query))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(url))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Felix Boers"))
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, string expectedQueryString)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, int statusCode, string responseBody, string expectedQueryString)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
 
@@ -198,11 +191,5 @@ public class ServiceFabricTests : IDisposable
                 }
             }
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
     }
 }

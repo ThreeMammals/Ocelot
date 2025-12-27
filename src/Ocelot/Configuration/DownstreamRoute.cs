@@ -1,4 +1,5 @@
 using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration;
@@ -14,12 +15,9 @@ public class DownstreamRoute
         string serviceName,
         string serviceNamespace,
         HttpHandlerOptions httpHandlerOptions,
-        bool useServiceDiscovery,
-        bool enableEndpointEndpointRateLimiting,
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
-        bool isCached,
         CacheOptions cacheOptions,
         LoadBalancerOptions loadBalancerOptions,
         RateLimitOptions rateLimitOptions,
@@ -28,8 +26,6 @@ public class DownstreamRoute
         List<ClaimToThing> claimsToHeaders,
         List<ClaimToThing> claimsToClaims,
         List<ClaimToThing> claimsToPath,
-        bool isAuthenticated,
-        bool isAuthorized,
         AuthenticationOptions authenticationOptions,
         DownstreamPathTemplate downstreamPathTemplate,
         string loadBalancerKey,
@@ -42,7 +38,8 @@ public class DownstreamRoute
         Version downstreamHttpVersion,
         HttpVersionPolicy downstreamHttpVersionPolicy,
         Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
-        MetadataOptions metadataOptions)
+        MetadataOptions metadataOptions,
+        int? timeout)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
         AddHeadersToDownstream = addHeadersToDownstream;
@@ -55,12 +52,9 @@ public class DownstreamRoute
         ServiceName = serviceName;
         ServiceNamespace = serviceNamespace;
         HttpHandlerOptions = httpHandlerOptions;
-        UseServiceDiscovery = useServiceDiscovery;
-        EnableEndpointEndpointRateLimiting = enableEndpointEndpointRateLimiting;
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
-        IsCached = isCached;
         CacheOptions = cacheOptions;
         LoadBalancerOptions = loadBalancerOptions;
         RateLimitOptions = rateLimitOptions;
@@ -69,8 +63,6 @@ public class DownstreamRoute
         ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
         ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
         ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
-        IsAuthenticated = isAuthenticated;
-        IsAuthorized = isAuthorized;
         AuthenticationOptions = authenticationOptions;
         DownstreamPathTemplate = downstreamPathTemplate;
         LoadBalancerKey = loadBalancerKey;
@@ -81,6 +73,7 @@ public class DownstreamRoute
         DownstreamHttpVersionPolicy = downstreamHttpVersionPolicy;
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
+        Timeout = timeout;
     }
 
     public string Key { get; }
@@ -91,11 +84,9 @@ public class DownstreamRoute
     public string ServiceName { get; }
     public string ServiceNamespace { get; }
     public HttpHandlerOptions HttpHandlerOptions { get; }
-    public bool EnableEndpointEndpointRateLimiting { get; }
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }
-    public bool IsCached { get; }
     public CacheOptions CacheOptions { get; }
     public LoadBalancerOptions LoadBalancerOptions { get; }
     public RateLimitOptions RateLimitOptions { get; }
@@ -104,8 +95,9 @@ public class DownstreamRoute
     public List<ClaimToThing> ClaimsToHeaders { get; }
     public List<ClaimToThing> ClaimsToClaims { get; }
     public List<ClaimToThing> ClaimsToPath { get; }
-    public bool IsAuthenticated { get; }
-    public bool IsAuthorized { get; }
+
+    public bool IsAuthenticated => AuthenticationOptions is not null && !AuthenticationOptions.AllowAnonymous && AuthenticationOptions.HasScheme;
+    public bool IsAuthorized => RouteClaimsRequirement?.Count > 0;
     public AuthenticationOptions AuthenticationOptions { get; }
     public DownstreamPathTemplate DownstreamPathTemplate { get; }
     public string LoadBalancerKey { get; }
@@ -129,12 +121,42 @@ public class DownstreamRoute
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
     public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
-    public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
+
+    /// <summary>The timeout duration for the downstream request in seconds.</summary>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
+    public int? Timeout { get; }
+    public const int LowTimeout = 3;  //  3 seconds
+    public const int DefTimeout = 90; // 90 seconds
+
+    /// <summary>Gets or sets the default timeout in seconds for all routes, applicable at both the route-level and globally.
+    /// <para>The setter includes a constraint that ensures the assigned value is greater than or equal to <see cref="LowTimeout"/> (3 seconds).</para></summary>
+    /// <remarks>By default, initialized to <see cref="DefTimeout"/> (90 seconds).</remarks>
+    /// <value>An <see cref="int"/> value in seconds.</value>
+    public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
+    private static int defaultTimeoutSeconds = DefTimeout;
+
+    public string Name() => Name(false);
 
     /// <summary>Gets the route name depending on whether the service discovery mode is enabled or disabled.</summary>
     /// <returns>A <see cref="string"/> object with the name.</returns>
-    public string Name() => string.IsNullOrEmpty(ServiceName) && !UseServiceDiscovery
-        ? UpstreamPathTemplate?.Template ?? DownstreamPathTemplate?.Value ?? "?"
-        : string.Join(':', ServiceNamespace, ServiceName, UpstreamPathTemplate?.Template);
+    public string Name(bool escapePath)
+    {
+        var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
+            ? UpstreamPathTemplate.OriginalValue
+            : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
+                ? DownstreamPathTemplate.ToString()
+                : "?";
+        if (escapePath)
+        {
+            path = path.Replace("{", "{{").Replace("}", "}}");
+        }
+
+        return UseServiceDiscovery || !string.IsNullOrEmpty(ServiceName)
+            ? string.Join(':', ServiceNamespace, ServiceName, path)
+            : path;
+    }
+
+    public override string ToString() => LoadBalancerKey;
+    public bool UseServiceDiscovery => !ServiceName.IsEmpty();
 }

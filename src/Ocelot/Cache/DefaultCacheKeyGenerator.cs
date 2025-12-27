@@ -5,7 +5,7 @@ namespace Ocelot.Cache;
 
 public class DefaultCacheKeyGenerator : ICacheKeyGenerator
 {
-    private const char Delimiter = '-';
+    public const char Delimiter = '-';
     
     public async ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
     {
@@ -14,18 +14,13 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
             .Append(Delimiter)
             .Append(downstreamRequest.OriginalString);
 
-        var options = downstreamRoute?.CacheOptions ?? new();
+        var options = downstreamRoute.CacheOptions ?? new();
         if (!string.IsNullOrEmpty(options.Header))
         {
-            var header = downstreamRequest.Headers
-                .FirstOrDefault(r => r.Key.Equals(options.Header, StringComparison.OrdinalIgnoreCase))
-                .Value?.FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(header))
-            {
-                builder.Append(Delimiter)
-                    .Append(header);
-            }
+            var header = downstreamRequest.Headers.TryGetValues(options.Header, out var values)
+                ? string.Join(string.Empty, values)
+                : string.Empty;
+            builder.Append(Delimiter).Append(header);
         }
 
         if (!options.EnableContentHashing || !downstreamRequest.HasContent)
@@ -33,14 +28,8 @@ public class DefaultCacheKeyGenerator : ICacheKeyGenerator
             return MD5Helper.GenerateMd5(builder.ToString());
         }
 
-        var requestContentString = await ReadContentAsync(downstreamRequest);
-        builder.Append(Delimiter)
-            .Append(requestContentString);
-
+        var requestContent = await downstreamRequest.Request.Content.ReadAsStringAsync();
+        builder.Append(Delimiter).Append(requestContent);
         return MD5Helper.GenerateMd5(builder.ToString());
     }
-
-    private static Task<string> ReadContentAsync(DownstreamRequest downstream) => downstream.HasContent
-        ? downstream?.Request?.Content?.ReadAsStringAsync() ?? Task.FromResult(string.Empty)
-        : Task.FromResult(string.Empty);
 }

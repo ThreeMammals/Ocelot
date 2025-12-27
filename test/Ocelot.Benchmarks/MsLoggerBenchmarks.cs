@@ -148,7 +148,7 @@ public class MsLoggerBenchmarks : ManualConfig
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
         };

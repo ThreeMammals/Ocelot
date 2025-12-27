@@ -3,7 +3,7 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.Creator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
@@ -13,7 +13,7 @@ namespace Ocelot.UnitTests.Headers;
 public class AddHeadersToRequestPlainTests : UnitTest
 {
     private readonly AddHeadersToRequest _addHeadersToRequest;
-    private HttpContext _context;
+    private readonly DefaultHttpContext _context;
     private AddHeader _addedHeader;
     private readonly Mock<IPlaceholders> _placeholders;
     private readonly Mock<IOcelotLoggerFactory> _factory;
@@ -26,63 +26,60 @@ public class AddHeadersToRequestPlainTests : UnitTest
         _logger = new Mock<IOcelotLogger>();
         _factory.Setup(x => x.CreateLogger<AddHeadersToRequest>()).Returns(_logger.Object);
         _addHeadersToRequest = new AddHeadersToRequest(Mock.Of<IClaimsParser>(), _placeholders.Object, _factory.Object);
-    }
-
-    [Fact]
-    public void should_log_error_if_cannot_find_placeholder()
-    {
-        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
-
-        this.Given(_ => GivenHttpRequestWithoutHeaders())
-            .When(_ => WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}"))
-            .Then(_ => ThenAnErrorIsLogged("X-Forwarded-For", "{RemoteIdAddress}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_add_placeholder_to_downstream_request()
-    {
-        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>("replaced"));
-
-        this.Given(_ => GivenHttpRequestWithoutHeaders())
-            .When(_ => WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}"))
-            .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders("replaced"))
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_add_plain_text_header_to_downstream_request()
-    {
-        this.Given(_ => GivenHttpRequestWithoutHeaders())
-            .When(_ => WhenAddingHeader("X-Custom-Header", "PlainValue"))
-            .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders())
-            .BDDfy();
-    }
-
-    [Fact]
-    public void should_overwrite_existing_header_with_added_header()
-    {
-        this.Given(_ => GivenHttpRequestWithHeader("X-Custom-Header", "This should get overwritten"))
-            .When(_ => WhenAddingHeader("X-Custom-Header", "PlainValue"))
-            .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders())
-            .BDDfy();
-    }
-
-    private void ThenAnErrorIsLogged(string key, string value)
-    {
-        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Unable to add header to response {key}: {value}")), Times.Once);
-    }
-
-    private void GivenHttpRequestWithoutHeaders()
-    {
         _context = new DefaultHttpContext();
     }
 
-    private void GivenHttpRequestWithHeader(string headerKey, string headerValue)
+    [Fact]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
+    public void Should_log_error_if_cannot_find_placeholder()
     {
-        var context = new DefaultHttpContext();
-        context.Request.Headers.Append(headerKey, headerValue);
-        _context = context;
+        // Arrange
+        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
+
+        // Act
+        WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}");
+
+        // Assert
+        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Unable to add header to response X-Forwarded-For: {{RemoteIdAddress}}")), Times.Once);
+    }
+
+    [Fact]
+    [Trait("Feat", "623")]
+    [Trait("PR", "632")]
+    public void Should_add_placeholder_to_downstream_request()
+    {
+        // Arrange
+        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>("replaced"));
+
+        // Act
+        WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}");
+
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders("replaced");
+    }
+
+    [Fact]
+    public void Should_add_plain_text_header_to_downstream_request()
+    {
+        // Arrange, Act
+        WhenAddingHeader("X-Custom-Header", "PlainValue");
+
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders();
+    }
+
+    [Fact]
+    public void Should_overwrite_existing_header_with_added_header()
+    {
+        // Arrange
+        _context.Request.Headers.Append("X-Custom-Header", "This should get overwritten");
+
+        // Act
+        WhenAddingHeader("X-Custom-Header", "PlainValue");
+
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders();
     }
 
     private void WhenAddingHeader(string headerKey, string headerValue)
@@ -96,7 +93,7 @@ public class AddHeadersToRequestPlainTests : UnitTest
         var requestHeaders = _context.Request.Headers;
         requestHeaders.ContainsKey(_addedHeader.Key).ShouldBeTrue($"Header {_addedHeader.Key} was expected but not there.");
         var value = requestHeaders[_addedHeader.Key];
-        value.ShouldNotBe(default(StringValues), $"Value of header {_addedHeader.Key} was expected to not be null.");
+        value.ShouldNotBe(default, $"Value of header {_addedHeader.Key} was expected to not be null.");
         value.ToString().ShouldBe(_addedHeader.Value);
     }
 

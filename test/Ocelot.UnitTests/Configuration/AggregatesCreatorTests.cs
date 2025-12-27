@@ -27,39 +27,43 @@ public class AggregatesCreatorTests : UnitTest
     }
 
     [Fact]
-    public void should_return_no_aggregates()
+    public void Should_return_no_aggregates()
     {
+        // Arrange
         var fileConfig = new FileConfiguration
         {
             Aggregates = new List<FileAggregateRoute>
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1"},
+                    RouteKeys = new(["key1"]),
                 },
             },
         };
         var routes = new List<Route>();
+        GivenThe(fileConfig);
+        GivenThe(routes);
 
-        this.Given(_ => GivenThe(fileConfig))
-            .And(_ => GivenThe(routes))
-            .When(_ => WhenICreate())
-            .Then(_ => TheUtpCreatorIsNotCalled())
-            .And(_ => ThenTheResultIsNotNull())
-            .And(_ => ThenTheResultIsEmpty())
-            .BDDfy();
+        // Act
+        WhenICreate();
+
+        // Assert
+        TheUtpCreatorIsNotCalled();
+        ThenTheResultIsNotNull();
+        ThenTheResultIsEmpty();
     }
 
     [Fact]
-    public void should_create_aggregates()
+    public void Should_create_aggregates()
     {
+        // Arrange
         var fileConfig = new FileConfiguration
         {
             Aggregates = new List<FileAggregateRoute>
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1", "key2"},
+                    RouteKeys = new(["key1", "key2"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",
@@ -67,7 +71,7 @@ public class AggregatesCreatorTests : UnitTest
                 },
                 new()
                 {
-                    RouteKeys = new List<string>{"key3", "key4"},
+                    RouteKeys = new(["key3", "key4"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",
@@ -75,23 +79,25 @@ public class AggregatesCreatorTests : UnitTest
                 },
             },
         };
-
         var routes = new List<Route>
         {
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+            new(new DownstreamRouteBuilder().WithKey("key1").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key2").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key3").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key4").Build()),
         };
 
-        this.Given(_ => GivenThe(fileConfig))
-            .And(_ => GivenThe(routes))
-            .And(_ => GivenTheUtpCreatorReturns())
-            .And(_ => GivenTheUhtpCreatorReturns())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheUtpCreatorIsCalledCorrectly())
-            .And(_ => ThenTheAggregatesAreCreated())
-            .BDDfy();
+        GivenThe(fileConfig);
+        GivenThe(routes);
+        GivenTheUtpCreatorReturns();
+        GivenTheUhtpCreatorReturns();
+
+        // Act
+        WhenICreate();
+
+        // Assert
+        ThenTheUtpCreatorIsCalledCorrectly();
+        ThenTheAggregatesAreCreated();
     }
 
     private void ThenTheAggregatesAreCreated()
@@ -127,7 +133,7 @@ public class AggregatesCreatorTests : UnitTest
         _aggregate1Utp = new UpstreamPathTemplateBuilder().Build();
         _aggregate2Utp = new UpstreamPathTemplateBuilder().Build();
 
-        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_aggregate1Utp)
             .Returns(_aggregate2Utp);
     }
@@ -137,7 +143,7 @@ public class AggregatesCreatorTests : UnitTest
         _headerTemplates1 = new Dictionary<string, UpstreamHeaderTemplate>();
         _headerTemplates2 = new Dictionary<string, UpstreamHeaderTemplate>();
 
-        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_headerTemplates1)
             .Returns(_headerTemplates2);
     }
