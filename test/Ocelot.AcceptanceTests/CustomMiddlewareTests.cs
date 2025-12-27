@@ -226,7 +226,7 @@ public class CustomMiddlewareTests : Steps
     [Fact]
     public void Should_call_after_http_authentication_middleware()
     {
-        var configuration = new OcelotPipelineConfiguration
+        var pipelineConfiguration = new OcelotPipelineConfiguration
         {
             AfterAuthenticationMiddleware = async (ctx, next) =>
             {
@@ -234,35 +234,15 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
-        var fileConfiguration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
-            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-            .And(x => _steps.GivenOcelotIsRunning(configuration))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
             .BDDfy();
     }
@@ -270,7 +250,7 @@ public class CustomMiddlewareTests : Steps
     [Fact]
     public void Should_call_after_authorization_middleware()
     {
-        var configuration = new OcelotPipelineConfiguration
+        var pipelineConfiguration = new OcelotPipelineConfiguration
         {
             AfterAuthorizationMiddleware = async (ctx, next) =>
             {
@@ -278,35 +258,15 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
-        var fileConfiguration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", 200, ""))
-            .And(x => _steps.GivenThereIsAConfiguration(fileConfiguration))
-            .And(x => _steps.GivenOcelotIsRunning(configuration))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
             .BDDfy();
     }
