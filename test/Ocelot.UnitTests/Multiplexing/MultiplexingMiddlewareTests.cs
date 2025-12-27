@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -264,6 +264,71 @@ public class MultiplexingMiddlewareTests : UnitTest
             ItExpr.IsAny<List<HttpContext>>());
 
         _count.ShouldBe(3);
+    }
+    
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls()
+    {
+        RequestDelegate responder = context =>
+        {
+            var json = @"[{""userId"":1},{""userId"":2}]";
+            context.Items.Add("DownstreamResponse",
+                new DownstreamResponse(new StringContent(json, Encoding.UTF8, "application/json"),
+                    HttpStatusCode.OK, new List<Header>(), "test"));
+            if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
+                context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
+            _count++;
+            return Task.CompletedTask;
+        };
+
+        var mock = MockMiddlewareFactory(null, responder);
+
+        var route = new Route
+        {
+            DownstreamRoute =
+            [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+            new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig =
+            [
+                new AggregateRouteConfig { RouteKey = "user", JsonPath = "$[*].userId", Parameter = "userId" }
+            ],
+            Aggregator = "TestAggregator",
+        };
+
+        GivenTheFollowing(route);
+
+        await _middleware.Invoke(_httpContext);
+
+        _count.ShouldBe(3);
+        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
+            ItExpr.IsAny<HttpContext>(),
+            ItExpr.IsAny<Route>(),
+            ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
+    }
+    
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_verify_each_context_has_aggregate_key()
+    {
+
+        var route = GivenRoutesWithAggregator();
+        GivenTheFollowing(route);
+
+        _middleware = new MultiplexingMiddleware(AggregateRequestDelegateFactory(), loggerFactory.Object, factory.Object);
+
+        await _middleware.Invoke(_httpContext);
+
+        _count.ShouldBe(3);
+
+        aggregator.Verify(a => a.Aggregate(
+            It.IsAny<Route>(),
+            It.IsAny<HttpContext>(),
+            It.IsAny<List<HttpContext>>()), Times.Once());
     }
 
     private RequestDelegate AggregateRequestDelegateFactory()

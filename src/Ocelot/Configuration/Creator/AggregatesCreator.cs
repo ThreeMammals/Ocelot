@@ -26,15 +26,15 @@ public class AggregatesCreator : IAggregatesCreator
     {
         var applicableRoutes = new List<DownstreamRoute>();
         var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
-        var downstreamRoutes = aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey));
-        foreach (var downstreamRoute in downstreamRoutes)
+        foreach (var key in aggregateRoute.RouteKeys)
         {
-            if (downstreamRoute == null)
+            var match = allRoutes.FirstOrDefault(r => r.Key == key);
+            if (match is null)
             {
                 return null;
             }
 
-            applicableRoutes.Add(downstreamRoute);
+            applicableRoutes.Add(match);
         }
 
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
