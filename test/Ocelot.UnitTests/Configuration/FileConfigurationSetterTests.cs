@@ -33,17 +33,21 @@ public class FileConfigurationSetterTests : UnitTest
         // Arrange
         _fileConfiguration = new FileConfiguration();
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        var config = new InternalConfiguration(
-            new List<Route>(),
-            string.Empty,
-            serviceProviderConfig,
-            "asdf",
-            new LoadBalancerOptionsBuilder().Build(),
-            string.Empty,
-            new QoSOptionsBuilder().Build(),
-            new HttpHandlerOptionsBuilder().Build(),
-            new Version("1.1"),
-            HttpVersionPolicy.RequestVersionOrLower);
+        var config = new InternalConfiguration()
+        {
+            AdministrationPath = string.Empty,
+            ServiceProviderConfiguration = serviceProviderConfig,
+            RequestId = "asdf",
+            LoadBalancerOptions = new(),
+            DownstreamScheme = string.Empty,
+            QoSOptions = new(),
+            HttpHandlerOptions = new(),
+            DownstreamHttpVersion = new Version("1.1"),
+            DownstreamHttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
+            MetadataOptions = new(),
+            RateLimitOptions = new(),
+            Timeout = 111,
+        };
         GivenTheRepoReturns(new OkResponse());
         GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config));
 

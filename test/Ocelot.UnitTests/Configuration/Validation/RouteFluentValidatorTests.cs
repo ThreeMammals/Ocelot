@@ -18,8 +18,11 @@ public class RouteFluentValidatorTests : UnitTest
         _authProvider = new Mock<IAuthenticationSchemeProvider>();
         _serviceProvider = new Mock<IServiceProvider>();
 
-        // Todo - replace with mocks
-        _validator = new RouteFluentValidator(_authProvider.Object, new HostAndPortValidator(), new FileQoSOptionsFluentValidator(_serviceProvider.Object));
+        // TODO - replace with mocks
+        _validator = new RouteFluentValidator(
+            new HostAndPortValidator(),
+            new FileQoSOptionsFluentValidator(_serviceProvider.Object),
+            new FileAuthenticationOptionsValidator(_authProvider.Object));
     }
 
     [Fact]
@@ -166,58 +169,82 @@ public class RouteFluentValidatorTests : UnitTest
         result.ThenTheErrorsContains($"Upstream Path Template {upstreamPathTemplate} contains double forward slash, Ocelot does not support this at the moment. Please raise an issue in GitHib if you need this feature.");
     }
 
-    [Fact]
-    public async Task Should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
+    [Theory]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
+    [InlineData(null, true, null)]
+    [InlineData(-1L, false, "RateLimitOptions.Limit is negative or zero for the route /test")]
+    [InlineData(0L, false, "RateLimitOptions.Limit is negative or zero for the route /test")]
+    [InlineData(1L, true, null)]
+    public async Task ShouldValidate_FileRateLimitByHeaderRule_Limit(long? limit, bool valid, string errorMessage)
     {
         // Arrange
-        var route = new FileRoute
+        var route = GivenRoute();
+        route.RateLimitOptions = new()
         {
-            DownstreamPathTemplate = "/test",
-            UpstreamPathTemplate = "/test",
-            RateLimitOptions = new FileRateLimitRule
-            {
-                EnableRateLimiting = true,
-            },
+            Limit = limit,
+            Period = "1s",
         };
 
         // Act
         var result = await _validator.ValidateAsync(route);
 
         // Assert
-        result.IsValid.ShouldBeFalse();
+        result.IsValid.ShouldBe(valid);
+        if (!result.IsValid)
+            result.ThenSingleErrorIs(errorMessage);
+    }
+
+    [Fact]
+    public async Task Should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
+    {
+        // Arrange
+        var route = GivenRoute();
+        route.RateLimitOptions = new()
+        {
+            EnableRateLimiting = true,
+        };
+
+        // Act
+        var result = await _validator.ValidateAsync(route);
+
+        // Assert
         result.ThenTheErrorsContains("RateLimitOptions.Period is empty");
+        result.ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
     }
 
     [Fact]
     public async Task Should_not_be_valid_if_enable_rate_limiting_true_and_period_has_value()
     {
         // Arrange
-        var route = new FileRoute
+        var route = GivenRoute();
+        route.RateLimitOptions = new()
         {
-            DownstreamPathTemplate = "/test",
-            UpstreamPathTemplate = "/test",
-            RateLimitOptions = new FileRateLimitRule
-            {
-                EnableRateLimiting = true,
-                Period = "test",
-            },
+            Period = "test",
         };
 
         // Act
         var result = await _validator.ValidateAsync(route);
 
         // Assert
-        result.IsValid.ShouldBeFalse();
-        result.ThenTheErrorsContains("RateLimitOptions.Period does not contain integer then s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
+        result.ThenSingleErrorIs("RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
     }
 
     [Theory]
+    [Trait("Feat", "1229")]
+    [Trait("PR", "2294")]
     [InlineData(null, false)]
     [InlineData("", false)]
     [InlineData("1s", true)]
+    [InlineData("12.34s", true)]
+    [InlineData("1ms", true)]
+    [InlineData("12.34ms", true)]
     [InlineData("2m", true)]
+    [InlineData("23.45m", true)]
     [InlineData("3h", true)]
+    [InlineData("34.56h", true)]
     [InlineData("4d", true)]
+    [InlineData("4.5d", true)]
     [InlineData("123", false)]
     [InlineData("-123", false)]
     [InlineData("bad", false)]
@@ -227,7 +254,7 @@ public class RouteFluentValidatorTests : UnitTest
     {
         // Arrange
         var method = _validator.GetType().GetMethod("IsValidPeriod", BindingFlags.NonPublic | BindingFlags.Static);
-        var argument = new FileRateLimitRule { Period = period };
+        var argument = new FileRateLimitByHeaderRule { Period = period };
 
         // Act
         bool actual = (bool)method.Invoke(_validator, new object[] { argument });
@@ -255,7 +282,7 @@ public class RouteFluentValidatorTests : UnitTest
 
         // Assert
         result.IsValid.ShouldBeFalse();
-        result.ThenTheErrorsContains($"Authentication Options AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],AllowedScopes:[] is unsupported authentication provider");
+        result.ThenTheErrorsContains("AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
     }
 
     [Fact]
@@ -419,6 +446,16 @@ public class RouteFluentValidatorTests : UnitTest
         result.ThenTheErrorsContains("'Downstream Http Version'"); // this error message changes depending on the OS language
     }
 
+    private static FileRoute GivenRoute() => new()
+    {
+        DownstreamPathTemplate = "/test",
+        UpstreamPathTemplate = "/test",
+        DownstreamHostAndPorts = new()
+        {
+            new("localhost", 5000),
+        },
+    };
+
     private void GivenAnAuthProvider(string key)
     {
         var schemes = new List<AuthenticationScheme>
@@ -459,4 +496,11 @@ static class ValidationResultExtensions
 {
     public static void ThenTheErrorsContains(this ValidationResult result, string expected)
         => result.Errors.ShouldContain(x => x.ErrorMessage.Contains(expected));
+
+    public static void ThenSingleErrorIs(this ValidationResult result, string message)
+    {
+        Assert.False(result.IsValid);
+        Assert.Single(result.Errors);
+        Assert.Equal(message, result.Errors[0].ErrorMessage);
+    }
 }

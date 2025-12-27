@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Builder;
@@ -9,24 +10,19 @@ public class DownstreamRouteBuilder
     private string _loadBalancerKey;
     private string _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
-    private List<HttpMethod> _upstreamHttpMethod;
-    private bool _isAuthenticated;
+    private HashSet<HttpMethod> _upstreamHttpMethod;
     private List<ClaimToThing> _claimsToHeaders;
     private List<ClaimToThing> _claimToClaims;
     private Dictionary<string, string> _routeClaimRequirement;
-    private bool _isAuthorized;
     private List<ClaimToThing> _claimToQueries;
     private List<ClaimToThing> _claimToDownstreamPath;
     private string _requestIdHeaderKey;
-    private bool _isCached;
     private CacheOptions _cacheOptions;
     private string _downstreamScheme;
     private LoadBalancerOptions _loadBalancerOptions;
     private QoSOptions _qosOptions;
     private HttpHandlerOptions _httpHandlerOptions;
-    private bool _enableRateLimiting;
     private RateLimitOptions _rateLimitOptions;
-    private bool _useServiceDiscovery;
     private string _serviceName;
     private string _serviceNamespace;
     private List<HeaderFindAndReplace> _upstreamHeaderFindAndReplace;
@@ -89,23 +85,9 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithUpstreamHttpMethod(List<string> input)
+    public DownstreamRouteBuilder WithUpstreamHttpMethod(IEnumerable<string> methods)
     {
-        _upstreamHttpMethod = input.Count > 0
-            ? input.Select(x => new HttpMethod(x.Trim())).ToList()
-            : new();
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthenticated(bool input)
-    {
-        _isAuthenticated = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithIsAuthorized(bool input)
-    {
-        _isAuthorized = input;
+        _upstreamHttpMethod = methods.ToHttpMethods();
         return this;
     }
 
@@ -145,12 +127,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithIsCached(bool input)
-    {
-        _isCached = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithCacheOptions(CacheOptions input)
     {
         _cacheOptions = input;
@@ -175,12 +151,6 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithEnableRateLimiting(bool input)
-    {
-        _enableRateLimiting = input;
-        return this;
-    }
-
     public DownstreamRouteBuilder WithRateLimitOptions(RateLimitOptions input)
     {
         _rateLimitOptions = input;
@@ -190,12 +160,6 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
     {
         _httpHandlerOptions = input;
-        return this;
-    }
-
-    public DownstreamRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
-    {
-        _useServiceDiscovery = useServiceDiscovery;
         return this;
     }
 
@@ -300,12 +264,9 @@ public class DownstreamRouteBuilder
             _serviceName,
             _serviceNamespace,
             _httpHandlerOptions,
-            _useServiceDiscovery,
-            _enableRateLimiting,
             _qosOptions,
             _downstreamScheme,
             _requestIdHeaderKey,
-            _isCached,
             _cacheOptions,
             _loadBalancerOptions,
             _rateLimitOptions,
@@ -314,8 +275,6 @@ public class DownstreamRouteBuilder
             _claimsToHeaders,
             _claimToClaims,
             _claimToDownstreamPath,
-            _isAuthenticated,
-            _isAuthorized,
             _authenticationOptions,
             new DownstreamPathTemplate(_downstreamPathTemplate),
             _loadBalancerKey,

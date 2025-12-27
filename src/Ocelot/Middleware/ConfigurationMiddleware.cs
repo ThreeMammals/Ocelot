@@ -11,7 +11,7 @@ public class ConfigurationMiddleware : OcelotMiddleware
     private readonly IInternalConfigurationRepository _configRepo;
 
     public ConfigurationMiddleware(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IInternalConfigurationRepository configRepo)
-        : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
+        : base(loggerFactory.CreateLogger<ConfigurationMiddleware>())
     {
         _next = next;
         _configRepo = configRepo;

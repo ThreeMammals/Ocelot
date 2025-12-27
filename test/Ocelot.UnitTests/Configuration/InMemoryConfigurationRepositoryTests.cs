@@ -59,7 +59,7 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
             AdministrationPath = administrationPath;
         }
 
-        public List<Route> Routes
+        public Route[] Routes
         {
             get
             {
@@ -68,17 +68,15 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build();
 
-                return new List<Route>
+                return new Route[]
                 {
-                    new RouteBuilder()
-                        .WithDownstreamRoute(downstreamRoute)
-                        .WithUpstreamHttpMethod(new List<string> {"Get"})
-                        .Build(),
+                    new(downstreamRoute, HttpMethod.Get),
                 };
             }
         }
 
         public string AdministrationPath { get; }
+        public AuthenticationOptions AuthenticationOptions { get; }
         public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
         public string RequestId { get; }
         public LoadBalancerOptions LoadBalancerOptions { get; }
@@ -86,6 +84,10 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         public QoSOptions QoSOptions { get; }
         public HttpHandlerOptions HttpHandlerOptions { get; }
         public Version DownstreamHttpVersion { get; }
-        public HttpVersionPolicy? DownstreamHttpVersionPolicy { get; }
+        public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
+        public MetadataOptions MetadataOptions => throw new NotImplementedException();
+        public RateLimitOptions RateLimitOptions => throw new NotImplementedException();
+        public int? Timeout => throw new NotImplementedException();
+        public CacheOptions CacheOptions => throw new NotImplementedException();
     }
 }

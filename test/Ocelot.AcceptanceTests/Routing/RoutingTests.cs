@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 using System.Web;
 
 namespace Ocelot.AcceptanceTests.Routing;
@@ -144,7 +144,7 @@ public sealed class RoutingTests : Steps
             .WithMethods(methods);
         var route2 = GivenRoute(port, "/vacancy/{vacancyId}", "/api/v1/vacancy/{vacancyId}")
             .WithMethods(methods);
-        route1.LoadBalancerOptions.Type = route2.LoadBalancerOptions.Type = nameof(LeastConnection);
+        route1.LoadBalancerOptions = route2.LoadBalancerOptions = new(nameof(LeastConnection));
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/v1/vacancy/1", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -555,7 +555,7 @@ public sealed class RoutingTests : Steps
         var methods = new string[] { HttpMethods.Options, HttpMethods.Put, HttpMethods.Get, HttpMethods.Post, HttpMethods.Delete };
         var route1 = GivenRoute(port, "/vacancy/", "/api/v1/vacancy").WithMethods(methods);
         var route2 = GivenRoute(port, "/vacancy/{vacancyId}", "/api/v1/vacancy/{vacancyId}").WithMethods(methods);
-        route1.LoadBalancerOptions.Type = route2.LoadBalancerOptions.Type = nameof(LeastConnection);
+        route1.LoadBalancerOptions = route2.LoadBalancerOptions = new(nameof(LeastConnection));
         var configuration = GivenConfiguration(route1, route2);
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api/v1/vacancy/1", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -699,9 +699,9 @@ public sealed class RoutingTests : Steps
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, HttpHandler);
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
 
-        Task HttpHandler(HttpContext context)
+        Task MapStatusCode(HttpContext context)
         {
             _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
                 ? context.Request.PathBase.Value + context.Request.Path.Value

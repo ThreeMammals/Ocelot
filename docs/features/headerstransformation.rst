@@ -6,48 +6,103 @@ Headers Transformation
 
 Ocelot allows the user to transform `HTTP headers <https://developer.mozilla.org/en-US/docs/Glossary/HTTP_header>`_ both before and after the downstream request.
 
+  **Note**: *Headers Transformation* is generally available for static routes with a global configuration.
+  For dynamic and aggregate routes, this feature is not implemented. This limitation is noted in the current :ref:`ht-roadmap`.
+
+Schema
+------
+
+As you may already know from the :doc:`../features/configuration` chapter and the :ref:`config-route-schema` section, the route's *Headers Transformation* schema is quite simple, a JSON dictionary:
+
+.. code-block:: json
+
+  "DownstreamHeaderTransform": {
+    // "header_name": "transformation_expression",
+  },
+  "UpstreamHeaderTransform": {
+    // "header_name": "transformation_expression",
+  },  
+
+Typically, a ``transformation_expression`` is a constant header value, a single placeholder from the :ref:`ht-placeholders` list, or a ":ref:`Find and Replace <ht-find-and-replace>`" expression.
+Additionally, the :ref:`config-global-configuration-schema` allows configuring global *Headers Transformations* (refer to the :ref:`Configuration <ht-configuration>` section).
+
+.. _ht-configuration:
+
+Configuration [#f1]_
+--------------------
+
+A complete *configuration* consists of both route-level and global *Headers Transformations*.
+
+.. code-block:: json
+
+  {
+    "Routes": [
+      {
+        "DownstreamHeaderTransform": {
+          // ...
+        },
+        "UpstreamHeaderTransform": {
+          // ...
+        }
+      }
+    ],
+    "GlobalConfiguration": {
+      "DownstreamHeaderTransform": {
+        // ...
+      },
+      "UpstreamHeaderTransform": {
+        // ...
+      }
+    }
+  }
+
+.. _break: http://break.do
+.. _Merge: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22public+static+IEnumerable%3CHeader%3E+Merge%22&type=code
+
+  **Note**: Route-level transformations take precedence over global transformations.
+  In addition, when route-level transformations are defined, they do not entirely override the full set of header names from the global configuration.
+  Ocelot's Core internal `Merge`_ algorithm identifies global header names not specified at the route level and appends them to the route's header set.
+
 .. _ht-find-and-replace:
 
-Find and Replace [#f1]_
+Find and Replace [#f2]_
 -----------------------
 
 In order to transform a header first we specify the header key and then the type of transform we want e.g.
 
 .. code-block:: json
 
-  "Test": "http://www.bbc.co.uk/, http://ocelot.com/"
+  "Test": "http://www.bbc.co.uk/, http://ocelot.net/"
 
-The key is ``Test`` and the value is ``http://www.bbc.co.uk/, http://ocelot.com/``.
-The value is saying: replace ``http://www.bbc.co.uk/`` with ``http://ocelot.com/``.
+The key is ``Test`` and the value is ``http://www.bbc.co.uk/, http://ocelot.net/``.
+The value is saying: replace ``http://www.bbc.co.uk/`` with ``http://ocelot.net/``.
 The syntax is ``{find}, {replace}``. Hopefully pretty simple. There are examples below that explain more.
 
-Pre Downstream Request
-^^^^^^^^^^^^^^^^^^^^^^
+**Pre Downstream Request**
 
-Add the following to a Route in `ocelot.json`_ in order to replace ``http://www.bbc.co.uk/`` with ``http://ocelot.com/``.
+Add the following to a Route in `ocelot.json`_ in order to replace ``http://www.bbc.co.uk/`` with ``http://ocelot.net/``.
 This header will be changed before the request downstream and will be sent to the downstream server.
 
 .. code-block:: json
 
   "UpstreamHeaderTransform": {
-    "Test": "http://www.bbc.co.uk/, http://ocelot.com/"
+    "Test": "http://www.bbc.co.uk/, http://ocelot.net/"
   }
 
-Post Downstream Request
-^^^^^^^^^^^^^^^^^^^^^^^
+**Post Downstream Request**
 
-Add the following to a Route in `ocelot.json`_ in order to replace ``http://www.bbc.co.uk/`` with ``http://ocelot.com/``.
+Add the following to a Route in `ocelot.json`_ in order to replace ``http://www.bbc.co.uk/`` with ``http://ocelot.net/``.
 This transformation will take place after Ocelot has received the response from the downstream service.
 
 .. code-block:: json
 
   "DownstreamHeaderTransform": {
-    "Test": "http://www.bbc.co.uk/, http://ocelot.com/"
+    "Test": "http://www.bbc.co.uk/, http://ocelot.net/"
   }
 
 .. _ht-add-to-request:
 
-Add to Request [#f2]_
+Add to Request [#f3]_
 ---------------------
 
 If you want to add a header to your upstream request please add the following to a route in your `ocelot.json`_:
@@ -60,11 +115,11 @@ If you want to add a header to your upstream request please add the following to
 
 In the example above a header with the key ``Uncle`` and value ``Bob`` would be send to to the upstream service.
 
-:ref:`ht-placeholders` are supported too (see below).
+  :ref:`ht-placeholders` are supported too (see below).
 
 .. _ht-add-to-response:
 
-Add to Response [#f3]_
+Add to Response [#f4]_
 ----------------------
 
 If you want to add a header to your downstream response, please add the following to a route in `ocelot.json`_:
@@ -110,7 +165,7 @@ Ocelot allows placeholders that can be used in header transformation.
     - This will look for the incoming ``Host`` header.
 
 For now, we believe these placeholders are sufficient for basic user scenarios.
-However, if you need more placeholders, you can head to the :ref:`ht-future`.
+However, if you need additional placeholders, refer to the :ref:`ht-roadmap`.
 
 Samples
 -------
@@ -124,7 +179,7 @@ Ocelot allows this with the following configuration:
 .. code-block:: json
 
   "DownstreamHeaderTransform": {
-    "Location": "http://www.bbc.co.uk/, http://ocelot.com/"
+    "Location": "http://www.bbc.co.uk/, http://ocelot.net/"
   },
   "HttpHandlerOptions": {
     "AllowAutoRedirect": false,
@@ -164,53 +219,51 @@ An example of using ``{RemoteIpAddress}`` placeholder:
     "X-Forwarded-For": "{RemoteIpAddress}"
   }
 
-.. _ht-future:
+.. _ht-roadmap:
 
-Future
-------
+Roadmap
+-------
 
-Ideally this feature would be able to support the fact that a header can have multiple values.
-At the moment it just assumes one.
-It would also be nice if it could multi find and replace e.g. 
+1. Ideally the ":ref:`Find and Replace <ht-find-and-replace>`" feature would be able to support the fact that a header can have multiple values.
+   At the moment it just assumes one.
+   It would also be nice if it could multi find and replace e.g. 
 
-.. code-block:: json
+   .. code-block:: json
 
-  "DownstreamHeaderTransform": {
-    "Location": "[{one,one},{two,two}]"
-  },
-  "HttpHandlerOptions": {
-    "AllowAutoRedirect": false,
-  }
+    "DownstreamHeaderTransform": {
+      "Location": "[{one,one},{two,two}]"
+    },
+    "HttpHandlerOptions": {
+      "AllowAutoRedirect": false,
+    }
 
-If anyone wants to have a go at this please, help yourself!
+.. _break2: http://break.do
+.. _moderate effort: https://github.com/ThreeMammals/Ocelot/labels/medium%20effort
+.. _significant effort: https://github.com/ThreeMammals/Ocelot/labels/large%20effort
 
-Global Transformation
-^^^^^^^^^^^^^^^^^^^^^
-
-.. _1658: https://github.com/ThreeMammals/Ocelot/issues/1658
-.. _1659: https://github.com/ThreeMammals/Ocelot/pull/1659
-.. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
-
-We have a pending open pull request `1659`_ for issue `1658`_.
-Versions `20.0`_ and higher provide route-level *Headers Transformation* features,
-but we hope *global* transformations will be included in the next upcoming `release <https://github.com/ThreeMammals/Ocelot/releases>`_.
+2. The *Headers Transformation* feature is not implemented for :ref:`Dynamic Routes <config-dynamic-route-schema>` and :ref:`Aggregate Routes <config-aggregate-route-schema>`.
+   For :ref:`Dynamic Routing <routing-dynamic>`, potential development would require `moderate effort`_.
+   However, the Ocelot team expects that designing and implementing *Headers Transformation* for :doc:`../features/aggregation` will demand `significant effort`_, as aggregated routes typically lose their headers.
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
   :height: 25
   :class: img-valign-middle
 
-Any ideas and proposals can be shared in the `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space of the repository! |octocat|
+Ideas and proposals are welcome in the repository's `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space. |octocat|
 
 """"
 
-.. [#f1] The ":ref:`ht-find-and-replace`" feature was requested in issue `190`_, initially released in version `2.0.11`_, and the team decided that it would be useful in various ways.
-.. [#f2] The ":ref:`ht-add-to-request`" feature was requested in issue `313`_ and released in version `5.5.3`_.
-.. [#f3] The ":ref:`ht-add-to-response`" feature was requested in issue `280`_ and released in version `5.1.0`_.
+.. [#f1] The global :ref:`Configuration <ht-configuration>` feature was requested in issue `1658`_ and released in version `24.1`_.
+.. [#f2] The ":ref:`Find and Replace <ht-find-and-replace>`" feature was requested in issue `190`_, initially released in version `2.0.11`_, and the team decided that it would be useful in various ways.
+.. [#f3] The ":ref:`Add to Request <ht-add-to-request>`" feature was requested in issue `313`_ and released in version `5.5.3`_.
+.. [#f4] The ":ref:`Add to Response <ht-add-to-response>`" feature was requested in issue `280`_ and released in version `5.1.0`_.
 
 .. _2.0.11: https://github.com/ThreeMammals/Ocelot/releases/tag/2.0.11
 .. _5.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/5.1.0
 .. _5.5.3: https://github.com/ThreeMammals/Ocelot/releases/tag/5.5.3
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _190: https://github.com/ThreeMammals/Ocelot/issues/190
 .. _280: https://github.com/ThreeMammals/Ocelot/issues/280
 .. _313: https://github.com/ThreeMammals/Ocelot/issues/313
+.. _1658: https://github.com/ThreeMammals/Ocelot/issues/1658

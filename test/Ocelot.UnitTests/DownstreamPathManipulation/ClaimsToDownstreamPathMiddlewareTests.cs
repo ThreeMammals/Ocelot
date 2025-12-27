@@ -13,6 +13,8 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation;
 
+[Trait("Feat", "968")] // https://github.com/ThreeMammals/Ocelot/pull/968
+[Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
 {
     private readonly Mock<IChangeDownstreamPathTemplate> _changePath;
@@ -38,18 +40,17 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
+        var route = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToDownstreamPath(new List<ClaimToThing>
                     {
                         new("UserId", "Subject", string.Empty, 0),
                     })
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+                    .Build();
+        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>(),
+            new Route(route, HttpMethod.Get));
 
         // Arrange: Given The Down Stream Route Is
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);

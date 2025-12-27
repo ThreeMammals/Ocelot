@@ -12,6 +12,11 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Headers;
 
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-headers">Claims to Headers</see>.
+/// </summary>
+[Trait("Commit", "84256e7")] // https://github.com/ThreeMammals/Ocelot/commit/84256e7bac0fa2c8ceba92bd8fe64c8015a37cea
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public class ClaimsToHeadersMiddlewareTests : UnitTest
 {
     private readonly Mock<IAddHeadersToRequest> _addHeaders;
@@ -37,18 +42,17 @@ public class ClaimsToHeadersMiddlewareTests : UnitTest
     public async Task Should_call_add_headers_to_request_correctly()
     {
         // Arrange
-        var downstreamRoute = new DownstreamRouteHolder(new(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                        .WithDownstreamPathTemplate("any old string")
-                        .WithClaimsToHeaders(new List<ClaimToThing>
-                        {
-                            new("UserId", "Subject", string.Empty, 0),
-                        })
-                        .WithUpstreamHttpMethod(new List<string> { "Get" })
-                        .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+        var route = new DownstreamRouteBuilder()
+                    .WithDownstreamPathTemplate("any old string")
+                    .WithClaimsToHeaders(new List<ClaimToThing>
+                    {
+                        new("UserId", "Subject", string.Empty, 0),
+                    })
+                    .WithUpstreamHttpMethod(["Get"])
+                    .Build();
+        var downstreamRoute = new DownstreamRouteHolder(
+            new(),
+            new Route(route, HttpMethod.Get));
 
         // Arrange: Given The Down Stream Route Is
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);

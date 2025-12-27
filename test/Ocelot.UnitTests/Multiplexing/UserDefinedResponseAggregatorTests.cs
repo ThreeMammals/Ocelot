@@ -23,7 +23,7 @@ public class UserDefinedResponseAggregatorTests : UnitTest
     public async Task Should_call_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         var context = new DefaultHttpContext();
 
         var contextA = new DefaultHttpContext();
@@ -55,7 +55,7 @@ public class UserDefinedResponseAggregatorTests : UnitTest
     public async Task Should_not_find_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
         var context = new DefaultHttpContext();
 
         var contextA = new DefaultHttpContext();

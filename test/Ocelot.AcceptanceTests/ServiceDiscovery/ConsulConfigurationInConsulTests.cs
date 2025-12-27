@@ -44,7 +44,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                             },
                         },
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -102,7 +102,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -162,7 +162,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -193,7 +193,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                         },
                     },
                     UpstreamPathTemplate = "/cs/status/awesome",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -240,12 +240,12 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
         var consulConfig = new FileConfiguration
         {
-            DynamicRoutes = new List<FileDynamicRoute>
+            DynamicRoutes = new()
             {
                 new()
                 {
                     ServiceName = serviceName,
-                    RateLimitRule = new FileRateLimitRule
+                    RateLimitRule = new FileRateLimitByHeaderRule
                     {
                         EnableRateLimiting = true,
                         ClientWhitelist = new List<string>(),
@@ -255,21 +255,20 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                     },
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
                     Port = consulPort,
                 },
-                RateLimitOptions = new FileRateLimitOptions
+                RateLimitOptions = new()
                 {
                     ClientIdHeader = "ClientId",
-                    DisableRateLimitHeaders = false,
                     QuotaExceededMessage = string.Empty,
                     RateLimitCounterPrefix = string.Empty,
-                    HttpStatusCode = 428,
+                    HttpStatusCode = StatusCodes.Status428PreconditionRequired,
                 },
                 DownstreamScheme = "http",
             },
@@ -277,9 +276,9 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
         var configuration = new FileConfiguration
         {
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
@@ -287,18 +286,18 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                 },
             },
         };
-
+        var upstreamPath = $"/{serviceName}/something";
         this.Given(x => x.GivenThereIsAServiceRunningOn(servicePort, "/something", HttpStatusCode.OK, "Hello from Laura"))
         .And(x => GivenTheConsulConfigurationIs(consulConfig))
         .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, serviceName))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 2))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(428))
         .BDDfy();
     }
@@ -410,10 +409,10 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 
     private class FakeCache : IOcelotCache<FileConfiguration>
     {
-        public void Add(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         public FileConfiguration Get(string key, string region) => throw new NotImplementedException();
         public void ClearRegion(string region) => throw new NotImplementedException();
-        public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         public bool TryGetValue(string key, string region, out FileConfiguration value) => throw new NotImplementedException();
+        public bool Add(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
+        public FileConfiguration AddOrUpdate(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
     }
 }

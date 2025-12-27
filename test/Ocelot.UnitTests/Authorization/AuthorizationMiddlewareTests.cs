@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Authorization;
-using Ocelot.Authorization.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -13,8 +12,8 @@ namespace Ocelot.UnitTests.Authorization;
 
 public class AuthorizationMiddlewareTests : UnitTest
 {
-    private readonly Mock<IClaimsAuthorizer> _authService;
-    private readonly Mock<IScopesAuthorizer> _authScopesService;
+    private readonly Mock<IClaimsAuthorizer> _claimsAuthorizer;
+    private readonly Mock<IScopesAuthorizer> _scopesAuthorizer;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
     private readonly AuthorizationMiddleware _middleware;
@@ -24,38 +23,95 @@ public class AuthorizationMiddlewareTests : UnitTest
     public AuthorizationMiddlewareTests()
     {
         _httpContext = new DefaultHttpContext();
-        _authService = new Mock<IClaimsAuthorizer>();
-        _authScopesService = new Mock<IScopesAuthorizer>();
+        _claimsAuthorizer = new Mock<IClaimsAuthorizer>();
+        _scopesAuthorizer = new Mock<IScopesAuthorizer>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<AuthorizationMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
-        _middleware = new AuthorizationMiddleware(_next, _authService.Object, _authScopesService.Object, _loggerFactory.Object);
+        _middleware = new AuthorizationMiddleware(_next, _claimsAuthorizer.Object, _scopesAuthorizer.Object, _loggerFactory.Object);
+
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(_warnings.Add);
+    }
+
+    private readonly List<Func<string>> _warnings = new();
+    private List<string> GetWarnings() => _warnings.Select(w => w()).ToList();
+
+    [Fact]
+    [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
+    [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
+    [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
+    public async Task Should_call_scopes_authorizer_when_route_is_authenticated()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
+            .WithUpstreamHttpMethod([HttpMethods.Get])
+            .WithAuthenticationOptions(new(new("authScheme")))
+            .Build();
+        GivenTheDownStreamRouteIs(new(), route);
+        GivenScopesAuthorizerReturns(new OkResponse<bool>(true));
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenScopesAuthorizerIsCalled();
     }
 
     [Fact]
+    [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
     public async Task Should_call_authorization_service()
     {
         // Arrange
-        GivenTheDownStreamRouteIs(
-            new List<PlaceholderNameAndValue>(),
-            new DownstreamRouteBuilder()
-                .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
-                .WithIsAuthorized(true)
-                .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-                .Build());
-        GivenTheAuthServiceReturns(new OkResponse<bool>(true));
+        var route = new DownstreamRouteBuilder()
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
+            .WithUpstreamHttpMethod([HttpMethods.Get])
+            /*.WithAuthenticationOptions(new(new("authScheme")))*/
+            .WithRouteClaimsRequirement(new() { { "k", "v" } })
+            .Build();
+        GivenTheDownStreamRouteIs(new(), route);
+        GivenClaimsAuthorizerReturns(new OkResponse<bool>(true));
 
         // Act
-        await WhenICallTheMiddleware();
+        await _middleware.Invoke(_httpContext);
 
         // Assert
-        ThenTheAuthServiceIsCalledCorrectly();
+        ThenClaimsAuthorizerIsCalled();
     }
 
-    private async Task WhenICallTheMiddleware()
+    [Fact]
+    [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
+    [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
+    [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
+    public async Task Invoke_RouteIsAuthenticated_WhenScopesAuthorizerError_ShouldUpsertErrors()
     {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithAuthenticationOptions(new(new("authScheme")))
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/test").Build())
+            .Build();
+        var response = new ErrorResponse<bool>(new ScopeNotAuthorizedError("No match"));
+        GivenTheDownStreamRouteIs(new(), route);
+        GivenScopesAuthorizerReturns(response);
+
+        // Act
         await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenScopesAuthorizerIsCalled();
+#if DEBUG
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once);
+        var warnings = GetWarnings();
+        Assert.Contains($"The '/test' route encountered authorization errors due to user scopes:{Environment.NewLine}ScopeNotAuthorizedError: No match", warnings);
+#endif
+        var errors = _httpContext.Items.Errors();
+        Assert.NotEmpty(errors);
+        Assert.Contains(response.Errors[0], errors);
+        var actual = Assert.Single(errors);
+        Assert.Same(response.Errors[0], actual);
+        Assert.Equal("No match", actual.Message);
     }
 
     private void GivenTheDownStreamRouteIs(List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamRoute downstreamRoute)
@@ -64,20 +120,20 @@ public class AuthorizationMiddlewareTests : UnitTest
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
     }
 
-    private void GivenTheAuthServiceReturns(Response<bool> expected)
-    {
-        _authService
-            .Setup(x => x.Authorize(
-                       It.IsAny<ClaimsPrincipal>(),
-                       It.IsAny<Dictionary<string, string>>(),
-                       It.IsAny<List<PlaceholderNameAndValue>>()))
+    private void GivenScopesAuthorizerReturns(Response<bool> expected) => _scopesAuthorizer
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>()))
             .Returns(expected);
-    }
 
-    private void ThenTheAuthServiceIsCalledCorrectly()
-    {
-        _authService.Verify(
+    private void GivenClaimsAuthorizerReturns(Response<bool> expected) => _claimsAuthorizer
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Returns(expected);
+
+    private void ThenScopesAuthorizerIsCalled(Func<Times> times = null)
+        => _scopesAuthorizer.Verify(
+            x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>()),
+            times ?? Times.Once);
+    private void ThenClaimsAuthorizerIsCalled(Func<Times> times = null)
+        => _claimsAuthorizer.Verify(
             x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<List<PlaceholderNameAndValue>>()),
-            Times.Once);
-    }
+            times ?? Times.Once);
 }

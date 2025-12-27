@@ -2,7 +2,7 @@
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.PathManipulation;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
@@ -11,6 +11,8 @@ using System.Security.Claims;
 
 namespace Ocelot.UnitTests.DownstreamPathManipulation;
 
+[Trait("Feat", "968")] // https://github.com/ThreeMammals/Ocelot/pull/968
+[Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public class ChangeDownstreamPathTemplateTests : UnitTest
 {
     private readonly ChangeDownstreamPathTemplate _changeDownstreamPath;

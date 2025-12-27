@@ -106,7 +106,6 @@ public class DownstreamRouteTests
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithUseServiceDiscovery(useServiceDiscovery)
             .WithUpstreamPathTemplate(new("/test", 0, false, "/test"))
             .WithServiceName(useServiceDiscovery ? "TestService" : string.Empty)
             .WithServiceNamespace("TestNamespace")
@@ -135,5 +134,20 @@ public class DownstreamRouteTests
         // Assert
         Assert.Equal(expected, DownstreamRoute.DefaultTimeoutSeconds);
         DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout; // recover clean state after assembly starting
+    }
+
+    [Fact]
+    public void ToString_ShouldBeLoadBalancerKey()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("testLbKey")
+            .Build();
+
+        // Act
+        var actual = route.ToString();
+
+        // Assert
+        Assert.Equal("testLbKey", actual);
     }
 }

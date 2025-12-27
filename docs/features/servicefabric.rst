@@ -31,7 +31,7 @@ It assumes that *Service Fabric* is running on ``localhost`` and that the naming
       }
     ],
     "GlobalConfiguration": {
-      "BaseUrl": "https://ocelot.com",
+      "BaseUrl": "https://ocelot.net",
       "RequestIdKey": "Oc-RequestId",
       "ServiceDiscoveryProvider": {
         "Host": "localhost",
@@ -50,10 +50,10 @@ There is no way for Ocelot to determine these values automatically.
 
 .. _sf-placeholders:
 
-Placeholders
-------------
+Placeholders [#f2]_
+-------------------
 
-In Ocelot, *placeholders* for variables can be inserted into the ``UpstreamPathTemplate`` and ``ServiceName`` using the format ``{something}``. [#f2]_
+In Ocelot, *placeholders* for variables can be inserted into the ``UpstreamPathTemplate`` and ``ServiceName`` using the format ``{something}``.
 
   **Note**: The *placeholder* variable must exist in both the ``DownstreamPathTemplate`` (or ``ServiceName``) and the ``UpstreamPathTemplate``.
   Specifically, the ``UpstreamPathTemplate`` must include all *placeholders* found in the ``DownstreamPathTemplate`` and ``ServiceName``.
@@ -88,11 +88,11 @@ Thus, the *Service Fabric* :ref:`sf-placeholders` feature operates similarly to 
 
 When you make Ocelot request:
 
-* GET ``https://ocelot.com/api/1.0/products``
+* ``GET https://ocelot.com/api/1.0/products``
 
 The *Service Fabric* request will be:
 
-* GET ``http://localhost:19081/Service_1.0/Api/products``
+* ``GET http://localhost:19081/Service_1.0/Api/products``
 
 .. _sf-sample:
 
@@ -111,14 +111,15 @@ This solution includes the following projects:
 
 Complete instructions for running this solution can be found in the `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceFabric/README.md>`_ file.
 
-  **Note**: Please consider this solution as a demonstration of integration; it is outdated as of 2025.
+.. note::
+  Please consider this solution as a demonstration of integration; it is outdated as of 2025.
   Therefore, this solution is a draft and requires further development for practical usage and deployment in the Azure cloud.
   Additionally, refer to the team's notes in the :ref:`sd-service-fabric` section!
 
 """"
 
-.. [#f1] Historically, the *Service Fabric* feature is one of Ocelot's earliest and foundational features, first requested in issue `238`_. It was initially released in version `3.1.9`_.
-.. [#f2] The ":ref:`sf-placeholders`" feature was requested in issue `721`_ and implemented by pull request `722`_ as part of version `13.0.0`_.
+.. [#f1] Historically, the "`Service Fabric <#service-fabric>`__" feature is one of Ocelot's earliest and foundational features, first requested in issue `238`_. It was initially released in version `3.1.9`_.
+.. [#f2] The ":ref:`Placeholders <sf-placeholders>`" feature was requested in issue `721`_ and implemented by pull request `722`_ as part of version `13.0.0`_.
 
 .. _Service Fabric: https://azure.microsoft.com/en-us/products/service-fabric/
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceFabric/ApiGateway/ocelot.json

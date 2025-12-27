@@ -59,7 +59,7 @@ public sealed class MethodTests : Steps
             .BDDfy();
     }
 
-    private static FileRoute GivenRouteWithMethods(int port, string up = null, string down = null) => new()
+    private FileRoute GivenRouteWithMethods(int port, string up = null, string down = null) => new()
     {
         DownstreamPathTemplate = "/{url}",
         DownstreamScheme = Uri.UriSchemeHttp,

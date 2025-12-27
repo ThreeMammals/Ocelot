@@ -1,86 +1,86 @@
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.LoadBalancer.Balancers;
 
 namespace Ocelot.Configuration.Creator;
 
 public class RouteKeyCreator : IRouteKeyCreator
 {
+    public const char Separator = '|';
+    public const char Dot = DiscoveryDownstreamRouteFinder.Dot;
+
     /// <summary>
     /// Creates the unique <see langword="string"/> key based on the route properties for load balancing etc.
     /// </summary>
     /// <remarks>
-    /// Key template:
-    /// <list type="bullet">
-    /// <item>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</item>
-    /// </list>
+    /// Key template: <c>UpstreamHttpMethod|UpstreamPathTemplate|UpstreamHost|DownstreamHostAndPorts|ServiceNamespace|ServiceName|LoadBalancerType|LoadBalancerKey</c>.
     /// </remarks>
-    /// <param name="fileRoute">The route object.</param>
+    /// <param name="route">The route object.</param>
+    /// <param name="loadBalancing">Final options for load balancing.</param>
     /// <returns>A <see langword="string"/> object containing the key.</returns>
-    public string Create(FileRoute fileRoute)
+    public string Create(FileRoute route, LoadBalancerOptions loadBalancing)
     {
-        var isStickySession = fileRoute.LoadBalancerOptions is
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
         {
-            Type: nameof(CookieStickySessions),
-            Key.Length: > 0
-        };
-
-        if (isStickySession)
-        {
-            return $"{nameof(CookieStickySessions)}:{fileRoute.LoadBalancerOptions.Key}";
+            return stickySessionKey;
         }
 
-        var upstreamHttpMethods = Csv(fileRoute.UpstreamHttpMethod);
-        var downstreamHostAndPorts = Csv(fileRoute.DownstreamHostAndPorts.Select(downstream => $"{downstream.Host}:{downstream.Port}"));
-
         var keyBuilder = new StringBuilder()
-
-            // UpstreamHttpMethod and UpstreamPathTemplate are required
-            .AppendNext(upstreamHttpMethods)
-            .AppendNext(fileRoute.UpstreamPathTemplate)
-
-            // Other properties are optional, replace undefined values with defaults to aid debugging
-            .AppendNext(Coalesce(fileRoute.UpstreamHost, "no-host"))
-
-            .AppendNext(Coalesce(downstreamHostAndPorts, "no-host-and-port"))
-            .AppendNext(Coalesce(fileRoute.ServiceNamespace, "no-svc-ns"))
-            .AppendNext(Coalesce(fileRoute.ServiceName, "no-svc-name"))
-            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Type, "no-lb-type"))
-            .AppendNext(Coalesce(fileRoute.LoadBalancerOptions.Key, "no-lb-key"));
-
+            .AppendNext(route.UpstreamHttpMethod.Csv()) // required
+            .AppendNext(route.UpstreamPathTemplate) // required
+            .AppendNext(route.UpstreamHost.IfEmpty("no-host")) // optional...
+            .AppendNext(route.DownstreamHostAndPorts.Select(AsString).Csv().IfEmpty("no-host-and-port"))
+            .AppendNext(route.ServiceNamespace.IfEmpty("no-svc-ns"))
+            .AppendNext(route.ServiceName.IfEmpty("no-svc-name"))
+            .AppendNext(loadBalancing.Type.IfEmpty("no-lb-type"))
+            .AppendNext(loadBalancing.Key.IfEmpty("no-lb-key"));
         return keyBuilder.ToString();
     }
 
-    /// <summary>
-    /// Helper function to convert multiple strings into a comma-separated string.
-    /// </summary>
-    /// <param name="values">The collection of strings to join by comma separator.</param>
-    /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
-    private static string Csv(IEnumerable<string> values) => string.Join(',', values);
+    public string Create(FileDynamicRoute route, LoadBalancerOptions loadBalancing)
+    {
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
+        {
+            return stickySessionKey;
+        }
 
-    /// <summary>
-    /// Helper function to return the first non-null-or-whitespace string.
-    /// </summary>
-    /// <param name="first">The 1st string to check.</param>
-    /// <param name="second">The 2nd string to check.</param>
-    /// <returns>A <see langword="string"/> which is not empty.</returns>
-    private static string Coalesce(string first, string second) => string.IsNullOrWhiteSpace(first) ? second : first;
+        // it should be constructed in upper contexts
+        return !loadBalancing.Key.IsEmpty() ? loadBalancing.Key
+            : Create(route.ServiceNamespace, route.ServiceName, loadBalancing);
+    }
+
+    public string Create(string serviceNamespace, string serviceName, LoadBalancerOptions loadBalancing)
+    {
+        if (TryStickySession(loadBalancing, out var stickySessionKey))
+        {
+            return stickySessionKey;
+        }
+
+        return !loadBalancing.Key.IsEmpty() ? loadBalancing.Key
+            : string.Join(Dot, serviceNamespace, serviceName); // upstreamHttpMethod ?
+    }
+
+    protected virtual bool TryStickySession(LoadBalancerOptions loadBalancing, out string stickySessionKey)
+    {
+        bool isStickySession = nameof(CookieStickySessions).Equals(loadBalancing.Type, StringComparison.OrdinalIgnoreCase)
+            && loadBalancing.Key.Length > 0;
+        stickySessionKey = isStickySession
+            ? $"{nameof(CookieStickySessions)}:{loadBalancing.Key}"
+            : string.Empty;
+        return isStickySession;
+    }
+
+    public static string AsString(FileHostAndPort host) => host?.ToString();
 }
 
 internal static class RouteKeyCreatorHelpers
 {
-    /// <summary>
-    /// Helper function to append a string to the key builder, separated by a pipe.
-    /// </summary>
+    /// <summary>Helper function to append a string to the key builder, separated by a pipe.</summary>
     /// <param name="builder">The builder of the key.</param>
     /// <param name="next">The next word to add.</param>
+    /// <param name="separator">The character used to separate entries.</param>
     /// <returns>The reference to the builder.</returns>
-    public static StringBuilder AppendNext(this StringBuilder builder, string next)
-    {
-        if (builder.Length > 0)
-        {
-            builder.Append('|');
-        }
-
-        return builder.Append(next);
-    }
+    public static StringBuilder AppendNext(this StringBuilder builder, string next, char separator = RouteKeyCreator.Separator)
+        => StringBuilderExtensions.AppendNext(builder, next, separator);
 }

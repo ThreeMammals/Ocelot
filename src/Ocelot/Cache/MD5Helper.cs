@@ -2,6 +2,7 @@
 
 namespace Ocelot.Cache;
 
+// TODO: Consider moving to Infrastructure
 public static class MD5Helper
 {
     public static string GenerateMd5(byte[] contentBytes)

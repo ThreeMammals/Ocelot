@@ -268,11 +268,15 @@ public sealed class CachingTests : Steps
                 DownstreamHttpMethod = "Post",
                 DownstreamScheme = Uri.UriSchemeHttp,
                 UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post },
+                UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post ],
                 FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
             },
         },
-        GlobalConfiguration = asGlobalConfig ? new FileGlobalConfiguration { CacheOptions = cacheOptions } : null,
+        GlobalConfiguration = !asGlobalConfig ? null :
+            new()
+            {
+                CacheOptions = new(cacheOptions),
+            },
     };
 
     private static void GivenTheCacheExpires()
@@ -300,7 +304,9 @@ public sealed class CachingTests : Steps
         });
     }
 
-    private void GivenThereIsAnEchoServiceRunningOn(int port)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1013:Public method should be marked as test", Justification = "Steps")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Steps")]
+    public void GivenThereIsAnEchoServiceRunningOn(int port)
     {
         handler.GivenThereIsAServiceRunningOn(port, async context =>
         {
@@ -317,13 +323,13 @@ public sealed class CachingTests : Steps
         Assert.Equal(expected, _counter);
     }
 
-    private static (string TestBody1String, string TestBody2String) TestBodiesFactory()
+    public static (string TestBody1String, string TestBody2String) TestBodiesFactory()
     {
         var testBody1 = new TestBody
         {
-            Age = 30,
-            Email = "test.test@email.com",
-            FirstName = "Jean",
+            Age = 19,
+            Email = "tom@ocelot.net",
+            FirstName = "Tom",
             LastName = "Test",
         };
 
@@ -331,9 +337,9 @@ public sealed class CachingTests : Steps
 
         var testBody2 = new TestBody
         {
-            Age = 31,
-            Email = "test.test@email.com",
-            FirstName = "Jean",
+            Age = 25,
+            Email = "laura@ocelot.net",
+            FirstName = "Laura",
             LastName = "Test",
         };
 

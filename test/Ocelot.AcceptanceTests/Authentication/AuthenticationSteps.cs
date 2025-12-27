@@ -1,181 +1,331 @@
-﻿//using IdentityServer4.Models;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+using Microsoft.IdentityModel.Tokens;
+using Ocelot.Authorization;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.Authentication;
 
 public class AuthenticationSteps : Steps
 {
     protected BearerToken token;
+    private readonly Dictionary<string, WebApplication> _jwtSigningServers;
+    protected string JwtSigningServerUrl => _jwtSigningServers.First().Key;
 
     public AuthenticationSteps() : base()
     {
+        _jwtSigningServers = new();
     }
 
-    //public static ApiResource CreateApiResource(
-    //    string apiName,
-    //    IEnumerable<string> extraScopes = null) => new()
-    //{
-    //    Name = apiName,
-    //    Description = $"My {apiName} API",
-    //    Enabled = true,
-    //    DisplayName = "test",
-    //    Scopes = new List<string>(extraScopes ?? Enumerable.Empty<string>())
-    //    {
-    //        apiName,
-    //        $"{apiName}.readOnly",
-    //    },
-    //    ApiSecrets = new List<Secret>
-    //    {
-    //        new ("secret".Sha256()),
-    //    },
-    //    UserClaims = new List<string>
-    //    {
-    //        "CustomerId", "LocationId",
-    //    },
-    //};
-
-    //protected static Client CreateClientWithSecret(string clientId, Secret secret, AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
-    //{
-    //    var client = DefaultClient(tokenType, apiScopes);
-    //    client.ClientId = clientId ?? "client";
-    //    client.ClientSecrets = new Secret[] { secret };
-    //    return client;
-    //}
-
-    //protected static Client DefaultClient(AccessTokenType tokenType = AccessTokenType.Jwt, string[] apiScopes = null)
-    //{
-    //    apiScopes ??= new string[] { "api" };
-    //    return new()
-    //    {
-    //        ClientId = "client",
-    //        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-    //        ClientSecrets = new List<Secret> { new("secret".Sha256()) },
-    //        AllowedScopes = apiScopes
-    //            .Union(apiScopes.Select(x => $"{x}.readOnly"))
-    //            .Union(new string[] { "openid", "offline_access" })
-    //            .ToList(),
-    //        AccessTokenType = tokenType,
-    //        Enabled = true,
-    //        RequireClientSecret = false,
-    //        RefreshTokenExpiration = TokenExpiration.Absolute,
-    //    };
-    //}
-
-    //public static IWebHostBuilder CreateIdentityServer(string url, AccessTokenType tokenType, string[] apiScopes, Client[] clients)
-    //{
-    //    apiScopes ??= new string[] { "api" };
-    //    clients ??= new Client[] { DefaultClient(tokenType, apiScopes) };
-    //    var builder = TestHostBuilder.Create()
-    //        .UseUrls(url)
-    //        .UseKestrel()
-    //        .UseContentRoot(Directory.GetCurrentDirectory())
-    //        .UseIISIntegration()
-    //        .UseUrls(url)
-    //        .ConfigureServices(services =>
-    //        {
-    //            services.AddLogging();
-    //            services.AddIdentityServer()
-    //                .AddDeveloperSigningCredential()
-    //                .AddInMemoryApiScopes(apiScopes
-    //                    .Select(apiname => new ApiScope(apiname, apiname.ToUpper())))
-    //                .AddInMemoryApiResources(apiScopes
-    //                    .Select(x => new { i = Array.IndexOf(apiScopes, x), scope = x })
-    //                    .Select(x => CreateApiResource(x.scope, new string[] { "openid", "offline_access" })))
-    //                .AddInMemoryClients(clients)
-    //                .AddTestUsers(new()
-    //                {
-    //                    new()
-    //                    {
-    //                        Username = "test",
-    //                        Password = "test",
-    //                        SubjectId = "registered|1231231",
-    //                        Claims = new List<Claim>
-    //                        {
-    //                               new("CustomerId", "123"),
-    //                               new("LocationId", "321"),
-    //                        },
-    //                    },
-    //                });
-    //        })
-    //        .Configure(app =>
-    //        {
-    //            app.UseIdentityServer();
-    //        });
-    //    return builder;
-    //}
-    protected void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);
-    public void GivenIHaveAddedATokenToMyRequest(BearerToken token) => GivenIHaveAddedATokenToMyRequest(token.AccessToken, "Bearer");
-
-    public static List<KeyValuePair<string, string>> GivenDefaultAuthTokenForm() => new()
+    public override void Dispose()
     {
-        new ("client_id", "client"),
-        new ("client_secret", "secret"),
-        new ("scope", "api"),
-        new ("username", "test"),
-        new ("password", "test"),
-        new ("grant_type", "password"),
-    };
-
-    public async Task<BearerToken> GivenIHaveAToken(string url)
-    {
-        var form = GivenDefaultAuthTokenForm();
-        return token = await GivenIHaveATokenWithForm(url, form);
+        foreach (var kv in _jwtSigningServers)
+        {
+            IDisposable server = _jwtSigningServers[kv.Key];
+            server?.Dispose();
+        }
+        _jwtSigningServers.Clear();
+        base.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    public static async Task<BearerToken> GivenIHaveATokenWithForm(string url, IEnumerable<KeyValuePair<string, string>> form)
+    protected void WithThreemammalsOptions(JwtBearerOptions o)
     {
-        var tokenUrl = $"{url}/connect/token";
-        var formData = form ?? Enumerable.Empty<KeyValuePair<string, string>>();
-        var content = new FormUrlEncodedContent(formData);
+        o.Audience = AuthToken.Audience; // "threemammals.com";
+        o.Authority = new Uri(JwtSigningServerUrl).Authority;
+        o.RequireHttpsMetadata = false;
+        o.TokenValidationParameters = new()
+        {
+            ValidateIssuer = true,
+            ValidIssuer = new Uri(JwtSigningServerUrl).Authority,
+            ValidateAudience = true,
+            ValidAudience = ocelotClient.BaseAddress.Authority,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = AuthToken.IssuerSigningKey(),
+        };
+    }
 
-        using var httpClient = new HttpClient();
-        var response = await httpClient.PostAsync(tokenUrl, content);
+    protected void WithJwtBearerAuthentication(IServiceCollection services)
+        => WithJwtBearerAuthentication(services, true);
+    public void WithJwtBearerAuthentication(IServiceCollection services, bool addOcelot)
+    {
+        if (addOcelot) services.AddOcelot();
+        services.AddAuthentication().AddJwtBearer(WithThreemammalsOptions);
+    }
+
+    public static /*IHost*/ WebApplication CreateJwtSigningServer(string url, string[] apiScopes)
+    {
+        apiScopes ??= [OcelotScopes.Api];
+        var builder = TestWebBuilder.CreateSlimBuilder();
+        builder.WebHost.UseUrls(url);
+        builder.Services
+            .AddLogging()
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "threemammals.com", // see mycert2.pfx
+                    ValidAudience = "threemammals.com",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ocelot.AcceptanceTests.Authentication")),
+                };
+            });
+        var app = builder.Build();
+        app.MapGet("/connect", () => "Hello! Connected!");
+        app.MapPost("/token", (AuthenticationTokenRequest model) =>
+        {
+            // The signing server should be eligible to sign predefined claims as specified in its configuration.
+            // If an unknown scope or claim is requested for inclusion in a JWT, the server should reject the request.
+            // Therefore, the server configuration should be well-known to the client; otherwise, it poses a security risk.
+            if (!apiScopes.Intersect(model.Scopes.Split(' ')).Any())
+            {
+                return Results.BadRequest();
+            }
+            var token = GenerateToken(url, model);
+            return Results.Json(token);
+        });
+        return app;
+    }
+
+    protected static async Task VerifyJwtSigningServerStarted(string url, HttpClient client = null)
+    {
+        client ??= new HttpClient();
+        var response = await client.GetAsync($"{url}/connect");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        json.ShouldNotBeNullOrEmpty();
+    }
+
+    public Task<string> GivenThereIsExternalJwtSigningService(params string[] extraScopes)
+    {
+        List<string> scopes = [OcelotScopes.Api, OcelotScopes.Api2];
+        scopes.AddRange(extraScopes);
+        var url = DownstreamUrl(PortFinder.GetRandomPort());
+        var server = CreateJwtSigningServer(url, scopes.ToArray());
+        _jwtSigningServers.Add(url, server);
+        return server.StartAsync()
+            .ContinueWith(t => VerifyJwtSigningServerStarted(url))
+            .ContinueWith(t => url);
+    }
+
+    public void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);
+    public void GivenIHaveAddedATokenToMyRequest(BearerToken token)
+        => GivenIHaveAddedATokenToMyRequest(token.AccessToken, JwtBearerDefaults.AuthenticationScheme);
+
+    public AuthenticationTokenRequest GivenAuthTokenRequest(string scope,
+        IEnumerable<KeyValuePair<string, string>> claims = null,
+        [CallerMemberName] string testName = "")
+    {
+        var auth = new AuthenticationTokenRequest()
+        {
+            Audience = ocelotClient?.BaseAddress.Authority, // Ocelot DNS is token audience
+            ApiSecret = testName, // "secret",
+            Scopes = scope ?? OcelotScopes.Api,
+            Claims = claims is null ? new() : new(claims),
+            UserId = testName,
+            UserName = testName,
+        };
+        return auth;
+    }
+
+    public Task<BearerToken> GivenIHaveAToken([CallerMemberName] string testName = "")
+        => GivenIHaveAToken(OcelotScopes.Api, null, JwtSigningServerUrl, null, testName);
+
+    public async Task<BearerToken> GivenIHaveAToken(string scope,
+        IEnumerable<KeyValuePair<string, string>> claims = null,
+        string issuerUrl = null,
+        string audience = null,
+        [CallerMemberName] string testName = "")
+    {
+        var auth = GivenAuthTokenRequest(scope, claims, testName);
+        auth.Audience = audience ?? ocelotClient?.BaseAddress.Authority;
+        return token = await GivenToken(auth, string.Empty, issuerUrl);
+    }
+    public async Task<BearerToken> GivenIHaveATokenWithUrlPath(string path, string scope, [CallerMemberName] string testName = "")
+    {
+        var auth = GivenAuthTokenRequest(scope, null, testName);
+        return token = await GivenToken(auth, path);
+    }
+
+    protected readonly Dictionary<string, AuthenticationTokenRequest> AuthTokens = new();
+    protected AuthenticationTokenRequest AuthToken => AuthTokens.First().Value;
+    public event EventHandler<AuthenticationTokenRequestEventArgs> AuthTokenRequesting;
+    protected virtual void OnAuthenticationTokenRequest(AuthenticationTokenRequestEventArgs e)
+        => AuthTokenRequesting?.Invoke(this, e);
+    public class AuthenticationTokenRequestEventArgs : EventArgs
+    {
+        public AuthenticationTokenRequest Request { get; }
+        public AuthenticationTokenRequestEventArgs(AuthenticationTokenRequest request) => Request = request;
+    }
+
+    protected async Task<BearerToken> GivenToken(AuthenticationTokenRequest auth, string path = "", string issuerUrl = null)
+    {
+        using var http = new HttpClient();
+        issuerUrl ??= JwtSigningServerUrl;
+
+        AuthTokens[issuerUrl] = auth;
+        OnAuthenticationTokenRequest(new(auth));
+
+        var tokenUrl = $"{issuerUrl + path}/token";
+        var content = JsonContent.Create(auth);
+        var response = await http.PostAsync(tokenUrl, content);
         var responseContent = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
-        return JsonConvert.DeserializeObject<BearerToken>(responseContent) ?? new();
+        return JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptions.Web);
     }
 
-    internal async Task<BearerToken> GivenAuthToken(string url, string apiScope)
+    protected FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
     {
-        var form = GivenDefaultAuthTokenForm();
-        form.RemoveAll(x => x.Key == "scope");
-        form.Add(new("scope", apiScope));
-        return token = await GivenIHaveATokenWithForm(url, form);
-    }
-
-    internal static Task<BearerToken> GivenAuthToken(string url, string apiScope, string client)
-    {
-        var form = GivenDefaultAuthTokenForm();
-
-        form.RemoveAll(x => x.Key == "scope");
-        form.Add(new("scope", apiScope));
-
-        form.RemoveAll(x => x.Key == "client_id");
-        form.Add(new("client_id", client));
-
-        return GivenIHaveATokenWithForm(url, form);
-    }
-
-    public static FileRoute GivenAuthRoute(int port, string upstreamHttpMethod = null, string authProviderKey = null)
-    {
-        var r = GivenDefaultRoute(port).WithMethods(upstreamHttpMethod ?? HttpMethods.Get);
-        r.AuthenticationOptions.AuthenticationProviderKeys = [authProviderKey ?? "Test"];
+        var r = GivenRoute(port, path, path);
+        r.AuthenticationOptions = options;
         return r;
     }
 
-    protected void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, string responseBody)
+    public FileRoute GivenAuthRoute(int port,
+        string scheme = JwtBearerDefaults.AuthenticationScheme,
+        bool allowAnonymous = false,
+        string[] scopes = null,
+        string method = null)
     {
-        Task MapStatus(HttpContext context)
+        var r = GivenDefaultRoute(port).WithMethods(method ?? HttpMethods.Get);
+        r.AuthenticationOptions = new(scheme)
         {
-            context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(responseBody);
-        }
-        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
+            AllowAnonymous = allowAnonymous,
+            AllowedScopes = scopes?.ToList(),
+        };
+        return r;
     }
+
+    public static FileGlobalConfiguration GivenGlobalAuthConfiguration(
+        string scheme = JwtBearerDefaults.AuthenticationScheme,
+        string[] allowedScopes = null)
+        => new()
+        {
+            AuthenticationOptions = new()
+            {
+                AllowedScopes = new(allowedScopes ?? []),
+                AuthenticationProviderKeys = [scheme],
+            },
+        };
+
+    //private IConfiguration _config;
+    private readonly UserManager<IdentityUser> _userManager = default;
+    public async Task<BearerToken> GenerateTokenAsync(IdentityUser user, string issuer, string audience, string secretKey)
+    {
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var roleClaims = roles
+            .Select(role => new Claim(ClaimTypes.Role, role));
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        }
+        .Union(userClaims)
+        .Union(roleClaims);
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiry = DateTime.UtcNow.AddMinutes(1);
+        var token = new JwtSecurityToken(
+            issuer: issuer, //_config["Jwt:Issuer"],
+            audience: audience, // _config["Jwt:Audience"],
+            claims: claims,
+            expires: expiry,
+            signingCredentials: creds
+        );
+        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+        BearerToken bt = new()
+        {
+            AccessToken = jwt,
+            ExpiresIn = (int)(expiry - DateTime.UtcNow).TotalSeconds,
+            TokenType = JwtBearerDefaults.AuthenticationScheme,
+        };
+        return bt;
+    }
+
+    private static bool IsRoleKey(KeyValuePair<string, string> kv)
+        => nameof(ClaimTypes.Role).Equals(kv.Key, StringComparison.OrdinalIgnoreCase)
+            || ClaimTypes.Role.Equals(kv.Key);
+    private static bool IsNotRoleKey(KeyValuePair<string, string> kv)
+        => !IsRoleKey(kv);
+
+    public static BearerToken GenerateToken(string issuerUrl, AuthenticationTokenRequest auth)
+    {
+        var userClaims = auth.Claims // await _userManager.GetClaimsAsync(user);
+            .Where(IsNotRoleKey)
+            .Select(kv => new Claim(kv.Key, kv.Value))
+            .ToList();
+        var roleClaims = auth.Claims // await _userManager.GetRolesAsync(user);
+            .Where(IsRoleKey)
+            .Select(kv => new Claim(/*ClaimTypes.Role*/kv.Key, kv.Value)) // ClaimTypes.Role is not supported, see AuthorizationTests.Should_fix_issue_240
+            .ToList();
+        var claims = new List<Claim>(4 + auth.Claims.Count)
+        {
+            new(JwtRegisteredClaimNames.Sub, auth.UserId),
+            new(OcelotClaims.OcSub, auth.UserId), // this is a handy lifehack to fix current authorization services like IScopesAuthorizer and IClaimsAuthorizer, which don't support JWT standard and claim types in URL form, aka the ':' delimiter issue with the JSON configuration provider
+            new(JwtRegisteredClaimNames.Email, $"{auth.UserName}@ocelot.net"),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ScopesAuthorizer.Scope, auth.Scopes),
+        };
+        claims.AddRange(roleClaims);
+        claims.AddRange(userClaims);
+
+        var credentials = new SigningCredentials(auth.IssuerSigningKey(), SecurityAlgorithms.HmacSha256);
+        var expiry = DateTime.UtcNow.AddMinutes(1);
+        var token = new JwtSecurityToken(
+            issuer: new Uri(issuerUrl).Authority, // URL http://localhost:1234 -> DNS localhost:1234 //_config["Jwt:Issuer"],
+            audience: auth.Audience, // _config["Jwt:Audience"],
+            claims: claims,
+            expires: expiry,
+            signingCredentials: credentials
+        );
+        var jwt = string.Empty;
+        try
+        {
+            jwt = new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        catch (Exception ex)
+        {
+            jwt = ex.Message;
+        }
+        BearerToken bt = new()
+        {
+            AccessToken = jwt,
+            ExpiresIn = (int)(expiry - DateTime.UtcNow).TotalSeconds,
+            TokenType = JwtBearerDefaults.AuthenticationScheme,
+        };
+        return bt;
+    }
+
+    public static FileAuthenticationOptions GivenOptions(bool? allowAnonymous = null,
+        List<string> allowedScopes = null, string authKey = null, string[] schemes = null)
+        => new()
+        {
+            AllowAnonymous = allowAnonymous,
+            AllowedScopes = allowedScopes,
+            AuthenticationProviderKey = authKey,
+            AuthenticationProviderKeys = schemes,
+        };
 }

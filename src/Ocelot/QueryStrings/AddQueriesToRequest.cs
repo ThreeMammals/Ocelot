@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using System.Security.Claims;

@@ -41,7 +41,7 @@ public sealed class AggregateTests : Steps
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key1data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -57,7 +57,7 @@ public sealed class AggregateTests : Steps
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key2data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -73,7 +73,7 @@ public sealed class AggregateTests : Steps
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key3data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -89,7 +89,7 @@ public sealed class AggregateTests : Steps
                 {
                     DownstreamPathTemplate = "/api/values?MailId={userid}",
                     UpstreamPathTemplate = "/key4data/{userid}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     DownstreamScheme = "http",
                     DownstreamHostAndPorts = new()
                     {
@@ -106,12 +106,12 @@ public sealed class AggregateTests : Steps
             {
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2", "key3", "key4" },
+                    RouteKeys = ["key1", "key2", "key3", "key4"],
                     UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
                 },
                 new FileAggregateRoute
                 {
-                    RouteKeys = new() { "key1", "key2" },
+                    RouteKeys = ["key1", "key2"],
                     UpstreamPathTemplate = "/EmpDetail/US/{userid}",
                 },
             },
@@ -154,7 +154,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/Comments",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Comments",
                 },
                 new FileRoute
@@ -170,7 +170,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/UserDetails/{userId}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "UserDetails",
                 },
                 new FileRoute
@@ -186,7 +186,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/PostDetails/{postId}",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "PostDetails",
                 },
             },
@@ -196,7 +196,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Comments", "UserDetails", "PostDetails" },
+                    RouteKeys = ["Comments", "UserDetails", "PostDetails"],
                     RouteKeysConfig = new()
                     {
                         new AggregateRouteConfig
@@ -247,7 +247,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
 
@@ -264,7 +264,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -274,7 +274,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                     Aggregator = "FakeDefinedAggregator",
                 },
             },
@@ -335,7 +335,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -351,7 +351,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -361,7 +361,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -401,7 +401,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -417,7 +417,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -427,7 +427,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -467,7 +467,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
                 new FileRoute
@@ -483,7 +483,7 @@ public sealed class AggregateTests : Steps
                         },
                     },
                     UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = new() { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Tom",
                 },
             },
@@ -493,7 +493,7 @@ public sealed class AggregateTests : Steps
                 {
                     UpstreamPathTemplate = "/",
                     UpstreamHost = "localhost",
-                    RouteKeys = new() { "Laura", "Tom" },
+                    RouteKeys = ["Laura", "Tom"],
                 },
             },
         };
@@ -609,7 +609,7 @@ public sealed class AggregateTests : Steps
     //        this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
     //            .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
     //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-    //            .And(x => auth.GivenIHaveAToken(identityServerUrl))
+    //            .And(x => auth.GivenToken(identityServerUrl))
     //            .And(x => auth.GivenThereIsAConfiguration(configuration))
     //            .And(x => auth.GivenOcelotIsRunning(configureServices, configureApp))
     //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
@@ -777,11 +777,11 @@ public sealed class AggregateTests : Steps
         DownstreamScheme = Uri.UriSchemeHttp,
         DownstreamHostAndPorts = new() { new("localhost", port) },
         UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         Key = key,
     };
 
-    protected override FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
         var obj = base.GivenConfiguration(routes);
         obj.Aggregates.Add(
@@ -789,7 +789,7 @@ public sealed class AggregateTests : Steps
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = routes.Select(r => r.Key).ToList(), // [ "Laura", "Tom" ],
+                RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
             }
         );
         return obj;

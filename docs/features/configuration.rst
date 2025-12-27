@@ -1,6 +1,6 @@
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Configuration/Program.cs
-.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
 .. _Consul: https://www.consul.io/
 .. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
 
@@ -79,7 +79,8 @@ You do not need to set all of these things, but this is everything that is avail
       "DownstreamHttpVersionPolicy": "",
       "DownstreamPathTemplate": "",
       "DownstreamScheme": "",
-      "FileCacheOptions": {}, // object
+      "CacheOptions": {}, // object
+      "FileCacheOptions": {}, // deprecated! -> use CacheOptions
       "HttpHandlerOptions": {}, // object
       "Key": "",
       "LoadBalancerOptions": {}, // object
@@ -103,6 +104,10 @@ You do not need to set all of these things, but this is everything that is avail
 
 The actual route schema with all the properties can be found in the C# `FileRoute`_ class.
 
+  **Note**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.1.0/src/Ocelot/Configuration/File/FileRoute.cs#L86-L88>`__ ``FileCacheOptions`` section is deprecated in version `24.1`_!
+  Use ``CacheOptions`` instead of ``FileCacheOptions``! Note that ``FileCacheOptions`` will be removed in version `25.0`_!
+  For backward compatibility in version `24.1`_, the ``FileCacheOptions`` section takes precedence over the ``CacheOptions`` section.
+
 .. _config-dynamic-route-schema:
 
 Dynamic Route Schema
@@ -117,15 +122,30 @@ Here is the complete dynamic route configuration, also known as the *"dynamic ro
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
+      "CacheOptions": {},
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
+      "HttpHandlerOptions": {},
+      "LoadBalancerOptions": {},
       "Metadata": {}, // dictionary
-      "RateLimitRule": {},
+      "QoSOptions": {},
+      "RateLimitRule": {}, // deprecated! -> use RateLimitOptions
+      "RateLimitOptions": {},
       "ServiceName": "",
+      "ServiceNamespace": "",
       "Timeout": 0 // nullable integer
     }
 
 The actual dynamic route schema with all the properties can be found in the C# `FileDynamicRoute`_ class.
+
+  **Note 1**: The `old schema <https://github.com/ThreeMammals/Ocelot/blob/24.1.0/src/Ocelot/Configuration/File/FileDynamicRoute.cs#L10-L11>`_ ``RateLimitRule`` section is deprecated in version `24.1`_!
+  Use ``RateLimitOptions`` instead of ``RateLimitRule``! Note that ``RateLimitRule`` will be removed in version `25.0`_!
+  For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
+
+  **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
+  Starting with version `24.1`_, both global and route-level options for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  For a clearer understanding of the changes, refer to the `previous schema (version 24.0) <https://ocelot.readthedocs.io/en/24.0/features/configuration.html#dynamic-route-schema>`_.
 
 .. _config-aggregate-route-schema:
 
@@ -168,23 +188,34 @@ Here is the complete global configuration, also known as the *"global configurat
 .. code-block:: json
 
     {
+      "AuthenticationOptions": {},
       "BaseUrl": "",
       "CacheOptions": {},
+      "DownstreamHeaderTransform": {}, // dictionary
       "DownstreamHttpVersion": "",
       "DownstreamHttpVersionPolicy": "",
       "DownstreamScheme": "",
       "HttpHandlerOptions": {},
       "LoadBalancerOptions": {},
+      "Metadata": {}, // dictionary
       "MetadataOptions": {},
       "QoSOptions": {},
       "RateLimitOptions": {},
       "RequestIdKey": "",
       "SecurityOptions": {},
       "ServiceDiscoveryProvider": {},
-      "Timeout": 0 // nullable integer
+      "Timeout": 0, // nullable integer
+      "UpstreamHeaderTransform": {} // dictionary
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
+
+  **Note 1**: The following global options were not supported in versions prior to `24.1`_ for overriding in the :ref:`config-dynamic-route-schema`: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, and ``Timeout``.
+  Moreover, these global options were not available in versions prior to `24.1`_ for static routes, as stated in issue `585`_.
+  Starting with version `24.1`_, both static and dynamic route *global* options are fully supported.
+  For a clearer understanding of the changes, refer to the :ref:`config-dynamic-route-schema` and related notes.
+
+  **Note 2**: The ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` global options were introduced in version `24.1`_, but they are available only for static routes.
 
 .. _config-overview:
 
@@ -471,7 +502,7 @@ For further details on managing Ocelot configurations via a Consul instance, ple
 Build From Scratch
 ------------------
 
-  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
+  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
 
 Storing, reading, and writing static configurations may have limitations.
 Therefore, for more flexible and advanced scenarios the ``FileConfiguration`` object can be built from scratch in C# code of Ocelot application startup.
@@ -519,23 +550,26 @@ In summary, the final .NET 8+ solution should be written in `Program`_ using `to
 
 As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
 
-``HttpHandlerOptions`` 
+.. _config-http-handler-options:
+
+``HttpHandlerOptions``
 ----------------------
 
-  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
+  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
 This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
-These options can be set at the route or global level.
+These options can be set at the route or global level for both static and :ref:`dynamic routing <routing-dynamic>`.
 
-Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior based on a ``SocketsHttpHandler`` instance:
+Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior
+based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler&type=code>`_ instance:
 
 .. code-block:: json
 
   "HttpHandlerOptions": {
     "AllowAutoRedirect": false,
-    "MaxConnectionsPerServer": 2147483647, // max value
-    "PooledConnectionLifetimeSeconds": null, // integer or null
+    "MaxConnectionsPerServer": 2147483647, // max integer
+    "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
     "UseProxy": false,
     "UseTracing": false
@@ -570,22 +604,27 @@ Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandle
       - This enables :doc:`../features/tracing` feature in Ocelot.
         Also refer to the **3rd note** below!
 
-.. _break2: http://break.do
+.. note::
 
-    **Note 1**: If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds, which is hardcoded in the `HttpHandlerOptionsCreator <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/Creator/HttpHandlerOptionsCreator.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
+  1. If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds,
+  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
 
-    **Note 2**: If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
-    This means that all requests to that downstream service will share the same cookies. 
-    Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
-    The Ocelot team tried to think of a nice way to handle this but we think it is impossible. 
-    If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
-    If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
-    This would also mean that subsequent requests don't use the cookies from the previous response!
-    All in all not a great situation.
-    We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
-    Just look at your response headers and forward the cookies back with your next request! 
+  2. If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
+  This means that all requests to that downstream service will share the same cookies.
+  Issue `274 <https://github.com/ThreeMammals/Ocelot/issues/274>`_ was created because a user noticed that the cookies were being shared.
+  The Ocelot team tried to think of a nice way to handle this but we think it is impossible.
+  If you don't cache the clients, that means each request gets a new client and therefore a new cookie container.
+  If you clear the cookies from the cached client container, you get race conditions due to inflight requests. 
+  This would also mean that subsequent requests don't use the cookies from the previous response!
+  All in all not a great situation.
+  We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
+  Just look at your response headers and forward the cookies back with your next request!
 
-    **Note 3**: ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``, encapsulating the ``Ocelot.Logging.ITracer`` service of DI-container.
+  3. ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``,
+  encapsulating the ``Ocelot.Logging.IOcelotTracer`` service of DI-container.
+
+  4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
+  Since version `24.1`_, global configuration is supported for both static and dynamic routes.
 
 .. _ssl-errors:
 
@@ -724,7 +763,7 @@ The ``Metadata`` options can store any arbitrary data that users can access in m
 By using the *metadata*, users can implement their own logic and extend the functionality of Ocelot.
 
 The :doc:`../features/metadata` feature is designed to extend both the static :ref:`config-route-schema` and :ref:`config-dynamic-route-schema`.
-Global *metadata* must be defined inside the ``MetadataOptions`` section.
+Global *metadata* must be defined in the ``Metadata`` section, while parsing options should be placed in the ``MetadataOptions`` section.
 
 The following example demonstrates practical usage of this feature:
 
@@ -747,12 +786,12 @@ The following example demonstrates practical usage of this feature:
     ],
     "GlobalConfiguration": {
       // other opts...
+      "Metadata": {
+        "instance_name": "dc-1-54abcz",
+        "my-extension/param1": "default-value"
+      },
       "MetadataOptions": {
-        // other metadata opts...
-        "Metadata": {
-          "instance_name": "dc-1-54abcz",
-          "my-extension/param1": "default-value"
-        }
+        // parsing metadata opts...
       }
     }
   }
@@ -788,81 +827,100 @@ For comprehensive documentation, please refer to the :doc:`../features/metadata`
 ``Timeout``
 -----------
 
-[#f5]_ This feature is designed as part of the ``MessageInvokerPool``, which contains cached ``HttpMessageInvoker`` objects per route.
+This feature [#f5]_ is designed as part of the ``MessageInvokerPool``, which contains cached ``HttpMessageInvoker`` objects per route.
 Each created ``HttpMessageInvoker`` encapsulates an ``HttpMessageHandler``, specifically a ``SocketsHttpHandler`` instance, which serves as the base handler for the request pipeline.
 This pipeline also includes all user-defined :doc:`../features/delegatinghandlers`.
 Finally, both the :doc:`../features/delegatinghandlers` and the base ``SocketsHttpHandler`` are wrapped by Ocelot's custom ``TimeoutDelegatingHandler``, which provides the internal timeout functionality.
 
   **Note**: This design is subject to future review because ``TimeoutDelegatingHandler`` overrides/mimics the default timeout properties of ``SocketsHttpHandler``, as well as the behavior of ``HttpMessageInvoker`` as a controller for ``HttpMessageHandler`` objects.
 
-To configure timeouts (in seconds) at different levels, choose the appropriate level and provide the corresponding JSON configuration:
+To configure timeouts (in seconds) at different levels, choose the appropriate level and provide the corresponding JSON configuration.
 
-- **A route timeout** can be easily defined using the following JSON, according to the :ref:`config-route-schema`:
+Route timeout
+^^^^^^^^^^^^^
 
-  .. code-block:: json
+A *route timeout* (also known as Requester middleware timeout based on ``TimeoutDelegatingHandler``) can be easily defined using the following JSON, according to the :ref:`config-route-schema`:
 
-    {
-      // upstream props
-      // downstream props
-      "Timeout": 3 // seconds
+.. code-block:: json
+
+  {
+    // upstream props
+    // downstream props
+    "Timeout": 3 // seconds
+  }
+
+Please note that the route-level timeout takes precedence over the global timeout.
+The same configuration applies to *dynamic routes*, according to the :ref:`config-dynamic-route-schema`.
+
+Global timeout
+^^^^^^^^^^^^^^
+
+A *global configuration timeout* can be defined using the following JSON, according to the :ref:`config-global-configuration-schema`:
+
+.. code-block:: json
+
+  {
+    // routes...
+    "GlobalConfiguration": {
+      // other props
+      "Timeout": 60 // seconds, 1 minute
     }
+  }
 
-  Please note that the route-level timeout takes precedence over the global timeout.
-  The same configuration applies to *dynamic routes*, according to the :ref:`config-dynamic-route-schema`.
+Please note that the global timeout is substituted into a route if the route-level timeout is not defined, and it takes precedence over the absolute :ref:`config-default-timeout`.
+Additionally, the global timeout may be omitted in the JSON configuration in favor of the absolute :ref:`config-default-timeout`, which is also configurable via a property of the C# static class.
 
-- **A global configuration timeout** can be defined using the following JSON, according to the :ref:`config-global-configuration-schema`:
+QoS timeout
+^^^^^^^^^^^
 
-  .. code-block:: json
+A :doc:`../features/qualityofservice` (QoS) *timeout* can be defined using the :ref:`qos-schema` and the QoS :ref:`qos-timeout-strategy`:
 
-    {
-      // routes...
-      "GlobalConfiguration": {
-        // other props
-        "Timeout": 60 // seconds, 1 minute
-      }
-    }
+.. code-block:: json
 
-  Please note that the global timeout is substituted into a route if the route-level timeout is not defined, and it takes precedence over the absolute :ref:`config-default-timeout`.
-  Additionally, the global timeout may be omitted in the JSON configuration in favor of the absolute :ref:`config-default-timeout`, which is also configurable via a property of the C# static class.
+  "QoSOptions": {
+    "Timeout": 5000 // milliseconds
+  }
 
-- **A** :doc:`../features/qualityofservice` **timeout** can be defined according to the QoS :ref:`qos-configuration-schema` and the QoS :ref:`qos-timeout-strategy`:
+Please note, the *Quality of Service* timeout takes precedence over both route-level and global timeouts, which are ignored when QoS is enabled.
+Additionally, avoid defining both *timeouts* in the same route, as the QoS timeout has higher priority than the route-level timeout.
+Therefore, the following route configuration **is not** recommended:
 
-  .. code-block:: json
+.. code-block:: json
 
+  {
+    // route props...
+    "Timeout": 3, // seconds
     "QoSOptions": {
-      "TimeoutValue": 5000 // milliseconds
+      "Timeout": 5000 // milliseconds
     }
+  }
 
-  Please note, the *Quality of Service* timeout takes precedence over both route-level and global timeouts, which are ignored when QoS is enabled.
-  Additionally, avoid defining both timeouts in the same route, as the QoS timeout (``TimeoutValue``) has higher priority than the route-level timeout.
-  Therefore, the following route configuration is not recommended:
+So, route ``Timeout`` will be ignored in favor of QoS ``Timeout``.
+Moreover, because the 3-second duration is shorter than 5000 milliseconds, you may observe warning messages in the logs that begin with the following sentence:
 
-  .. code-block:: json
+.. code-block:: text
 
-    {
-      // route props...
-      "Timeout": 3, // seconds
-      "QoSOptions": {
-        "TimeoutValue": 5000 // milliseconds
-      }
+  Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS Timeout is misconfigured: ...
+
+For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
+Your next recommended action is to completely remove the 3-second ``Timeout`` property or comment it out:
+
+.. code-block:: json
+
+  {
+    // "Timeout": 3, // seconds
+    "QoSOptions": {
+      "Timeout": 5000 // milliseconds
     }
+  }
 
-  So, ``Timeout`` will be ignored in favor of ``TimeoutValue``.
-  Moreover, because the 3-second duration is shorter than 5000 milliseconds, you may observe warning messages in the logs that begin with the following sentence:
+.. note::
 
-  .. code-block:: text
-
-    Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: ...
-
-  For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
-  Your next recommended action is to completely remove the ``Timeout`` property.
-
-.. _break4: http://break.do
-
-  **Note 1**: Both ``Timeout`` and ``TimeoutValue`` are nullable positive integers, with a minimum valid value of ``1``.
+  1. Both route ``Timeout`` and QoS ``Timeout`` are nullable positive integers, with a minimum valid value of ``1``.
   Values in the range ``(−∞, 0]`` are treated as "no value" and will be automatically converted to the absolute :ref:`config-default-timeout`, effectively ignoring the property.
 
-  **Note 2**: The unit of measurement for ``Timeout`` is seconds, whereas ``TimeoutValue`` (used in QoS) is measured in milliseconds.
+  2. The unit of measurement for route ``Timeout`` is seconds,
+  whereas QoS ``Timeout`` is measured in milliseconds.
 
 .. _config-default-timeout:
 
@@ -892,15 +950,16 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 
 """"
 
-.. [#f1] The ":ref:`config-merging-files`" feature was requested in issue `296`_, since then we extended it in issue `1216`_ (PR `1227`_) as ":ref:`config-merging-tomemory`" subfeature which was released as a part of version `23.2`_.
-.. [#f2] The ":ref:`config-merging-tomemory`" feature is based on the `MergeOcelotJson <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/MergeOcelotJson.cs>`_ enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
-.. [#f3] The ":ref:`config-version-policy`" feature was requested in issue `1672`_ as a part of version `23.3`_.
+.. [#f1] The ":ref:`Merging Files <config-merging-files>`" feature was requested in issue `296`_, since then we extended it in issue `1216`_ (PR `1227`_) as ":ref:`Merging files to memory <config-merging-tomemory>`" subfeature which was released as a part of version `23.2`_.
+.. [#f2] The ":ref:`Merging files to memory <config-merging-tomemory>`" feature is based on the `MergeOcelotJson <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/MergeOcelotJson.cs>`_ enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
+.. [#f3] The ":ref:`DownstreamHttpVersionPolicy <config-version-policy>`" feature was requested in issue `1672`_ as a part of version `23.3`_.
 .. [#f4] The ":ref:`config-route-metadata`" feature was requested in issues `738`_ and `1990`_, and it was released as part of version `23.3`_.
 .. [#f5] The initial draft design of the :ref:`config-timeout` feature was implemented in pull request `1824`_ as ``TimeoutDelegatingHandler`` (released in version `23.0`_), but this version supported only the built-in `default timeout of 90 seconds`_.
   The full :ref:`config-timeout` feature was requested in issue `1314`_, implemented in pull request `2073`_, and officially released as part of version `24.1`_.
 
 .. _default timeout of 90 seconds: https://github.com/ThreeMammals/Ocelot/blob/24.0.0/src/Ocelot/Requester/MessageInvokerPool.cs#L38
 .. _296: https://github.com/ThreeMammals/Ocelot/issues/296
+.. _585: https://github.com/ThreeMammals/Ocelot/issues/585
 .. _738: https://github.com/ThreeMammals/Ocelot/issues/738
 .. _1216: https://github.com/ThreeMammals/Ocelot/issues/1216
 .. _1227: https://github.com/ThreeMammals/Ocelot/pull/1227
@@ -915,3 +974,4 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
