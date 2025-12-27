@@ -1,41 +1,39 @@
 ﻿using CacheManager.Core;
 
-namespace Ocelot.Cache.CacheManager
+namespace Ocelot.Cache.CacheManager;
+
+public class OcelotCacheManagerCache<T> : IOcelotCache<T>
 {
-    public class OcelotCacheManagerCache<T> : IOcelotCache<T>
+    private readonly ICacheManager<T> _manager;
+    public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
     {
-        private readonly ICacheManager<T> _cacheManager;
+        _manager = cacheManager;
+    }
 
-        public OcelotCacheManagerCache(ICacheManager<T> cacheManager)
-        {
-            _cacheManager = cacheManager;
-        }
+    public bool Add(string key, T value, string region, TimeSpan ttl)
+    {
+        return _manager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
+    }
 
-        public void Add(string key, T value, TimeSpan ttl, string region)
-        {
-            _cacheManager.Add(new CacheItem<T>(key, region, value, ExpirationMode.Absolute, ttl));
-        }
+    public T AddOrUpdate(string key, T value, string region, TimeSpan ttl)
+    {
+        return _manager.AddOrUpdate(key, region, value, v => value);
+    }
 
-        public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
-        {
-            var exists = _cacheManager.Get(key);
+    public T Get(string key, string region)
+    {
+        return _manager.Get<T>(key, region);
+    }
 
-            if (exists != null)
-            {
-                _cacheManager.Remove(key);
-            }
+    public void ClearRegion(string region)
+    {
+        _manager.ClearRegion(region);
+    }
 
-            Add(key, value, ttl, region);
-        }
-
-        public T Get(string key, string region)
-        {
-            return _cacheManager.Get<T>(key, region);
-        }
-
-        public void ClearRegion(string region)
-        {
-            _cacheManager.ClearRegion(region);
-        }
+    public bool TryGetValue(string key, string region, out T value)
+    {
+        var item = _manager.GetCacheItem(key, region);
+        value = item != null ? item.Value : default;
+        return item != null && !item.IsExpired;
     }
 }

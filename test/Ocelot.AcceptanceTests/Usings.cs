@@ -15,3 +15,11 @@ global using Shouldly;
 global using System.Net;
 global using TestStack.BDDfy;
 global using Xunit;
+
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1124:DoNotUseRegions", Justification = "Reviewed.")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1503:Braces should not be omitted", Justification = "Reviewed")]
+[assembly: SuppressMessage("Usage", "xUnit1004:Test methods should not be skipped", Justification = "Reviewed.")]
+
+internal class Usings { }

@@ -1,9 +1,10 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public interface IAuthenticationOptionsCreator
 {
-    public interface IAuthenticationOptionsCreator
-    {
-        AuthenticationOptions Create(FileRoute route);
-    }
+    AuthenticationOptions Create(FileAuthenticationOptions options);
+    AuthenticationOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration);
+    AuthenticationOptions Create(FileDynamicRoute route, FileGlobalConfiguration globalConfiguration);
 }

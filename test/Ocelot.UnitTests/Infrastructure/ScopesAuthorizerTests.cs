@@ -1,118 +1,224 @@
 using Ocelot.Authorization;
 using Ocelot.Errors;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
-namespace Ocelot.UnitTests.Infrastructure
+namespace Ocelot.UnitTests.Infrastructure;
+
+public class ScopesAuthorizerTests : UnitTest
 {
-    public class ScopesAuthorizerTests : UnitTest
+    private readonly ScopesAuthorizer _authorizer;
+    private readonly Mock<IClaimsParser> _parser;
+
+    public ScopesAuthorizerTests()
     {
-        private readonly ScopesAuthorizer _authorizer;
-        public Mock<IClaimsParser> _parser;
-        private ClaimsPrincipal _principal;
-        private List<string> _allowedScopes;
-        private Response<bool> _result;
-
-        public ScopesAuthorizerTests()
-        {
-            _parser = new Mock<IClaimsParser>();
-            _authorizer = new ScopesAuthorizer(_parser.Object);
-        }
-
-        [Fact]
-        public void should_return_ok_if_no_allowed_scopes()
-        {
-            this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-            .And(_ => GivenTheFollowing(new List<string>()))
-            .When(_ => WhenIAuthorize())
-            .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-            .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_ok_if_null_allowed_scopes()
-        {
-            this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-            .And(_ => GivenTheFollowing((List<string>)null))
-            .When(_ => WhenIAuthorize())
-            .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-            .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_if_claims_parser_returns_error()
-        {
-            var fakeError = new FakeError();
-            this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-            .And(_ => GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError)))
-            .And(_ => GivenTheFollowing(new List<string> { "doesntmatter" }))
-            .When(_ => WhenIAuthorize())
-            .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-            .BDDfy();
-        }
-
-        [Fact]
-        public void should_match_scopes_and_return_ok_result()
-        {
-            var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string> { "someScope" };
-
-            this.Given(_ => GivenTheFollowing(claimsPrincipal))
-            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes)))
-            .And(_ => GivenTheFollowing(allowedScopes))
-            .When(_ => WhenIAuthorize())
-            .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-            .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_match_scopes_and_return_error_result()
-        {
-            var fakeError = new FakeError();
-            var claimsPrincipal = new ClaimsPrincipal();
-            var allowedScopes = new List<string> { "someScope" };
-            var userScopes = new List<string> { "anotherScope" };
-
-            this.Given(_ => GivenTheFollowing(claimsPrincipal))
-            .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userScopes)))
-            .And(_ => GivenTheFollowing(allowedScopes))
-            .When(_ => WhenIAuthorize())
-            .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-            .BDDfy();
-        }
-
-        private void GivenTheParserReturns(Response<List<string>> response)
-        {
-            _parser.Setup(x => x.GetValuesByClaimType(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>())).Returns(response);
-        }
-
-        private void GivenTheFollowing(ClaimsPrincipal principal)
-        {
-            _principal = principal;
-        }
-
-        private void GivenTheFollowing(List<string> allowedScopes)
-        {
-            _allowedScopes = allowedScopes;
-        }
-
-        private void WhenIAuthorize()
-        {
-            _result = _authorizer.Authorize(_principal, _allowedScopes);
-        }
-
-        private void ThenTheFollowingIsReturned(Response<bool> expected)
-        {
-            _result.Data.ShouldBe(expected.Data);
-            _result.IsError.ShouldBe(expected.IsError);
-        }
+        _parser = new Mock<IClaimsParser>();
+        _authorizer = new ScopesAuthorizer(_parser.Object);
     }
 
-    public class FakeError : Error
+    [Fact]
+    public void Should_return_ok_if_no_allowed_scopes()
     {
-        public FakeError() : base("fake error", OcelotErrorCode.CannotAddDataError, 404)
-        {
-        }
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string>();
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_return_ok_if_null_allowed_scopes()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = (List<string>)null;
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_return_error_if_claims_parser_returns_error()
+    {
+        // Arrange
+        var fakeError = new FakeError();
+        var principal = new ClaimsPrincipal();
+        GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError));
+        var allowedScopes = new List<string> { "doesntmatter" };
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
+    }
+
+    [Fact]
+    public void Should_match_scopes_and_return_ok_result()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "someScope" };
+        GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    public void Should_not_match_scopes_and_return_error_result()
+    {
+        // Arrange
+        var fakeError = new FakeError();
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "someScope" };
+        var userScopes = new List<string> { "anotherScope" };
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
+    }
+
+    #region PR 1478
+    [Fact]
+    [Trait("Bug", "913")] // https://github.com/ThreeMammals/Ocelot/issues/913
+    [Trait("PR", "1478")] // https://github.com/ThreeMammals/Ocelot/pull/1478
+    public void Should_split_space_separated_scope_and_match()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read", "api.write" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public void Should_split_space_separated_scope_and_match_single_scope()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.write" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public void Should_split_space_separated_scope_but_not_match()
+    {
+        // Arrange
+        var fakeError = new FakeError();
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "admin" };
+        var userScopes = new List<string> { "api.read api.write openid" }; // Space-separated scope claim
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
+    }
+
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public void Should_handle_multiple_scope_claims_without_splitting()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "api.read", "api.write" }; // Multiple separate claims
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public void Should_not_split_single_scope_without_spaces()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "api.read" }; // Single scope without spaces
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+
+    [Fact]
+    [Trait("Bug", "913")]
+    [Trait("PR", "1478")]
+    public void Should_handle_empty_string_after_splitting()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+        var allowedScopes = new List<string> { "api.read" };
+        var userScopes = new List<string> { "  api.read  api.write  " }; // Scope with extra spaces
+        GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
+
+        // Act
+        var result = _authorizer.Authorize(principal, allowedScopes);
+
+        // Assert
+        ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
+    }
+    #endregion PR 1478
+
+    private void GivenTheParserReturns(Response<List<string>> response)
+    {
+        _parser.Setup(x => x.GetValuesByClaimType(It.IsAny<IEnumerable<Claim>>(), It.IsAny<string>())).Returns(response);
+    }
+
+    private static void ThenTheFollowingIsReturned(Response<bool> actual, Response<bool> expected)
+    {
+        actual.Data.ShouldBe(expected.Data);
+        actual.IsError.ShouldBe(expected.IsError);
+    }
+}
+
+public class FakeError : Error
+{
+    public FakeError() : base("fake error", OcelotErrorCode.CannotAddDataError, 404)
+    {
     }
 }

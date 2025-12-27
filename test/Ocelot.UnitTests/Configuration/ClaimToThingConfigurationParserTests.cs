@@ -3,110 +3,112 @@ using Ocelot.Configuration.Parser;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-headers">Claims to Headers</see>.
+/// </summary>
+[Trait("Commit", "84256e7")] // https://github.com/ThreeMammals/Ocelot/commit/84256e7bac0fa2c8ceba92bd8fe64c8015a37cea
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
+public class ClaimToThingConfigurationParserTests : UnitTest
 {
-    public class ClaimToThingConfigurationParserTests : UnitTest
+    private readonly ClaimToThingConfigurationParser _parser;
+
+    public ClaimToThingConfigurationParserTests()
     {
-        private Dictionary<string, string> _dictionary;
-        private readonly IClaimToThingConfigurationParser _claimToThingConfigurationParser;
-        private Response<ClaimToThing> _result;
+        _parser = new ClaimToThingConfigurationParser();
+    }
 
-        public ClaimToThingConfigurationParserTests()
+    [Fact]
+    public void Returns_no_instructions_error()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, string>
         {
-            _claimToThingConfigurationParser = new ClaimToThingConfigurationParser();
-        }
+            {"CustomerId", string.Empty},
+        };
 
-        [Fact]
-        public void returns_no_instructions_error()
-        {
-            this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
+        // Act
+        var result = WhenICallTheExtractor(dictionary);
+
+        // Assert
+        ThenAnErrorIsReturned(result, new ErrorResponse<ClaimToThing>(
+            new List<Error>
             {
-                {"CustomerId", string.Empty},
-            }))
-                .When(x => x.WhenICallTheExtractor())
-                .Then(
-                    x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
-                            new List<Error>
-                            {
-                                new NoInstructionsError(">"),
-                            })))
-                .BDDfy();
-        }
+                new NoInstructionsError(">"),
+            }));
+    }
 
-        [Fact]
-        public void returns_no_instructions_not_for_claims_error()
+    [Fact]
+    public void Returns_no_instructions_not_for_claims_error()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, string>
         {
-            this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
+            {"CustomerId", "Cheese[CustomerId] > value"},
+        };
+
+        // Act
+        var result = WhenICallTheExtractor(dictionary);
+
+        // Assert
+        ThenAnErrorIsReturned(result, new ErrorResponse<ClaimToThing>(new List<Error>
             {
-                {"CustomerId", "Cheese[CustomerId] > value"},
-            }))
-                .When(x => x.WhenICallTheExtractor())
-                .Then(
-                    x =>
-                        x.ThenAnErrorIsReturned(new ErrorResponse<ClaimToThing>(
-                            new List<Error>
-                            {
-                                new InstructionNotForClaimsError(),
-                            })))
-                .BDDfy();
-        }
+                new InstructionNotForClaimsError(),
+            }));
+    }
 
-        [Fact]
-        public void can_parse_entry_to_work_out_properties_with_key()
+    [Fact]
+    public void Can_parse_entry_to_work_out_properties_with_key()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, string>
         {
-            this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-            {
-                {"CustomerId", "Claims[CustomerId] > value"},
-            }))
-                .When(x => x.WhenICallTheExtractor())
-                .Then(
-                    x =>
-                        x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ClaimToThing>(
-                                new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0))))
-                .BDDfy();
-        }
+            {"CustomerId", "Claims[CustomerId] > value"},
+        };
 
-        [Fact]
-        public void can_parse_entry_to_work_out_properties_with_key_delimiter_and_index()
-        {
-            this.Given(x => x.GivenTheDictionaryIs(new Dictionary<string, string>
-            {
-                {"UserId", "Claims[Subject] > value[0] > |"},
-            }))
-                .When(x => x.WhenICallTheExtractor())
-                .Then(
-                    x =>
-                        x.ThenTheClaimParserPropertiesAreReturned(
-                            new OkResponse<ClaimToThing>(
-                                new ClaimToThing("UserId", "Subject", "|", 0))))
-                .BDDfy();
-        }
+        // Act
+        var result = WhenICallTheExtractor(dictionary);
 
-        private void ThenAnErrorIsReturned(Response<ClaimToThing> expected)
-        {
-            _result.IsError.ShouldBe(expected.IsError);
-            _result.Errors[0].ShouldBeOfType(expected.Errors[0].GetType());
-        }
+        // Assert
+        ThenTheClaimParserPropertiesAreReturned(result,
+            new OkResponse<ClaimToThing>(new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0)));
+    }
 
-        private void ThenTheClaimParserPropertiesAreReturned(Response<ClaimToThing> expected)
+    [Fact]
+    public void Can_parse_entry_to_work_out_properties_with_key_delimiter_and_index()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, string>
         {
-            _result.Data.NewKey.ShouldBe(expected.Data.NewKey);
-            _result.Data.Delimiter.ShouldBe(expected.Data.Delimiter);
-            _result.Data.Index.ShouldBe(expected.Data.Index);
-            _result.IsError.ShouldBe(expected.IsError);
-        }
+            {"UserId", "Claims[Subject] > value[0] > |"},
+        };
 
-        private void WhenICallTheExtractor()
-        {
-            var first = _dictionary.First();
-            _result = _claimToThingConfigurationParser.Extract(first.Key, first.Value);
-        }
+        // Act
+        var result = WhenICallTheExtractor(dictionary);
 
-        private void GivenTheDictionaryIs(Dictionary<string, string> dictionary)
-        {
-            _dictionary = dictionary;
-        }
+        // Assert
+        ThenTheClaimParserPropertiesAreReturned(result,
+            new OkResponse<ClaimToThing>(new ClaimToThing("UserId", "Subject", "|", 0)));
+    }
+
+    private static void ThenAnErrorIsReturned(Response<ClaimToThing> result, Response<ClaimToThing> expected)
+    {
+        result.IsError.ShouldBe(expected.IsError);
+        result.Errors[0].ShouldBeOfType(expected.Errors[0].GetType());
+    }
+
+    private static void ThenTheClaimParserPropertiesAreReturned(Response<ClaimToThing> result, Response<ClaimToThing> expected)
+    {
+        result.Data.NewKey.ShouldBe(expected.Data.NewKey);
+        result.Data.Delimiter.ShouldBe(expected.Data.Delimiter);
+        result.Data.Index.ShouldBe(expected.Data.Index);
+        result.IsError.ShouldBe(expected.IsError);
+    }
+
+    private Response<ClaimToThing> WhenICallTheExtractor(Dictionary<string, string> dictionary)
+    {
+        var first = dictionary.First();
+        return _parser.Extract(first.Key, first.Value);
     }
 }

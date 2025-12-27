@@ -7,14 +7,16 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Ocelot Gateway'
-copyright = ' 2016-2024, ThreeMammals Ocelot team'
-author = 'Tom Pallister, Raman Maksimchuk'
-release = '23.3'
+copyright = ' 2016-2025 Three Mammals'
+author = 'Tom Gardham-Pallister, Raman Maksimchuk'
+release = '24.1 "Globality"' # OK displayed
+version = '24.1' # version is not displayed in either HTML pages or PDF docs
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx_copybutton'
 ]
 
 templates_path = ['_templates']
@@ -23,6 +25,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# HTML theming: https://www.sphinx-doc.org/en/master/usage/theming.html
+# HTML theme development: https://www.sphinx-doc.org/en/master/development/html_themes/index.html
+# https://alabaster.readthedocs.io/en/latest/
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_theme
 html_theme = 'alabaster'
 

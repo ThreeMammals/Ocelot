@@ -1,89 +1,119 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Cache;
 
-namespace Ocelot.UnitTests.Cache
+namespace Ocelot.UnitTests.Cache;
+
+public class DefaultMemoryCacheTests : UnitTest
 {
-    public class DefaultMemoryCacheTests : UnitTest
+    private readonly DefaultMemoryCache<Fake> _cache;
+    public DefaultMemoryCacheTests()
     {
-        private readonly DefaultMemoryCache<Fake> _cache;
+        _ttl = TimeSpan.FromSeconds(100);
+        _cache = new DefaultMemoryCache<Fake>(new MemoryCache(new MemoryCacheOptions()));
+    }
 
-        public DefaultMemoryCacheTests()
+    protected TimeSpan TTL => _ttl;
+    private TimeSpan _ttl;
+
+    [Fact]
+    public void Should_cache()
+    {
+        // Arrange
+        var fake = new Fake(1);
+        _cache.Add("1", fake, "region", TTL);
+
+        // Act
+        var result = _cache.Get("1", "region");
+
+        // Assert
+        result.ShouldBe(fake);
+        fake.Value.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Doesnt_exist()
+    {
+        // Arrange, Act
+        var result = _cache.Get("1", "region");
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Should_add_or_update()
+    {
+        // Arrange
+        var fake = new Fake(1);
+        _cache.Add("1", fake, "region", TTL);
+        var newFake = new Fake(1);
+        _cache.AddOrUpdate("1", newFake, "region", TTL);
+
+        // Act
+        var result = _cache.Get("1", "region");
+
+        // Assert
+        result.ShouldBe(newFake);
+        newFake.Value.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Should_clear_region()
+    {
+        // Arrange
+        var fake1 = new Fake(1);
+        var fake2 = new Fake(2);
+        _cache.Add("1", fake1, "region", TTL);
+        _cache.Add("2", fake2, "region", TTL);
+        _cache.ClearRegion("region");
+
+        // Act, Assert
+        var result1 = _cache.Get("1", "region");
+        result1.ShouldBeNull();
+
+        // Act, Assert
+        var result2 = _cache.Get("2", "region");
+        result2.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Should_clear_key_if_ttl_expired()
+    {
+        // Arrange
+        var fake = new Fake(1);
+        _cache.Add("1", fake, "region", TimeSpan.FromMilliseconds(50));
+        Thread.Sleep(200);
+
+        // Act
+        var result = _cache.Get("1", "region");
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Should_not_add_to_cache_if_timespan_empty(int ttl)
+    {
+        // Arrange
+        var fake = new Fake(1);
+        _cache.Add("1", fake, "region", TimeSpan.FromSeconds(ttl));
+
+        // Act
+        var result = _cache.Get("1", "region");
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    private class Fake
+    {
+        public Fake(int value)
         {
-            _cache = new DefaultMemoryCache<Fake>(new MemoryCache(new MemoryCacheOptions()));
+            Value = value;
         }
 
-        [Fact]
-        public void should_cache()
-        {
-            var fake = new Fake(1);
-            _cache.Add("1", fake, TimeSpan.FromSeconds(100), "region");
-            var result = _cache.Get("1", "region");
-            result.ShouldBe(fake);
-            fake.Value.ShouldBe(1);
-        }
-
-        [Fact]
-        public void doesnt_exist()
-        {
-            var result = _cache.Get("1", "region");
-            result.ShouldBeNull();
-        }
-
-        [Fact]
-        public void should_add_and_delete()
-        {
-            var fake = new Fake(1);
-            _cache.Add("1", fake, TimeSpan.FromSeconds(100), "region");
-            var newFake = new Fake(1);
-            _cache.AddAndDelete("1", newFake, TimeSpan.FromSeconds(100), "region");
-            var result = _cache.Get("1", "region");
-            result.ShouldBe(newFake);
-            newFake.Value.ShouldBe(1);
-        }
-
-        [Fact]
-        public void should_clear_region()
-        {
-            var fake1 = new Fake(1);
-            var fake2 = new Fake(2);
-            _cache.Add("1", fake1, TimeSpan.FromSeconds(100), "region");
-            _cache.Add("2", fake2, TimeSpan.FromSeconds(100), "region");
-            _cache.ClearRegion("region");
-            var result1 = _cache.Get("1", "region");
-            result1.ShouldBeNull();
-            var result2 = _cache.Get("2", "region");
-            result2.ShouldBeNull();
-        }
-
-        [Fact]
-        public void should_clear_key_if_ttl_expired()
-        {
-            var fake = new Fake(1);
-            _cache.Add("1", fake, TimeSpan.FromMilliseconds(50), "region");
-            Thread.Sleep(200);
-            var result = _cache.Get("1", "region");
-            result.ShouldBeNull();
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public void should_not_add_to_cache_if_timespan_empty(int ttl)
-        {
-            var fake = new Fake(1);
-            _cache.Add("1", fake, TimeSpan.FromSeconds(ttl), "region");
-            var result = _cache.Get("1", "region");
-            result.ShouldBeNull();
-        }
-
-        private class Fake
-        {
-            public Fake(int value)
-            {
-                Value = value;
-            }
-
-            public int Value { get; }
-        }
+        public int Value { get; }
     }
 }
