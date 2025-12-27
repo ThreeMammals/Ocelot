@@ -84,14 +84,11 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public async Task Should_log_if_ignoring_ssl_errors()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new() { UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithQosOptions(new QoSOptionsBuilder().Build())
             .WithDangerousAcceptAnyServerCertificateValidator(true)
 
             // The test should pass without timeout definition -> implicit default timeout
@@ -118,14 +115,11 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public async Task Should_reuse_cookies_from_container()
     {
         // Arrange
-        var qosOptions = new QoSOptionsBuilder()
-            .Build();
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(qosOptions)
+            .WithQosOptions(new())
             .WithHttpHandlerOptions(new() { UseCookieContainer = true, UseProxy = true })
             .WithLoadBalancerKey(string.Empty)
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-            .WithQosOptions(new QoSOptionsBuilder().Build())
 
             // The test should pass without timeout definition -> implicit default timeout
             //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
@@ -208,10 +202,10 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     [Trait("Feat", "1869")]
     [InlineData(1, 2, 2, 0, "")] // QoS timeout < route timeout
     [InlineData(3, 4, 4, 0, "")] // QoS timeout < route timeout
-    [InlineData(2, 1, 4, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: specifically, the route Timeout (1000 ms) is shorter than the QoS TimeoutValue (2000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 4000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout > route timeout
-    [InlineData(4, 3, 8, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: specifically, the route Timeout (3000 ms) is shorter than the QoS TimeoutValue (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 8000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout > route timeout
-    [InlineData(5, 5, 10, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: specifically, the route Timeout (5000 ms) is equal to the QoS TimeoutValue (5000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 10000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout == route timeout
-    [InlineData(DownstreamRoute.DefTimeout + 1, null, 2 * (DownstreamRoute.DefTimeout + 1), 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS TimeoutValue is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (90000 ms) is shorter than the QoS TimeoutValue (91000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 182000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // DefaultTimeoutSeconds as route timeout
+    [InlineData(2, 1, 4, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS Timeout is misconfigured: specifically, the route Timeout (1000 ms) is shorter than the QoS Timeout (2000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 4000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout > route timeout
+    [InlineData(4, 3, 8, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS Timeout is misconfigured: specifically, the route Timeout (3000 ms) is shorter than the QoS Timeout (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 8000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout > route timeout
+    [InlineData(5, 5, 10, 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS Timeout is misconfigured: specifically, the route Timeout (5000 ms) is equal to the QoS Timeout (5000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 10000 ms to the route Timeout. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // QoS timeout == route timeout
+    [InlineData(DownstreamRoute.DefTimeout + 1, null, 2 * (DownstreamRoute.DefTimeout + 1), 1, "Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS Timeout is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (90000 ms) is shorter than the QoS Timeout (91000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 182000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!")] // DefaultTimeoutSeconds as route timeout
     public void EnsureRouteTimeoutIsGreaterThanQosOne_QosTimeoutVsRouteOne_ExpectedRouteTimeoutOrDoubledQosTimeout(int qosTimeout, int? routeTimeout, int expectedSeconds, int loggedCount, string expectedMessage)
     {
         // Arrange
@@ -435,7 +429,7 @@ public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
             AssertTimeout(invoker, 8); // should have doubled QoS timeout
             _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
             var message = fMsg?.Invoke() ?? string.Empty;
-            Assert.Equal("Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS TimeoutValue is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the QoS TimeoutValue (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS TimeoutValue and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!", message);
+            Assert.Equal("Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS Timeout is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the QoS Timeout (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!", message);
         }
         finally
         {
@@ -464,9 +458,7 @@ public class MessageInvokerPoolBase : UnitTest
     protected static DownstreamRoute GivenRoute(int? qosTimeout, int? routeTimeout,
         bool dangerousAcceptAnyServerCertificateValidator = false)
     {
-        var qosOptions = new QoSOptionsBuilder()
-            .WithTimeoutValue(qosTimeout.HasValue ? Ms(qosTimeout.Value): null) // !!!
-            .Build();
+        var qosOptions = new QoSOptions(qosTimeout.HasValue ? Ms(qosTimeout.Value) : null); // !!!
         var handlerOptions = new HttpHandlerOptions()
         {
             MaxConnectionsPerServer = int.MaxValue,

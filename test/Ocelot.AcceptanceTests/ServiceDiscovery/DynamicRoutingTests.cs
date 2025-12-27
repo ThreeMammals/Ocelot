@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Caching;
+using Ocelot.AcceptanceTests.QualityOfService;
 using Ocelot.AcceptanceTests.Requester;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
@@ -10,6 +11,7 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Metadata;
+using Ocelot.Provider.Polly;
 using Ocelot.Requester;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -417,6 +419,104 @@ public class DynamicRoutingTests : ConcurrentSteps
         ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0);
     }
 
+    [Fact]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
+    [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
+    public async Task ShouldApplyGlobalQosOptions_ForAllDynamicRoutes()
+    {
+        var ports = PortFinder.GetPorts(3);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        FileQoSOptions globalOptions = configuration.GlobalConfiguration.QoSOptions = new()
+        {
+            BreakDuration = CircuitBreakerStrategy.LowBreakDuration + 1, // 501
+            MinimumThroughput = 2, // exceptions-errors
+            Timeout = 500, // ms
+        };
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithDiscoveryAndPolly);
+
+        using var steps = new QosSteps(this);
+        _counters = new int[serviceUrls.Length];
+        steps.CounterStrategy = (port) =>
+        {
+            int index = Array.FindIndex(serviceUrls, url => new Uri(url).Port == port);
+            int count = Interlocked.Increment(ref _counters[index]);
+        };
+        await steps.TestRouteCircuitBreaker(ports, $"/{serviceName}/", globalOptions, isDiscovery: true); // test global scenario
+        await steps.TestRouteTimeout(ports, $"/{serviceName}/", globalOptions);
+        ThenServicesShouldHaveBeenCalledTimes(2, 2, 1);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
+    [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
+    public async Task ShouldApplyGlobalQosOptions_ForAllDynamicRoutes_WithGroupedOpts()
+    {
+        const int GlobalTimeout = 1500, GlobalExceptions = 3, GlobalBreakMs = 2000;
+        var ports1 = PortFinder.GetPorts(2);
+
+        // 1st route
+        var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
+        route1.QoSOptions = null; // 1st route has no opts
+        GivenDiscoveryMetadata(route1, ports1);
+
+        // 2nd route
+        var ports2 = PortFinder.GetPorts(2);
+        var route2 = GivenLbRoute("route2", key: "R2"); // 2nd route is in the group
+        route2.QoSOptions = null; // 2nd route opts will be applied from global ones
+        GivenDiscoveryMetadata(route2, ports2);
+
+        // 3rd route
+        var ports3 = PortFinder.GetPorts(2);
+        var route3 = GivenLbRoute("noCircuitBreaker", loadBalancer: nameof(NoLoadBalancer), key: null);
+        route3.QoSOptions = new()
+        {
+            MinimumThroughput = 0, // disable Circuit Breaker via disallowing of global opts to substitute
+            BreakDuration = 0,
+            Timeout = GlobalTimeout,
+        };
+        GivenDiscoveryMetadata(route3, ports3);
+
+        var configuration = GivenDynamicRouting(new(), route1, route2, route3);
+        var globalOptions = configuration.GlobalConfiguration.QoSOptions
+            = new(new QoSOptions(GlobalExceptions, GlobalBreakMs))
+            {
+                RouteKeys = ["R2"],
+            };
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithDiscoveryAndPolly);
+
+        var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
+        GivenMultipleServiceInstancesAreRunning(downstreamUrls,
+            Enumerable.Repeat(Body(), downstreamUrls.Length).ToArray(),
+            codes: Enumerable.Repeat(HttpStatusCode.NotFound, ports1.Length)
+                .Concat(Enumerable.Repeat(HttpStatusCode.InternalServerError, ports2.Length))
+                .Concat(Enumerable.Repeat(HttpStatusCode.OK, ports3.Length))
+                .ToArray());
+
+        using var steps = new QosSteps(this);
+        WhenIGetUrlOnTheApiGatewayConcurrently($"/{route1.ServiceName}/", 2);
+        ThenAllStatusCodesShouldBe(HttpStatusCode.NotFound); // QoS is switched off and the scope doesn't matter
+        ThenAllResponseBodiesShouldBe(Body());
+
+        steps.CounterStrategy = (port) =>
+        {
+            int index = Array.FindIndex(downstreamUrls, url => new Uri(url).Port == port);
+            int count = Interlocked.Increment(ref _counters[index]);
+        };
+        await steps.TestRouteCircuitBreaker(ports2, $"/{route2.ServiceName}/", globalOptions, isDiscovery: true); // test global scenario
+        await steps.TestRouteTimeout(ports3, $"/{route3.ServiceName}/", route3.QoSOptions);
+
+        ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 1, 2, 0);
+    }
+
     private FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes)
     {
         var config = new FileConfiguration()
@@ -458,6 +558,9 @@ public class DynamicRoutingTests : ConcurrentSteps
     private static void WithDiscovery(IServiceCollection services) => services
         .AddSingleton(DynamicRoutingDiscoveryFinder)
         .AddOcelot();
+    private static void WithDiscoveryAndPolly(IServiceCollection services) => services
+        .AddSingleton(DynamicRoutingDiscoveryFinder)
+        .AddOcelot().AddPolly();
     private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
     {
         WithDiscovery(services);

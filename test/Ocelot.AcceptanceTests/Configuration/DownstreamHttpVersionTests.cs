@@ -137,7 +137,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         {
             serverOptions.Listen(IPAddress.Loopback, port, listenOptions =>
             {
-                listenOptions.UseHttps("mycert.pfx", "password", options =>
+                listenOptions.UseHttps("mycert2.pfx", "password", options =>
                 {
                     options.SslProtocols = SslProtocols.Tls12;
                 });

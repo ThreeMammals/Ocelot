@@ -20,13 +20,6 @@ namespace Ocelot.AcceptanceTests.Authentication;
 
 public class AuthenticationSteps : Steps
 {
-    public static class OcelotScopes
-    {
-        public const string Api = "api";
-        public const string Api2 = "api2";
-        public const string OcAdmin = "oc-admin";
-    }
-
     protected BearerToken token;
     private readonly Dictionary<string, WebApplication> _jwtSigningServers;
     protected string JwtSigningServerUrl => _jwtSigningServers.First().Key;
@@ -92,7 +85,7 @@ public class AuthenticationSteps : Steps
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "threemammals.com", // see mycert.pfx
+                    ValidIssuer = "threemammals.com", // see mycert2.pfx
                     ValidAudience = "threemammals.com",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ocelot.AcceptanceTests.Authentication")),
                 };
@@ -101,9 +94,12 @@ public class AuthenticationSteps : Steps
         app.MapGet("/connect", () => "Hello! Connected!");
         app.MapPost("/token", (AuthenticationTokenRequest model) =>
         {
-            if (!apiScopes.Contains(model.Scope))
+            // The signing server should be eligible to sign predefined claims as specified in its configuration.
+            // If an unknown scope or claim is requested for inclusion in a JWT, the server should reject the request.
+            // Therefore, the server configuration should be well-known to the client; otherwise, it poses a security risk.
+            if (!apiScopes.Intersect(model.Scopes.Split(' ')).Any())
             {
-                return Results.NotFound();
+                return Results.BadRequest();
             }
             var token = GenerateToken(url, model);
             return Results.Json(token);
@@ -144,7 +140,7 @@ public class AuthenticationSteps : Steps
         {
             Audience = ocelotClient?.BaseAddress.Authority, // Ocelot DNS is token audience
             ApiSecret = testName, // "secret",
-            Scope = scope ?? OcelotScopes.Api,
+            Scopes = scope ?? OcelotScopes.Api,
             Claims = claims is null ? new() : new(claims),
             UserId = testName,
             UserName = testName,
@@ -173,11 +169,22 @@ public class AuthenticationSteps : Steps
 
     protected readonly Dictionary<string, AuthenticationTokenRequest> AuthTokens = new();
     protected AuthenticationTokenRequest AuthToken => AuthTokens.First().Value;
+    public event EventHandler<AuthenticationTokenRequestEventArgs> AuthTokenRequesting;
+    protected virtual void OnAuthenticationTokenRequest(AuthenticationTokenRequestEventArgs e)
+        => AuthTokenRequesting?.Invoke(this, e);
+    public class AuthenticationTokenRequestEventArgs : EventArgs
+    {
+        public AuthenticationTokenRequest Request { get; }
+        public AuthenticationTokenRequestEventArgs(AuthenticationTokenRequest request) => Request = request;
+    }
+
     protected async Task<BearerToken> GivenToken(AuthenticationTokenRequest auth, string path = "", string issuerUrl = null)
     {
         using var http = new HttpClient();
         issuerUrl ??= JwtSigningServerUrl;
+
         AuthTokens[issuerUrl] = auth;
+        OnAuthenticationTokenRequest(new(auth));
 
         var tokenUrl = $"{issuerUrl + path}/token";
         var content = JsonContent.Create(auth);
@@ -197,14 +204,14 @@ public class AuthenticationSteps : Steps
     public FileRoute GivenAuthRoute(int port,
         string scheme = JwtBearerDefaults.AuthenticationScheme,
         bool allowAnonymous = false,
-        string validScope = null,
+        string[] scopes = null,
         string method = null)
     {
         var r = GivenDefaultRoute(port).WithMethods(method ?? HttpMethods.Get);
         r.AuthenticationOptions = new(scheme)
         {
             AllowAnonymous = allowAnonymous,
-            AllowedScopes = validScope is null ? null : [validScope],
+            AllowedScopes = scopes?.ToList(),
         };
         return r;
     }
@@ -277,9 +284,10 @@ public class AuthenticationSteps : Steps
         var claims = new List<Claim>(4 + auth.Claims.Count)
         {
             new(JwtRegisteredClaimNames.Sub, auth.UserId),
-            new(JwtRegisteredClaimNames.Email, auth.UserName),
+            new(OcelotClaims.OcSub, auth.UserId), // this is a handy lifehack to fix current authorization services like IScopesAuthorizer and IClaimsAuthorizer, which don't support JWT standard and claim types in URL form, aka the ':' delimiter issue with the JSON configuration provider
+            new(JwtRegisteredClaimNames.Email, $"{auth.UserName}@ocelot.net"),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ScopesAuthorizer.Scope, auth.Scope),
+            new(ScopesAuthorizer.Scope, auth.Scopes),
         };
         claims.AddRange(roleClaims);
         claims.AddRange(userClaims);

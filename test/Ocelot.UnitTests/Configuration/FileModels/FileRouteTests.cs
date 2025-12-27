@@ -133,7 +133,7 @@ public class FileRouteTests : UnitTest
         expected.LoadBalancerOptions ??= new("value17");
         expected.Metadata ??= new Dictionary<string, string>() { { "key18", "value18" } };
         expected.Priority = 19;
-        expected.QoSOptions.DurationOfBreak = 20;
+        expected.QoSOptions = new() { DurationOfBreak = 20 };
         expected.RateLimitOptions ??= new() { Period = "value21" };
         expected.RequestIdKey = "value22";
         expected.RouteClaimsRequirement.Add("key23", "value23");

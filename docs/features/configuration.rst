@@ -1,6 +1,6 @@
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Configuration/Program.cs
-.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
+.. _ConfigurationBuilderExtensions: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/ConfigurationBuilderExtensions.cs
 .. _Consul: https://www.consul.io/
 .. _KV Store: https://developer.hashicorp.com/consul/docs/dynamic-app-config/kv
 
@@ -502,7 +502,7 @@ For further details on managing Ocelot configurations via a Consul instance, ple
 Build From Scratch
 ------------------
 
-  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
+  Class: `FileConfiguration <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileConfiguration.cs>`_
 
 Storing, reading, and writing static configurations may have limitations.
 Therefore, for more flexible and advanced scenarios the ``FileConfiguration`` object can be built from scratch in C# code of Ocelot application startup.
@@ -550,10 +550,12 @@ In summary, the final .NET 8+ solution should be written in `Program`_ using `to
 
 As a final step, you could add shutdown logic to save the complete configuration back to the storage, deserializing it to JSON format.
 
-``HttpHandlerOptions`` 
+.. _config-http-handler-options:
+
+``HttpHandlerOptions``
 ----------------------
 
-  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
+  | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/File/FileHttpHandlerOptions.cs>`_
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
 This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
@@ -605,7 +607,7 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
 .. note::
 
   1. If the ``PooledConnectionLifetimeSeconds`` option is not defined, the default value is ``120`` seconds,
-  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
+  which is hardcoded in the `HttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/Configuration/HttpHandlerOptions.cs>`_ class as the ``DefaultPooledConnectionLifetimeSeconds`` constant.
 
   2. If you use the ``CookieContainer``, Ocelot caches the ``HttpMessageInvoker`` for each downstream service.
   This means that all requests to that downstream service will share the same cookies.
@@ -825,81 +827,100 @@ For comprehensive documentation, please refer to the :doc:`../features/metadata`
 ``Timeout``
 -----------
 
-[#f5]_ This feature is designed as part of the ``MessageInvokerPool``, which contains cached ``HttpMessageInvoker`` objects per route.
+This feature [#f5]_ is designed as part of the ``MessageInvokerPool``, which contains cached ``HttpMessageInvoker`` objects per route.
 Each created ``HttpMessageInvoker`` encapsulates an ``HttpMessageHandler``, specifically a ``SocketsHttpHandler`` instance, which serves as the base handler for the request pipeline.
 This pipeline also includes all user-defined :doc:`../features/delegatinghandlers`.
 Finally, both the :doc:`../features/delegatinghandlers` and the base ``SocketsHttpHandler`` are wrapped by Ocelot's custom ``TimeoutDelegatingHandler``, which provides the internal timeout functionality.
 
   **Note**: This design is subject to future review because ``TimeoutDelegatingHandler`` overrides/mimics the default timeout properties of ``SocketsHttpHandler``, as well as the behavior of ``HttpMessageInvoker`` as a controller for ``HttpMessageHandler`` objects.
 
-To configure timeouts (in seconds) at different levels, choose the appropriate level and provide the corresponding JSON configuration:
+To configure timeouts (in seconds) at different levels, choose the appropriate level and provide the corresponding JSON configuration.
 
-- **A route timeout** can be easily defined using the following JSON, according to the :ref:`config-route-schema`:
+Route timeout
+^^^^^^^^^^^^^
 
-  .. code-block:: json
+A *route timeout* (also known as Requester middleware timeout based on ``TimeoutDelegatingHandler``) can be easily defined using the following JSON, according to the :ref:`config-route-schema`:
 
-    {
-      // upstream props
-      // downstream props
-      "Timeout": 3 // seconds
+.. code-block:: json
+
+  {
+    // upstream props
+    // downstream props
+    "Timeout": 3 // seconds
+  }
+
+Please note that the route-level timeout takes precedence over the global timeout.
+The same configuration applies to *dynamic routes*, according to the :ref:`config-dynamic-route-schema`.
+
+Global timeout
+^^^^^^^^^^^^^^
+
+A *global configuration timeout* can be defined using the following JSON, according to the :ref:`config-global-configuration-schema`:
+
+.. code-block:: json
+
+  {
+    // routes...
+    "GlobalConfiguration": {
+      // other props
+      "Timeout": 60 // seconds, 1 minute
     }
+  }
 
-  Please note that the route-level timeout takes precedence over the global timeout.
-  The same configuration applies to *dynamic routes*, according to the :ref:`config-dynamic-route-schema`.
+Please note that the global timeout is substituted into a route if the route-level timeout is not defined, and it takes precedence over the absolute :ref:`config-default-timeout`.
+Additionally, the global timeout may be omitted in the JSON configuration in favor of the absolute :ref:`config-default-timeout`, which is also configurable via a property of the C# static class.
 
-- **A global configuration timeout** can be defined using the following JSON, according to the :ref:`config-global-configuration-schema`:
+QoS timeout
+^^^^^^^^^^^
 
-  .. code-block:: json
+A :doc:`../features/qualityofservice` (QoS) *timeout* can be defined using the :ref:`qos-schema` and the QoS :ref:`qos-timeout-strategy`:
 
-    {
-      // routes...
-      "GlobalConfiguration": {
-        // other props
-        "Timeout": 60 // seconds, 1 minute
-      }
-    }
+.. code-block:: json
 
-  Please note that the global timeout is substituted into a route if the route-level timeout is not defined, and it takes precedence over the absolute :ref:`config-default-timeout`.
-  Additionally, the global timeout may be omitted in the JSON configuration in favor of the absolute :ref:`config-default-timeout`, which is also configurable via a property of the C# static class.
+  "QoSOptions": {
+    "Timeout": 5000 // milliseconds
+  }
 
-- **A** :doc:`../features/qualityofservice` **timeout** can be defined according to the QoS :ref:`qos-configuration-schema` and the QoS :ref:`qos-timeout-strategy`:
+Please note, the *Quality of Service* timeout takes precedence over both route-level and global timeouts, which are ignored when QoS is enabled.
+Additionally, avoid defining both *timeouts* in the same route, as the QoS timeout has higher priority than the route-level timeout.
+Therefore, the following route configuration **is not** recommended:
 
-  .. code-block:: json
+.. code-block:: json
 
+  {
+    // route props...
+    "Timeout": 3, // seconds
     "QoSOptions": {
-      "TimeoutValue": 5000 // milliseconds
+      "Timeout": 5000 // milliseconds
     }
+  }
 
-  Please note, the *Quality of Service* timeout takes precedence over both route-level and global timeouts, which are ignored when QoS is enabled.
-  Additionally, avoid defining both timeouts in the same route, as the QoS timeout (``TimeoutValue``) has higher priority than the route-level timeout.
-  Therefore, the following route configuration is not recommended:
+So, route ``Timeout`` will be ignored in favor of QoS ``Timeout``.
+Moreover, because the 3-second duration is shorter than 5000 milliseconds, you may observe warning messages in the logs that begin with the following sentence:
 
-  .. code-block:: json
+.. code-block:: text
 
-    {
-      // route props...
-      "Timeout": 3, // seconds
-      "QoSOptions": {
-        "TimeoutValue": 5000 // milliseconds
-      }
+  Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS Timeout is misconfigured: ...
+
+For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
+Your next recommended action is to completely remove the 3-second ``Timeout`` property or comment it out:
+
+.. code-block:: json
+
+  {
+    // "Timeout": 3, // seconds
+    "QoSOptions": {
+      "Timeout": 5000 // milliseconds
     }
+  }
 
-  So, ``Timeout`` will be ignored in favor of ``TimeoutValue``.
-  Moreover, because the 3-second duration is shorter than 5000 milliseconds, you may observe warning messages in the logs that begin with the following sentence:
+.. note::
 
-  .. code-block:: text
-
-    Route '/xxx' has Quality of Service settings (QoSOptions) enabled, but either the route Timeout or the QoS TimeoutValue is misconfigured: ...
-
-  For more details about this warning, refer to the :ref:`qos-notes-qos-and-route-global-timeouts` note in the :doc:`../features/qualityofservice` chapter.
-  Your next recommended action is to completely remove the ``Timeout`` property.
-
-.. _break4: http://break.do
-
-  **Note 1**: Both ``Timeout`` and ``TimeoutValue`` are nullable positive integers, with a minimum valid value of ``1``.
+  1. Both route ``Timeout`` and QoS ``Timeout`` are nullable positive integers, with a minimum valid value of ``1``.
   Values in the range ``(−∞, 0]`` are treated as "no value" and will be automatically converted to the absolute :ref:`config-default-timeout`, effectively ignoring the property.
 
-  **Note 2**: The unit of measurement for ``Timeout`` is seconds, whereas ``TimeoutValue`` (used in QoS) is measured in milliseconds.
+  2. The unit of measurement for route ``Timeout`` is seconds,
+  whereas QoS ``Timeout`` is measured in milliseconds.
 
 .. _config-default-timeout:
 
@@ -929,9 +950,9 @@ However, keep in mind that the absolute timeout has the lowest priority—theref
 
 """"
 
-.. [#f1] The ":ref:`config-merging-files`" feature was requested in issue `296`_, since then we extended it in issue `1216`_ (PR `1227`_) as ":ref:`config-merging-tomemory`" subfeature which was released as a part of version `23.2`_.
-.. [#f2] The ":ref:`config-merging-tomemory`" feature is based on the `MergeOcelotJson <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/MergeOcelotJson.cs>`_ enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
-.. [#f3] The ":ref:`config-version-policy`" feature was requested in issue `1672`_ as a part of version `23.3`_.
+.. [#f1] The ":ref:`Merging Files <config-merging-files>`" feature was requested in issue `296`_, since then we extended it in issue `1216`_ (PR `1227`_) as ":ref:`Merging files to memory <config-merging-tomemory>`" subfeature which was released as a part of version `23.2`_.
+.. [#f2] The ":ref:`Merging files to memory <config-merging-tomemory>`" feature is based on the `MergeOcelotJson <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/DependencyInjection/MergeOcelotJson.cs>`_ enumeration type with values: ``ToFile`` and ``ToMemory``. The 1st one is implicit by default, and the second one is exactly what you need when merging to memory. See more details on implementations in the `ConfigurationBuilderExtensions`_ class.
+.. [#f3] The ":ref:`DownstreamHttpVersionPolicy <config-version-policy>`" feature was requested in issue `1672`_ as a part of version `23.3`_.
 .. [#f4] The ":ref:`config-route-metadata`" feature was requested in issues `738`_ and `1990`_, and it was released as part of version `23.3`_.
 .. [#f5] The initial draft design of the :ref:`config-timeout` feature was implemented in pull request `1824`_ as ``TimeoutDelegatingHandler`` (released in version `23.0`_), but this version supported only the built-in `default timeout of 90 seconds`_.
   The full :ref:`config-timeout` feature was requested in issue `1314`_, implemented in pull request `2073`_, and officially released as part of version `24.1`_.

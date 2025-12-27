@@ -1,7 +1,7 @@
 Metadata
 ========
 
-  Feature of: :doc:`../features/configuration` [#f1]_
+  [#f1]_ Feature of: :doc:`../features/configuration`
 
 Ocelot provides various features such as routing, authentication, caching, load balancing, and more.
 However, some users may encounter situations where Ocelot does not meet their specific needs or they want to customize its behavior.
@@ -195,7 +195,7 @@ If the value is null, then, if not explicitely specified, the default for the ch
 Sample
 ------
 
-The *Metadata* feature is a relatively new :doc:`../features/configuration` feature (anchored in the ":ref:`config-route-metadata`" section) [#f1]_.
+The *Metadata* feature is a relatively new :doc:`../features/configuration` feature (anchored in the ":ref:`config-route-metadata`" section).
 
 To introduce a standardized approach to middleware development, we have prepared a comprehensive sample project:
 
@@ -240,7 +240,7 @@ Instead, returning *metadata* in a custom header is likely the best solution if 
 
 """"
 
-.. [#f1] This feature was requested in issues `738`_ and `1990`_, and it was released as part of version `23.3`_.
+.. [#f1] The *Metadata* feature was requested in issues `738`_ and `1990`_, and it was released as part of version `23.3`_.
 
 .. _738: https://github.com/ThreeMammals/Ocelot/issues/738
 .. _1990: https://github.com/ThreeMammals/Ocelot/issues/1990

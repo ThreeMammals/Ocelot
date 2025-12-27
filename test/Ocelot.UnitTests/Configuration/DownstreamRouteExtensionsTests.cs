@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Metadata;
@@ -24,7 +23,7 @@ public class DownstreamRouteExtensionsTests
             null,
             null,
             new HttpHandlerOptions(),
-            new QoSOptionsBuilder().Build(),
+            new QoSOptions(),
             null,
             null,
             new CacheOptions(0, null, null, null),

@@ -17,6 +17,9 @@ public class Steps : AcceptanceSteps
     {
         BddfyConfig.Configure();
     }
+    public static bool IsCiCd() => IsRunningInGitHubActions();
+    public static bool IsRunningInGitHubActions()
+        => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
@@ -37,17 +40,17 @@ public class Steps : AcceptanceSteps
     protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
         => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
 
-    private HttpStatusCode pMapStatus_StatusCode = HttpStatusCode.OK;
-    private Func<string> pMapStatus_ResponseBody;
+    protected virtual HttpStatusCode MapStatus_StatusCode { get; set; } = HttpStatusCode.OK;
+    protected virtual Func<string> MapStatus_ResponseBody { get; set; }
     protected virtual Task MapStatus(HttpContext context)
     {
-        context.Response.StatusCode = (int)pMapStatus_StatusCode;
-        return context.Response.WriteAsync(pMapStatus_ResponseBody?.Invoke() ?? string.Empty);
+        context.Response.StatusCode = (int)MapStatus_StatusCode;
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke() ?? string.Empty);
     }
     protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
     {
-        pMapStatus_StatusCode = statusCode;
-        pMapStatus_ResponseBody = () => responseBody;
+        MapStatus_StatusCode = statusCode;
+        MapStatus_ResponseBody = () => responseBody;
         handler.GivenThereIsAServiceRunningOn(port, MapStatus);
     }
 
@@ -74,6 +77,18 @@ public class Steps : AcceptanceSteps
     protected override FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
 
     protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
-    public virtual string Body([CallerMemberName] string responseBody = nameof(Steps)) => responseBody;
-    public virtual string TestName([CallerMemberName] string testName = nameof(Steps)) => testName;
+
+    #region TODO: Move to Ocelot.Testing package
+    public virtual string Body([CallerMemberName] string responseBody = null) => responseBody ?? GetType().Name;
+    public virtual string TestName([CallerMemberName] string testName = null) => testName ?? GetType().Name;
+    public static Task GivenIWaitAsync(int wait) => Task.Delay(wait);
+    public Task ThenTheResponseShouldBeAsync(HttpStatusCode expected, [CallerMemberName] string expectedBody = null)
+    {
+        ThenTheStatusCodeShouldBe(expected);
+        return ThenTheResponseBodyShouldBeAsync(expectedBody ?? Body(expectedBody));
+    }
+    public Task ThenTheResponseBodyShouldBeEmpty() => ThenTheResponseBodyShouldBeAsync(string.Empty);
+    public Task<int> GivenOcelotIsRunningAsync(Action<IServiceCollection> configureServices)
+        => Task.Run(() => GivenOcelotIsRunning(configureServices)); // TODO Need async version in the lib
+    #endregion
 }

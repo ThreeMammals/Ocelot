@@ -58,8 +58,8 @@ Additionally, the :ref:`config-global-configuration-schema` allows configuring g
 
 .. _rl-configuration:
 
-Configuration
--------------
+Configuration [#f2]_
+--------------------
 
 A complete configuration consists of both route-level and global *Rate Limiting*.
 You can configure the following options in the ``GlobalConfiguration`` section of `ocelot.json`_:
@@ -148,7 +148,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
 
 .. _rl-deprecated-options:
 
-Deprecated options [#f2]_
+Deprecated options [#f3]_
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
@@ -272,7 +272,7 @@ Roadmap
 -------
 
   | Feature label: `Rate Limiting`_
-  | Development history: `Rate Limiting <https://github.com/ThreeMammals/Ocelot/pulls?q=is%3Apr+label%3A%22Rate+Limiting%22>`__ [#f3]_
+  | Development history: `Rate Limiting <https://github.com/ThreeMammals/Ocelot/pulls?q=is%3Apr+label%3A%22Rate+Limiting%22>`__ [#f4]_
 
 - **Rules**: The Ocelot team is considering a redesign of the *Rate Limiting* feature in light of the "`Announcing Rate Limiting for .NET`_" article by Brennan Conroy, published on July 13th, 2022.
 
@@ -296,14 +296,15 @@ Filter the current discussions by the `Rate Limiting <https://github.com/ThreeMa
 
 """"
 
-.. [#f1] Historically, the *Rate Limiting* feature is one of Ocelot's oldest and first features. This feature was introduced in pull request `37`_ and it was initially released in version `1.3.2`_.
-.. [#f2] Several :ref:`deprecated options <rl-deprecated-options>` originating from version `24.0`_ and earlier (see `old schema`_) are retained for one release cycle.
+.. [#f1] Historically, the "`Rate Limiting <#rate-limiting>`__" feature is one of Ocelot's oldest and first features. This feature was introduced in pull request `37`_ and it was initially released in version `1.3.2`_.
+.. [#f2] Global :ref:`Configuration <rl-configuration>` feature was introduced in pull request `2294`_ and delivered in version `24.1`_.
+.. [#f3] Several :ref:`deprecated options <rl-deprecated-options>` originating from version `24.0`_ and earlier (see `old schema`_) are retained for one release cycle.
   They are likely to be removed in the upcoming major release, version `25.0`_, which will include a significant upgrade to the *Rate Limiting* feature (refer to the :ref:`rl-roadmap`).
   The Ocelot team plans to implement an automatic configuration upgrade mechanism to support backward compatibility.
   However, we recommend reviewing the updated schema and beginning to adopt the new options.
-.. [#f3] Since pull request `37`_ and version `1.3.2`_, the Ocelot team has reviewed and redesigned the *Rate Limiting* feature.
+.. [#f4] Since pull request `37`_ and version `1.3.2`_, the Ocelot team has reviewed and redesigned the *Rate Limiting* feature.
   A fix for bug `1590`_ (pull request `1592`_) was released as part of version `23.3`_ to ensure stable behavior.
-  Global :ref:`rl-configuration` support was introduced in pull request `2294`_ and delivered in version `24.1`_.
+  Global :ref:`configuration <rl-configuration>` support was introduced in pull request `2294`_ and delivered in version `24.1`_.
 
 .. _Announcing Rate Limiting for .NET: https://devblogs.microsoft.com/dotnet/announcing-rate-limiting-for-dotnet/
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main//samples/Basic/ocelot.json

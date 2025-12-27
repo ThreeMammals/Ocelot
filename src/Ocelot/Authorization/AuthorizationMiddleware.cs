@@ -38,7 +38,7 @@ public class AuthorizationMiddleware : OcelotMiddleware
                 return;
             }
 
-            if (!authorized.Data)
+            if (!authorized.Data) // TODO: Looks like this is never called due to the current ScopesAuthorizer design :D Definitely a good reason to refactor
             {
                 var error = new UnauthorizedError($"{context.User.Identity.Name} unable to access route {route.Name()}");
 #if DEBUG

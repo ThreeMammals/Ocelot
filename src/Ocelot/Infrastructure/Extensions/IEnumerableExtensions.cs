@@ -20,11 +20,12 @@ public static class IEnumerableExtensions
     }
 
     /// <summary>
-    /// Helper function to convert multiple strings into a comma-separated string aka CSV.
+    /// Helper function to convert multiple objects as strings into a comma-separated string aka CSV.
     /// </summary>
-    /// <param name="values">The collection of strings to join by comma separator.</param>
+    /// <typeparam name="T">The type of the objects.</typeparam>
+    /// <param name="values">The collection of <typeparamref name="T"/> to join by comma separator.</param>
     /// <returns>A <see langword="string"/> in the comma-separated format.</returns>
-    public static string Csv(this IEnumerable<string> values)
+    public static string Csv<T>(this IEnumerable<T> values)
         => string.Join(',', values.NotNull());
 
     public static IEnumerable<T> NotNull<T>(this IEnumerable<T> collection)

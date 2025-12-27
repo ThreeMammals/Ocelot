@@ -236,16 +236,25 @@ However, for the “my-service” service, authorization with the ``my-service``
 Allowed Scopes
 --------------
 
-  Option: ``AllowedScopes``
+  | Option: ``AllowedScopes``
+  | Middleware: :ref:`authorization-middleware`
 
 To set up authorization by scopes from the ``AllowedScopes`` collection, after successful authentication by the middleware and after claims have been transformed,
 the authorization middleware in Ocelot retrieves all user claims (from the token) of the '``scope``' type and ensures that the user has at least one of the scopes in the list.
 This provides a way to restrict access to a route on a per-scope basis.
 
-  **Note**: Since version `24.1`_, specifying global *allowed scopes* is exclusively supported.
-  Therefore, only a route-level scheme (i.e., the ``AuthenticationProviderKeys`` array) combined with a route-level ``AllowedScopes`` array can override the global ``AllowedScopes``.
-  Sure, to enable authentication, the ``AllowAnonymous`` option must be set to ``false`` or left undefined.
+.. note::
+  [#f5]_ Depending on the authentication provider, incoming tokens embed the '``scope``' claim value in the body either as an array or as a single space-separated string of multiple values.
+  For instance, :ref:`authentication-identity-server` use an array, whereas most :ref:`authentication-jwt-tokens` providers generate a space-separated list of scopes, in accordance with `RFC 8693`_, as stated in section "`4.2. "scope" (Scopes) Claim`_".
+  Since version `24.1`_, Ocelot supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the ``scope`` claim in the ``ScopesAuthorizer`` service, also known as the ``IScopesAuthorizer`` service in the DI container.
+
+.. note::
+  Starting with version `24.1`_, specifying global *allowed scopes* is exclusively supported.
+  Be cautious when overriding the global ``AllowedScopes`` array with a route-level ``AllowedScopes`` array;
+  a combination of the route scheme (``AuthenticationProviderKeys`` array) and its *allowed scopes* might be required, since new *allowed scopes* could belong to another authentication provider's security model.
   For more details, refer to the ":ref:`Configuration and AllowAnonymous <authentication-configuration>`" and ":ref:`Global Configuration <authentication-global-configuration>`" sections.
+
+.. _authentication-jwt-tokens:
 
 JWT Tokens
 ----------
@@ -380,12 +389,20 @@ Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussion
 .. [#f2] The ":ref:`Multiple Authentication Schemes <authentication-multiple>`" feature was requested in issues `740`_, `1580`_ and delivered as a part of `23.0`_ release.
 .. [#f3] The global ":ref:`Configuration and AllowAnonymous <authentication-configuration>`" feature for static routes was requested in issues `842`_ and `1414`_, implemented in pull request `2114`_, and officially released in version `24.1`_.
 .. [#f4] The ":ref:`Global Configuration <authentication-global-configuration>`" feature for dynamic routes was requested in issues `585`_ and `2316`_, implemented in pull request `2336`_, and released in version `24.1`_.
+.. [#f5] The ":ref:`authentication-allowed-scopes`" feature fully supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the ``scope`` claim in the ``ScopesAuthorizer`` service, which is part of the :ref:`authorization-middleware`.
+  Refer to section `4.2. "scope" (Scopes) Claim`_.
+  This enhancement was requested in bug `913`_, fixed in pull request `1478`_, and the patch was rolled out as part of the `24.1`_ release.
+
+.. _RFC 8693: https://datatracker.ietf.org/doc/html/rfc8693
+.. _4.2. "scope" (Scopes) Claim: https://datatracker.ietf.org/doc/html/rfc8693#name-scope-scopes-claim
 
 .. _446: https://github.com/ThreeMammals/Ocelot/issues/446
 .. _585: https://github.com/ThreeMammals/Ocelot/issues/585
 .. _740: https://github.com/ThreeMammals/Ocelot/issues/740
 .. _842: https://github.com/ThreeMammals/Ocelot/issues/842
+.. _913: https://github.com/ThreeMammals/Ocelot/issues/913
 .. _1414: https://github.com/ThreeMammals/Ocelot/issues/1414
+.. _1478: https://github.com/ThreeMammals/Ocelot/pull/1478
 .. _1580: https://github.com/ThreeMammals/Ocelot/issues/1580
 .. _2114: https://github.com/ThreeMammals/Ocelot/pull/2114
 .. _2316: https://github.com/ThreeMammals/Ocelot/issues/2316

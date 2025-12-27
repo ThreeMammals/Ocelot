@@ -74,6 +74,18 @@ public class ConcurrentSteps : Steps
             _counters[i] = 0;
         }
     }
+    protected void GivenMultipleServiceInstancesAreRunning(string[] urls, string[] responses, HttpStatusCode[] codes)
+    {
+        Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
+        Debug.Assert(urls.Length == codes.Length, "Length mismatch!");
+        Debug.Assert(responses.Length == codes.Length, "Length mismatch!");
+        _counters = new int[urls.Length]; // multiple counters
+        for (int i = 0; i < urls.Length; i++)
+        {
+            GivenServiceIsRunning(urls[i], responses[i], i, codes[i]);
+            _counters[i] = 0;
+        }
+    }
 
     private void GivenServiceIsRunning(string url, string response)
         => GivenServiceIsRunning(url, response, 0, HttpStatusCode.OK);
@@ -206,7 +218,7 @@ public class ConcurrentSteps : Steps
     }
 
     protected string CalledTimesMessage()
-        => $"All values are [{string.Join(',', _counters)}]";
+        => $"All values are [{_counters.Csv()}]";
 
     public void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
         => _counters.Sum().ShouldBe(expected, CalledTimesMessage());
@@ -235,7 +247,7 @@ public class ConcurrentSteps : Steps
         var customMessage = new StringBuilder()
             .AppendLine($"{nameof(bottom)}: {bottom}")
             .AppendLine($"    {nameof(top)}: {top}")
-            .AppendLine($"    All values are [{string.Join(',', _counters)}]")
+            .AppendLine($"    All values are [{_counters.Csv()}]")
             .ToString();
         int sum = 0, totalSum = _counters.Sum();
 
@@ -277,8 +289,8 @@ public class ConcurrentSteps : Steps
                     .AppendLine($"{nameof(ILoadBalancerAnalyzer.ServiceName)}: {analyzer.ServiceName}")
                     .AppendLine($"    Port: {ports[i]}")
                     .AppendLine($"    Host: {host}")
-                    .AppendLine($"    Service counters: [{string.Join(',', _counters)}]")
-                    .AppendLine($"    Leasing counters: [{string.Join(',', sortedLeasingCountersByPort)}]") // should have order of _counters
+                    .AppendLine($"    Service counters: [{_counters.Csv()}]")
+                    .AppendLine($"    Leasing counters: [{sortedLeasingCountersByPort.Csv()}]") // should have order of _counters
                     .ToString();
                 int counter1 = _counters[i];
                 int counter2 = leasingCounters[host];

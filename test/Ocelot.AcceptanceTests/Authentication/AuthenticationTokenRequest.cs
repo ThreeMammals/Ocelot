@@ -28,7 +28,7 @@ public class AuthenticationTokenRequest
     }
 
     [JsonInclude]
-    public string Scope { get; set; }
+    public string Scopes { get; set; }
 
     [JsonInclude]
     public List<KeyValuePair<string, string>> Claims { get; set; } = new();

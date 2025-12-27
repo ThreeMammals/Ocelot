@@ -146,7 +146,7 @@ The placeholder ``{catchAll}`` is not significant, and any name can be used.
     // ...
   }
 
-The *"Catch All"* route has a lower :ref:`routing-priority` than other routes.
+The *"Catch All"* route has a lower :ref:`priority <routing-priority>` than other routes.
 If the following route is included in your configuration, Ocelot will match it before the *"Catch All"* route.
 
 .. code-block:: json
@@ -253,7 +253,7 @@ The placeholder ``{query}`` is not significant, and any name can be used.
 
 This query string routing feature is particularly useful in scenarios where the query string needs to be routed without any transformations—for example, OData filters (see issue `1174`_).
 
-  **Note**: The ``{query}`` placeholder can remain empty while catching all query strings, as this functionality is part of the ":ref:`routing-empty-placeholders`" feature [#f2]_.
+  **Note**: The ``{query}`` placeholder can remain empty while catching all query strings, as this functionality is part of the ":ref:`Empty Placeholders <routing-empty-placeholders>`" feature [#f2]_.
   Consequently, upstream paths ``/contracts?`` and ``/contracts`` are routed to the downstream path ``/apipath/contracts``, with no query string attached.
 
 .. _routing-merging-of-query-parameters:
@@ -474,14 +474,14 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 
 """"
 
-.. [#f1] ":ref:`routing-embedded-placeholders`" feature was requested as part of issue `2199`_ , and released in version `23.4`_
-.. [#f2] ":ref:`routing-empty-placeholders`" feature is available starting in version `23.0`_, see issue `748`_ and the `23.0`_ release notes for details.
-.. [#f3] ":ref:`routing-priority`" feature was requested as part of issue `270`_, and released in version `5.0.1`_
-.. [#f4] ":ref:`routing-upstream-host`" feature was requested as part of issue `209`_ (PR `216`_), and released in version `3.0.1`_
-.. [#f5] ":ref:`routing-upstream-headers`" feature was proposed in issue `360`_ (PR `1312`_), and released in version `23.3`_.
-.. [#f6] ":ref:`routing-security-options`" feature was requested as part of issue `628`_ (version `12.0.1`_), then redesigned and improved by issue `1400`_ (version `23.4.1`_), and published in version `20.0`_ docs.
-.. [#f7] Global ":ref:`routing-security-options`" feature was requested as part of issue `2165`_ , and released in version `23.4.1`_.
-.. [#f8] ":ref:`Dynamic Routing <routing-dynamic>`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
+.. [#f1] The ":ref:`Embedded Placeholders <routing-embedded-placeholders>`" feature was requested as part of issue `2199`_ , and released in version `23.4`_
+.. [#f2] The ":ref:`Empty Placeholders <routing-empty-placeholders>`" feature is available starting in version `23.0`_, see issue `748`_ and the `23.0`_ release notes for details.
+.. [#f3] The ":ref:`Priority <routing-priority>`" feature was requested as part of issue `270`_, and released in version `5.0.1`_
+.. [#f4] The ":ref:`Upstream Host <routing-upstream-host>`" feature was requested as part of issue `209`_ (pull request `216`_), and released in version `3.0.1`_
+.. [#f5] The ":ref:`Upstream Headers <routing-upstream-headers>`" feature was proposed in issue `360`_ (pull request `1312`_), and released in version `23.3`_.
+.. [#f6] The ":ref:`Security Options <routing-security-options>`" feature was requested as part of issue `628`_ (version `12.0.1`_), then redesigned and improved by issue `1400`_ (version `23.4.1`_), and published in version `20.0`_ docs.
+.. [#f7] Global ":ref:`Security Options <routing-security-options>`" feature was requested as part of issue `2165`_ , and released in version `23.4.1`_.
+.. [#f8] The ":ref:`Dynamic Routing <routing-dynamic>`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
   Refer to complete reference in the ":doc:`../features/servicediscovery`" chapter: :ref:`Dynamic Routing <sd-dynamic-routing>`.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
