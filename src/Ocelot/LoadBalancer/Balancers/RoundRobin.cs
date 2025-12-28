@@ -18,7 +18,7 @@ public class RoundRobin : ILoadBalancer
     {
         ArgumentNullException.ThrowIfNull(services);
         _servicesDelegate = services;
-        _serviceName = serviceName;
+        _serviceName = serviceName?? string.Empty;
         _leasing = new();
     }
 
