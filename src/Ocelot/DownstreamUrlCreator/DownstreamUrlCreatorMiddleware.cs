@@ -132,7 +132,10 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         {
             var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
             var parameter = $"{name}={nAndV.Value}";
-            if (!downstreamRequest.Query.Contains(parameter))
+            if (!Regex.IsMatch(
+                    downstreamRequest.Query,
+                    $@"(?<=^|\?|&){Regex.Escape(parameter)}",
+                    RegexOptions.IgnoreCase))
             {
                 continue;
             }
