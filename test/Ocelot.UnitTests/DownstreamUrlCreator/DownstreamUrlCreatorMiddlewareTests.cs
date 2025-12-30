@@ -662,6 +662,37 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    [Trait("Bug", "2346")]
+    public async Task Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/v1/payment-methods")
+            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithDownstreamScheme("http")
+            .Build();
+        var config = new ServiceProviderConfigurationBuilder()
+            .Build();
+        
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            new List<PlaceholderNameAndValue>
+            {
+                new("{id}", "123"), // This {id} placeholder should not affect customer_id query parameter
+            },
+            new Route(downstreamRoute, HttpMethod.Get)));
+        
+        GivenTheDownstreamRequestUriIs("http://localhost:5003/v1/payment-methods?customer_id=12345");
+        GivenTheServiceProviderConfigIs(config);
+        GivenTheUrlReplacerWillReturn("/v1/payment-methods");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/payment-methods?customer_id=12345");
+        ThenTheQueryStringIs("?customer_id=12345");
+    }
+
     private static ReadOnlySpan<char> GetPath(string downstreamPath)
         => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);
 
