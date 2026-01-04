@@ -17,6 +17,8 @@ bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
 const string AllFrameworks = "net8.0;net9.0";
 const string LatestFramework = "net9.0";
+
+
 string NL = Environment.NewLine;
 
 // Create a CultureInfo object for UK English
