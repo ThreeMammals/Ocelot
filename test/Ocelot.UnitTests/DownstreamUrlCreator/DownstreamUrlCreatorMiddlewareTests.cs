@@ -693,6 +693,161 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         ThenTheQueryStringIs("?customer_id=12345");
     }
 
+    [Fact]
+    [Trait("Bug", "2346")]
+    public async Task Should_not_remove_query_when_placeholder_is_suffix_of_query_name()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/orders")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "1") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/orders?orderid=99");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/orders");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs("?orderid=99");
+    }
+    
+    [Fact]
+    public async Task Should_not_remove_query_when_placeholder_value_does_not_match()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/items/{id}")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "10") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/items?id=11");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/items/10");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs("?id=11");
+    }
+    
+    [Fact]
+    public async Task Should_remove_all_occurrences_of_placeholder_query()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/items/{id}")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "10") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/items?id=10&id=10");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/items/10");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs(string.Empty);
+    }
+    
+    [Fact]
+    public async Task Should_match_query_keys_case_insensitively()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/items/{id}")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "10") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/items?ID=10");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/items/10");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs(string.Empty);
+    }
+    
+    [Fact]
+    public async Task Should_remove_placeholder_query_with_url_encoded_value()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/users/{name}")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{name}", "john doe") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/users?name=john%20doe");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/users/john%20doe");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs(string.Empty);
+    }
+    
+    [Fact]
+    public async Task Should_handle_empty_query_value_gracefully()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/items/{id}")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/items?id=");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/items");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs(string.Empty);
+    }
+    
+    [Fact]
+    public async Task Should_not_remove_query_when_name_partially_matches_with_different_casing()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/items")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme("http")
+            .Build();
+
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new("{id}", "1") ],
+            new Route(downstreamRoute, HttpMethod.Get)));
+
+        GivenTheDownstreamRequestUriIs("http://localhost/items?IdValue=1");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/items");
+
+        await _middleware.Invoke(_httpContext);
+
+        ThenTheQueryStringIs("?IdValue=1");
+    }
+    
     private static ReadOnlySpan<char> GetPath(string downstreamPath)
         => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);
 
