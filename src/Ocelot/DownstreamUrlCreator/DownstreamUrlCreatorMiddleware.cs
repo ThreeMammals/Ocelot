@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure;
@@ -127,64 +126,30 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     /// Added support for query string parameters in upstream path template.
     /// </summary>
     protected static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
+    {
+        var builder = new StringBuilder();
+        foreach (var nAndV in templatePlaceholders)
         {
-            // Normalize legacy malformed query (?a=1?b=2)
-            var rawQuery = downstreamRequest.Query;
-
-            int firstQuestionMark = rawQuery.IndexOf('?');
-            if (firstQuestionMark != -1 &&
-                rawQuery.IndexOf('?', firstQuestionMark + 1) != -1)
+            var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
+            var parameter = $"{name}={nAndV.Value}";
+            if (!Regex.IsMatch(
+                    downstreamRequest.Query,
+                    $@"(?<=^|\?|&){Regex.Escape(parameter)}",
+                    RegexOptions.IgnoreCase))
             {
-                rawQuery =
-                    rawQuery.Substring(0, firstQuestionMark + 1) +
-                    rawQuery.Substring(firstQuestionMark + 1).Replace("?", "&");
+                continue;
             }
 
-            // Parse the NORMALIZED query
-            var parsedQuery = QueryHelpers.ParseQuery(rawQuery);
-            
-            // Create a case-insensitive lookup for template placeholders
-            var placeholderLookup = templatePlaceholders
-                .ToDictionary(p => p.Name.Trim(OpeningBrace, ClosingBrace), p => p.Value, StringComparer.OrdinalIgnoreCase);
-            
-            // Build new query string by filtering out matching placeholders
-            var remainingParameters = new List<string>();
-            
-            foreach (var kvp in parsedQuery)
-            {
-                var queryKey = kvp.Key;
-                var queryValues = kvp.Value;
-                
-                // Check if this query parameter matches any placeholder (case-insensitive)
-                if (placeholderLookup.TryGetValue(queryKey, out var placeholderValue))
-                {
-                    // Remove only the values that match the placeholder value exactly
-                    var filteredValues = queryValues.Where(qv => !string.Equals(qv, placeholderValue, StringComparison.Ordinal)).ToList();
-                    
-                    // If there are remaining values, add them back
-                    if (filteredValues.Count > 0)
-                    {
-                        foreach (var value in filteredValues)
-                        {
-                            remainingParameters.Add($"{queryKey}={HttpUtility.UrlEncode(value)}");
-                        }
-                    }
-                }
-                else
-                {
-                    // This query parameter doesn't match any placeholder, keep all values
-                    foreach (var value in queryValues)
-                    {
-                        remainingParameters.Add($"{queryKey}={HttpUtility.UrlEncode(value)}");
-                    }
-                }
-            }
-            
-            // Rebuild the query string
-            downstreamRequest.Query = remainingParameters.Count > 0 
-                ? QuestionMark + string.Join(Ampersand, remainingParameters)
+            int questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
+            builder.Clear()
+                .Append(downstreamRequest.Query)
+                .Replace(parameter, string.Empty)
+                .Remove(--questionMarkOrAmpersand, 1);
+            downstreamRequest.Query = builder.Length > 0
+                ? builder.Remove(0, 1).Insert(0, QuestionMark).ToString()
                 : string.Empty;
         }
+    }
 
     protected static ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
     {
