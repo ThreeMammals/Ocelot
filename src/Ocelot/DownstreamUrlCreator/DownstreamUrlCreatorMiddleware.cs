@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure;
@@ -81,7 +80,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             }
             else
             {
-                RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders,context);
+                RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
                 downstreamRequest.AbsolutePath = dsPath;
             }
         }
@@ -126,18 +125,17 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     /// Feature <see href="https://github.com/ThreeMammals/Ocelot/pull/467">467</see>:
     /// Added support for query string parameters in upstream path template.
     /// </summary>
-    protected static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders,HttpContext context)
+    protected static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
     {
         var builder = new StringBuilder();
         foreach (var nAndV in templatePlaceholders)
         {
             var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
             var parameter = $"{name}={nAndV.Value}";
-
-            // Parse downstream query
-            var query = QueryHelpers.ParseQuery(downstreamRequest.Query.Replace(QuestionMark,Ampersand));
-            bool exists = query.ContainsKey(name) && query.TryGetValue(name, out var pvalue) && pvalue == nAndV.Value;
-            if (!exists) // !downstreamRequest.Query.Contains(parameter)
+            if (!Regex.IsMatch(
+                    downstreamRequest.Query,
+                    $@"(?<=^|\?|&){Regex.Escape(parameter)}",
+                    RegexOptions.IgnoreCase))
             {
                 continue;
             }
