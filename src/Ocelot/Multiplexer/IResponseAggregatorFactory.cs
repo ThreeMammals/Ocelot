@@ -1,9 +1,8 @@
 using Ocelot.Configuration;
 
-namespace Ocelot.Multiplexer
+namespace Ocelot.Multiplexer;
+
+public interface IResponseAggregatorFactory
 {
-    public interface IResponseAggregatorFactory
-    {
-        IResponseAggregator Get(Route route);
-    }
+    IResponseAggregator Get(Route route);
 }

@@ -3,108 +3,104 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.Creator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Headers;
+
+public class AddHeadersToRequestPlainTests : UnitTest
 {
-    public class AddHeadersToRequestPlainTests : UnitTest
+    private readonly AddHeadersToRequest _addHeadersToRequest;
+    private readonly DefaultHttpContext _context;
+    private AddHeader _addedHeader;
+    private readonly Mock<IPlaceholders> _placeholders;
+    private readonly Mock<IOcelotLoggerFactory> _factory;
+    private readonly Mock<IOcelotLogger> _logger;
+
+    public AddHeadersToRequestPlainTests()
     {
-        private readonly AddHeadersToRequest _addHeadersToRequest;
-        private HttpContext _context;
-        private AddHeader _addedHeader;
-        private readonly Mock<IPlaceholders> _placeholders;
-        private readonly Mock<IOcelotLoggerFactory> _factory;
-        private readonly Mock<IOcelotLogger> _logger;
+        _placeholders = new Mock<IPlaceholders>();
+        _factory = new Mock<IOcelotLoggerFactory>();
+        _logger = new Mock<IOcelotLogger>();
+        _factory.Setup(x => x.CreateLogger<AddHeadersToRequest>()).Returns(_logger.Object);
+        _addHeadersToRequest = new AddHeadersToRequest(Mock.Of<IClaimsParser>(), _placeholders.Object, _factory.Object);
+        _context = new DefaultHttpContext();
+    }
 
-        public AddHeadersToRequestPlainTests()
-        {
-            _placeholders = new Mock<IPlaceholders>();
-            _factory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
-            _factory.Setup(x => x.CreateLogger<AddHeadersToRequest>()).Returns(_logger.Object);
-            _addHeadersToRequest = new AddHeadersToRequest(Mock.Of<IClaimsParser>(), _placeholders.Object, _factory.Object);
-        }
+    [Fact]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
+    public void Should_log_error_if_cannot_find_placeholder()
+    {
+        // Arrange
+        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
 
-        [Fact]
-        public void should_log_error_if_cannot_find_placeholder()
-        {
-            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new ErrorResponse<string>(new AnyError()));
+        // Act
+        WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}");
 
-            this.Given(_ => GivenHttpRequestWithoutHeaders())
-                .When(_ => WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}"))
-                .Then(_ => ThenAnErrorIsLogged("X-Forwarded-For", "{RemoteIdAddress}"))
-                .BDDfy();
-        }
+        // Assert
+        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Unable to add header to response X-Forwarded-For: {{RemoteIdAddress}}")), Times.Once);
+    }
 
-        [Fact]
-        public void should_add_placeholder_to_downstream_request()
-        {
-            _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>("replaced"));
+    [Fact]
+    [Trait("Feat", "623")]
+    [Trait("PR", "632")]
+    public void Should_add_placeholder_to_downstream_request()
+    {
+        // Arrange
+        _placeholders.Setup(x => x.Get(It.IsAny<string>())).Returns(new OkResponse<string>("replaced"));
 
-            this.Given(_ => GivenHttpRequestWithoutHeaders())
-                .When(_ => WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}"))
-                .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders("replaced"))
-                .BDDfy();
-        }
+        // Act
+        WhenAddingHeader("X-Forwarded-For", "{RemoteIdAddress}");
 
-        [Fact]
-        public void should_add_plain_text_header_to_downstream_request()
-        {
-            this.Given(_ => GivenHttpRequestWithoutHeaders())
-                .When(_ => WhenAddingHeader("X-Custom-Header", "PlainValue"))
-                .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders())
-                .BDDfy();
-        }
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders("replaced");
+    }
 
-        [Fact]
-        public void should_overwrite_existing_header_with_added_header()
-        {
-            this.Given(_ => GivenHttpRequestWithHeader("X-Custom-Header", "This should get overwritten"))
-                .When(_ => WhenAddingHeader("X-Custom-Header", "PlainValue"))
-                .Then(_ => ThenTheHeaderGetsTakenOverToTheRequestHeaders())
-                .BDDfy();
-        }
+    [Fact]
+    public void Should_add_plain_text_header_to_downstream_request()
+    {
+        // Arrange, Act
+        WhenAddingHeader("X-Custom-Header", "PlainValue");
 
-        private void ThenAnErrorIsLogged(string key, string value)
-        {
-            _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"Unable to add header to response {key}: {value}")), Times.Once);
-        }
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders();
+    }
 
-        private void GivenHttpRequestWithoutHeaders()
-        {
-            _context = new DefaultHttpContext();
-        }
+    [Fact]
+    public void Should_overwrite_existing_header_with_added_header()
+    {
+        // Arrange
+        _context.Request.Headers.Append("X-Custom-Header", "This should get overwritten");
 
-        private void GivenHttpRequestWithHeader(string headerKey, string headerValue)
-        {
-            var context = new DefaultHttpContext();
-            context.Request.Headers.Append(headerKey, headerValue);
-            _context = context;
-        }
+        // Act
+        WhenAddingHeader("X-Custom-Header", "PlainValue");
 
-        private void WhenAddingHeader(string headerKey, string headerValue)
-        {
-            _addedHeader = new AddHeader(headerKey, headerValue);
-            _addHeadersToRequest.SetHeadersOnDownstreamRequest(new[] { _addedHeader }, _context);
-        }
+        // Assert
+        ThenTheHeaderGetsTakenOverToTheRequestHeaders();
+    }
 
-        private void ThenTheHeaderGetsTakenOverToTheRequestHeaders()
-        {
-            var requestHeaders = _context.Request.Headers;
-            requestHeaders.ContainsKey(_addedHeader.Key).ShouldBeTrue($"Header {_addedHeader.Key} was expected but not there.");
-            var value = requestHeaders[_addedHeader.Key];
-            value.ShouldNotBe(default(StringValues), $"Value of header {_addedHeader.Key} was expected to not be null.");
-            value.ToString().ShouldBe(_addedHeader.Value);
-        }
+    private void WhenAddingHeader(string headerKey, string headerValue)
+    {
+        _addedHeader = new AddHeader(headerKey, headerValue);
+        _addHeadersToRequest.SetHeadersOnDownstreamRequest(new[] { _addedHeader }, _context);
+    }
 
-        private void ThenTheHeaderGetsTakenOverToTheRequestHeaders(string expected)
-        {
-            var requestHeaders = _context.Request.Headers;
-            var value = requestHeaders[_addedHeader.Key];
-            value.ToString().ShouldBe(expected);
-        }
+    private void ThenTheHeaderGetsTakenOverToTheRequestHeaders()
+    {
+        var requestHeaders = _context.Request.Headers;
+        requestHeaders.ContainsKey(_addedHeader.Key).ShouldBeTrue($"Header {_addedHeader.Key} was expected but not there.");
+        var value = requestHeaders[_addedHeader.Key];
+        value.ShouldNotBe(default, $"Value of header {_addedHeader.Key} was expected to not be null.");
+        value.ToString().ShouldBe(_addedHeader.Value);
+    }
+
+    private void ThenTheHeaderGetsTakenOverToTheRequestHeaders(string expected)
+    {
+        var requestHeaders = _context.Request.Headers;
+        var value = requestHeaders[_addedHeader.Key];
+        value.ToString().ShouldBe(expected);
     }
 }

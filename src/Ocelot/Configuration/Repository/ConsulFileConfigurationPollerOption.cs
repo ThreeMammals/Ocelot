@@ -1,16 +1,16 @@
-﻿namespace Ocelot.Configuration.Repository
-{
-    public class ConsulFileConfigurationPollerOption : IFileConfigurationPollerOptions
-    {
-        private readonly IInternalConfigurationRepository _internalConfigRepo;
-        private readonly IFileConfigurationRepository _fileConfigurationRepository;
+﻿namespace Ocelot.Configuration.Repository;
 
-        public ConsulFileConfigurationPollerOption(IInternalConfigurationRepository internalConfigurationRepository,
-                                                   IFileConfigurationRepository fileConfigurationRepository)
-        {
-            _internalConfigRepo = internalConfigurationRepository;
-            _fileConfigurationRepository = fileConfigurationRepository;
-        }
+public class ConsulFileConfigurationPollerOption : IFileConfigurationPollerOptions
+{
+    private readonly IInternalConfigurationRepository _internalConfigRepo;
+    private readonly IFileConfigurationRepository _fileConfigurationRepository;
+
+    public ConsulFileConfigurationPollerOption(IInternalConfigurationRepository internalConfigurationRepository,
+                                               IFileConfigurationRepository fileConfigurationRepository)
+    {
+        _internalConfigRepo = internalConfigurationRepository;
+        _fileConfigurationRepository = fileConfigurationRepository;
+    }
 
         public int Delay => GetDelay().GetAwaiter().GetResult();
 
@@ -40,7 +40,6 @@
                 delay = 0;
             }
 
-            return delay;
-        }
+        return delay;
     }
 }

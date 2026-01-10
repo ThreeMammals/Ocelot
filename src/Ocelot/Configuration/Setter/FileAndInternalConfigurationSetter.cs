@@ -4,43 +4,42 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Setter
+namespace Ocelot.Configuration.Setter;
+
+public class FileAndInternalConfigurationSetter : IFileConfigurationSetter
 {
-    public class FileAndInternalConfigurationSetter : IFileConfigurationSetter
+    private readonly IInternalConfigurationRepository _internalConfigRepo;
+    private readonly IInternalConfigurationCreator _configCreator;
+    private readonly IFileConfigurationRepository _repo;
+
+    public FileAndInternalConfigurationSetter(
+        IInternalConfigurationRepository configRepo,
+        IInternalConfigurationCreator configCreator,
+        IFileConfigurationRepository repo)
     {
-        private readonly IInternalConfigurationRepository _internalConfigRepo;
-        private readonly IInternalConfigurationCreator _configCreator;
-        private readonly IFileConfigurationRepository _repo;
+        _internalConfigRepo = configRepo;
+        _configCreator = configCreator;
+        _repo = repo;
+    }
 
-        public FileAndInternalConfigurationSetter(
-            IInternalConfigurationRepository configRepo,
-            IInternalConfigurationCreator configCreator,
-            IFileConfigurationRepository repo)
+    public async Task<Response> Set(FileConfiguration fileConfig)
+    {
+        try
         {
-            _internalConfigRepo = configRepo;
-            _configCreator = configCreator;
-            _repo = repo;
+            await _repo.SetAsync(fileConfig);
+
+            var config = await _configCreator.Create(fileConfig);
+
+            if (!config.IsError)
+            {
+                _internalConfigRepo.AddOrReplace(config.Data);
+            }
+
+            return new ErrorResponse(config.Errors);
         }
-
-        public async Task<Response> Set(FileConfiguration fileConfig)
+        catch (Exception ex)
         {
-            try
-            {
-                await _repo.SetAsync(fileConfig);
-
-                var config = await _configCreator.Create(fileConfig);
-
-                if (!config.IsError)
-                {
-                    _internalConfigRepo.AddOrReplace(config.Data);
-                }
-
-                return new ErrorResponse(config.Errors);
-            }
-            catch (Exception ex)
-            {
-                return new ErrorResponse(new OcelotError(ex.Message));
-            }
+            return new ErrorResponse(new OcelotError(ex.Message));
         }
     }
 }

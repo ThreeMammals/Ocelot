@@ -1,116 +1,59 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests;
+
+public sealed class SslTests : Steps
 {
-    public class SslTests : IDisposable
+    public SslTests()
     {
-        private readonly Steps _steps;
-        private string _downstreamPath;
-        private readonly ServiceHandler _serviceHandler;
+    }
 
-        public SslTests()
+    [Fact]
+    public void Should_dangerous_accept_any_server_certificate_validator()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenSslRoute(port, true);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_not_dangerous_accept_any_server_certificate_validator()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenSslRoute(port, false);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
+            .BDDfy();
+    }
+
+    private FileRoute GivenSslRoute(int port, bool validatorEnabled)
+    {
+        var route = GivenDefaultRoute(port);
+        route.DownstreamScheme = Uri.UriSchemeHttps;
+        route.DangerousAcceptAnyServerCertificateValidator = validatorEnabled;
+        return route;
+    }
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
+    {
+        handler.GivenThereIsAHttpsServiceRunningOn(DownstreamUrl(port), basePath, "mycert2.pfx", "password", port, async context =>
         {
-            _serviceHandler = new ServiceHandler();
-            _steps = new Steps();
-        }
-
-        [Fact]
-        public void should_dangerous_accept_any_server_certificate_validator()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "https",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = true,
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_not_dangerous_accept_any_server_certificate_validator()
-        {
-            var port = PortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                    {
-                        new()
-                        {
-                            DownstreamPathTemplate = "/",
-                            DownstreamScheme = "https",
-                            DownstreamHostAndPorts = new List<FileHostAndPort>
-                            {
-                                new()
-                                {
-                                    Host = "localhost",
-                                    Port = port,
-                                },
-                            },
-                            UpstreamPathTemplate = "/",
-                            UpstreamHttpMethod = new List<string> { "Get" },
-                            DangerousAcceptAnyServerCertificateValidator = false,
-                        },
-                    },
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"https://localhost:{port}", "/", 200, "Hello from Laura", port))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning())
-                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-                .BDDfy();
-        }
-
-        private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody, int port)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, "mycert.pfx", "password", port, async context =>
-            {
-                _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-
-                if (_downstreamPath != basePath)
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync("downstream path didnt match base path");
-                }
-                else
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                }
-            });
-        }
-
-        public void Dispose()
-        {
-            _serviceHandler?.Dispose();
-            _steps.Dispose();
-        }
+            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
+            bool oK = downstreamPath == basePath;
+            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
+            await context.Response.WriteAsync(oK ? responseBody : "downstream path didn't match base path");
+        });
     }
 }

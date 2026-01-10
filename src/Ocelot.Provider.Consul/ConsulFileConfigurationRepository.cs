@@ -74,6 +74,6 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
                 $"Unable to set {nameof(FileConfiguration)} in {nameof(Consul)}! Response status code from {nameof(Consul)} was {result.StatusCode} being returned in {result.RequestTime.TotalMilliseconds} ms.");
         }
 
-        _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
+        _cache.AddOrUpdate(_configurationKey, ocelotConfiguration, _configurationKey, TimeSpan.FromSeconds(3));
     }
 }
