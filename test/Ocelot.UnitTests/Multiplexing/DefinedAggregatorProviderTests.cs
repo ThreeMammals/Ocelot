@@ -1,83 +1,56 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Multiplexer;
-using Ocelot.Responses;
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
-namespace Ocelot.UnitTests.Multiplexing
+namespace Ocelot.UnitTests.Multiplexing;
+
+public class DefinedAggregatorProviderTests : UnitTest
 {
-    public class DefinedAggregatorProviderTests : UnitTest
+    private ServiceLocatorDefinedAggregatorProvider _provider;
+
+    [Fact]
+    public void Should_find_aggregator()
     {
-        private ServiceLocatorDefinedAggregatorProvider _provider;
-        private Response<IDefinedAggregator> _aggregator;
-        private Route _route;
-
-        [Fact]
-        public void should_find_aggregator()
+        // Arrange
+        var route = new Route()
         {
-            var route = new RouteBuilder()
-                .WithAggregator("TestDefinedAggregator")
-                .Build();
+            Aggregator = "TestDefinedAggregator",
+        };
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
+        var services = serviceCollection.BuildServiceProvider(true);
+        _provider = new ServiceLocatorDefinedAggregatorProvider(services);
 
-            this.Given(_ => GivenDefinedAggregator())
-                .And(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenTheAggregatorIsReturned())
-                .BDDfy();
-        }
+        // Act
+        var aggregator = _provider.Get(route);
 
-        [Fact]
-        public void should_not_find_aggregator()
+        // Assert
+        aggregator.Data.ShouldNotBeNull();
+        aggregator.Data.ShouldBeOfType<TestDefinedAggregator>();
+        aggregator.IsError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Should_not_find_aggregator()
+    {
+        // Arrange
+        var route = new Route()
         {
-            var route = new RouteBuilder()
-                .WithAggregator("TestDefinedAggregator")
-                .Build();
+            Aggregator = "TestDefinedAggregator",
+        };
 
-            this.Given(_ => GivenNoDefinedAggregator())
-                .And(_ => GivenRoute(route))
-                .When(_ => WhenIGet())
-                .Then(_ => ThenAnErrorIsReturned())
-                .BDDfy();
-        }
+        // Arrange: Given No Defined Aggregator
+        var serviceCollection = new ServiceCollection();
+        var services = serviceCollection.BuildServiceProvider(true);
+        _provider = new ServiceLocatorDefinedAggregatorProvider(services);
 
-        private void GivenDefinedAggregator()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
-            var services = serviceCollection.BuildServiceProvider(true);
-            _provider = new ServiceLocatorDefinedAggregatorProvider(services);
-        }
+        // Act
+        var aggregator = _provider.Get(route);
 
-        private void ThenTheAggregatorIsReturned()
-        {
-            _aggregator.Data.ShouldNotBeNull();
-            _aggregator.Data.ShouldBeOfType<TestDefinedAggregator>();
-            _aggregator.IsError.ShouldBeFalse();
-        }
-
-        private void GivenNoDefinedAggregator()
-        {
-            var serviceCollection = new ServiceCollection();
-            var services = serviceCollection.BuildServiceProvider(true);
-            _provider = new ServiceLocatorDefinedAggregatorProvider(services);
-        }
-
-        private void GivenRoute(Route route)
-        {
-            _route = route;
-        }
-
-        private void WhenIGet()
-        {
-            _aggregator = _provider.Get(_route);
-        }
-
-        private void ThenAnErrorIsReturned()
-        {
-            _aggregator.IsError.ShouldBeTrue();
-            _aggregator.Errors[0].Message.ShouldBe("Could not find Aggregator: TestDefinedAggregator");
-            _aggregator.Errors[0].ShouldBeOfType<CouldNotFindAggregatorError>();
-        }
+        // Assert
+        aggregator.IsError.ShouldBeTrue();
+        aggregator.Errors[0].Message.ShouldBe("Could not find Aggregator: TestDefinedAggregator");
+        aggregator.Errors[0].ShouldBeOfType<CouldNotFindAggregatorError>();
     }
 }

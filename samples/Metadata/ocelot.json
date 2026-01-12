@@ -1,0 +1,171 @@
+{
+  "Routes": [
+    { // route #1 aka 'ocelot-docs'
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/ocelot/docs/{everything}",
+      "DownstreamPathTemplate": "/en/latest/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 1,
+        "route.name": "ocelot-docs",
+        "disableMetadataJson": true // don't process json requested by scripts aka XHR
+      }
+    },
+    { // route #2 aka 'ocelot-docs-BFF'
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/_/{BFF}",
+      "DownstreamPathTemplate": "/_/{BFF}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 2,
+        "route.name": "ocelot-docs-BFF",
+        "disableMetadataJson": true // don't process json requested by scripts aka XHR
+      }
+    },
+    { // route #3 aka 'weather-current'
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/weather/current/{city}",
+      "DownstreamPathTemplate": "/v1/current.json?q={city}&key=4ea9a1d2aafe4e15bbd173615242312",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "api.weatherapi.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 3,
+        "route.name": "weather-current",
+        "cities": "London, Paris, Madrid, Berlin, Rome, Prague, Warsaw, Minsk",
+        "cities.default": "London",
+        "cities.US": "New York, Los Angeles",
+        "temperature-celsius-path": "Response/current/temp_c",
+        "stub-data/location": {
+          "name": "London",
+          "region": "City of London, Greater London",
+          "country": "United Kingdom",
+          "lat": 51.5171,
+          "lon": -0.1062,
+          "tz_id": "Europe/London",
+          "localtime_epoch": 1741269500,
+          "localtime": "2025-03-06 13:58"
+        },
+        "stub-data/current": {
+          "last_updated_epoch": 1741268700,
+          "last_updated": "2025-03-06 13:45",
+          "temp_c": 17.1,
+          "temp_f": 62.8,
+          "is_day": 1,
+          "condition": {
+            "text": "Sunny",
+            "icon": "//cdn.weatherapi.com/weather/64x64/day/113.png",
+            "code": 1000
+          },
+          "wind_mph": 12.1,
+          "wind_kph": 19.4,
+          "wind_degree": 185,
+          "wind_dir": "S",
+          "pressure_mb": 1012.0,
+          "pressure_in": 29.88,
+          "precip_mm": 0.0,
+          "precip_in": 0.0,
+          "humidity": 45,
+          "cloud": 0,
+          "feelslike_c": 17.1,
+          "feelslike_f": 62.8,
+          "windchill_c": 12.8,
+          "windchill_f": 55.0,
+          "heatindex_c": 14.3,
+          "heatindex_f": 57.7,
+          "dewpoint_c": 4.4,
+          "dewpoint_f": 39.9,
+          "vis_km": 10.0,
+          "vis_miles": 6.0,
+          "uv": 2.3,
+          "gust_mph": 14.1,
+          "gust_kph": 22.7
+        },
+        "data/Response": "{\"location\":{\"name\":\"London\",\"region\":\"City of London, Greater London\",\"country\":\"United Kingdom\",\"lat\":51.5171,\"lon\":-0.1062,\"tz_id\":\"Europe/London\",\"localtime_epoch\":1741269500,\"localtime\":\"2025-03-06 13:58\"},\"current\":{\"last_updated_epoch\":1741268700,\"last_updated\":\"2025-03-06 13:45\",\"temp_c\":17.1,\"temp_f\":62.8,\"is_day\":1,\"condition\":{\"text\":\"Sunny\",\"icon\":\"//cdn.weatherapi.com/weather/64x64/day/113.png\",\"code\":1000},\"wind_mph\":12.1,\"wind_kph\":19.4,\"wind_degree\":185,\"wind_dir\":\"S\",\"pressure_mb\":1012.0,\"pressure_in\":29.88,\"precip_mm\":0.0,\"precip_in\":0.0,\"humidity\":45,\"cloud\":0,\"feelslike_c\":17.1,\"feelslike_f\":62.8,\"windchill_c\":12.8,\"windchill_f\":55.0,\"heatindex_c\":14.3,\"heatindex_f\":57.7,\"dewpoint_c\":4.4,\"dewpoint_f\":39.9,\"vis_km\":10.0,\"vis_miles\":6.0,\"uv\":2.3,\"gust_mph\":14.1,\"gust_kph\":22.7}}"
+      } // end of metadata
+    }, // end of route #3 aka 'weather-current'
+    { // route #4 aka 'ocelot-posts'
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/ocelot/posts/{id}",
+      "DownstreamPathTemplate": "/todos/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 4,
+        "route.name": "ocelot-posts",
+        "id": "FindPost",
+        "tags": "tag1, tag2, area1, area2, func1",
+        "plugin1.enabled": "true",
+        "plugin1.values": "[1, 2, 3, 4, 5]",
+        "plugin1.param": "value2",
+        "plugin1.param2": "123",
+        "plugin2/param1": "overwritten-value",
+        "plugin2/data": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"is_student\":false,\"hobbies\":[\"reading\",\"hiking\",\"cooking\"]}"
+      } // end of metadata
+    }, // end of route #4 aka 'ocelot-posts'
+    { // route #5
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/test/deflate",
+      "DownstreamPathTemplate": "/deflate",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "postman-echo.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 5,
+        "route.name": "test-deflated",
+        "data/Response": "{\"deflated\": true,\"headers\":{\"host\":\"postman-echo.com\",\"x-request-start\":\"t1741445435.299\",\"connection\":\"close\",\"x-forwarded-proto\":\"https\",\"x-forwarded-port\":\"443\",\"x-amzn-trace-id\":\"Root=1-67cc593b-697296304a4cdd9f25ff5b1a\",\"accept\":\"*/*\",\"user-agent\":\"PostmanRuntime/7.43.0\",\"accept-encoding\":\"gzip, deflate, br\",\"cookie\":\"sails.sid=s%3Al8bqLyxyBLVEzTvXkXmqzKy-oxu-Ofix.n5%2F%2FJgIegPYVSpaNLkI3oaLMBTeCG7rSDP95Tvzexx0\",\"oc-data\":\"deflate, gzip\",\"postman-token\":\"0db2b611-6e61-4c07-80cf-72a25b5dbff9\",\"traceparent\":\"00-d293c56e9acc1b154d470acf93f605b6-677ec7e38b6a8f1f-00\"},\"method\":\"GET\"}"
+      }
+    },
+    { // route #6
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/test/gzip",
+      "DownstreamPathTemplate": "/gzip",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "postman-echo.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "route.id": 6,
+        "route.name": "test-gzip",
+        "data/Response": "{\"gzipped\":true,\"headers\":{\"host\":\"postman-echo.com\",\"x-request-start\":\"t1741444484.025\",\"connection\":\"close\",\"x-forwarded-proto\":\"https\",\"x-forwarded-port\":\"443\",\"accept\":\"*/*\",\"user-agent\":\"PostmanRuntime/7.43.0\",\"accept-encoding\":\"gzip, deflate, br\",\"oc-data\":\"deflate, gzip\",\"postman-token\":\"50831f03-e4ed-4970-bd33-69720171d016\",\"traceparent\":\"00-6f958a4ad549dd11fc08b5a411277688-40a2fe22bf119682-00\"},\"method\":\"GET\"}"
+      }
+    } // end of route #6
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5139",
+    "Metadata": {
+      "app-name": "Ocelot Metadata sample"
+    },
+    "MetadataOptions": {
+      "CurrentCulture": "en-GB"
+    }
+  }
+}

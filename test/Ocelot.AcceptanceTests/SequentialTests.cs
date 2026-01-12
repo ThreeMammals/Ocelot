@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ocelot.AcceptanceTests;
 

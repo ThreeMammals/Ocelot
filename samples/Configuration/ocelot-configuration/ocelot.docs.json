@@ -1,0 +1,28 @@
+{
+  "Routes": [
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/ocelot/docs/{everything}",
+      "DownstreamPathTemplate": "/en/latest/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ]
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/_/{BFF}",
+      "DownstreamPathTemplate": "/_/{BFF}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ocelot.readthedocs.io",
+          "Port": 443
+        }
+      ]
+    }
+  ]
+}

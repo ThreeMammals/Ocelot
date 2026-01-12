@@ -47,7 +47,6 @@ public sealed class DefaultConsulServiceBuilderTests
         var propConfiguration = sut.GetType().GetProperty("Configuration", BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
-        //var actualConfiguration = sut.Configuration;
         var actualConfiguration = propConfiguration.GetValue(sut);
         var actualClient = propClient.GetValue(sut);
         var actualLogger = propLogger.GetValue(sut);

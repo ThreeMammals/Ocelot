@@ -49,7 +49,7 @@ public class PayloadBenchmarks : ManualConfig
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new() { "Post" },
+                    UpstreamHttpMethod = [HttpMethods.Post],
                 },
             },
         };
