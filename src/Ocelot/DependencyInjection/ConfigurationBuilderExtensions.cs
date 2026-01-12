@@ -235,6 +235,7 @@ public static partial class ConfigurationBuilderExtensions
 
         MergeConfigSection(to, from, nameof(FileConfiguration.Aggregates));
         MergeConfigSection(to, from, nameof(FileConfiguration.Routes));
+        MergeConfigSection(to, from, nameof(FileConfiguration.DynamicRoutes));
     }
 
     private static void MergeConfigSection(JToken to, JToken from, string sectionName)
