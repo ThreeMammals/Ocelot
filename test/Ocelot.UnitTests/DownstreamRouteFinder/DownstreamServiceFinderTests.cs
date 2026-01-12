@@ -15,21 +15,21 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
         [Fact]
         public void should_return_empty_when_without_path()
         {
-            var serviceName = _serviceFinder.GetServiceName("/", null, null, null, null);
+            var serviceName = _serviceFinder.GetServiceName("/", null, null, null, null, out var x);
             Assert.Equal("", serviceName);
         }
 
         [Fact]
         public void should_return_node_name_when_single_node()
         {
-            var serviceName = _serviceFinder.GetServiceName("/service-name", null, null, null, null);
+            var serviceName = _serviceFinder.GetServiceName("/service-name", null, null, null, null, out var x);
             Assert.Equal("service-name", serviceName);
         }
 
         [Fact]
         public void should_return_first_node_name_when_multiple_nodes()
         {
-            var serviceName = _serviceFinder.GetServiceName("/service-name/some/longer/path", null, null, null, null);
+            var serviceName = _serviceFinder.GetServiceName("/service-name/some/longer/path", null, null, null, null, out var x);
             Assert.Equal("service-name", serviceName);
         }
     }

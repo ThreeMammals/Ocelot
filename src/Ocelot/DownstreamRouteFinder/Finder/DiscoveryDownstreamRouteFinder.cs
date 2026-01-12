@@ -33,9 +33,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
     {
-        // var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
-        var serviceNamespace = string.Empty;
-        var serviceName = _serviceFinder.GetServiceName(upstreamUrlPath, upstreamQueryString, upstreamHttpMethod, upstreamHost, configuration);
+        var serviceName = _serviceFinder.GetServiceName(upstreamUrlPath, upstreamQueryString, upstreamHttpMethod, upstreamHost, configuration,
+            out var serviceNamespace);
 
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
         var dynamicRoute = configuration.Routes
