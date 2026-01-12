@@ -239,8 +239,8 @@ public static partial class ConfigurationBuilderExtensions
 
     private static void MergeConfigSection(JToken to, JToken from, string sectionName)
     {
-        var destination = to[sectionName];
-        var source = from[sectionName];
+        var destination = to.GetSection(sectionName);
+        var source = from.GetSection(sectionName);
         if (source == null || destination == null)
         {
             return;
@@ -248,11 +248,34 @@ public static partial class ConfigurationBuilderExtensions
 
         if (source is JObject)
         {
-            to[sectionName] = source;
+            to.SetSection(sectionName, source);
         }
         else if (source is JArray)
         {
             (destination as JArray).Merge(source);
+        }
+    }
+
+    public static JToken GetSection(this JToken token, string name)
+    {
+        var obj = token as JObject;
+        return obj?.Properties()
+            .FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            ?.Value;
+    }
+
+    public static void SetSection(this JToken to, string name, JToken value)
+    {
+        JObject obj = to as JObject;
+        var prop = obj?.Properties()
+            .FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (prop != null)
+        {
+            prop.Value = value;
+        }
+        else
+        {
+            obj.Add(name, value);
         }
     }
 }
