@@ -6,7 +6,7 @@ namespace Ocelot.AcceptanceTests.Authorization;
 
 public sealed class AuthorizationTests : AuthorizationSteps
 {
-    private static Dictionary<string, string> GivenRouteClaimsRequirement(FileRoute route, string claimType, string claimValue)
+    private static Dictionary<string, string[]> GivenRouteClaimsRequirement(FileRoute route, string claimType, string[] claimValue)
     {
         route.AddHeadersToRequest = new()
         {
@@ -21,11 +21,11 @@ public sealed class AuthorizationTests : AuthorizationSteps
             { "UserType", $"Claims[{OcelotClaims.OcSub}] > value[0] > |" },
             { "UserId", $"Claims[{OcelotClaims.OcSub}] > value[1] > |" },
         };
-        var claims = new Dictionary<string, string>()
+        var claims = new Dictionary<string, string[]>()
         {
-            {"CustomerId", "111"},
-            {"LocationId", "222"},
-            {"UserType", "registered"},
+            {"CustomerId", new [] {"111" } },
+            {"LocationId", new[] { "222" }},
+            {"UserType", new[] { "registered" }},
         };
         route.RouteClaimsRequirement = new(claims) // require all custom claims
         {
@@ -42,7 +42,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
+        var claims = GivenRouteClaimsRequirement(route, "UserType",new [] { OcelotScopes.OcAdmin });
         var testName = TestName();
         this.Given(x => GivenThereIsExternalJwtSigningService())
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -65,7 +65,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
+        var claims = GivenRouteClaimsRequirement(route, "UserType", new[] { OcelotScopes.OcAdmin });
         route.AddClaimsToRequest.Remove("UserType"); // given I don't transform UserType claim
         var testName = TestName();
         this.Given(x => GivenThereIsExternalJwtSigningService())
@@ -145,13 +145,13 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value
         {
-            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider
-            { nameof(ClaimTypes.Role), "User"}, // this key is Ok because it is not an URL containing proto delimiter aka '://'
+            { ClaimTypes.Role,new [] {  "User" } }, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider
+            { nameof(ClaimTypes.Role),new [] { "User" } }, // this key is Ok because it is not an URL containing proto delimiter aka '://'
         };
-        var claims = new List<KeyValuePair<string, string>>()
+        var claims = new List<KeyValuePair<string, string[]>>()
         {
-            new(nameof(ClaimTypes.Role), "AdminUser"),
-            new(nameof(ClaimTypes.Role), "User"),
+            new(nameof(ClaimTypes.Role), new [] { "AdminUser" }),
+            new(nameof(ClaimTypes.Role), new [] { "User" }),
         };
         var testName = TestName();
         this.Given(x => GivenThereIsExternalJwtSigningService())

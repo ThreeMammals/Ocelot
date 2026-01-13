@@ -31,7 +31,7 @@ public class AuthenticationTokenRequest
     public string Scopes { get; set; }
 
     [JsonInclude]
-    public List<KeyValuePair<string, string>> Claims { get; set; } = new();
+    public List<KeyValuePair<string, string[]>> Claims { get; set; } = new();
 
     private SymmetricSecurityKey _issuerSigningKey;
     private string _apiSecret;

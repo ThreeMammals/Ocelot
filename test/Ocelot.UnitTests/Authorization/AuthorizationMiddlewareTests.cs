@@ -69,7 +69,7 @@ public class AuthorizationMiddlewareTests : UnitTest
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().Build())
             .WithUpstreamHttpMethod([HttpMethods.Get])
             /*.WithAuthenticationOptions(new(new("authScheme")))*/
-            .WithRouteClaimsRequirement(new() { { "k", "v" } })
+            .WithRouteClaimsRequirement(new() { { "k", new[] { "v" } } })
             .Build();
         GivenTheDownStreamRouteIs(new(), route);
         GivenClaimsAuthorizerReturns(new OkResponse<bool>(true));
@@ -125,7 +125,7 @@ public class AuthorizationMiddlewareTests : UnitTest
             .Returns(expected);
 
     private void GivenClaimsAuthorizerReturns(Response<bool> expected) => _claimsAuthorizer
-            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string[]>>(), It.IsAny<List<PlaceholderNameAndValue>>()))
             .Returns(expected);
 
     private void ThenScopesAuthorizerIsCalled(Func<Times> times = null)
@@ -134,6 +134,6 @@ public class AuthorizationMiddlewareTests : UnitTest
             times ?? Times.Once);
     private void ThenClaimsAuthorizerIsCalled(Func<Times> times = null)
         => _claimsAuthorizer.Verify(
-            x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<List<PlaceholderNameAndValue>>()),
+            x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<Dictionary<string, string[]>>(), It.IsAny<List<PlaceholderNameAndValue>>()),
             times ?? Times.Once);
 }
