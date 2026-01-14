@@ -1,0 +1,26 @@
+name: PR Closed
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Delete caches via gh CLI
+        run: |
+          pr_no="${{ github.event.pull_request.number }}"
+          echo Pull request $pr_no cache items to be deleted...
+          gh cache list --ref refs/pull/$pr_no/merge          
+          echo --------------------------------------
+          echo All cache items to be deleted...
+          gh cache list
+          echo --------------------------------------
+          # gh cache list --ref refs/pull/$pr_no/merge --json id --jq '.[].id' | xargs -n1 gh cache delete
+          # Sometimes, items produced by other workflows get reused in the PR workflow
+          gh cache delete --all --succeed-on-no-caches
+          echo DONE

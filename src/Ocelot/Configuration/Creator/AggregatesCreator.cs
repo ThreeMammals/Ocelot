@@ -1,61 +1,59 @@
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class AggregatesCreator : IAggregatesCreator
 {
-    public class AggregatesCreator : IAggregatesCreator
+    private readonly IUpstreamTemplatePatternCreator _creator;
+    private readonly IUpstreamHeaderTemplatePatternCreator _headerCreator;
+
+    public AggregatesCreator(IUpstreamTemplatePatternCreator creator, IUpstreamHeaderTemplatePatternCreator headerCreator)
     {
-        private readonly IUpstreamTemplatePatternCreator _creator;
-        private readonly IUpstreamHeaderTemplatePatternCreator _headerCreator;
+        _creator = creator;
+        _headerCreator = headerCreator;
+    }
 
-        public AggregatesCreator(IUpstreamTemplatePatternCreator creator, IUpstreamHeaderTemplatePatternCreator headerCreator)
+    public List<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes)
+    {
+        return fileConfiguration.Aggregates
+            .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))
+            .Where(aggregate => aggregate != null)
+            .ToList();
+    }
+
+    private Route SetUpAggregateRoute(IEnumerable<Route> routes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
+    {
+        if (aggregateRoute.UpstreamHttpMethod.Count == 0)
         {
-            _creator = creator;
-            _headerCreator = headerCreator;
+            aggregateRoute.UpstreamHttpMethod.Add(FileAggregateRoute.DefaultHttpMethod.ToString());
         }
 
-        public List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes)
+        var applicableRoutes = new List<DownstreamRoute>();
+        var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
+        var downstreamRoutes = aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey));
+        foreach (var downstreamRoute in downstreamRoutes)
         {
-            return fileConfiguration.Aggregates
-                .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))
-                .Where(aggregate => aggregate != null)
-                .ToList();
-        }
-
-        private Route SetUpAggregateRoute(IEnumerable<Route> routes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
-        {
-            if (aggregateRoute.UpstreamHttpMethod.Count == 0)
+            if (downstreamRoute == null)
             {
-                aggregateRoute.UpstreamHttpMethod.Add(FileAggregateRoute.DefaultHttpMethod.ToString());
+                return null;
             }
 
-            var applicableRoutes = new List<DownstreamRoute>();
-            var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
-            var downstreamRoutes = aggregateRoute.RouteKeys.Select(routeKey => allRoutes.FirstOrDefault(q => q.Key == routeKey));
-            foreach (var downstreamRoute in downstreamRoutes)
-            {
-                if (downstreamRoute == null)
-                {
-                    return null;
-                }
-
-                applicableRoutes.Add(downstreamRoute);
-            }
-
-            var upstreamTemplatePattern = _creator.Create(aggregateRoute);
-            var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
-
-            var route = new RouteBuilder()
-                .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
-                .WithUpstreamPathTemplate(upstreamTemplatePattern)
-                .WithDownstreamRoutes(applicableRoutes)
-                .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
-                .WithUpstreamHost(aggregateRoute.UpstreamHost)
-                .WithAggregator(aggregateRoute.Aggregator)
-                .WithUpstreamHeaders(upstreamHeaderTemplates)
-                .Build();
-
-            return route;
+            applicableRoutes.Add(downstreamRoute);
         }
+
+        var upstreamTemplatePattern = _creator.Create(aggregateRoute);
+        var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
+        var upstreamHttpMethod = aggregateRoute.UpstreamHttpMethod.ToHttpMethods();
+        return new Route()
+        {
+            Aggregator = aggregateRoute.Aggregator,
+            DownstreamRoute = applicableRoutes,
+            DownstreamRouteConfig = aggregateRoute.RouteKeysConfig,
+            UpstreamHeaderTemplates = upstreamHeaderTemplates,
+            UpstreamHost = aggregateRoute.UpstreamHost,
+            UpstreamHttpMethod = upstreamHttpMethod,
+            UpstreamTemplatePattern = upstreamTemplatePattern,
+        };
     }
 }

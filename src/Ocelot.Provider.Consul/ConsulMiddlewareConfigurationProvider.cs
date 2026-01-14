@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
@@ -70,7 +71,7 @@ public static class ConsulMiddlewareConfigurationProvider
     }
 
     private static void ThrowToStopOcelotStarting(Response config)
-        => throw new Exception($"Unable to start Ocelot, errors are: {string.Join(',', config.Errors.Select(x => x.ToString()))}");
+        => throw new Exception($"Unable to start Ocelot, errors are:{config.Errors.ToErrorString(true, true)}");
 
     private static bool IsError(Response response)
         => response == null || response.IsError;

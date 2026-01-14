@@ -36,7 +36,7 @@ public class AggregatesCreatorTests : UnitTest
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1"},
+                    RouteKeys = new(["key1"]),
                 },
             },
         };
@@ -55,14 +55,13 @@ public class AggregatesCreatorTests : UnitTest
     [Trait("Feat", "600")]
     public void Create_TwoAggregateRoutes_HappyPath()
     {
-        // Arrange
         _fileConfiguration = new FileConfiguration
         {
             Aggregates = new List<FileAggregateRoute>
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1", "key2"},
+                    RouteKeys = new(["key1", "key2"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",
@@ -70,7 +69,7 @@ public class AggregatesCreatorTests : UnitTest
                 },
                 new()
                 {
-                    RouteKeys = new List<string>{"key3", "key4"},
+                    RouteKeys = new(["key3", "key4"]),
                     UpstreamHost = "hosty",
                     UpstreamPathTemplate = "templatey",
                     Aggregator = "aggregatory",
@@ -80,10 +79,10 @@ public class AggregatesCreatorTests : UnitTest
         };
         _routes = new List<Route>
         {
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+            new(new DownstreamRouteBuilder().WithKey("key1").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key2").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key3").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key4").Build()),
         };
         GivenTheUtpCreatorReturns();
         GivenTheUhtpCreatorReturns();
@@ -113,21 +112,21 @@ public class AggregatesCreatorTests : UnitTest
             {
                 new()
                 {
-                    RouteKeys = new List<string>{"key1", "key2"},
+                    RouteKeys = new(["key1", "key2"]),
                 },
                 new()
                 {
-                    RouteKeys = new List<string>{"key3", "key4"},
+                    RouteKeys = new(["key3", "key4"]),
                     UpstreamHttpMethod = new() { httpVerb }, // wanted verb
                 },
             },
         };
         _routes = new List<Route>
         {
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+            new(new DownstreamRouteBuilder().WithKey("key1").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key2").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key3").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key4").Build()),
         };
         GivenTheUtpCreatorReturns();
         GivenTheUhtpCreatorReturns();
@@ -173,7 +172,7 @@ public class AggregatesCreatorTests : UnitTest
             new UpstreamPathTemplateBuilder().Build(),
             new UpstreamPathTemplateBuilder().Build(),
         };
-        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_aggregateUtp[0])
             .Returns(_aggregateUtp[1]);
     }
@@ -185,7 +184,7 @@ public class AggregatesCreatorTests : UnitTest
             new Dictionary<string, UpstreamHeaderTemplate>(),
             new Dictionary<string, UpstreamHeaderTemplate>(),
         };
-        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRoute>()))
+        _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_headerTemplates[0])
             .Returns(_headerTemplates[1]);
     }

@@ -1,129 +1,106 @@
 using Microsoft.AspNetCore.Mvc;
-using Ocelot.Configuration;
+using Ocelot.Administration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Controllers
+namespace Ocelot.UnitTests.Controllers;
+
+public class FileConfigurationControllerTests : UnitTest
 {
-    public class FileConfigurationControllerTests : UnitTest
+    private readonly FileConfigurationController _controller;
+    private readonly Mock<IFileConfigurationRepository> _repo;
+    private readonly Mock<IFileConfigurationSetter> _setter;
+
+    public FileConfigurationControllerTests()
     {
-        private readonly FileConfigurationController _controller;
-        private readonly Mock<IFileConfigurationRepository> _repo;
-        private readonly Mock<IFileConfigurationSetter> _setter;
-        private IActionResult _result;
-        private FileConfiguration _fileConfiguration;
-        private readonly Mock<IServiceProvider> _provider;
+        _repo = new Mock<IFileConfigurationRepository>();
+        _setter = new Mock<IFileConfigurationSetter>();
+        _controller = new FileConfigurationController(_repo.Object, _setter.Object);
+    }
 
-        public FileConfigurationControllerTests()
+    [Fact]
+    public async Task Should_get_file_configuration()
+    {
+        // Arrange
+        var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
+        _repo.Setup(x => x.Get()).ReturnsAsync(expected);
+
+        // Act
+        var result = await _controller.Get();
+
+        // Assert
+        _repo.Verify(x => x.Get(), Times.Once);
+    }
+
+    [Fact]
+    public async Task Should_return_error_when_cannot_get_config()
+    {
+        // Arrange
+        var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
+        _repo.Setup(x => x.Get()).ReturnsAsync(expected);
+
+        // Act
+        var result = await _controller.Get();
+
+        // Assert
+        _repo.Verify(x => x.Get(), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task Should_post_file_configuration()
+    {
+        // Arrange
+        var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse());
+
+        // Act
+        var result = await _controller.Post(expected);
+
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
+    }
+
+    [Fact]
+    public async Task Should_return_error_when_cannot_set_config()
+    {
+        // Arrange
+        var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>())).ReturnsAsync(new ErrorResponse(new FakeError()));
+
+        // Act
+        var result = await _controller.Post(expected);
+
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task Should_catch_exception_when_cannot_set_config()
+    {
+        // Arrange
+        var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+            .Throws(new Exception("Service failed"));
+
+        // Act
+        var result = await _controller.Post(expected);
+
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
+        var actual = result as BadRequestObjectResult;
+        Assert.StartsWith("Service failed:", actual.Value.ToString());
+    }
+
+    private class FakeError : Error
+    {
+        public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404)
         {
-            _provider = new Mock<IServiceProvider>();
-            _repo = new Mock<IFileConfigurationRepository>();
-            _setter = new Mock<IFileConfigurationSetter>();
-            _controller = new FileConfigurationController(_repo.Object, _setter.Object, _provider.Object);
-        }
-
-        [Fact]
-        public void should_get_file_configuration()
-        {
-            var expected = new OkResponse<FileConfiguration>(new FileConfiguration());
-
-            this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-                .When(x => x.WhenIGetTheFileConfiguration())
-                .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_when_cannot_get_config()
-        {
-            var expected = new ErrorResponse<FileConfiguration>(It.IsAny<Error>());
-
-            this.Given(x => x.GivenTheGetConfigurationReturns(expected))
-               .When(x => x.WhenIGetTheFileConfiguration())
-               .Then(x => x.TheTheGetFileConfigurationIsCalledCorrectly())
-               .And(x => x.ThenTheResponseIs<BadRequestObjectResult>())
-               .BDDfy();
-        }
-
-        [Fact]
-        public void should_post_file_configuration()
-        {
-            var expected = new FileConfiguration();
-
-            this.Given(x => GivenTheFileConfiguration(expected))
-                .And(x => GivenTheConfigSetterReturns(new OkResponse()))
-                .When(x => WhenIPostTheFileConfiguration())
-                .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_error_when_cannot_set_config()
-        {
-            var expected = new FileConfiguration();
-
-            this.Given(x => GivenTheFileConfiguration(expected))
-                .And(x => GivenTheConfigSetterReturns(new ErrorResponse(new FakeError())))
-                .When(x => WhenIPostTheFileConfiguration())
-                .Then(x => x.ThenTheConfigrationSetterIsCalledCorrectly())
-                .And(x => ThenTheResponseIs<BadRequestObjectResult>())
-                .BDDfy();
-        }
-
-        private void GivenTheConfigSetterReturns(Response response)
-        {
-            _setter
-                .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-                .ReturnsAsync(response);
-        }
-
-        private void ThenTheConfigrationSetterIsCalledCorrectly()
-        {
-            _setter
-                .Verify(x => x.Set(_fileConfiguration), Times.Once);
-        }
-
-        private async Task WhenIPostTheFileConfiguration()
-        {
-            _result = await _controller.Post(_fileConfiguration);
-        }
-
-        private void GivenTheFileConfiguration(FileConfiguration fileConfiguration)
-        {
-            _fileConfiguration = fileConfiguration;
-        }
-
-        private void ThenTheResponseIs<T>()
-        {
-            _result.ShouldBeOfType<T>();
-        }
-
-        private void GivenTheGetConfigurationReturns(Response<FileConfiguration> fileConfiguration)
-        {
-            _repo
-                .Setup(x => x.Get())
-                .ReturnsAsync(fileConfiguration);
-        }
-
-        private async Task WhenIGetTheFileConfiguration()
-        {
-            _result = await _controller.Get();
-        }
-
-        private void TheTheGetFileConfigurationIsCalledCorrectly()
-        {
-            _repo
-             .Verify(x => x.Get(), Times.Once);
-        }
-
-        private class FakeError : Error
-        {
-            public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404)
-            {
-            }
         }
     }
 }

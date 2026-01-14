@@ -1,24 +1,28 @@
 namespace Ocelot.Configuration.File;
 
-public class FileAggregateRoute : IRoute
+public class FileAggregateRoute : IRouteUpstream, IRouteGroup
 {
     public string Aggregator { get; set; }
-    public int Priority { get; set; }
+    public int Priority { get; set; } = 1;
     public bool RouteIsCaseSensitive { get; set; }
-    public List<string> RouteKeys { get; set; }
+    public HashSet<string> RouteKeys { get; set; }
     public List<AggregateRouteConfig> RouteKeysConfig { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public string UpstreamHost { get; set; }
-    public List<string> UpstreamHttpMethod { get; set; }
+    public HashSet<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     public FileAggregateRoute()
     {
+        Aggregator = default;
         Priority = 1;
+        RouteIsCaseSensitive = default;
         RouteKeys = new();
         RouteKeysConfig = new();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
-        UpstreamHttpMethod = new();
+        UpstreamHost = default;
+        UpstreamHttpMethod = [];
+        UpstreamPathTemplate = default;
     }
 
     /// <summary>This allows to override global default HTTP verb value.</summary>

@@ -179,7 +179,7 @@ public class SerilogBenchmarks : ManualConfig
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
         };

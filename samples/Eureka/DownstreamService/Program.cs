@@ -1,19 +1,21 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Ocelot.Samples.Web;
-using System;
+﻿using Steeltoe.Discovery.Client;
 
-namespace DownstreamService;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddDiscoveryClient(builder.Configuration)
+    .AddControllers();
 
-public class Program
+if (builder.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        DownstreamHostBuilder.Create(args)
-            .UseUrls($"http://{Environment.MachineName}:5001")
-            .UseStartup<Startup>()
-            .Build()
-            .Run();
-    }
-
+    builder.Logging.AddConsole();
 }
+
+var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+app.UseHttpsRedirection()
+    .UseAuthorization();
+app.MapControllers();
+app.Run();
