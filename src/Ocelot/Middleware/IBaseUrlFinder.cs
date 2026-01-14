@@ -1,7 +1,6 @@
-﻿namespace Ocelot.Middleware
+﻿namespace Ocelot.Middleware;
+
+public interface IBaseUrlFinder
 {
-    public interface IBaseUrlFinder
-    {
-        string Find();
-    }
+    string Find();
 }
