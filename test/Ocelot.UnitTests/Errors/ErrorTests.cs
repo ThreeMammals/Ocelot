@@ -1,15 +1,19 @@
 using Ocelot.Infrastructure.RequestData;
 
-namespace Ocelot.UnitTests.Errors
+namespace Ocelot.UnitTests.Errors;
+
+public class ErrorTests
 {
-    public class ErrorTests
+    [Fact]
+    public void Should_return_message()
     {
-        [Fact]
-        public void should_return_message()
-        {
-            var error = new CannotAddDataError("message");
-            var result = error.ToString();
-            result.ShouldBe("message");
-        }
+        // Arrange
+        var error = new CannotAddDataError("message");
+
+        // Act
+        var result = error.ToString();
+
+        // Assert
+        result.ShouldBe("CannotAddDataError: message");
     }
 }

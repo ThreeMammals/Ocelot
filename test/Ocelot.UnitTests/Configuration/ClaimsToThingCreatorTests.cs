@@ -5,101 +5,98 @@ using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Responses;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class ClaimsToThingCreatorTests : UnitTest
 {
-    public class ClaimsToThingCreatorTests : UnitTest
+    private readonly Mock<IClaimToThingConfigurationParser> _configParser;
+    private Dictionary<string, string> _claimsToThings;
+    private readonly ClaimsToThingCreator _claimsToThingsCreator;
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private List<ClaimToThing> _result;
+    private readonly Mock<IOcelotLogger> _logger;
+
+    public ClaimsToThingCreatorTests()
     {
-        private readonly Mock<IClaimToThingConfigurationParser> _configParser;
-        private Dictionary<string, string> _claimsToThings;
-        private readonly ClaimsToThingCreator _claimsToThingsCreator;
-        private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
-        private List<ClaimToThing> _result;
-        private readonly Mock<IOcelotLogger> _logger;
+        _loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _logger = new Mock<IOcelotLogger>();
+        _loggerFactory
+            .Setup(x => x.CreateLogger<ClaimsToThingCreator>())
+            .Returns(_logger.Object);
+        _configParser = new Mock<IClaimToThingConfigurationParser>();
+        _claimsToThingsCreator = new ClaimsToThingCreator(_configParser.Object, _loggerFactory.Object);
+    }
 
-        public ClaimsToThingCreatorTests()
+    [Fact]
+    public void Should_return_claims_to_things()
+    {
+        // Arrange
+        var userInput = new Dictionary<string, string>
         {
-            _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _logger = new Mock<IOcelotLogger>();
-            _loggerFactory
-                .Setup(x => x.CreateLogger<ClaimsToThingCreator>())
-                .Returns(_logger.Object);
-            _configParser = new Mock<IClaimToThingConfigurationParser>();
-            _claimsToThingsCreator = new ClaimsToThingCreator(_configParser.Object, _loggerFactory.Object);
-        }
+            {"CustomerId", "Claims[CustomerId] > value"},
+        };
+        var claimsToThing = new OkResponse<ClaimToThing>(new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0));
+        GivenTheFollowingDictionary(userInput);
+        GivenTheConfigHeaderExtractorReturns(claimsToThing);
 
-        [Fact]
-        public void should_return_claims_to_things()
+        // Act
+        WhenIGetTheThings();
+
+        // Assert
+        ThenTheConfigParserIsCalledCorrectly();
+        ThenClaimsToThingsAreReturned();
+    }
+
+    [Fact]
+    public void Should_log_error_if_cannot_parse_claim_to_thing()
+    {
+        // Arrange
+        var userInput = new Dictionary<string, string>
         {
-            var userInput = new Dictionary<string, string>
-            {
-                {"CustomerId", "Claims[CustomerId] > value"},
-            };
+            {"CustomerId", "Claims[CustomerId] > value"},
+        };
+        var claimsToThing = new ErrorResponse<ClaimToThing>(It.IsAny<Error>());
+        GivenTheFollowingDictionary(userInput);
+        GivenTheConfigHeaderExtractorReturns(claimsToThing);
 
-            var claimsToThing = new OkResponse<ClaimToThing>(new ClaimToThing("CustomerId", "CustomerId", string.Empty, 0));
+        // Act
+        WhenIGetTheThings();
 
-            this.Given(x => x.GivenTheFollowingDictionary(userInput))
-                .And(x => x.GivenTheConfigHeaderExtractorReturns(claimsToThing))
-                .When(x => x.WhenIGetTheThings())
-                .Then(x => x.ThenTheConfigParserIsCalledCorrectly())
-                .And(x => x.ThenClaimsToThingsAreReturned())
-                .BDDfy();
-        }
+        // Assert
+        ThenTheConfigParserIsCalledCorrectly();
+        ThenNoClaimsToThingsAreReturned();
+    }
 
-        [Fact]
-        public void should_log_error_if_cannot_parse_claim_to_thing()
-        {
-            var userInput = new Dictionary<string, string>
-            {
-                {"CustomerId", "Claims[CustomerId] > value"},
-            };
+    private void ThenClaimsToThingsAreReturned()
+    {
+        _result.Count.ShouldBeGreaterThan(0);
+    }
 
-            var claimsToThing = new ErrorResponse<ClaimToThing>(It.IsAny<Error>());
+    private void GivenTheFollowingDictionary(Dictionary<string, string> claimsToThings)
+    {
+        _claimsToThings = claimsToThings;
+    }
 
-            this.Given(x => x.GivenTheFollowingDictionary(userInput))
-                .And(x => x.GivenTheConfigHeaderExtractorReturns(claimsToThing))
-                .When(x => x.WhenIGetTheThings())
-                .Then(x => x.ThenTheConfigParserIsCalledCorrectly())
-                .And(x => x.ThenNoClaimsToThingsAreReturned())
-                .BDDfy();
-        }
+    private void GivenTheConfigHeaderExtractorReturns(Response<ClaimToThing> expected)
+    {
+        _configParser
+            .Setup(x => x.Extract(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(expected);
+    }
 
-        private void ThenTheLoggerIsCalledCorrectly()
-        {
-            _logger
-                .Verify(x => x.LogDebug(It.IsAny<string>), Times.Once);
-        }
+    private void ThenNoClaimsToThingsAreReturned()
+    {
+        _result.Count.ShouldBe(0);
+    }
 
-        private void ThenClaimsToThingsAreReturned()
-        {
-            _result.Count.ShouldBeGreaterThan(0);
-        }
+    private void WhenIGetTheThings()
+    {
+        _result = _claimsToThingsCreator.Create(_claimsToThings);
+    }
 
-        private void GivenTheFollowingDictionary(Dictionary<string, string> claimsToThings)
-        {
-            _claimsToThings = claimsToThings;
-        }
-
-        private void GivenTheConfigHeaderExtractorReturns(Response<ClaimToThing> expected)
-        {
-            _configParser
-                .Setup(x => x.Extract(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(expected);
-        }
-
-        private void ThenNoClaimsToThingsAreReturned()
-        {
-            _result.Count.ShouldBe(0);
-        }
-
-        private void WhenIGetTheThings()
-        {
-            _result = _claimsToThingsCreator.Create(_claimsToThings);
-        }
-
-        private void ThenTheConfigParserIsCalledCorrectly()
-        {
-            _configParser
-                .Verify(x => x.Extract(_claimsToThings.First().Key, _claimsToThings.First().Value), Times.Once);
-        }
+    private void ThenTheConfigParserIsCalledCorrectly()
+    {
+        _configParser
+            .Verify(x => x.Extract(_claimsToThings.First().Key, _claimsToThings.First().Value), Times.Once);
     }
 }

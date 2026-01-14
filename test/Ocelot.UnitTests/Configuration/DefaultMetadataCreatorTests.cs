@@ -7,112 +7,75 @@ namespace Ocelot.UnitTests.Configuration;
 [Trait("Feat", "738")]
 public class DefaultMetadataCreatorTests : UnitTest
 {
-    private FileGlobalConfiguration _globalConfiguration;
-    private Dictionary<string, string> _metadataInRoute;
-    private MetadataOptions _result;
     private readonly DefaultMetadataCreator _sut = new();
+    private static readonly Dictionary<string, string> Empty = new();
 
     [Fact]
     public void Should_return_empty_metadata()
     {
-        // Arrange
-        GivenEmptyMetadataInGlobalConfiguration();
-        GivenEmptyMetadataInRoute();
-
-        // Act
-        WhenICreate();
+        // Arrange, Act
+        var result = _sut.Create(Empty, new());
 
         // Assert
-        ThenDownstreamRouteMetadataMustBeEmpty();
+        result.Metadata.Keys.ShouldBeEmpty();
     }
 
     [Fact]
     public void Should_return_global_metadata()
     {
         // Arrange
-        GivenSomeMetadataInGlobalConfiguration();
-        GivenEmptyMetadataInRoute();
+        var global = GivenSomeMetadataInGlobalConfiguration();
 
         // Act
-        WhenICreate();
+        var result = _sut.Create(Empty, global);
 
         // Assert
-        ThenDownstreamMetadataMustContain("foo", "bar");
+        ThenDownstreamMetadataMustContain(result, "foo", "bar");
     }
 
     [Fact]
     public void Should_return_route_metadata()
     {
         // Arrange
-        GivenEmptyMetadataInGlobalConfiguration();
-        GivenSomeMetadataInRoute();
+        var metadata = GivenSomeMetadataInRoute();
 
         // Act
-        WhenICreate();
+        var result = _sut.Create(metadata, new());
 
         // Assert
-        ThenDownstreamMetadataMustContain("foo", "baz");
+        ThenDownstreamMetadataMustContain(result, "foo", "baz");
     }
 
     [Fact]
     public void Should_overwrite_global_metadata()
     {
         // Arrange
-        GivenSomeMetadataInGlobalConfiguration();
-        GivenSomeMetadataInRoute();
+        var global = GivenSomeMetadataInGlobalConfiguration();
+        var metadata = GivenSomeMetadataInRoute();
 
         // Act
-        WhenICreate();
+        var result = _sut.Create(metadata, global);
 
         // Assert
-        ThenDownstreamMetadataMustContain("foo", "baz");
+        ThenDownstreamMetadataMustContain(result, "foo", "baz");
     }
 
-    private void WhenICreate()
+    private static FileGlobalConfiguration GivenSomeMetadataInGlobalConfiguration() => new()
     {
-        _result = _sut.Create( _metadataInRoute, _globalConfiguration);
-    }
-
-    private void GivenEmptyMetadataInGlobalConfiguration()
-    {
-        _globalConfiguration = new FileGlobalConfiguration();
-    }
-
-    private void GivenSomeMetadataInGlobalConfiguration()
-    {
-        _globalConfiguration = new FileGlobalConfiguration
+        Metadata = new Dictionary<string, string>
         {
-            MetadataOptions = new FileMetadataOptions
-            {
-                Metadata = new Dictionary<string, string>
-                {
-                    ["foo"] = "bar",
-                },
-            },
-        };
-    }
+            ["foo"] = "bar",
+        },
+    };
 
-    private void GivenEmptyMetadataInRoute()
+    private static Dictionary<string, string> GivenSomeMetadataInRoute() => new()
     {
-        _metadataInRoute = new Dictionary<string, string>();
-    }
+        ["foo"] = "baz",
+    };
 
-    private void GivenSomeMetadataInRoute()
+    private static void ThenDownstreamMetadataMustContain(MetadataOptions result, string key, string value)
     {
-        _metadataInRoute = new Dictionary<string, string>
-        {
-            ["foo"] = "baz",
-        };
-    }
-
-    private void ThenDownstreamRouteMetadataMustBeEmpty()
-    {
-        _result.Metadata.Keys.ShouldBeEmpty();
-    }
-
-    private void ThenDownstreamMetadataMustContain(string key, string value)
-    {
-        _result.Metadata.Keys.ShouldContain(key);
-        _result.Metadata[key].ShouldBeEquivalentTo(value);
+        result.Metadata.Keys.ShouldContain(key);
+        result.Metadata[key].ShouldBeEquivalentTo(value);
     }
 }

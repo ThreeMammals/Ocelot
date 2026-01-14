@@ -22,24 +22,19 @@ public class DownstreamRouteExtensionsTests
             new List<DownstreamHostAndPort>(),
             null,
             null,
-            new HttpHandlerOptions(false, false, false, false, 0, TimeSpan.Zero),
-            default,
-            default,
-            new QoSOptions(0, 0, 0, null),
+            new HttpHandlerOptions(),
+            new QoSOptions(),
             null,
             null,
-            default,
             new CacheOptions(0, null, null, null),
             new LoadBalancerOptions(null, null, 0),
-            new RateLimitOptions(false, null, null, false, null, null, null, 0),
+            new RateLimitOptions(false),
             new Dictionary<string, string>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
-            default,
-            default,
-            new AuthenticationOptions(null, null, null),
+            new AuthenticationOptions(null, null),
             new DownstreamPathTemplate(null),
             null,
             new List<string>(),
@@ -51,7 +46,8 @@ public class DownstreamRouteExtensionsTests
             new Version(),
             HttpVersionPolicy.RequestVersionExact,
             new(),
-            new MetadataOptions(new FileMetadataOptions()));
+            new MetadataOptions(new FileMetadataOptions()),
+            0);
     }
 
     [Theory]
@@ -161,10 +157,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         //Assert
-        Assert.Throws<JsonException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key);
-        });
+        Assert.Throws<JsonException>(() => _ = _downstreamRoute.GetMetadata<IEnumerable<string>>(key));
     }
 
     [Fact]
@@ -186,7 +179,7 @@ public class DownstreamRouteExtensionsTests
         _downstreamRoute.MetadataOptions.Metadata.Add(key, value);
 
         // Act
-        var metadataValue = _downstreamRoute.GetMetadata<FakeObject>(key, jsonSerializerOptions: serializerOptions);
+        var metadataValue = _downstreamRoute.GetMetadata<FakeObject>(key, options: serializerOptions);
 
         //Assert
         metadataValue.ShouldBeEquivalentTo(expected);
@@ -238,10 +231,7 @@ public class DownstreamRouteExtensionsTests
         // Act
 
         // Assert
-        Assert.Throws<FormatException>(() =>
-        {
-            _ = _downstreamRoute.GetMetadata<int>(key);
-        });
+        Assert.Throws<FormatException>(() => _ = _downstreamRoute.GetMetadata<int>(key));
     }
 
     [Theory]

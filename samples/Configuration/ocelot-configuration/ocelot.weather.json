@@ -1,0 +1,16 @@
+{
+  "Routes": [
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/weather/current/{city}",
+      "DownstreamPathTemplate": "/v1/current.json?q={city}&key=4ea9a1d2aafe4e15bbd173615242312",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "api.weatherapi.com",
+          "Port": 443
+        }
+      ]
+    }
+  ]
+}
