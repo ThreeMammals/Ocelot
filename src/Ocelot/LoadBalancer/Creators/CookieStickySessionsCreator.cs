@@ -2,7 +2,6 @@
 using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 

@@ -1,4 +1,4 @@
-﻿namespace Ocelot.LoadBalancer;
+﻿namespace Ocelot.LoadBalancer.Interfaces;
 
 public interface IStickySessionStorage
 {

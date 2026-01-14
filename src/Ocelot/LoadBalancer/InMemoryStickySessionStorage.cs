@@ -1,4 +1,6 @@
-﻿namespace Ocelot.LoadBalancer;
+﻿using Ocelot.LoadBalancer.Interfaces;
+
+namespace Ocelot.LoadBalancer;
 
 public class InMemoryStickySessionStorage : IStickySessionStorage
 {
