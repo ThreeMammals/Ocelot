@@ -1,48 +1,9 @@
-.. _Polly: https://github.com/App-vNext/Polly
-.. _Circuit Breaker: https://www.pollydocs.org/strategies/circuit-breaker.html
-.. _Timeout: https://www.pollydocs.org/strategies/timeout.html
-
-.. _@raman-m: https://github.com/raman-m
-.. _@RaynaldM: https://github.com/RaynaldM
-.. _@jlukawska: https://github.com/jlukawska
-.. _@ibnuda: https://github.com/ibnuda
-.. _@vantm: https://github.com/vantm
-.. _@sergio-str: https://github.com/sergio-str
-.. _@PaulARoy: https://github.com/PaulARoy
-.. _@thiagoloureiro: https://github.com/thiagoloureiro
-.. _@bbenameur: https://github.com/bbenameur
-
-.. _23.2.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
-.. _23.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
-.. _23.3.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.3
-.. _23.3.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
-.. _23.3.5: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.5
-.. _23.3.6: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
-.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.6
-
-.. _954: https://github.com/ThreeMammals/Ocelot/issues/954
-.. _957: https://github.com/ThreeMammals/Ocelot/issues/957
-.. _1026: https://github.com/ThreeMammals/Ocelot/issues/1026
-.. _1312: https://github.com/ThreeMammals/Ocelot/pull/1312
-.. _1590: https://github.com/ThreeMammals/Ocelot/issues/1590
-.. _1592: https://github.com/ThreeMammals/Ocelot/pull/1592
-.. _1673: https://github.com/ThreeMammals/Ocelot/pull/1673
-.. _1843: https://github.com/ThreeMammals/Ocelot/pull/1843
-.. _2002: https://github.com/ThreeMammals/Ocelot/issues/2002
-.. _2003: https://github.com/ThreeMammals/Ocelot/pull/2003
-.. _2034: https://github.com/ThreeMammals/Ocelot/issues/2034
-.. _2039: https://github.com/ThreeMammals/Ocelot/issues/2039
-.. _2045: https://github.com/ThreeMammals/Ocelot/pull/2045
-.. _2050: https://github.com/ThreeMammals/Ocelot/pull/2050
-.. _2052: https://github.com/ThreeMammals/Ocelot/pull/2052
-.. _2054: https://github.com/ThreeMammals/Ocelot/discussions/2054
-.. _2058: https://github.com/ThreeMammals/Ocelot/pull/2058
-.. _2059: https://github.com/ThreeMammals/Ocelot/issues/2059
-.. _2067: https://github.com/ThreeMammals/Ocelot/pull/2067
-.. _2079: https://github.com/ThreeMammals/Ocelot/pull/2079
-.. _2085: https://github.com/ThreeMammals/Ocelot/issues/2085
-.. _2086: https://github.com/ThreeMammals/Ocelot/pull/2086
-
+.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _24.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+.. _.NET 10: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _Globality: https://github.com/ThreeMammals/Ocelot/milestone/9
+.. _Ocelot: https://www.nuget.org/packages/Ocelot
 .. role::  htm(raw)
     :format: html
 
@@ -52,137 +13,237 @@
 Welcome
 #######
 
-Welcome to the Ocelot `23.3`_ documentation!
+Welcome to the Ocelot `24.1`_ documentation!
 
-It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major or patched versions.
+It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
-The major version `23.3.0`_ includes several patches, the history of which is provided below.
+.. The major version `24.1.0`_ includes several patches, the history of which is outlined below.
 
-.. admonition:: Patches
+.. .. admonition:: Patches
 
-  - `23.3.3`_, on Jun 11, 2024. Technical release with DevOps patch.
-  - `23.3.4`_, on Oct 3, 2024. Hot fixing version `23.3.0`_, codenamed `Blue Olympic Balumbes <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ release,
-    with codename decoding links:
-
-    - **for men**: naked `Blue Olympic Fiend <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ 
-    - **for women**: `not a well-dressed woman <https://www.youtube.com/live/j-Ou-ggS718?si=fPPwmOwjYEZq70H9&t=9518>`_ sings at the opening ceremony, so "Not `Celine Dion <https://www.celinedion.com/>`_" 
-    - **for black men**: enjoy `Men's Basketball Final <https://www.youtube.com/watch?v=Xci7dzk-bFk>`_ in `Paris 2024 <https://www.youtube.com/hashtag/paris2024>`_.
-      Be proud of Stephen Curry, "just give me a ball" boy, as an absolute rockstar, made `shot 1 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=832s>`_, `shot 2 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1052s>`_, `shot 3 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1087s>`_  and final `shot 4 <https://www.youtube.com/watch?v=Xci7dzk-bFk&t=1216s>`_.
-
-  - `23.3.5`_, on Oct 12, 2024. Documentation patch: Html and Pdf doc layouts.
-  - `23.3.6`_, on Oct 31, 2024. Version `23.3.4`_ patch: DI-scopes validation, :doc:`../features/servicediscovery` feature update.
+..   - `24.1.1`_, on July 16, 2025: Issue `2299`_ patch ...
 
 .. _release-notes:
 
 Release Notes
 -------------
+.. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
+.. _Obsolete attributes: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code
 
-| Release Tag: `23.3.0`_
-| Release Codename: `Twilight Texas <https://www.timeanddate.com/eclipse/solar/2024-april-8>`_, with codename decoding links:
-  `for men <https://www.timeanddate.com/eclipse/map/2024-april-8>`_,
-  `for women <https://www.goodreads.com/series/50439-twilight-texas>`_,
-  `for black men <https://rollingout.com/2024/06/03/eclipse-darkness-busta-rhymes-twista/>`_.
+  | Release Tag: `24.1.0`_
+  | Release Codename: `Globality`_
 
-What's new?
-^^^^^^^^^^^
+In this minor release, the Ocelot team put the spotlight on the :doc:`../features/configuration` feature as part of their semi-annual 2025 effort, with a particular focus on the :ref:`config-global-configuration-schema`.
+This release enhances support for global configurations across both routing modes: the classic static :doc:`../features/routing` and the :doc:`service discovery <../features/servicediscovery>`-based :ref:`Dynamic Routing <sd-dynamic-routing>`.
 
-- :doc:`../features/servicediscovery`: Introducing a new feature for "*Customization of services creation*" in two primary service discovery providers: ``Consul`` (:ref:`sd-consul-service-builder`) and ``Kubernetes`` (:ref:`k8s-downstream-scheme-vs-port-names`), developed by `@raman-m`_.
+The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated>`_ of certain options through multiple notes and warnings.
+This deprecation process will be completed in the upcoming `.NET 10`_ release.
+With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
-  The customization for both ``Consul`` and ``Kube`` providers in service creation is achieved through the overriding of virtual methods in default implementations. The recommendation was to separate the provider's logic and introduce ``public virtual`` and ``protected virtual`` methods in concrete classes, enabling:
+On top of that, this release brings a great enhancement to the :doc:`../features/kubernetes` provider, also known as the `Ocelot.Provider.Kubernetes`_ package.
 
-  - The use of ``public virtual`` methods as dictated by interface definitions.
-  - The application of ``protected virtual`` methods to allow developers to customize atomic operations through inheritance from existing concrete classes.
-  - The injection of new interface objects into the provider's constructor.
-  - The overriding of the default behavior of classes.
+What's New?
+-----------
+.. _@raman-m: https://github.com/raman-m
+.. _@kick2nick: https://github.com/kick2nick
+.. _@hogwartsdeveloper: https://github.com/hogwartsdeveloper
+.. _@RaynaldM: https://github.com/RaynaldM
+.. _585: https://github.com/ThreeMammals/Ocelot/issues/585
+.. _2073: https://github.com/ThreeMammals/Ocelot/pull/2073
+.. _2081: https://github.com/ThreeMammals/Ocelot/pull/2081
+.. _2174: https://github.com/ThreeMammals/Ocelot/pull/2174
+.. _Dynamic routing global configuration: https://github.com/ThreeMammals/Ocelot/issues/585
+.. _KubeClient: https://www.nuget.org/packages/KubeClient/
+.. _Polly: https://www.nuget.org/packages/Polly/
+.. _Ocelot.Provider.Polly: https://www.nuget.org/packages/Ocelot.Provider.Polly
+.. _FailureRatio and SamplingDuration parameters of Polly V8 circuit-breaker: https://github.com/ThreeMammals/Ocelot/issues/2080
 
-  | Ultimately, customization relies on the virtual methods within the default implementation classes, providing developers the flexibility to override them as necessary for highly tailored Consul/K8s configurations in their specific environments.
-  | For further details, refer to the respective pull requests for both providers: ``Kube`` (PR `2052`_), ``Consul`` (PR `2067`_).
+- :doc:`../features/configuration`: The "`Dynamic routing global configuration`_" feature has been redesigned by `@raman-m`_ and contributors.
 
-- :doc:`../features/routing`: Introducing the new ":ref:`routing-upstream-headers`" feature by `@jlukawska`_.
+  This update brings changes to the :ref:`config-dynamic-route-schema` and :ref:`config-global-configuration-schema`, while the :ref:`config-route-schema` stays the same apart from deprecation updates.
+  All work was coordinated under issue `585`_, which addressed the challenges of configuring Ocelot's most popular features globally before version `24.1`_, when :ref:`dynamic routing <sd-dynamic-routing>` gained global configuration partial support, but static routing mostly lacked it.
+  A key outcome of `585`_ is the ability to override global configuration options within the ``DynamicRoutes`` collection.
+  This ongoing issue will continue to require attention, as adapting static route global configurations for :ref:`dynamic routing <sd-dynamic-routing>` is complex and, in some cases, impossible.
+  This will be a challenge for future `Ocelot`_ releases and the community.
 
-  | In addition to routing via ``UpstreamPathTemplate``, you can now define an ``UpstreamHeaderTemplates`` options dictionary. For a route to match, all headers specified in this section are required to be present in the request headers.
-  | For more details, see PR `1312`_.
+- :doc:`../features/kubernetes`: The ":ref:`Kubernetes provider based on watch requests <k8s-watchkube-provider>`" feature by `@kick2nick`_ in pull request `2174`_.
 
-- :doc:`../features/configuration`: Introducing the ":ref:`config-version-policy`" feature by `@ibnuda`_.
+  The `Ocelot.Provider.Kubernetes`_ package now features a new :ref:`WatchKube provider <k8s-watchkube-provider>` for :doc:`Kubernetes <../features/kubernetes>` service discovery.
+  This provider is a great fit for high-load environments where the older :ref:`Kube <k8s-kube-provider>` and :ref:`PollKube <k8s-pollkube-provider>` providers struggle to handle heavy traffic, often leading to increased log errors, HTTP 500 issues, and potential Ocelot instance failures.
+  ``WatchKube`` is the next step in the evolution of these providers, leveraging the reactive capabilities of the `KubeClient`_ API.
+  For guidance on choosing the right provider for your Kubernetes setup, check out the ":ref:`k8s-comparing-providers`" section.
 
-  The configurable ``HttpRequestMessage.VersionPolicy`` helps avoid HTTP protocol connection errors and stabilizes connections to downstream services, especially when you're not developing those services, documentation is scarce, or the deployed HTTP protocol version is uncertain.
-  For developers of downstream services, it's possible to ``ConfigureKestrel`` server and its endpoints with new protocol settings. However, attention to version policy is also required, and this feature provides precise version settings for HTTP connections.
+- :doc:`../features/configuration`: The ":ref:`Routing default timeout <config-timeout>`" feature by `@hogwartsdeveloper`_ in pull request `2073`_.
 
-  | Essentially, this feature promotes the use of HTTP protocols beyond 1.0/1.1, such as HTTP/2 or even HTTP/3.
-  | For additional details, refer to PR `1673`_.
+  In the past, the ``Timeout`` setting in the :ref:`config-route-schema` did not actually stop requests, defaulting instead to a fixed `90 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%2290+seconds%22&type=code>`_.
+  Custom timeouts were handled using the :doc:`../features/qualityofservice` :ref:`qos-timeout-strategy`, and this only applied if `Polly`_ and the `Ocelot.Provider.Polly`_ package were used.
+  Now, the ``Timeout`` option (in seconds) can be set at the route, global, and QoS levels.
+  The :ref:`config-global-configuration-schema` and :ref:`config-dynamic-route-schema` also include the new ``Timeout`` setting, making it possible to configure default timeouts for :ref:`dynamic routing <sd-dynamic-routing>` as well.
 
-- :doc:`../features/configuration`: Introducing the new ":ref:`config-route-metadata`" feature by `@vantm`_.
+- :doc:`../features/qualityofservice`: The "`FailureRatio and SamplingDuration parameters of Polly V8 circuit-breaker`_" feature by `@RaynaldM`_ in pull request `2081`_.
 
-  Undoubtedly, this is the standout feature of the release! ⭐
+  Starting with version `24.1`_, two new options in :ref:`qos-schema`, ``FailureRatio`` and ``SamplingDuration``, let you fine-tune the behavior of the :ref:`qos-circuit-breaker-strategy`.
+  Both can be :ref:`configured globally <qos-global-configuration>`, even with :ref:`dynamic routing <sd-dynamic-routing>`.
 
-  Route metadata enables Ocelot developers to incorporate custom functions that address specific needs or to create their own plugins/extensions.
+  .. note:: The ``DurationOfBreak``, ``ExceptionsAllowedBeforeBreaking``, and ``TimeoutValue`` options are now deprecated in `24.1`_, so check the ":ref:`qos-schema`" documentation for details.
 
-  In versions of Ocelot prior to `23.3.0`_, the configuration was limited to predefined values that Ocelot used internally. This was sufficient for official extensions, but posed challenges for third-party developers who needed to implement configurations not included in the standard ``FileConfiguration``.
-  Applying an option to a specific route required knowledge of the array index and other details that might not be readily accessible using the standard ``IConfiguration`` or ``IOptions<FileConfiguration>`` models from ASP.NET.
+What's Updated?
+---------------
+.. _@marklonquist: https://github.com/marklonquist
+.. _@jlukawska: https://github.com/jlukawska
+.. _@MiladRv: https://github.com/MiladRv
+.. _1592: https://github.com/ThreeMammals/Ocelot/pull/1592
+.. _1659: https://github.com/ThreeMammals/Ocelot/pull/1659
+.. _2114: https://github.com/ThreeMammals/Ocelot/pull/2114
+.. _2294: https://github.com/ThreeMammals/Ocelot/pull/2294
+.. _2295: https://github.com/ThreeMammals/Ocelot/pull/2295
+.. _2324: https://github.com/ThreeMammals/Ocelot/pull/2324
+.. _2331: https://github.com/ThreeMammals/Ocelot/pull/2331
+.. _2332: https://github.com/ThreeMammals/Ocelot/pull/2332
+.. _2336: https://github.com/ThreeMammals/Ocelot/pull/2336
+.. _2339: https://github.com/ThreeMammals/Ocelot/pull/2339
+.. _2342: https://github.com/ThreeMammals/Ocelot/pull/2342
+.. _2345: https://github.com/ThreeMammals/Ocelot/pull/2345
+.. _2347: https://github.com/ThreeMammals/Ocelot/pull/2347
+.. _File-model: https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Configuration/File
+.. _deprecated options: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+deprecated+language%3AreStructuredText&type=code&l=reStructuredText
+.. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot/tree/24.0.0/test/Ocelot.Testing
+.. _extension packages: https://www.nuget.org/profiles/ThreeMammals
+.. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
+.. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
+.. _GH-Actions: https://github.com/ThreeMammals/Ocelot/actions
 
-  | Now, :doc:`../features/metadata` can be directly accessed in the ``DownstreamRoute`` object. Furthermore, metadata can also be retrieved from the global JSON section via the ``FileConfiguration.GlobalConfiguration`` property.
-  | For more information, see the details in PR `1843`_ on this remarkable feature.
+- :doc:`../features/configuration`: Several `File-model`_ options have been deprecated by `@raman-m`_.
 
-Updates of the features
-^^^^^^^^^^^^^^^^^^^^^^^
+  The updated docs now highlight these `deprecated options`_ with multiple notes and warnings.
+  The `24.1`_ deprecation process will wrap up in the upcoming `.NET 10`_ release.
+  Due to the `Obsolete attributes`_, C# developers will notice several build warnings during compilation.
 
-- :doc:`../features/configuration`: New features are ":ref:`config-version-policy`" by `@ibnuda`_ and ":ref:`config-route-metadata`" by `@vantm`_.
-- :doc:`../features/servicediscovery`: New feature is "*Customization of services creation*" aka :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` by `@raman-m`_.
-- :doc:`../features/routing`: New feature is ":ref:`routing-upstream-headers`" by `@jlukawska`_.
-- :doc:`../features/qualityofservice`: The team has decided to remove the Polly V7 policies logic and the corresponding Ocelot ``AddPollyV7`` extensions (referenced in PR `2079`_).
+- :ref:`b-testing`: The `Ocelot.Testing`_ project was deprecated by `@raman-m`_ in pull request `2295`_.
 
-  | Furthermore, the Polly V8 Circuit Breaker has been mandated as the primary strategy (as per PR `2086`_).
-  | See more detaild below in "**Ocelot extra packages**" paragraph.
+  The project was removed from the main repo and moved to its own `Ocelot.Testing <https://github.com/ThreeMammals/Ocelot.Testing>`__ repository.
+  This change allows the `Ocelot.Testing <https://www.nuget.org/packages/Ocelot.Testing/>`__ package to be shared independently for delivery of `extension packages`_.
+  The Ocelot team also plans to deprecate more projects and move them to separate repos because:
+  **a)** despite the fact that a monorepo enables faster builds and quicker delivery;
+  **b)** but the release process can be delayed by missing versions of integrated libraries in `extension packages`_.
+  The goal is for the Ocelot repo to only contain essential projects, avoiding delays caused by integrated package release schedules.
+  Legacy or abandoned integrated packages should be deprecated and maintained in their own repos with independent release cycles.
 
-Ocelot extra packages
-^^^^^^^^^^^^^^^^^^^^^
+- :doc:`../features/headerstransformation`: Added :ref:`global configuration <ht-configuration>` by `@marklonquist`_ in pull request `1659`_.
 
-- `Ocelot.Provider.Polly <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_
+  The :ref:`config-global-configuration-schema` now includes new ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` options.
+  These work only with static routes, meaning the ``Routes`` collection (see :ref:`config-route-schema`).
+  They are not supported for dynamic routes because they are not part of the :ref:`config-dynamic-route-schema`, and Ocelot Core does not read global configuration of this feature in :ref:`dynamic routing <sd-dynamic-routing>` mode.
+  This is noted in the :ref:`ht-roadmap` documentation.
 
-  - Our team has resolved to eliminate the Polly V7 policies logic and the corresponding Ocelot ``AddPollyV7`` extensions entirely (refer to the "`Polly v7 vs v8 <https://ocelot.readthedocs.io/en/23.2.2/features/qualityofservice.html#polly-v7-vs-v8>`_" documentation).
-    In the previous `23.2.0`_ release, named `Lunar Eclipse <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_, we included these to maintain the legacy `Polly`_ behavior, allowing development teams to transition or retain the old Polly V7 functionality.
-    We are now confident that it is time to progress alongside `Polly`_, shifting our focus to the new `Polly V8 <https://www.thepollyproject.org/2023/09/28/polly-v8-officially-released/>`_ `resilience pipelines <https://www.pollydocs.org/pipelines/>`_.
-    For more details, see PR `2079`_.
-  - Additionally, we have implemented Polly v8 `Circuit Breaker <https://www.pollydocs.org/strategies/circuit-breaker.html>`_ as the primary strategy.
-    Our :doc:`../features/qualityofservice` (QoS) relies on two main strategies: :ref:`qos-circuit-breaker-strategy` and :ref:`qos-timeout-strategy`.
-    If both `Circuit Breaker`_ and `Timeout`_ have :ref:`qos-configuration` with their respective properties in the ``QoSOptions`` of the route JSON, then the :ref:`qos-circuit-breaker-strategy` will take precedence in the constructed resilience pipeline.
-    For more details, refer to PR `2086`_.
+- :doc:`../features/authentication`: Added :ref:`global configuration <authentication-configuration>` by `@jlukawska`_ in pull request `2114`_.
 
-Stabilization (bug fixing)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+  The :ref:`config-global-configuration-schema` now includes a new ``AuthenticationOptions`` property for setting up static routes globally.
+  This also introduces the :ref:`AllowAnonymous boolean option <authentication-configuration>` within ``AuthenticationOptions`` to control static route authentication.
+  Later, pull request `2336`_ extended global authentication support to dynamic routes.
 
-- Fixed `2034`_ in PR `2045`_ by `@raman-m`_
-- Fixed `2039`_ in PR `2050`_ by `@PaulARoy`_
-- Fixed `1590`_ in PR `1592`_ by `@sergio-str`_
-- Fixed `2054`_ `2059`_ in PR `2058`_ by `@thiagoloureiro`_
-- Fixed `954`_ `957`_ `1026`_ in PR `2067`_ by `@raman-m`_
-- Fixed `2002`_ in PR `2003`_ by `@bbenameur`_
-- Fixed `2085`_ in PR `2086`_ by `@RaynaldM`_
+  .. note:: The ``AuthenticationProviderKey`` option is deprecated in version `24.1`_—see the ":ref:`authentication-options-schema`" documentation for details.
 
-See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milestone%3ASpring%2724+is%3Aclosed+label%3Abug>`_ of the `Spring'24 <https://github.com/ThreeMammals/Ocelot/milestone/6>`_ milestone
+- :doc:`../features/ratelimiting`: Re-designed :ref:`global configuration <rl-configuration>` by `@MiladRv`_ and `@raman-m`_ in pull request `2294`_.
 
-Documentation Summary
-^^^^^^^^^^^^^^^^^^^^^
+  The :ref:`config-global-configuration-schema` now includes a new ``RateLimitOptions`` property for both static and dynamic routes.
+  Previously, global configuration was available through ``RateLimitOptions`` in :ref:`dynamic routing <sd-dynamic-routing>` mode, while route overriding used the now-deprecated ``RateLimitRule`` from the :ref:`config-dynamic-route-schema`.
 
-- :doc:`../features/caching`: New :ref:`cch-enablecontenthashing-option` and :ref:`cch-global-configuration` sections
-- :doc:`../features/configuration`: New :ref:`config-version-policy` and :ref:`config-route-metadata` sections
-- :doc:`../features/kubernetes`: New :ref:`k8s-downstream-scheme-vs-port-names` section
-- :doc:`../features/metadata`: This is new chapter for :ref:`config-route-metadata` feature
-- :doc:`../features/qualityofservice`
-- :doc:`../features/ratelimiting`
-- :doc:`../features/requestaggregation`
-- :doc:`../features/routing`: New :ref:`routing-upstream-headers` section
-- :doc:`../features/servicediscovery`: New :ref:`sd-consul-service-builder` and :ref:`k8s-downstream-scheme-vs-port-names` sections
+  This marks the second major overhaul of the *Rate Limiting* feature since the first update in pull request `1592`_.
+  A new ``Wait`` option has been added, replacing the deprecated ``PeriodTimespan``, to enhance the :ref:`Fixed Window <rl-algorithms>` algorithm.
+  The full list of deprecated options can be found in the ":ref:`Deprecated options <rl-deprecated-options>`" documentation.
+
+- :doc:`../features/loadbalancer`: Added :ref:`global configuration <lb-global-configuration>` by `@raman-m`_ in pull request `2324`_.
+
+  The :ref:`config-global-configuration-schema` now includes a new ``LoadBalancerOptions`` property for both static and dynamic routes.
+  Previously, global configuration was available through ``LoadBalancerOptions`` in :ref:`dynamic routing <sd-dynamic-routing>` mode without dynamic route overrides.
+  Starting with version `24.1`_, the :ref:`config-dynamic-route-schema` also supports ``LoadBalancerOptions`` for overriding, and global configuration for static routes is now supported as well.
+
+- :doc:`../features/caching`: Added :ref:`global configuration <caching-global-configuration>` by `@raman-m`_ in pull request `2331`_.
+
+  The :ref:`config-global-configuration-schema` now includes a new ``CacheOptions`` property for both static and dynamic routes.
+  Global configuration has been available for static routes since version `23.3`_, but starting with version `24.1`_, the :ref:`config-dynamic-route-schema` also supports ``CacheOptions`` for overriding.
+
+  .. note::
+    The ``FileCacheOptions`` property in the :ref:`config-route-schema` (static routes) is deprecated in version `24.1`_.
+    For more details, see the caching :ref:`caching-configuration` documentation.
+
+- :ref:`Http Handler <config-http-handler-options>`: Added :ref:`global configuration <config-http-handler-options>` by `@raman-m`_ in pull request `2332`_.
+
+  The :ref:`config-global-configuration-schema` now includes a new ``HttpHandlerOptions`` property for both static and dynamic routes.
+  Previously, global configuration was available through ``HttpHandlerOptions`` in :ref:`dynamic routing <sd-dynamic-routing>` mode without dynamic route overriding.
+  Starting with version `24.1`_, the :ref:`config-dynamic-route-schema` also supports ``HttpHandlerOptions`` for overriding, and global configuration is now available for static routes as well.
+
+- :doc:`../features/authentication`: Added :ref:`global configuration <authentication-global-configuration>` by `@raman-m`_ in pull request `2336`_.
+
+  The :ref:`config-global-configuration-schema` now includes a new ``AuthenticationOptions`` property for both static and dynamic routes.
+  Starting with version `24.1`_, the :ref:`config-dynamic-route-schema` also supports ``AuthenticationOptions`` to override global settings.
+
+  .. note::
+    The ``AuthenticationProviderKey`` option is deprecated in version `24.1`_, so check the ":ref:`authentication-options-schema`" documentation for details.
+
+- :doc:`../features/qualityofservice`: Added :ref:`global configuration <qos-global-configuration>` by `@raman-m`_ in pull request `2339`_.
+
+  The :ref:`config-global-configuration-schema` now includes a new ``QoSOptions`` property for both static and dynamic routes.
+  Previously, global configuration was available through ``QoSOptions`` in :ref:`dynamic routing <sd-dynamic-routing>` mode without the option for dynamic route overrides.
+  Starting with version `24.1`_, the :ref:`config-dynamic-route-schema` supports ``QoSOptions`` for overriding, and global configuration support is now available for static routes as well.
+
+  .. note::
+    The ``DurationOfBreak``, ``ExceptionsAllowedBeforeBreaking``, and ``TimeoutValue`` options are deprecated in version `24.1`_.
+    For details, see the ":ref:`qos-schema`" documentation.
+
+- `DevOps`_: Stabilized tests and reviewed `GH-Actions`_ workflows by `@raman-m`_ in pull requests `2342`_ and `2345`_.
+
+  These efforts kept the CI/CD builds in `GitHub Actions <https://github.com/ThreeMammals/Ocelot/actions>`_ stable, targeting the `alpha release <https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0-pre-release-24-1.1>`_ of version `24.1`_.
+  The CI/CD environment was set up and tested `GH-Actions`_ workflows in advance for the beta release, which is the goal of pull request `2347`_.
+
+Patches Included
+----------------
+.. _@mehyaa: https://github.com/mehyaa
+.. _913: https://github.com/ThreeMammals/Ocelot/issues/913
+.. _930: https://github.com/ThreeMammals/Ocelot/issues/930
+.. _1478: https://github.com/ThreeMammals/Ocelot/pull/1478
+.. _2091: https://github.com/ThreeMammals/Ocelot/pull/2091
+.. _2304: https://github.com/ThreeMammals/Ocelot/issues/2304
+.. _2335: https://github.com/ThreeMammals/Ocelot/pull/2335
+.. _RFC 8693: https://datatracker.ietf.org/doc/html/rfc8693
+
+- :doc:`../features/websockets`: Issue `930`_ patch by `@hogwartsdeveloper`_ in pull request `2091`_.
+
+  This update removes the troublesome ``System.Net.WebSockets.WebSocketException`` from logs, preventing Ocelot from running into 500 status disasters.
+  The issue stemmed from client-side or network events that Ocelot's ``WebSocketsProxyMiddleware`` could not anticipate on the server side.
+  The patch now checks for incorrect connection statuses, attempting to close the connection and end server-side tasks gracefully without errors.
+
+- :doc:`../features/kubernetes`: Issue `2304`_ patch by `@raman-m`_ in pull request `2335`_.
+
+  This update fixes the :ref:`PollKube provider <k8s-pollkube-provider>` to address a bug with the first cold request, where the winning thread got an empty collection before the initial callback was triggered.
+  The solution is to call the integrated discovery provider for the first cold request when the queue is empty.
+
+- :doc:`../features/authorization`: Issue `913`_ patch by `@mehyaa`_ in pull request `1478`_.
+
+  Starting with version `24.1`_, Ocelot now supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the '``scope``' claim in the ``ScopesAuthorizer`` service, also referred to as the ``IScopesAuthorizer`` service in the DI container.
+  This is noted in the ":ref:`authentication-allowed-scopes`" documentation (see the first note).
 
 Contributing
 ------------
 
-`Pull requests <https://github.com/ThreeMammals/Ocelot/pulls>`_, `issues <https://github.com/ThreeMammals/Ocelot/issues>`_, and commentary are welcome at the `Ocelot GitHub repository <https://github.com/ThreeMammals/Ocelot/>`_.
+.. |octocat| image:: images/octocat.png
+  :alt: octocat
+  :height: 25
+  :class: img-valign-middle
+  :target: https://github.com/ThreeMammals/Ocelot/
+.. _Pull requests: https://github.com/ThreeMammals/Ocelot/pulls
+.. _issues: https://github.com/ThreeMammals/Ocelot/issues
+.. _Ocelot GitHub: https://github.com/ThreeMammals/Ocelot/
+.. _Ocelot Discussions: https://github.com/ThreeMammals/Ocelot/discussions
+.. _ideas: https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas
+.. _questions: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
 
-For `ideas <https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas>`_ and `questions <https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a>`_, please post them in the `Ocelot Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ space.
+`Pull requests`_, `issues`_, and commentary are welcome at the `Ocelot GitHub`_ repository.
+For `ideas`_ and `questions`_, please post them in the `Ocelot Discussions`_ space. |octocat|
 
 Our :doc:`../building/devprocess` is a part of successful :doc:`../building/releaseprocess`.
 If you are a new contributor, it is crucial to read :doc:`../building/devprocess` attentively to grasp our methods for efficient and swift feature delivery.
 We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
 
-We extend our best wishes for your successful contributions to the Ocelot product!
+We extend our best wishes for your successful contributions to the Ocelot product! |octocat|

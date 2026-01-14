@@ -1,39 +1,28 @@
 ﻿using NetTools; // <PackageReference Include="IPAddressRange" Version="6.0.0" />
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Creator
+namespace Ocelot.Configuration.Creator;
+
+public class SecurityOptionsCreator : ISecurityOptionsCreator
 {
-    public class SecurityOptionsCreator : ISecurityOptionsCreator
+    public SecurityOptions Create(FileSecurityOptions securityOptions, FileGlobalConfiguration global)
     {
-        public SecurityOptions Create(FileSecurityOptions securityOptions)
+        var options = securityOptions.IsEmpty() ? global.SecurityOptions : securityOptions;
+        var allowedIPs = options.IPAllowedList.SelectMany(Parse)
+            .ToArray();
+        var blockedIPs = options.IPBlockedList.SelectMany(Parse)
+            .Except(options.ExcludeAllowedFromBlocked ? allowedIPs : Enumerable.Empty<string>())
+            .ToArray();
+        return new(allowedIPs, blockedIPs);
+    }
+
+    private static string[] Parse(string ipValue)
+    {
+        if (IPAddressRange.TryParse(ipValue, out var range))
         {
-            var ipAllowedList = new List<string>();
-            var ipBlockedList = new List<string>();
-
-            foreach (var allowed in securityOptions.IPAllowedList)
-            {
-                if (IPAddressRange.TryParse(allowed, out var allowedIpAddressRange))
-                {
-                    var allowedIps = allowedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
-                    ipAllowedList.AddRange(allowedIps);
-                }
-            }
-
-            foreach (var blocked in securityOptions.IPBlockedList)
-            {
-                if (IPAddressRange.TryParse(blocked, out var blockedIpAddressRange))
-                {
-                    var blockedIps = blockedIpAddressRange.Select<IPAddress, string>(x => x.ToString());
-                    ipBlockedList.AddRange(blockedIps);
-                }
-            }
-
-            if (securityOptions.ExcludeAllowedFromBlocked)
-            {
-                ipBlockedList = ipBlockedList.Except(ipAllowedList).ToList();
-            }
-
-            return new SecurityOptions(ipAllowedList, ipBlockedList);
+            return range.Select<IPAddress, string>(ip => ip.ToString()).ToArray();
         }
+
+        return Array.Empty<string>();
     }
 }

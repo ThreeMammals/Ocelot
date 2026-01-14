@@ -1,12 +1,14 @@
 {
   "profiles": {
-    "OcelotApplicationService": {
+    "https": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "api/values",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:57625;http://localhost:57626"
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7788;http://localhost:5566"
     }
   }
 }

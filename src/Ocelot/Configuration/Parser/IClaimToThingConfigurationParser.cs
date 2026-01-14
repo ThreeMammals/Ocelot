@@ -1,9 +1,8 @@
 using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Parser
+namespace Ocelot.Configuration.Parser;
+
+public interface IClaimToThingConfigurationParser
 {
-    public interface IClaimToThingConfigurationParser
-    {
-        Response<ClaimToThing> Extract(string existingKey, string value);
-    }
+    Response<ClaimToThing> Extract(string existingKey, string value);
 }

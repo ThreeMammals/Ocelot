@@ -11,7 +11,6 @@ public class OcelotLogger : IOcelotLogger
 {
     private readonly ILogger _logger;
     private readonly IRequestScopedDataRepository _scopedDataRepository;
-    private readonly Func<string, Exception, string> _func;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OcelotLogger"/> class.
@@ -27,8 +26,7 @@ public class OcelotLogger : IOcelotLogger
     public OcelotLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _scopedDataRepository = scopedDataRepository;
-        _func = (state, exception) => exception == null ? state : $"{state}, {nameof(exception)}: {exception}";
+        _scopedDataRepository = scopedDataRepository ?? throw new ArgumentNullException(nameof(scopedDataRepository));
     }
 
     public void LogTrace(string message) => WriteLog(LogLevel.Trace, message);
@@ -52,13 +50,13 @@ public class OcelotLogger : IOcelotLogger
     private string GetOcelotRequestId()
     {
         var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.RequestIdName);
-        return requestId?.IsError ?? true ? $"No {RequestIdMiddleware.RequestIdName}" : requestId.Data;
+        return requestId.IsError ? "-" : requestId.Data;
     }
 
     private string GetOcelotPreviousRequestId()
     {
         var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.PreviousRequestIdName);
-        return requestId?.IsError ?? true ? $"No {RequestIdMiddleware.PreviousRequestIdName}" : requestId.Data;
+        return requestId.IsError ? "-" : requestId.Data;
     }
 
     private void WriteLog(LogLevel logLevel, string message, Exception exception = null)
@@ -83,13 +81,15 @@ public class OcelotLogger : IOcelotLogger
 
         if (messageFactory != null)
         {
-            message = messageFactory.Invoke() ?? string.Empty;
+            message = messageFactory.Invoke();
         }
 
-        _logger.Log(logLevel,
-            default,
-            $"{nameof(requestId)}: {requestId}, {nameof(previousRequestId)}: {previousRequestId}, {nameof(message)}: '{message}'",
-            exception,
-            _func);
+        _logger.Log(logLevel, default,
+            $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{Environment.NewLine + message}",
+            exception, NoFormatter);
     }
+
+    public static string NoFormatter(string state, Exception e) => state;
+    public static string ExceptionFormatter(string state, Exception e)
+        => e == null ? state : $"{state}, {Environment.NewLine + nameof(Exception)}: {e}";
 }

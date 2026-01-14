@@ -1,15 +1,22 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Logging;
+using Ocelot.Middleware;
 using Serilog;
 using Serilog.Core;
 
 namespace Ocelot.AcceptanceTests;
 
-public class LogLevelTests : IDisposable
+public sealed class LogLevelTests : Steps
 {
-    private readonly Steps _steps;
-    private readonly ServiceHandler _serviceHandler;
     private readonly string _logFileName;
     private readonly string _appSettingsFileName;
 
@@ -18,10 +25,10 @@ public class LogLevelTests : IDisposable
 
     public LogLevelTests()
     {
-        _steps = new Steps();
-        _serviceHandler = new ServiceHandler();
-        _logFileName = $"ocelot_logs_{Guid.NewGuid()}.log";
-        _appSettingsFileName = $"appsettings_{Guid.NewGuid()}.json";
+        _logFileName = $"ocelot_logs_{TestID}.log";
+        _appSettingsFileName = $"appsettings_{TestID}.json";
+        Files.Add(_logFileName);
+        Files.Add(_appSettingsFileName);
     }
 
     private void ThenMessagesAreLogged(string[] notAllowedMessageTypes, string[] allowedMessageTypes)
@@ -57,47 +64,99 @@ public class LogLevelTests : IDisposable
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                    RequestIdKey = _steps.RequestIdKey,
+                    UpstreamHttpMethod = ["Get"],
+                    RequestIdKey = "Oc-RequestId",
                 },
             },
         };
 
-        var logger = GetLogger(level);
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => _steps.Dispose())
+        using var logger = GetLogger(level);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => logger.Dispose())
             .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
             .BDDfy();
     }
 
-    [Fact]
-    public void if_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "ERROR" }, new[] { "CRITICAL" }, LogLevel.Critical);
+    private void GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
+    {
+        var builder = TestHostBuilder.Create()
+            .UseKestrel()
+            .ConfigureAppConfiguration((_, config) =>
+            {
+                config.AddJsonFile(appsettingsFileName, false, false);
+                config.AddJsonFile(ocelotConfigFileName, false, false);
+                config.AddEnvironmentVariables();
+            })
+            .ConfigureServices(s => { s.AddOcelot(); })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddSerilog(logger);
+            })
+            .Configure(async app =>
+            {
+                app.Use(async (context, next) =>
+                {
+                    var loggerFactory = context.RequestServices.GetService<IOcelotLoggerFactory>();
+                    var ocelotLogger = loggerFactory.CreateLogger<Steps>();
+                    ocelotLogger.LogDebug(() => $"DEBUG: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
+                    ocelotLogger.LogTrace(() => $"TRACE: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
+                    ocelotLogger.LogInformation(() =>
+                        $"INFORMATION: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
+                    ocelotLogger.LogWarning(() => $"WARNING: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
+                    ocelotLogger.LogError(() => $"ERROR: {nameof(ocelotLogger)},  {nameof(loggerFactory)}",
+                        new Exception("test"));
+                    ocelotLogger.LogCritical(() => $"CRITICAL: {nameof(ocelotLogger)},  {nameof(loggerFactory)}",
+                        new Exception("test"));
+
+                    await next.Invoke();
+                });
+                await app.UseOcelot();
+            });
+
+        ocelotServer = new TestServer(builder);
+        ocelotClient = ocelotServer.CreateClient();
+    }
 
     [Fact]
-    public void if_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "WARNING", "DEBUG" }, new[] { "CRITICAL", "ERROR" }, LogLevel.Error);
+    public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "WARNING", "ERROR" ],
+        [ "CRITICAL" ], LogLevel.Critical);
 
     [Fact]
-    public void if_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(new[] { "TRACE", "INFORMATION", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING" }, LogLevel.Warning);
+    public void If_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "WARNING", "DEBUG" ],
+        [ "CRITICAL", "ERROR" ], LogLevel.Error);
+
+    [Fact]
+    public void If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(
+        [ "TRACE", "INFORMATION", "DEBUG" ],
+        [ "CRITICAL", "ERROR", "WARNING" ], LogLevel.Warning);
     
     [Fact]
-    public void if_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(new[] { "TRACE", "DEBUG" }, new[] { "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Information);
+    public void If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(
+        [ "TRACE", "DEBUG" ],
+        [ "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Information);
 
     [Fact]
-    public void if_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(new[] { "TRACE" }, new[] { "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Debug);
+    public void If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(
+        [ "TRACE" ],
+        [ "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Debug);
 
     [Fact]  
-    public void if_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(Array.Empty<string>(), new[] { "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" }, LogLevel.Trace);
+    public void If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(
+        [],
+        [ "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Trace);
 
     private Logger GetLogger(LogLevel logLevel)
     {
-        var logFilePath = ResetLogFile();
+        var logFilePath = GetLogFilePath();
         UpdateAppSettings(logLevel);
         var logger = logLevel switch
         {
@@ -139,37 +198,18 @@ public class LogLevelTests : IDisposable
         File.WriteAllText(appSettingsFilePath, appSettings);
     }
 
-    private string ResetLogFile()
-    {
-        var logFilePath = GetLogFilePath();
-        if (File.Exists(logFilePath))
-        {
-            File.Delete(logFilePath);
-        }
-
-        return logFilePath;
-    }
-
     private string GetLogFilePath()
     {
         var logFilePath = Path.Combine(AppContext.BaseDirectory, _logFileName);
         return logFilePath;
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl)
+    private void GivenThereIsAServiceRunningOn(int port)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Response.StatusCode = 200;
-            await context.Response.WriteAsync(string.Empty);
+            return context.Response.WriteAsync(string.Empty);
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
-        ResetLogFile();
-        GC.SuppressFinalize(this);
     }
 }
