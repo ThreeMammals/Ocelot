@@ -1,17 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests;
 
 [Trait("Feat", "1672")]
 public sealed class DefaultVersionPolicyTests : Steps
 {
-    private const string Body = "supercalifragilistic";
-
     public DefaultVersionPolicyTests()
     {
     }
@@ -22,7 +19,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -36,7 +34,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -50,7 +49,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -64,7 +64,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -78,7 +79,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -92,7 +94,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -106,7 +109,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http2))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -120,7 +124,8 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAServiceRunningOn(port, HttpProtocols.Http1))
+        var body = Body();
+        this.Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -128,34 +133,22 @@ public sealed class DefaultVersionPolicyTests : Steps
             .BDDfy();
     }
 
-    private static void GivenThereIsAServiceRunningOn(int port, HttpProtocols protocols)
+    private void GivenThereIsHttpsServiceRunningOn(int port, HttpProtocols protocols, [CallerMemberName] string body = "supercalifragilistic")
     {
-        var url = $"{Uri.UriSchemeHttps}://localhost:{port}";
-        var builder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .ConfigureKestrel(serverOptions =>
+        var url = DownstreamUrl(port, Uri.UriSchemeHttps);
+        handler.GivenThereIsAServiceRunningOnWithKestrelOptions(url, string.Empty,
+            options => options.ConfigureEndpointDefaults(listenOptions => { listenOptions.Protocols = protocols; }),
+            context =>
             {
-                serverOptions.ConfigureEndpointDefaults(listenOptions => { listenOptions.Protocols = protocols; });
-            })
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    await context.Response.WriteAsync(Body);
-                });
-            })
-            .Build();
-
-        builder.Start();
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                return context.Response.WriteAsync(body);
+            });
     }
 
     private static FileRoute GivenHttpsRoute(int port, string httpVersion, string versionPolicy) => new()
     {
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         DownstreamPathTemplate = "/",
         DownstreamHostAndPorts = new() { new("localhost", port) },
         DownstreamScheme = Uri.UriSchemeHttps, // !!!

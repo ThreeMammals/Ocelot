@@ -18,7 +18,7 @@ namespace Ocelot.Requester
 
     public class HttpClientBuilder : IHttpClientBuilder
     {
-        private readonly IDelegatingHandlerHandlerFactory _factory;
+        private readonly IDelegatingHandlerFactory _factory;
         private readonly IHttpClientCache _cacheHandlers;
         private readonly IOcelotLogger _logger;
         private DownstreamRoute _cacheKey;
@@ -27,7 +27,7 @@ namespace Ocelot.Requester
         private readonly TimeSpan _defaultTimeout;
 
         public HttpClientBuilder(
-            IDelegatingHandlerHandlerFactory factory,
+            IDelegatingHandlerFactory factory,
             IHttpClientCache cacheHandlers,
             IOcelotLogger logger)
         {
@@ -63,9 +63,9 @@ namespace Ocelot.Requester
                     .LogWarning($"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute, UpstreamPathTemplate: {downstreamRoute.UpstreamPathTemplate}, DownstreamPathTemplate: {downstreamRoute.DownstreamPathTemplate}");
             }
 
-            var timeout = downstreamRoute.QosOptions.TimeoutValue == 0
+            var timeout = downstreamRoute.QosOptions.Timeout == 0
                 ? _defaultTimeout
-                : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.TimeoutValue);
+                : TimeSpan.FromMilliseconds(downstreamRoute.QosOptions.Timeout.Value);
 
             _httpClient = new HttpClient(CreateHttpMessageHandler(handler, downstreamRoute))
             {
@@ -118,7 +118,7 @@ namespace Ocelot.Requester
         private HttpMessageHandler CreateHttpMessageHandler(HttpMessageHandler httpMessageHandler, DownstreamRoute request)
         {
             //todo handle error
-            var handlers = _factory.Get(request).Data;
+            var handlers = _factory.Get(request);
 
             handlers
                 .Select(handler => handler)
@@ -126,9 +126,8 @@ namespace Ocelot.Requester
                 .ToList()
                 .ForEach(handler =>
                 {
-                    var delegatingHandler = handler();
-                    delegatingHandler.InnerHandler = httpMessageHandler;
-                    httpMessageHandler = delegatingHandler;
+                    handler.InnerHandler = httpMessageHandler;
+                    httpMessageHandler = handler;
                 });
             return httpMessageHandler;
         }

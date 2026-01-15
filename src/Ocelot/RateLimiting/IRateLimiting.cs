@@ -19,10 +19,11 @@ public interface IRateLimiting
     /// Gets required information to create wanted headers in upper contexts (middleware, etc).
     /// </summary>
     /// <param name="context">The current context.</param>
-    /// <param name="identity">The current representation of the request.</param>
     /// <param name="options">The options of rate limiting.</param>
+    /// <param name="now">The processing moment.</param>
+    /// <param name="counter">The counter data.</param>
     /// <returns>A <see cref="RateLimitHeaders"/> value.</returns>
-    RateLimitHeaders GetHeaders(HttpContext context, ClientRequestIdentity identity, RateLimitOptions options);
+    RateLimitHeaders GetHeaders(HttpContext context, RateLimitOptions options, DateTime now, RateLimitCounter counter);
 
     /// <summary>
     /// Main entry point to process the current request and apply the limiting rule.
@@ -30,30 +31,33 @@ public interface IRateLimiting
     /// <remarks>Warning! The method performs the storage operations which should be thread safe.</remarks>
     /// <param name="identity">The representation of current request.</param>
     /// <param name="options">The current rate limiting options.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options);
+    RateLimitCounter ProcessRequest(ClientRequestIdentity identity, RateLimitOptions options, DateTime now);
 
     /// <summary>
     /// Counts requests based on the current counter state and taking into account the limiting rule.
     /// </summary>
     /// <param name="entry">Old counter with starting moment inside.</param>
     /// <param name="rule">The limiting rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="RateLimitCounter"/> value.</returns>
-    RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule);
+    RateLimitCounter Count(RateLimitCounter? entry, RateLimitRule rule, DateTime now);
 
     /// <summary>
     /// Gets the seconds to wait for the next retry by starting moment and the rule.
     /// </summary>
-    /// <remarks>The method must be called after the counting by the <see cref="Count(RateLimitCounter?, RateLimitRule)"/> method is completed; otherwise it doesn't make sense.</remarks>
+    /// <remarks>The method must be called after the counting by the <see cref="Count(RateLimitCounter?, RateLimitRule, DateTime)"/> method is completed; otherwise it doesn't make sense.</remarks>
     /// <param name="counter">The counter with starting moment inside.</param>
     /// <param name="rule">The limiting rule.</param>
+    /// <param name="now">The processing moment.</param>
     /// <returns>A <see cref="double"/> value in seconds.</returns>
-    double RetryAfter(RateLimitCounter counter, RateLimitRule rule);
+    double RetryAfter(RateLimitCounter counter, RateLimitRule rule, DateTime now);
 
     /// <summary>
-    /// Converts to time span from a string, such as "1s", "1m", "1h", "1d".
+    /// Converts to time span from a string, such as "1ms", "1s", "1m", "1h", "1d".
     /// </summary>
-    /// <param name="timespan">The string value with dimentions: '1s', '1m', '1h', '1d'.</param>
+    /// <param name="timespan">The string value with units: '1ms', '1s', '1m', '1h', '1d'.</param>
     /// <returns>A <see cref="TimeSpan"/> value.</returns>
     TimeSpan ToTimespan(string timespan);
 }

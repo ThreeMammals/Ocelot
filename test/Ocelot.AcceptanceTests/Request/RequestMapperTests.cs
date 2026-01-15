@@ -5,19 +5,10 @@ using System.Text;
 namespace Ocelot.AcceptanceTests.Request;
 
 [Trait("PR", "1972")]
-public sealed class RequestMapperTests : Steps, IDisposable
+public sealed class RequestMapperTests : Steps
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public RequestMapperTests()
     {
-        _serviceHandler = new();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -27,7 +18,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -43,7 +34,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
@@ -59,7 +50,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
@@ -75,7 +66,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
@@ -91,7 +82,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
         var route = GivenRoute(port, HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(DownstreamUrl(port), "/", HttpStatusCode.OK))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
@@ -100,9 +91,9 @@ public sealed class RequestMapperTests : Steps, IDisposable
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, HttpStatusCode status)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode status)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
             var request = context.Request;
             var response = context.Response;
@@ -122,7 +113,7 @@ public sealed class RequestMapperTests : Steps, IDisposable
             new("localhost", port),
         },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
 }
 

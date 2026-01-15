@@ -1,5 +1,12 @@
 ﻿namespace Ocelot.Requester;
 
+/// <summary>
+/// TODO: Next subjects of investigation are:
+/// <list type="bullet">
+/// <item><see href="https://learn.microsoft.com/en-us/aspnet/core/performance/timeouts">Request timeouts middleware in ASP.NET Core</see></item>
+/// <item><see href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-9.0#behavior-with-debugger-attached">Kestrel timeouts</see></item>
+/// </list>
+/// </summary>
 public class TimeoutDelegatingHandler : DelegatingHandler
 {
     private readonly TimeSpan _timeout;
@@ -13,8 +20,7 @@ public class TimeoutDelegatingHandler : DelegatingHandler
         _timeout = timeout;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(_timeout);

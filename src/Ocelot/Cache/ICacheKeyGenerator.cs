@@ -1,10 +1,9 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Request.Middleware;
 
-namespace Ocelot.Cache
+namespace Ocelot.Cache;
+
+public interface ICacheKeyGenerator
 {
-    public interface ICacheKeyGenerator
-    {
-        ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute);
-    }
+    ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute);
 }

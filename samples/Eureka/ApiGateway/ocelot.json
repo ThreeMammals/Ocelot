@@ -1,11 +1,29 @@
 ﻿{
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/Category",
-      "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/Category",
       "ServiceName": "ncore-rat",
       "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/category",
+      "DownstreamPathTemplate": "/api/category",
+      "DownstreamScheme": "http",
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 5000
+      },
+      "FileCacheOptions": { "TtlSeconds": 15 }
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/nodiscovery/category",
+      "DownstreamPathTemplate": "/api/category",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5558
+        }
+      ],
       "QoSOptions": {
         "ExceptionsAllowedBeforeBreaking": 3,
         "DurationOfBreak": 10000,

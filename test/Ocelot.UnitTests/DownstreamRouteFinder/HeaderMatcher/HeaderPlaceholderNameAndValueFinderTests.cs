@@ -8,15 +8,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
 [Trait("Feat", "360")]
 public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
 {
-    private readonly IHeaderPlaceholderNameAndValueFinder _finder;
-    private Dictionary<string, string> _upstreamHeaders;
-    private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaderTemplates;
-    private List<PlaceholderNameAndValue> _result;
-
-    public HeaderPlaceholderNameAndValueFinderTests()
-    {
-        _finder = new HeaderPlaceholderNameAndValueFinder();
-    }
+    private readonly HeaderPlaceholderNameAndValueFinder _finder = new();
 
     [Fact]
     public void Should_return_no_placeholders()
@@ -25,14 +17,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
         var upstreamHeaders = new Dictionary<string, string>();
         var expected = new List<PlaceholderNameAndValue>();
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -51,14 +41,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             new("{countrycode}", "PL"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -77,14 +65,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             new("{countrycode}", "PL"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -103,14 +89,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             new("{countrycode}", "PL"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -129,14 +113,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             new("{countrycode}", "PL"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -156,14 +138,12 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
             new("{countrycode}", "PL"),
             new("{version}", "v1"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
     [Fact]
@@ -185,36 +165,18 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
             new("{countrycode}", "PL"),
             new("{version}", "v1"),
         };
-        GivenUpstreamHeaderTemplatesAre(upstreamHeaderTemplates);
-        GivenUpstreamHeadersAre(upstreamHeaders);
 
         // Act
-        WhenICallFindPlaceholders();
+        var result = _finder.Find(upstreamHeaders, upstreamHeaderTemplates).ToList();
 
         // Assert
-        TheResultIs(expected);
+        TheResultIs(result, expected);
     }
 
-    private void GivenUpstreamHeaderTemplatesAre(Dictionary<string, UpstreamHeaderTemplate> upstreaHeaderTemplates)
+    private static void TheResultIs(List<PlaceholderNameAndValue> actual, List<PlaceholderNameAndValue> expected)
     {
-        _upstreamHeaderTemplates = upstreaHeaderTemplates;
-    }
-
-    private void GivenUpstreamHeadersAre(Dictionary<string, string> upstreamHeaders)
-    {
-        _upstreamHeaders = upstreamHeaders;
-    }
-
-    private void WhenICallFindPlaceholders()
-    {
-        var result = _finder.Find(_upstreamHeaders, _upstreamHeaderTemplates);
-        _result = new(result);
-    }
-
-    private void TheResultIs(List<PlaceholderNameAndValue> expected)
-    {
-        _result.ShouldNotBeNull();
-        _result.Count.ShouldBe(expected.Count);
-        _result.ForEach(x => expected.Any(e => e.Name == x.Name && e.Value == x.Value).ShouldBeTrue());
+        actual.ShouldNotBeNull();
+        actual.Count.ShouldBe(expected.Count);
+        actual.ForEach(x => expected.Any(e => e.Name == x.Name && e.Value == x.Value).ShouldBeTrue());
     }
 }
