@@ -1,5 +1,5 @@
 using Ocelot.Authorization;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
@@ -22,33 +22,30 @@ public class RoleAuthorizerTests : UnitTest
     [Fact]
     public void Should_return_ok_if_no_allowed_scopes()
     {
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheFollowing(new List<string>()))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        GivenTheFollowing(new ClaimsPrincipal());
+        GivenTheFollowing(new List<string>());
+        WhenIAuthorize();
+        ThenTheFollowingIsReturned(new OkResponse<bool>(true));
     }
 
     [Fact]
     public void Should_return_ok_if_null_allowed_scopes()
     {
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheFollowing((List<string>)null))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        GivenTheFollowing(new ClaimsPrincipal());
+        GivenTheFollowing((List<string>)null);
+        WhenIAuthorize();
+        ThenTheFollowingIsReturned(new OkResponse<bool>(true));
     }
 
     [Fact]
     public void Should_return_error_if_claims_parser_returns_error()
     {
         var fakeError = new FakeError();
-        this.Given(_ => GivenTheFollowing(new ClaimsPrincipal()))
-        .And(_ => GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError)))
-        .And(_ => GivenTheFollowing(new List<string>() { "doesntmatter" }))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-        .BDDfy();
+        GivenTheFollowing(new ClaimsPrincipal());
+        GivenTheParserReturns(new ErrorResponse<List<string>>(fakeError));
+        GivenTheFollowing(new List<string>() { "doesntmatter" });
+        WhenIAuthorize();
+        ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError));
     }
 
     [Fact]
@@ -56,13 +53,11 @@ public class RoleAuthorizerTests : UnitTest
     {
         var claimsPrincipal = new ClaimsPrincipal();
         var requiredRole = new List<string>() { "someRole" };
-
-        this.Given(_ => GivenTheFollowing(claimsPrincipal))
-        .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(requiredRole)))
-        .And(_ => GivenTheFollowing(requiredRole))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new OkResponse<bool>(true)))
-        .BDDfy();
+        GivenTheFollowing(claimsPrincipal);
+        GivenTheParserReturns(new OkResponse<List<string>>(requiredRole));
+        GivenTheFollowing(requiredRole);
+        WhenIAuthorize();
+        ThenTheFollowingIsReturned(new OkResponse<bool>(true));
     }
 
     [Fact]
@@ -72,13 +67,11 @@ public class RoleAuthorizerTests : UnitTest
         var claimsPrincipal = new ClaimsPrincipal();
         var requiredRole = new List<string>() { "someRole" };
         var userRoles = new List<string>() { "anotherRole" };
-
-        this.Given(_ => GivenTheFollowing(claimsPrincipal))
-        .And(_ => GivenTheParserReturns(new OkResponse<List<string>>(userRoles)))
-        .And(_ => GivenTheFollowing(requiredRole))
-        .When(_ => WhenIAuthorize())
-        .Then(_ => ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError)))
-        .BDDfy();
+        GivenTheFollowing(claimsPrincipal);
+        GivenTheParserReturns(new OkResponse<List<string>>(userRoles));
+        GivenTheFollowing(requiredRole);
+        WhenIAuthorize();
+        ThenTheFollowingIsReturned(new ErrorResponse<bool>(fakeError));
     }
 
     private void GivenTheParserReturns(Response<List<string>> response)

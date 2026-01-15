@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Globalization;
+using System.Text.Json.Serialization;
+using NewtonsoftJsonConstructor = Newtonsoft.Json.JsonConstructorAttribute;
 
 namespace Ocelot.RateLimiting;
 
@@ -7,12 +9,19 @@ namespace Ocelot.RateLimiting;
 /// </summary>
 public struct RateLimitCounter
 {
+    public RateLimitCounter(DateTime startedAt)
+    {
+        StartedAt = startedAt;
+        Total = 1;
+    }
+
     [JsonConstructor]
+    [NewtonsoftJsonConstructor]
     public RateLimitCounter(DateTime startedAt, DateTime? exceededAt, long totalRequests)
     {
         StartedAt = startedAt;
         ExceededAt = exceededAt;
-        TotalRequests = totalRequests;
+        Total = totalRequests;
     }
 
     /// <summary>The moment when the counting was started.</summary>
@@ -21,9 +30,18 @@ public struct RateLimitCounter
 
     /// <summary>The moment when the limit was exceeded.</summary>
     /// <value>A <see cref="DateTime"/> value of the moment.</value>
-    public DateTime? ExceededAt { get; }
+    public DateTime? ExceededAt;
 
     /// <summary>Total number of requests counted.</summary>
     /// <value>A <see langword="long"/> value of total number.</value>
-    public long TotalRequests { get; set; }
+    public long Total;
+
+    public override readonly string ToString()
+    {
+        string started = StartedAt.ToString("O", CultureInfo.InvariantCulture);
+        string exceeded = ExceededAt.HasValue
+            ? $"+{ExceededAt.Value - StartedAt}"
+            : string.Empty;
+        return $"{Total}->({started}){exceeded}";
+    }
 }

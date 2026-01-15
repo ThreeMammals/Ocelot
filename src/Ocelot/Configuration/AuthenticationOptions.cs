@@ -1,85 +1,66 @@
 ﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
-namespace Ocelot.Configuration
+namespace Ocelot.Configuration;
+
+public sealed class AuthenticationOptions
 {
-    public sealed class AuthenticationOptions
+    public AuthenticationOptions()
     {
-        public AuthenticationOptions(FileAuthenticationOptions from)
-        {
-            AllowedScopes = from.AllowedScopes ?? new();
-            BuildAuthenticationProviderKeys(from.AuthenticationProviderKey, from.AuthenticationProviderKeys);
-            PolicyName = from.PolicyName;
-            RequiredRole = from.RequiredRole;
-            ScopeKey = from.ScopeKey;
-            RoleKey = from.RoleKey;
-        }
-
-        public AuthenticationOptions(List<string> allowedScopes, string authenticationProviderKey, string[] authenticationProviderKeys)
-        {
-            AllowedScopes = allowedScopes ?? new();
-            BuildAuthenticationProviderKeys(authenticationProviderKey, authenticationProviderKeys);
-        }
-
-        public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys, List<string> requiredRole, string scopeKey, string roleKey, string policyName)
-        {
-            AllowedScopes = allowedScopes;
-            BuildAuthenticationProviderKeys(null, authenticationProviderKeys);
-            PolicyName = policyName;
-            RequiredRole = requiredRole;
-            ScopeKey = scopeKey;
-            RoleKey = roleKey;
-        }
-
-        /// <summary>
-        /// Builds auth keys migrating legacy key to new ones.
-        /// </summary>
-        /// <param name="legacyKey">The legacy <see cref="AuthenticationProviderKey"/>.</param>
-        /// <param name="keys">New <see cref="AuthenticationProviderKeys"/> to build.</param>
-        private void BuildAuthenticationProviderKeys(string legacyKey, string[] keys)
-        {
-            keys ??= Array.Empty<string>();
-            if (string.IsNullOrEmpty(legacyKey))
-            {
-                AuthenticationProviderKeys = keys;
-                AuthenticationProviderKey = string.Empty;
-                return;
-            }
-
-            // Add legacy Key to new Keys array as the first element
-            var arr = new string[keys.Length + 1];
-            arr[0] = legacyKey;
-            Array.Copy(keys, 0, arr, 1, keys.Length);
-
-            // Update the object
-            AuthenticationProviderKeys = arr;
-            AuthenticationProviderKey = string.Empty;
-        }
-
-        public List<string> AllowedScopes { get; }
-
-        /// <summary>
-        /// Authentication scheme registered in DI services with appropriate authentication provider.
-        /// </summary>
-        /// <value>
-        /// A <see langword="string"/> value of the scheme name.
-        /// </value>
-        [Obsolete("Use the " + nameof(AuthenticationProviderKeys) + " property!")]
-        public string AuthenticationProviderKey { get; private set; }
-
-        /// <summary>
-        /// Multiple authentication schemes registered in DI services with appropriate authentication providers.
-        /// </summary>
-        /// <remarks>
-        /// The order in the collection matters: first successful authentication result wins.
-        /// </remarks>
-        /// <value>
-        /// An array of <see langword="string"/> values of the scheme names.
-        /// </value>
-        public string[] AuthenticationProviderKeys { get; private set; }
-
-        public List<string> RequiredRole { get; }
-        public string ScopeKey { get; }
-        public string RoleKey { get; }
-        public string PolicyName { get; }
+        AllowAnonymous = false;
+        AllowedScopes = new();
+        AuthenticationProviderKeys = Array.Empty<string>();
     }
+
+    public AuthenticationOptions(FileAuthenticationOptions options)
+    {
+        AllowAnonymous = options.AllowAnonymous ?? false;
+        AllowedScopes = options.AllowedScopes ?? new();
+        AuthenticationProviderKeys = Merge(options.AuthenticationProviderKey, options.AuthenticationProviderKeys ?? Array.Empty<string>());
+        PolicyName = options.PolicyName;
+        RequiredRole = options.RequiredRole;
+        ScopeKey = options.ScopeKey;
+        RoleKey = options.RoleKey;
+    }
+
+    public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys,
+        List<string> requiredRole = null, string scopeKey = null, string roleKey = null, string policyName = null)
+    {
+        AllowAnonymous = false;
+        AllowedScopes = allowedScopes ?? new();
+        AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
+        PolicyName = policyName;
+        RequiredRole = requiredRole;
+        ScopeKey = scopeKey;
+        RoleKey = roleKey;
+    }
+
+    private static string[] Merge(string primaryKey, string[] keys)
+    {
+        if (primaryKey.IsEmpty())
+        {
+            return keys;
+        }
+
+        List<string> merged = new(1 + keys.Length) { primaryKey };
+        merged.AddRange(keys);
+        return merged.ToArray();
+    }
+
+    /// <summary>Allows anonymous authentication for route when global authentication options are used.</summary>
+    /// <value><see langword="true"/> if it is allowed; otherwise, <see langword="false"/>.</value>
+    public bool AllowAnonymous { get; init; }
+    public List<string> AllowedScopes { get; init; }
+
+    /// <summary>Multiple authentication schemes registered in DI services with appropriate authentication providers.</summary>
+    /// <remarks>The order in the collection matters: first successful authentication result wins.</remarks>
+    /// <value>An array of <see langword="string"/> values of the scheme names.</value>
+    public string[] AuthenticationProviderKeys { get; init; }
+
+    public List<string> RequiredRole { get; }
+    public string ScopeKey { get; }
+    public string RoleKey { get; }
+    public string PolicyName { get; }
+
+    public bool HasScheme => AuthenticationProviderKeys.Any(k => !k.IsEmpty());
 }

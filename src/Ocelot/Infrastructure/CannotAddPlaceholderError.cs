@@ -1,12 +1,11 @@
 using Ocelot.Errors;
 
-namespace Ocelot.Infrastructure
+namespace Ocelot.Infrastructure;
+
+public class CannotAddPlaceholderError : Error
 {
-    public class CannotAddPlaceholderError : Error
+    public CannotAddPlaceholderError(string message)
+        : base(message, OcelotErrorCode.CannotAddPlaceholderError, 404)
     {
-        public CannotAddPlaceholderError(string message)
-            : base(message, OcelotErrorCode.CannotAddPlaceholderError, 404)
-        {
-        }
     }
 }

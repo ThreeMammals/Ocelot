@@ -13,7 +13,7 @@ public sealed class ConsulProviderFactoryTests : UnitTest, IDisposable
 {
     private readonly ServiceProvider _provider;
     private readonly IServiceScope _scope;
-    private readonly HttpContext _context = new DefaultHttpContext();
+    private readonly DefaultHttpContext _context = new();
 
     public ConsulProviderFactoryTests()
     {

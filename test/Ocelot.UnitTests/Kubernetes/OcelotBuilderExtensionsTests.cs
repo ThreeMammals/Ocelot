@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
@@ -56,20 +57,41 @@ public class OcelotBuilderExtensionsTests : UnitTest // No Chinese tests now!
         _ocelotBuilder = _services.AddOcelot(_configRoot).AddKubernetes();
 
         // Assert
-        var descriptor = _services.SingleOrDefault(Of<IKubeApiClient>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton); // 2180 scenario
-
-        descriptor = _services.SingleOrDefault(Of<ServiceDiscoveryFinderDelegate>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
-
-        descriptor = _services.SingleOrDefault(Of<IKubeServiceBuilder>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
-
-        descriptor = _services.SingleOrDefault(Of<IKubeServiceCreator>).ShouldNotBeNull();
-        descriptor.Lifetime.ShouldBe(ServiceLifetime.Singleton);
+        AssertServices();
     }
 
-    private static bool Of<TType>(ServiceDescriptor descriptor)
-        where TType : class
-        => descriptor.ServiceType.Equals(typeof(TType));
+    [Fact]
+    [Trait("Feat", "2256")]
+    public void AddKubernetes_NoAction_HappyPath()
+    {
+        // Arrange
+        Action<KubeClientOptions> noAction = null;
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddKubernetes(noAction);
+
+        // Assert
+        AssertServices();
+        Assert<IConfigureOptions<KubeClientOptions>>(); // not IOptions<KubeClientOptions>
+    }
+
+    private void AssertServices()
+    {
+        Assert<IKubeApiClient>(); // 2180 scenario
+        Assert<ServiceDiscoveryFinderDelegate>();
+        Assert<IKubeServiceBuilder>();
+        Assert<IKubeServiceCreator>();
+    }
+
+    private void Assert<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where T : class
+    {
+        var descriptor = _services.SingleOrDefault(Of<T>).ShouldNotBeNull();
+        descriptor.Lifetime.ShouldBe(lifetime);
+    }
+
+    private static bool Of<T>(ServiceDescriptor descriptor)
+        where T : class
+        => descriptor.ServiceType.Equals(typeof(T));
 }

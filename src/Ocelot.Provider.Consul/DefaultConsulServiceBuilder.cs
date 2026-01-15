@@ -102,7 +102,7 @@ public class DefaultConsulServiceBuilder : IConsulServiceBuilder
     protected virtual string GetServiceVersion(ServiceEntry entry, Node node)
         => entry.Service.Tags
             ?.FirstOrDefault(tag => tag.StartsWith(VersionPrefix, StringComparison.Ordinal))
-            ?.TrimStart(VersionPrefix)
+            ?.TrimPrefix(VersionPrefix)
             ?? string.Empty;
 
     protected virtual IEnumerable<string> GetServiceTags(ServiceEntry entry, Node node)

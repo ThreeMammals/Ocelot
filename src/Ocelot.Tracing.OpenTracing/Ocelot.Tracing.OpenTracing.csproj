@@ -1,22 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>0.0.0-dev</Version>
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <AssemblyName>Ocelot.Tracing.OpenTracing</AssemblyName>
+    <PackageId>Ocelot.Tracing.OpenTracing</PackageId>
+    <PackageTags>API Gateway;.NET;OpenTracing</PackageTags>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Tracing.OpenTracing</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
-    <Description>This package provides OpenTracing support to Ocelot.</Description>
-    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <PackageIcon>ocelot_logo.png</PackageIcon>
-    <PackageTags>API Gateway;.NET core; OpenTracing</PackageTags>
+    <Description>This package provides methods for integrating OpenTracing with Ocelot.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>1591</NoWarn>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
-    <None Include="..\..\images\ocelot_logo.png" Pack="true" Visible="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
+    <None Include="..\ocelot_icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTracing" Version="0.12.1" />
