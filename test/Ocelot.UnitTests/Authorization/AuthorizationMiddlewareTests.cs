@@ -53,6 +53,7 @@ public class AuthorizationMiddlewareTests : UnitTest
             .WithAuthenticationOptions(new(new("authScheme")))
             .Build();
         GivenTheDownStreamRouteIs(new(), route);
+        GivenRolesAuthorizerReturns(new OkResponse<bool>(false));
         GivenScopesAuthorizerReturns(new OkResponse<bool>(true));
 
         // Act
@@ -123,6 +124,10 @@ public class AuthorizationMiddlewareTests : UnitTest
     }
 
     private void GivenScopesAuthorizerReturns(Response<bool> expected) => _scopesAuthorizer
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>(), It.IsAny<string>()))
+            .Returns(expected);
+
+    private void GivenRolesAuthorizerReturns(Response<bool> expected) => _rolesAuthorizer
             .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>(), It.IsAny<string>()))
             .Returns(expected);
 

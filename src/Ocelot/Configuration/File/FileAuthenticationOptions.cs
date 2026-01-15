@@ -20,6 +20,10 @@ public class FileAuthenticationOptions
         AuthenticationProviderKey = options.AuthenticationProviderKey;
         AuthenticationProviderKeys = new string[options.AuthenticationProviderKeys.Length];
         Array.Copy(options.AuthenticationProviderKeys, AuthenticationProviderKeys, options.AuthenticationProviderKeys.Length);
+        RequiredRole = options.RequiredRole;
+        ScopeKey = options.ScopeKey;
+        RoleKey = options.RoleKey;
+        PolicyName = options.PolicyName;
     }
 
     public List<string> AllowedScopes { get; set; }
@@ -49,9 +53,9 @@ public class FileAuthenticationOptions
         .Append($"{nameof(AllowedScopes)}:[{AllowedScopes.NotNull().Select(x => $"'{x}'").Csv()}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
         .Append($"{nameof(AuthenticationProviderKeys)}:[{AuthenticationProviderKeys.NotNull().Select(x => $"'{x}'").Csv()}]")
-        .Append($"{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole).Append("],")
-        .Append($"{nameof(ScopeKey)}:[").AppendJoin(',', ScopeKey).Append("],")
-        .Append($"{nameof(RoleKey)}:[").AppendJoin(',', RoleKey).Append("],")
-        .Append($"{nameof(PolicyName)}:[").AppendJoin(',', PolicyName).Append(']')
+        .Append($",{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole).Append("]")
+        .Append($",{nameof(ScopeKey)}:[").AppendJoin(',', ScopeKey).Append("]")
+        .Append($",{nameof(RoleKey)}:[").AppendJoin(',', RoleKey).Append("]")
+        .Append($",{nameof(PolicyName)}:[").AppendJoin(',', PolicyName).Append(']')
         .ToString();
 }
