@@ -118,7 +118,7 @@ public class SerilogBenchmarks : ManualConfig
             _ => throw new ArgumentOutOfRangeException(nameof(minLogLevel), minLogLevel, null),
         };
 
-        _webHost = new WebHostBuilder()
+        _webHost = TestHostBuilder.Create()
             .UseKestrel()
             .UseUrls(url)
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -136,7 +136,7 @@ public class SerilogBenchmarks : ManualConfig
                 logging.SetMinimumLevel(minLogLevel);
                 logging.AddSerilog(_logger);
             })
-            .Configure(app =>
+            .Configure(async app =>
             {
                 app.Use(async (context, next) =>
                 {
@@ -153,7 +153,7 @@ public class SerilogBenchmarks : ManualConfig
 
                     await next.Invoke();
                 });
-                app.UseOcelot().Wait();
+                await app.UseOcelot();
             })
             .Build();
 
@@ -179,7 +179,7 @@ public class SerilogBenchmarks : ManualConfig
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
         };
@@ -205,7 +205,7 @@ public class SerilogBenchmarks : ManualConfig
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
     {
-        _service = new WebHostBuilder()
+        _service = TestHostBuilder.Create()
             .UseUrls(baseUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

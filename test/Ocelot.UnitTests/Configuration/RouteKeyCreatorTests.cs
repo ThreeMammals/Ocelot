@@ -1,79 +1,228 @@
+using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 
-namespace Ocelot.UnitTests.Configuration
+namespace Ocelot.UnitTests.Configuration;
+
+public class RouteKeyCreatorTests : UnitTest
 {
-    public class RouteKeyCreatorTests
+    private readonly RouteKeyCreator _creator = new();
+
+    [Fact]
+    public void Should_return_sticky_session_key()
     {
-        private readonly RouteKeyCreator _creator;
-        private FileRoute _route;
-        private string _result;
+        // Arrange
+        FileRoute route = new();
+        LoadBalancerOptions options = new(nameof(CookieStickySessions), "testy", null);
 
-        public RouteKeyCreatorTests()
-        {
-            _creator = new RouteKeyCreator();
-        }
+        // Act
+        var result = _creator.Create(route, options);
 
-        [Fact]
-        public void should_return_sticky_session_key()
+        // Assert
+        result.ShouldBe("CookieStickySessions:testy");
+    }
+
+    [Fact]
+    public void Should_return_route_key()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            var route = new FileRoute
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
+            DownstreamHostAndPorts = new()
             {
-                LoadBalancerOptions = new FileLoadBalancerOptions
-                {
-                    Key = "testy",
-                    Type = nameof(CookieStickySessions),
-                },
-            };
+                new("localhost", 8080),
+                new("localhost", 4430),
+            },
+        };
+        LoadBalancerOptions options = new();
 
-            this.Given(_ => GivenThe(route))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{nameof(CookieStickySessions)}:{route.LoadBalancerOptions.Key}"))
-                .BDDfy();
-        }
+        // Act
+        var result = _creator.Create(route, options);
 
-        [Fact]
-        public void should_return_re_route_key()
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|NoLoadBalancer|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_upstream_host()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            var route = new FileRoute
+            UpstreamHost = "my-host",
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
+            DownstreamHostAndPorts = new()
             {
-                UpstreamPathTemplate = "/api/product",
-                UpstreamHttpMethod = new List<string> { "GET", "POST", "PUT" },
-                DownstreamHostAndPorts = new List<FileHostAndPort>
-                {
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
-                    new()
-                    {
-                        Host = "localhost",
-                        Port = 123,
-                    },
-                },
-            };
+                new("localhost", 8080),
+                new("localhost", 4430),
+            },
+        };
+        LoadBalancerOptions options = new();
 
-            this.Given(_ => GivenThe(route))
-                .When(_ => WhenICreate())
-                .Then(_ => ThenTheResultIs($"{route.UpstreamPathTemplate}|{string.Join(',', route.UpstreamHttpMethod)}|{string.Join(',', route.DownstreamHostAndPorts.Select(x => $"{x.Host}:{x.Port}"))}"))
-                .BDDfy();
-        }
+        // Act
+        var result = _creator.Create(route, options);
 
-        private void GivenThe(FileRoute route)
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|my-host|localhost:8080,localhost:4430|no-svc-ns|no-svc-name|NoLoadBalancer|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_svc_name()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _route = route;
-        }
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
+            ServiceName = "products-service",
+        };
+        LoadBalancerOptions options = new();
 
-        private void WhenICreate()
-        {
-            _result = _creator.Create(_route);
-        }
+        // Act
+        var result = _creator.Create(route, options);
 
-        private void ThenTheResultIs(string expected)
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|NoLoadBalancer|no-lb-key");
+    }
+
+    [Fact]
+    public void Should_return_route_key_with_load_balancer_options()
+    {
+        // Arrange
+        var route = new FileRoute
         {
-            _result.ShouldBe(expected);
-        }
+            UpstreamPathTemplate = "/api/product",
+            UpstreamHttpMethod = ["GET", "POST", "PUT"],
+            ServiceName = "products-service",
+            LoadBalancerOptions = new FileLoadBalancerOptions
+            {
+                Type = nameof(LeastConnection),
+                Key = "testy",
+            },
+        };
+        LoadBalancerOptions options = new(route.LoadBalancerOptions);
+
+        // Act
+        var result = _creator.Create(route, options);
+
+        // Assert
+        result.ShouldBe("GET,POST,PUT|/api/product|no-host|no-host-and-port|no-svc-ns|products-service|LeastConnection|testy");
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_TryStickySession()
+    {
+        // Arrange
+        FileDynamicRoute route = new();
+        LoadBalancerOptions options = new(nameof(CookieStickySessions), "TestKey", null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("CookieStickySessions:TestKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_HasLoadBalancingKey()
+    {
+        // Arrange
+        FileDynamicRoute route = new();
+        LoadBalancerOptions options = new(nameof(RoundRobin), "LBKey", null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("LBKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_FileDynamicRoute_NoLBKey()
+    {
+        // Arrange
+        FileDynamicRoute route = new()
+        {
+            ServiceName = "test",
+            ServiceNamespace = "namespace",
+        };
+        LoadBalancerOptions options = new(nameof(RoundRobin), null, null);
+
+        // Act
+        var actual = _creator.Create(route, options);
+
+        // Assert
+        Assert.Equal("namespace.test", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_TryStickySession()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(CookieStickySessions), "TestKey", null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("CookieStickySessions:TestKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_HasLoadBalancingKey()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(RoundRobin), "LBKey", null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("LBKey", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void Create_String_String_NoLBKey()
+    {
+        // Arrange
+        LoadBalancerOptions options = new(nameof(RoundRobin), null, null);
+
+        // Act
+        var actual = _creator.Create("namespace", "service", options);
+
+        // Assert
+        Assert.Equal("namespace.service", actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    public void AsString()
+    {
+        // Arrange, Act, Assert
+        FileHostAndPort host = null;
+        var actual = RouteKeyCreator.AsString(host);
+        Assert.Null(actual);
+
+        // Arrange, Act, Assert
+        host = new("test.host", 123);
+        actual = RouteKeyCreator.AsString(host);
+        Assert.Equal("test.host:123", actual);
     }
 }

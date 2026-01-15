@@ -1,63 +1,92 @@
-## November-December 2023 (version {0}) aka [Sunny Koliada](https://www.google.com/search?q=winter+solstice) release
-> Codenamed as **[Sunny Koliada](https://www.bing.com/search?q=winter+solstice)**
+## Summer-Autumn 2025 (version 24.1) aka Globality release
+> Milestone: [Summer'25](https://github.com/ThreeMammals/Ocelot/milestone/9)
+> Codenamed: **[Globality](https://github.com/ThreeMammals/Ocelot/milestone/9)**
+> Read the Docs: [Ocelot 24.1](https://ocelot.readthedocs.io/en/24.1/) with [PDF](https://ocelot.readthedocs.io/_/downloads/en/24.1/pdf/)
 
-### Focus On
+### :information_source: About
+In this minor release, the Ocelot team put the spotlight on the [Configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst) feature as part of their semi-annual 2025 effort, with a particular focus on the [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema). This release enhances support for global configurations across both routing modes: the classic static [Routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/routing.rst) and the [service discovery](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst)-based [Dynamic Routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5).
 
-<details>
-  <summary><b>System performance</b>. System core performance review, redesign of system core related to routing and content streaming</summary>
+The updated documentation highlights [the deprecation](https://ocelot.readthedocs.io/en/main/search.html?q=deprecated) of certain options through multiple notes and warnings. This deprecation process will be completed in the upcoming [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13) release. With the [`[Obsolete]` attributes](https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code) in place, C# developers will notice several warnings in the build logs during compilation.
 
-  - Modification of the `RequestMapper` with a brand new `StreamHttpContent` class, in `Ocelot.Request.Mapper` namespace. The request body is no longer copied when it is handled by the API gateway, avoiding Out-of-Memory issues in pods/containers. This significantly reduces the gateway's memory consumption, and allows you to transfer content larger than 2 GB in streaming scenarios.
-  - Introduction of a new Message Invoker pool, in `Ocelot.Requester` namespace. We have replaced the [HttpClient](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) class with [HttpMessageInvoker](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpmessageinvoker), which is the base class for `HttpClient`. The overall logic for managing the pool has been simplified, resulting in a reduction in the number of CPU cycles.
-  - Full HTTP content buffering is deactivated, resulting in a 50% reduction in memory consumption and a performance improvement of around 10%. Content is no longer copied on the API gateway, avoiding Out-of-Memory issues.
-  - **TODO** Include screenshots from Production...
-</details>
+On top of that, this release brings a great enhancement to the [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst) provider, also known as the [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) package.
 
-<details>
-  <summary><b>Ocelot extra packages</b>. Total 3 Ocelot packs were updated</summary>
- 
-  - [Ocelot.Cache.CacheManager](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Cache.CacheManager): Introduced default cache key generator with improved performance (the `DefaultCacheKeyGenerator` class). Old version of `CacheKeyGenerator` had significant performance issue when reading full content of HTTP request for caching key calculation of MD5 hash value. This hash value was excluded from the caching key.
-  - [Ocelot.Provider.Kubernetes](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Kubernetes): Fixed long lasting breaking change being added in version [15.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/15.0.0), see commit https://github.com/ThreeMammals/Ocelot/commit/6e5471a714dddb0a3a40fbb97eac2810cee1c78d. The bug persisted for more than 3 years in versions **15.0.0-22.0.1**, being masked multiple times via class renaming! **Special Thanks to @ZisisTsatsas** who once again brought this issue to our attention, and our team finally realized that we had a breaking change and the provider was broken.
+### :new: What's New?
 
-  - [Ocelot.Provider.Polly](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot.Provider.Polly): A minor changes without feature delivery. We are preparing for a major update to the package in the next release.
-</details>
+- **[Configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst)**: The "[Dynamic routing global configuration](https://github.com/ThreeMammals/Ocelot/issues/585)" feature has been redesigned by @raman-m and contributors.
 
-<details>
-  <summary><b>Middlewares</b>. Total 8 Ocelot middlewares were updated</summary>
- 
-  - `AuthenticationMiddleware`: Added new [Multiple Authentication Schemes](https://github.com/ThreeMammals/Ocelot/pull/1870) feature by @MayorSheFF 
-  - `OutputCacheMiddleware`, `RequestIdMiddleware`: Added new [Cache by Header Value](https://github.com/ThreeMammals/Ocelot/pull/1172) by @EngRajabi, and redesigned as [Default CacheKeyGenerator](https://github.com/ThreeMammals/Ocelot/pull/1849) feature by @raman-m
-  - `DownstreamUrlCreatorMiddleware`: Fixed [bug](https://github.com/ThreeMammals/Ocelot/issues/748) for ending/omitting slash in path templates aka [Empty placeholders](https://github.com/ThreeMammals/Ocelot/pull/1911) feature by @AlyHKafoury 
-  - `ConfigurationMiddleware`, `HttpRequesterMiddleware`, `ResponderMiddleware`: System upgrade for [Custom HttpMessageInvoker pooling](https://github.com/ThreeMammals/Ocelot/pull/1824) feature by @ggnaegi
-  - `DownstreamRequestInitialiserMiddleware`: System upgrade for [Performance of Request Mapper](https://github.com/ThreeMammals/Ocelot/pull/1724) feature by @ggnaegi
-</details>
+  This update brings changes to the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) and [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema), while the [Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#route-schema) stays the same apart from deprecation updates. All work was coordinated under issue #585, which addressed the challenges of configuring Ocelot's most popular features globally before version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), when dynamic routing gained global configuration partial support, but static routing mostly lacked it. A key outcome of #585 is the ability to override global configuration options within the `DynamicRoutes` collection. This ongoing issue will continue to require attention, as adapting static route global configurations for dynamic routing is complex and, in some cases, impossible. This will be a challenge for future Ocelot releases and the community.
 
-<details>
-  <summary>Documentation for <b>Authentication</b>, <b>Caching</b>, <b>Kubernetes</b> and <b>Routing</b></summary>
- 
-  - [Authentication](https://ocelot.readthedocs.io/en/latest/features/authentication.html)
-  - [Caching](https://ocelot.readthedocs.io/en/latest/features/caching.html)
-  - [Kubernetes](https://ocelot.readthedocs.io/en/latest/features/kubernetes.html)
-  - [Routing](https://ocelot.readthedocs.io/en/latest/features/routing.html)
-</details>
+- **[Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst)**: The "[Kubernetes provider based on watch requests](https://github.com/ThreeMammals/Ocelot/discussions/2168)" feature by @kick2nick in PR #2174. :star: 
 
-<details>
-  <summary><b>Stabilization</b> aka bug fixing</summary>
+  The [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) package now features a new [WatchKube provider](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst#watchkube-provider-3) for [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst) service discovery. This provider is a great fit for high-load environments where the older `Kube` and `PollKube` providers struggle to handle heavy traffic, often leading to increased log errors, HTTP 500 issues, and potential Ocelot instance failures. `WatchKube` is the next step in the evolution of these providers, leveraging the reactive capabilities of the [KubeClient](https://www.nuget.org/packages/KubeClient/) API. For guidance on choosing the right provider for your Kubernetes setup, check out the "[Comparing providers](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst#comparing-providers)" section in the documentation.
 
-  - See [all bugs](https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+milestone%3ANov-December%2723+is%3Aclosed+label%3Abug) of the [Nov-December'23](https://github.com/ThreeMammals/Ocelot/milestone/2) milestone
-</details>
+- **[Configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst)**: The "[Routing default timeout](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#timeout)" feature by @hogwartsdeveloper in PR #2073.
 
-<details>
-  <summary><b>Testing</b></summary>
+  In the past, the `Timeout` setting in the [Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#route-schema) didn't actually stop requests, defaulting instead to a fixed 90 seconds. Custom timeouts were handled using the [Quality of Service Timeout strategy](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#timeout-strategy), and this only applied if [Polly](https://www.nuget.org/packages/Polly/) and the [Ocelot.Provider.Polly](https://www.nuget.org/packages/Ocelot.Provider.Polly) package were used. Now, the `Timeout` option (in seconds) can be set at the route, global, and QoS levels. The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) and [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) also include the new `Timeout` setting, making it possible to configure default timeouts for [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) as well.
 
-  - The `Ocelot.Benchmarks` testing project has been updated with new `PayloadBenchmarks` and `ResponseBenchmarks` by @ggnaegi
-  - The `Ocelot.AcceptanceTests` testing project has been refactored by @raman-m using the new `AuthenticationSteps` class, and more refactoring will be done in future releases
-</details>
+- **[Quality of Service](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst)**: The "[FailureRatio and SamplingDuration parameters of Polly V8 circuit-breaker](https://github.com/ThreeMammals/Ocelot/issues/2080)" feature by @RaynaldM in PR #2081.
 
-### Roadmap
-We would like to share our team's plans for the future regarding: development trends, ideas, community expectations, etc.
-- **Code Review and Performance Improvements**. Without a doubt, we care about code quality every day, following best development practices. And we review, test, refactor, and redesign features with overall performance in mind. In the next few releases (versions 23.x-24.0) we will take care of: generic providers, multiplexing middleware (Aggregation feature), memory management.
-- **Server-Sent Events protocol support**. There is a lot of community interest in this HTTP-based protocol.
-- **Long Polling for Consul provider**. [Consul](https://www.consul.io/) is our leading technology for service discovery. We are constantly improving the use cases for the `Ocelot.Provider.Consul` package and trying to improve the code inside the package.
-- **QoS feature refactoring**. [Polly](https://github.com/App-vNext/Polly/) was released with the new v.8.2+ after .NET 8. So we have to update `Ocelot.Provider.Polly` package taking into account new Polly behavior of redesigned features.
-- **Brainstorming** to redesign Rate Limiting, Websockets. More details in future release notes.
-- **Planning** of support for Swagger and gRPC proto. More details in future release notes.
+  Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), two new parameters in [QoSOptions](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#qosoptions-schema), `FailureRatio` and `SamplingDuration`, let you fine-tune the behavior of the [Circuit Breaker strategy](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#circuit-breaker-strategy). Both can be [configured globally](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#global-configuration-3), even with [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5).
+  **Please note** that `DurationOfBreak`, `ExceptionsAllowedBeforeBreaking`, and `TimeoutValue` are now deprecated in [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), so check the [QoSOptions Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#qosoptions-schema) documentation for details.
+
+### :up: What's Updated?
+
+- **[Configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst)**: Several [File-model](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Configuration/File) options have been deprecated by @raman-m.
+
+  The updated docs now highlight these [deprecated options](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+deprecated+language%3AreStructuredText&type=code&l=reStructuredText) with multiple notes and warnings. The v[24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) deprecation process will wrap up in the upcoming [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13) release. Due to the [`Obsolete` attributes](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%5BObsolete%28&type=code), C# developers will notice several build warnings during compilation.
+
+- **[Testing](https://github.com/ThreeMammals/Ocelot/tree/main/test)**: The [Ocelot.Testing](https://github.com/ThreeMammals/Ocelot/tree/24.0.0/test/Ocelot.Testing) project was deprecated by @raman-m in PR #2295
+
+  The project was removed from the main repo and moved to its own [Ocelot.Testing](https://github.com/ThreeMammals/Ocelot.Testing) repository. This change allows the [Ocelot.Testing](https://www.nuget.org/packages/Ocelot.Testing/) package to be shared independently for extension package delivery. The Ocelot team also plans to deprecate more projects and move them to separate repos because: **a)** despite the fact that a monorepo enables faster builds and quicker delivery; **b)** but the release process can be delayed by missing versions of integrated libraries in extension packages. The goal is for the Ocelot repo to only contain essential projects, avoiding delays caused by integrated package release schedules. Legacy or abandoned integrated packages should be deprecated and maintained in their own repos with independent release cycles.
+
+- **[Headers Transformation](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/headerstransformation.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/issues/1658) by @marklonquist in PR #1659.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes new `DownstreamHeaderTransform` and `UpstreamHeaderTransform` options. These work only with static routes, meaning the `Routes` collection (see [Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#route-schema)). They aren't supported for dynamic routes because they're not part of the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema), and Ocelot Core doesn't read global configuration of this feature in [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) mode. This is noted in the [Roadmap](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/headerstransformation.rst#roadmap) documentation.
+
+- **[Authentication](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/issues/842) by @jlukawska in PR #2114.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `AuthenticationOptions` property for setting up static routes globally. This also introduces the [`AllowAnonymous` boolean option](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst#configuration-and-allowanonymous-3) within `AuthenticationOptions` to control static route authentication. Later, PR #2336 extended global authentication support to dynamic routes.
+  **Note**: The `AuthenticationProviderKey` option is deprecated in version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0)—see the [`AuthenticationOptions` Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst#authenticationoptions-schema) documentation for details.
+
+- **[Rate Limiting](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/ratelimiting.rst)**: Re-designed [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/ratelimiting.rst#configuration) by @MiladRv and @raman-m in PR #2294.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `RateLimitOptions` property for both static and dynamic routes. Previously, global configuration was available through `RateLimitOptions` in [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) mode, while route overriding used the now-deprecated `RateLimitRule` from the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema).
+  This marks the second major overhaul of the *Rate Limiting* feature since the first update in PR #1592. A new `Wait` option has been added, replacing the deprecated `PeriodTimespan`, to enhance the [Fixed Window](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/ratelimiting.rst#algorithms) algorithm. The full list of deprecated options can be found in the [Deprecated Options](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/ratelimiting.rst#deprecated-options-2) documentation.
+
+- **[Load Balancer](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/loadbalancer.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/loadbalancer.rst#global-configuration-2) by @raman-m in PR #2324.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `LoadBalancerOptions` property for both static and dynamic routes. Previously, global configuration was available through `LoadBalancerOptions` in [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) mode without dynamic route overrides. Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) also supports `LoadBalancerOptions` for overriding, and global configuration for static routes is now supported as well.
+
+- **[Caching](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/caching.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/caching.rst#global-configuration-3) by @raman-m in PR #2331.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `CacheOptions` property for both static and dynamic routes. Global configuration has been available for static routes since version [23.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0), but starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) also supports `CacheOptions` for overriding.
+  **Note** that the `FileCacheOptions` property in the [Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#route-schema) (static routes) is deprecated in version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0). For more details, see the caching [Configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/caching.rst#configuration) documentation.
+
+- **[Http Handler](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#httphandleroptions)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#httphandleroptions) by @raman-m in PR #2332.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `HttpHandlerOptions` property for both static and dynamic routes. Previously, global configuration was available through `HttpHandlerOptions` in [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) mode without dynamic route overriding. Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) also supports `HttpHandlerOptions` for overriding, and global configuration is now available for static routes as well.
+
+- **[Authentication](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst#global-configuration-4) by @raman-m in PR #2336.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `AuthenticationOptions` property for both static and dynamic routes. Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) also supports `AuthenticationOptions` to override global settings.
+  **Note** that the `AuthenticationProviderKey` option is deprecated in version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), so check the [`AuthenticationOptions` Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authentication.rst#authenticationoptions-schema) documentation for details.
+
+- **[Quality of Service](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst)**: Added [global configuration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#global-configuration-3) by @raman-m in PR #2339.
+
+  The [Global Configuration Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#global-configuration-schema) now includes a new `QoSOptions` property for both static and dynamic routes. Previously, global configuration was available through `QoSOptions` in [dynamic routing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst#dynamic-routing-5) mode without the option for dynamic route overrides. Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), the [Dynamic Route Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/configuration.rst#dynamic-route-schema) supports `QoSOptions` for overriding, and global configuration support is now available for static routes as well.
+  **Note** that the `DurationOfBreak`, `ExceptionsAllowedBeforeBreaking`, and `TimeoutValue` options are deprecated in version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0). For details, see the [`QoSOptions` Schema](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst#qosoptions-schema) documentation.
+
+- **[DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps)**: Stabilized tests and reviewed GH-Actions workflows by @raman-m in PRs #2342 and #2345.
+
+  These efforts kept the CI/CD builds in GitHub Actions stable, targeting the alpha release of version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0). The CI/CD environment was set up and tested GH-Actions workflows in advance for the beta release, which is the goal of PR #2347.
+
+### :package: Patches
+
+- **[Websockets](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/websockets.rst)**: Issue #930 patch by @hogwartsdeveloper in PR #2091.
+This update removes the troublesome `System.Net.WebSockets.WebSocketException` from logs, preventing Ocelot from running into 500 status disasters. The issue stemmed from client-side or network events that Ocelot's `WebSocketsProxyMiddleware` couldn't anticipate on the server side. The patch now checks for incorrect connection statuses, attempting to close the connection and end server-side tasks gracefully without errors.
+
+- **[Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst)**: Issue #2304 patch by @raman-m in PR #2335.
+This update fixes the `PollKube` provider to address a bug with the first cold request, where the winning thread got an empty collection before the initial callback was triggered. The solution is to call the integrated discovery provider for the first cold request when the queue is empty.
+
+- **[Authorization](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/authorization.rst)**: Issue #913 patch by @mehyaa in PR #1478.
+Starting with version [24.1](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0), Ocelot now supports [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) (OAuth 2.0 Token Exchange) for the `scope` claim in the `ScopesAuthorizer` service, also referred to as the `IScopesAuthorizer` service in the DI container.

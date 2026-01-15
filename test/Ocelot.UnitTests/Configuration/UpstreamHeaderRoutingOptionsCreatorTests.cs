@@ -1,11 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using Ocelot.Configuration.File;
-using Ocelot.Configuration.Creator;
 using Ocelot.Configuration;
-using Xunit;
-using TestStack.BDDfy;
-using Shouldly;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -16,7 +11,7 @@ public class UpstreamHeaderRoutingOptionsCreatorTests
     private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
 
     [Fact]
-    public void should_create_upstream_routing_header_options()
+    public void Should_create_upstream_routing_header_options()
     {
         UpstreamHeaderRoutingOptions expected = new(
             headers: new Dictionary<string, ICollection<string>>()
@@ -27,10 +22,9 @@ public class UpstreamHeaderRoutingOptionsCreatorTests
             mode: UpstreamHeaderRoutingTriggerMode.All
         );
 
-        this.Given(_ => GivenTheseFileUpstreamHeaderRoutingOptions())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenTheCreatedMatchesThis(expected))
-            .BDDfy();
+        GivenTheseFileUpstreamHeaderRoutingOptions();
+        WhenICreate();
+        ThenTheCreatedMatchesThis(expected);
     }
 
     private void GivenTheseFileUpstreamHeaderRoutingOptions()

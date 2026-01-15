@@ -1,11 +1,12 @@
 # This script builds the Ocelot Docker file
+# echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
 
-# {DotNetSdkVer}.{OcelotVer} -> {.NET8}.{21.0} -> 8.21.0
-version=8.21.0
+# {DotNetSdkVer}.{OcelotVer} -> {.NET9}.{24.0} -> 9.24.0
+#version=9.24.0
+tag=sdk9-alpine-lin.net8-9
+
 docker build --platform linux/amd64 -t ocelot2/circleci-build -f Dockerfile.base .
-
-echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-
-docker tag ocelot2/circleci-build ocelot2/circleci-build:$version
-docker push ocelot2/circleci-build:latest
-docker push ocelot2/circleci-build:$version
+docker tag ocelot2/circleci-build ocelot2/circleci-build:$tag
+docker push ocelot2/circleci-build:$tag
+# docker tag ocelot2/circleci-build ocelot2/circleci-build:$version
+# docker push ocelot2/circleci-build:$version

@@ -1,9 +1,5 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Xunit;
-using TestStack.BDDfy;
-using Shouldly;
 using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Configuration;
@@ -15,65 +11,59 @@ public class UpstreamRoutingHeadersTests
     private IHeaderDictionary _requestHeaders;
 
     [Fact]
-    public void should_create_empty_headers()
+    public void Should_create_empty_headers()
     {
-        this.Given(_ => GivenEmptyHeaderDictionary())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenAnyIs(false))
-            .BDDfy();
+        GivenEmptyHeaderDictionary();
+        WhenICreate();
+        ThenAnyIs(false);
     }
 
     [Fact]
-    public void should_create_preset_headers()
+    public void Should_create_preset_headers()
     {
-        this.Given(_ => GivenPresetHeaderDictionary())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenAnyIs(true))
-            .BDDfy();
+        GivenPresetHeaderDictionary();
+        WhenICreate();
+        ThenAnyIs(true);
     }
 
     [Fact]
-    public void should_not_match_mismatching_request_headers()
+    public void Should_not_match_mismatching_request_headers()
     {
-        this.Given(_ => GivenPresetHeaderDictionary())
-            .And(_ => AndGivenMismatchingRequestHeaders())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenHasAnyOfIs(false))
-            .And(_ => ThenHasAllOfIs(false))
-            .BDDfy();
+        GivenPresetHeaderDictionary();
+        AndGivenMismatchingRequestHeaders();
+        WhenICreate();
+        ThenHasAnyOfIs(false);
+        ThenHasAllOfIs(false);
     }
 
     [Fact]
-    public void should_not_match_matching_header_with_mismatching_value()
+    public void Should_not_match_matching_header_with_mismatching_value()
     {
-        this.Given(_ => GivenPresetHeaderDictionary())
-            .And(_ => AndGivenOneMatchingHeaderWithMismatchingValue())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenHasAnyOfIs(false))
-            .And(_ => ThenHasAllOfIs(false))
-            .BDDfy();
+        GivenPresetHeaderDictionary();
+        AndGivenOneMatchingHeaderWithMismatchingValue();
+        WhenICreate();
+        ThenHasAnyOfIs(false);
+        ThenHasAllOfIs(false);
     }
 
     [Fact]
-    public void should_match_any_header_not_all()
+    public void Should_match_any_header_not_all()
     {
-        this.Given(_ => GivenPresetHeaderDictionary())
-            .And(_ => AndGivenOneMatchingHeaderWithMatchingValue())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenHasAnyOfIs(true))
-            .And(_ => ThenHasAllOfIs(false))
-            .BDDfy();
+        GivenPresetHeaderDictionary();
+        AndGivenOneMatchingHeaderWithMatchingValue();
+        WhenICreate();
+        ThenHasAnyOfIs(true);
+        ThenHasAllOfIs(false);
     }
 
     [Fact]
-    public void should_match_any_and_all_headers()
+    public void Should_match_any_and_all_headers()
     {
-        this.Given(_ => GivenPresetHeaderDictionary())
-            .And(_ => AndGivenTwoMatchingHeadersWithMatchingValues())
-            .When(_ => WhenICreate())
-            .Then(_ => ThenHasAnyOfIs(true))
-            .And(_ => ThenHasAllOfIs(true))
-            .BDDfy();
+        GivenPresetHeaderDictionary();
+        AndGivenTwoMatchingHeadersWithMatchingValues();
+        WhenICreate();
+        ThenHasAnyOfIs(true);
+        ThenHasAllOfIs(true);
     }
 
     private void GivenEmptyHeaderDictionary()

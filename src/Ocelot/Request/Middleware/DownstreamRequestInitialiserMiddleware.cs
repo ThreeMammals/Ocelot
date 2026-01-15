@@ -35,7 +35,7 @@ public class DownstreamRequestInitialiserMiddleware : OcelotMiddleware
         catch (Exception ex)
         {
             // TODO Review the error handling, we should throw an exception here and use the global error handler middleware to catch it
-            httpContext.Items.UpsertErrors([new UnmappableRequestError(ex)]);
+            httpContext.Items.SetError(new UnmappableRequestError(ex));
             return;
         }
 

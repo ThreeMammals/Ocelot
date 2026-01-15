@@ -1,9 +1,10 @@
-namespace Ocelot.Configuration.File
+namespace Ocelot.Configuration.File;
+
+/// <summary>
+/// Represents the JSON structure of a dynamic route in dynamic routing mode using service discovery.
+/// </summary>
+public class FileDynamicRoute : FileRouteBase, IRouteGrouping, IRouteRateLimiting
 {
-    public class FileDynamicRoute
-    {
-        public string ServiceName { get; set; }
-        public FileRateLimitRule RateLimitRule { get; set; }
-        public string DownstreamHttpVersion { get; set; }
-    }
+    [Obsolete("Use RateLimitOptions instead of RateLimitRule! Note that RateLimitRule will be removed in version 25.0!")]
+    public FileRateLimitByHeaderRule RateLimitRule { get; set; }
 }

@@ -5,6 +5,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
+using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.Responses;
 using System.Text;
 
@@ -69,8 +70,7 @@ public class ConsulFileConfigurationRepository : IFileConfigurationRepository
         var result = await _consul.KV.Put(kvPair);
         if (result.Response)
         {
-            _cache.AddAndDelete(_configurationKey, ocelotConfiguration, TimeSpan.FromSeconds(3), _configurationKey);
-
+            _cache.AddOrUpdate(_configurationKey, ocelotConfiguration, _configurationKey, TimeSpan.FromSeconds(3));
             return new OkResponse();
         }
 

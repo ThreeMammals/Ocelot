@@ -41,20 +41,20 @@ public class ResponseBenchmarks : ManualConfig
     {
         var configuration = new FileConfiguration
         {
-            Routes =
-            [
+            Routes = new()
+            {
                 new FileRoute
                 {
                     DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts =
-                    [
+                    DownstreamHostAndPorts = new()
+                    {
                         new FileHostAndPort("localhost", 51879),
-                    ],
-                    DownstreamScheme = "http",
+                    },
+                    DownstreamScheme = Uri.UriSchemeHttp,
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod =["GET"],
+                    UpstreamHttpMethod = [HttpMethods.Get],
                 },
-            ],
+            },
         };
 
         GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201);
@@ -115,12 +115,12 @@ public class ResponseBenchmarks : ManualConfig
     {
         var filePath = Path.Combine(directory, fileName);
         var generateDummy = isJson ? (Func<int, string, string>)GenerateDummyJsonFile : GenerateDummyDatFile;
-        return
-        [
+        return new object[]
+        {
             generateDummy(size, filePath),
             fileName,
             isJson,
-        ];
+        };
     }
 
     /// <summary>
@@ -194,7 +194,7 @@ public class ResponseBenchmarks : ManualConfig
 
     private void GivenOcelotIsRunning(string url)
     {
-        _ocelot = new WebHostBuilder()
+        _ocelot = TestHostBuilder.Create()
             .UseKestrel()
             .UseUrls(url)
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -213,7 +213,7 @@ public class ResponseBenchmarks : ManualConfig
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
             })
-            .Configure(app => { app.UseOcelot().Wait(); })
+            .Configure(async app => { await app.UseOcelot(); })
             .Build();
 
         _ocelot.Start();
@@ -234,7 +234,7 @@ public class ResponseBenchmarks : ManualConfig
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
     {
-        _service = new WebHostBuilder()
+        _service = TestHostBuilder.Create()
             .UseUrls(baseUrl)
             .UseKestrel()
             .UseContentRoot(Directory.GetCurrentDirectory())

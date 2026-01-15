@@ -1,0 +1,19 @@
+﻿{
+  "Routes": [
+    {
+      "DownstreamScheme": "http",
+      "DownstreamPathTemplate": "/api/values",
+      "UpstreamPathTemplate": "/EquipmentInterfaces",
+      "UpstreamHttpMethod": [ "Get" ],
+      "ServiceName": "OcelotServiceApplication/OcelotApplicationService"
+    }
+  ],
+  "GlobalConfiguration": {
+    "RequestIdKey": "Oc-RequestId",
+    "ServiceDiscoveryProvider": {
+      "Host": "localhost",
+      "Port": 19081,
+      "Type": "ServiceFabric"
+    }
+  }
+}

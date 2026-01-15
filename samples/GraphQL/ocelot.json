@@ -1,0 +1,13 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/graphql",
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "jsonplaceholder.typicode.com", "Port": 80 }
+      ],
+      "DelegatingHandlers": [ "GraphQLDelegatingHandler" ]
+    }
+  ]
+}

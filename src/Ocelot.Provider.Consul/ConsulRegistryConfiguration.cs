@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Provider.Consul;
 
-public class ConsulRegistryConfiguration
+public class ConsulRegistryConfiguration // TODO Inherit from ServiceProviderConfiguration ?
 {
     /// <summary>
     /// Consul HTTP client default port.
@@ -12,6 +12,7 @@ public class ConsulRegistryConfiguration
 
     public ConsulRegistryConfiguration(string scheme, string host, int port, string keyOfServiceInConsul, string token)
     {
+        // TODO Why not to encapsulate this biz logic right in ConsulProviderFactory? LoL
         Host = string.IsNullOrEmpty(host) ? "localhost" : host;
         Port = port > 0 ? port : DefaultHttpPort;
         Scheme = string.IsNullOrEmpty(scheme) ? Uri.UriSchemeHttp : scheme;

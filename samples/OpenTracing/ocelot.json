@@ -1,0 +1,19 @@
+{
+  "Routes": [
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/posts/{id}",
+      "DownstreamPathTemplate": "/todos/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        { "Host": "jsonplaceholder.typicode.com", "Port": 443 }
+      ],
+      "HttpHandlerOptions": {
+        "UseTracing": true
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:7784"
+  }
+}

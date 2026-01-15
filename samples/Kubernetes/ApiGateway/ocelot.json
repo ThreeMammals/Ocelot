@@ -1,0 +1,30 @@
+{
+  "Routes": [
+    {
+      "ServiceName": "my-service",
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/values",
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http"
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/nodiscovery/values",
+      "DownstreamPathTemplate": "/api/values",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "localhost", "Port": 5561 }
+      ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Scheme": "https",
+      "Host": "192.168.0.13",
+      "Port": 443,
+      "Token": "txpc696iUhbVoudg164r93CxDTrKRVWG",
+      "Namespace": "dev",
+      "Type": "Kube"
+    }
+  }
+}

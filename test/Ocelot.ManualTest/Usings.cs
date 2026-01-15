@@ -11,4 +11,5 @@ global using Microsoft.Extensions.Logging;
 
 // Project extra global namespaces
 global using Ocelot;
+global using Ocelot.Testing;
 global using System;
