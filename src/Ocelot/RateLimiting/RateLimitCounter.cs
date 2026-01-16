@@ -15,11 +15,11 @@ public struct RateLimitCounter
     }
 
     [JsonConstructor]
-    public RateLimitCounter(DateTime startedAt, DateTime? exceededAt, long totalRequests)
+    public RateLimitCounter(DateTime startedAt, DateTime? exceededAt, long total)
     {
         StartedAt = startedAt;
         ExceededAt = exceededAt;
-        Total = totalRequests;
+        Total = total;
     }
 
     /// <summary>The moment when the counting was started.</summary>
@@ -28,11 +28,11 @@ public struct RateLimitCounter
 
     /// <summary>The moment when the limit was exceeded.</summary>
     /// <value>A <see cref="DateTime"/> value of the moment.</value>
-    public DateTime? ExceededAt;
+    public DateTime? ExceededAt { get; set; }
 
     /// <summary>Total number of requests counted.</summary>
     /// <value>A <see langword="long"/> value of total number.</value>
-    public long Total;
+    public long Total { get; set; }
 
     public override readonly string ToString()
     {

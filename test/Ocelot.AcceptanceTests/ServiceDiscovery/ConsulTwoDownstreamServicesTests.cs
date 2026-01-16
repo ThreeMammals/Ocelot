@@ -1,6 +1,6 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -49,7 +49,7 @@ public sealed class ConsulTwoDownstreamServicesTests : Steps
         {
             if (context.Request.Path.Value == "/v1/health/service/product")
             {
-                var json = JsonConvert.SerializeObject(_serviceEntries);
+                var json = JsonSerializer.Serialize(_serviceEntries);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 return context.Response.WriteAsync(json);
             }

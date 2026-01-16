@@ -495,7 +495,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             foreach (var @event in events)
             {
                 _k8sWatchResetEvent.WaitOne();
-                var json = JsonSerializer.Serialize(@event, OcelotSerializerOptions.Web); // KubeResourceClient.SerializerSettings);
+                // var json = JsonSerializer.Serialize(@event, OcelotSerializerOptions.Web); // KubeResourceClient.SerializerSettings);
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(@event, KubeResourceClient.SerializerSettings);
                 await using var sw = new StreamWriter(context.Response.Body);
                 await sw.WriteLineAsync(json);
                 await sw.FlushAsync();

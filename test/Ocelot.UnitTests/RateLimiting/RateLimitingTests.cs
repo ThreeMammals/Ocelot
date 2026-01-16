@@ -231,7 +231,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         RateLimitCounter counter = new(
             startedAt: now.AddSeconds(-rule.PeriodSpan.TotalSeconds / 2),
             exceededAt: now,
-            totalRequests: total);
+            total: total);
 
         // Act
         double actual = _sut.RetryAfter(counter, rule, now);
@@ -251,7 +251,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         RateLimitCounter counter = new(
             startedAt: now.AddSeconds(-(rule.PeriodSpan.TotalSeconds / 2) - (rule.WaitSpan.TotalSeconds / 4 * 3)),
             exceededAt: now.AddSeconds(-(rule.WaitSpan.TotalSeconds / 4 * 3)),
-            totalRequests: total);
+            total: total);
 
         // Act
         double actual = _sut.RetryAfter(counter, rule, now);
@@ -271,7 +271,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         RateLimitCounter counter = new(
             startedAt: now.AddSeconds(-rule.PeriodSpan.TotalSeconds - rule.WaitSpan.TotalSeconds),
             exceededAt: now.AddSeconds(-rule.WaitSpan.TotalSeconds),
-            totalRequests: total);
+            total: total);
 
         // Act
         double actual = _sut.RetryAfter(counter, rule, now);
