@@ -3,6 +3,7 @@ using Ocelot.Configuration;
 using Ocelot.Headers;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -20,13 +21,17 @@ public class HttpResponseHeaderReplacerTests : UnitTest
     private readonly Mock<IBaseUrlFinder> _finder;
     private readonly Mock<IRequestScopedDataRepository> _repo;
     private readonly Mock<IHttpContextAccessor> _accessor;
+    /*private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+    private readonly Mock<IOcelotLogger> _logger;*/
 
     public HttpResponseHeaderReplacerTests()
     {
-        _accessor = new Mock<IHttpContextAccessor>();
         _repo = new Mock<IRequestScopedDataRepository>();
         _finder = new Mock<IBaseUrlFinder>();
-        _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object);
+        _accessor = new Mock<IHttpContextAccessor>();
+
+        //_loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _placeholders = new Placeholders(_finder.Object, _repo.Object, _accessor.Object/*,_loggerFactory.Object*/);
         _replacer = new HttpResponseHeaderReplacer(_placeholders);
     }
 

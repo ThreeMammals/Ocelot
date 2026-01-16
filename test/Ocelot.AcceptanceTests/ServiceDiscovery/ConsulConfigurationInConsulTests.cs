@@ -1,25 +1,19 @@
 ﻿using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.RateLimiting;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using System.Text;
 using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDisposable
+public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
 {
-    private IWebHost _builder;
-    private IWebHost _fakeConsulBuilder;
     private FileConfiguration _config;
     private readonly List<ServiceEntry> _consulServices;
 
@@ -51,7 +45,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                             },
                         },
                         UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string> { "Get" },
+                        UpstreamHttpMethod = ["Get"],
                     },
                 },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -64,11 +58,8 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                 },
             },
         };
-
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
-        this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", string.Empty, 200, "Hello from Laura"))
+        this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, string.Empty))
+            .And(x => x.GivenThereIsAServiceRunningOn(servicePort, string.Empty, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -95,9 +86,6 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                 },
             },
         };
-
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
         var consulConfig = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -115,7 +103,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -130,8 +118,8 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
         };
 
         this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-            .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
+            .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, string.Empty))
+            .And(x => x.GivenThereIsAServiceRunningOn(servicePort, "/status", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
             .When(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
@@ -158,9 +146,6 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                 },
             },
         };
-
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
-
         var consulConfig = new FileConfiguration
         {
             Routes = new List<FileRoute>
@@ -178,7 +163,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                         },
                     },
                     UpstreamPathTemplate = "/cs/status",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -209,7 +194,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                         },
                     },
                     UpstreamPathTemplate = "/cs/status/awesome",
-                    UpstreamHttpMethod = new List<string> {"Get"},
+                    UpstreamHttpMethod = ["Get"],
                 },
             },
             GlobalConfiguration = new FileGlobalConfiguration
@@ -224,8 +209,8 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
         };
 
         this.Given(x => GivenTheConsulConfigurationIs(consulConfig))
-            .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, string.Empty))
-            .And(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{servicePort}", "/status", 200, "Hello from Laura"))
+            .And(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, string.Empty))
+            .And(x => x.GivenThereIsAServiceRunningOn(servicePort, "/status", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
             .And(x => WhenIGetUrlOnTheApiGateway("/cs/status"))
@@ -241,16 +226,14 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
     {
         var consulPort = PortFinder.GetRandomPort();
         const string serviceName = "web";
-        var downstreamServicePort = PortFinder.GetRandomPort();
-        var downstreamServiceOneUrl = $"http://localhost:{downstreamServicePort}";
-        var fakeConsulServiceDiscoveryUrl = $"http://localhost:{consulPort}";
+        var servicePort = PortFinder.GetRandomPort();
         var serviceEntryOne = new ServiceEntry
         {
             Service = new AgentService
             {
                 Service = serviceName,
                 Address = "localhost",
-                Port = downstreamServicePort,
+                Port = servicePort,
                 ID = "web_90_0_2_224_8080",
                 Tags = new[] { "version-v1" },
             },
@@ -258,12 +241,12 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
 
         var consulConfig = new FileConfiguration
         {
-            DynamicRoutes = new List<FileDynamicRoute>
+            DynamicRoutes = new()
             {
                 new()
                 {
                     ServiceName = serviceName,
-                    RateLimitRule = new FileRateLimitRule
+                    RateLimitRule = new FileRateLimitByHeaderRule
                     {
                         EnableRateLimiting = true,
                         ClientWhitelist = new List<string>(),
@@ -273,21 +256,20 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                     },
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
                     Port = consulPort,
                 },
-                RateLimitOptions = new FileRateLimitOptions
+                RateLimitOptions = new()
                 {
                     ClientIdHeader = "ClientId",
-                    DisableRateLimitHeaders = false,
                     QuotaExceededMessage = string.Empty,
                     RateLimitCounterPrefix = string.Empty,
-                    HttpStatusCode = 428,
+                    HttpStatusCode = StatusCodes.Status428PreconditionRequired,
                 },
                 DownstreamScheme = "http",
             },
@@ -295,9 +277,9 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
 
         var configuration = new FileConfiguration
         {
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "http",
                     Host = "localhost",
@@ -305,25 +287,25 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
                 },
             },
         };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(downstreamServiceOneUrl, "/something", 200, "Hello from Laura"))
+        var upstreamPath = $"/{serviceName}/something";
+        this.Given(x => x.GivenThereIsAServiceRunningOn(servicePort, "/something", HttpStatusCode.OK, "Hello from Laura"))
         .And(x => GivenTheConsulConfigurationIs(consulConfig))
-        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(fakeConsulServiceDiscoveryUrl, serviceName))
+        .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, serviceName))
         .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryOne))
         .And(x => GivenThereIsAConfiguration(configuration))
         .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfig())
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 2))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 2))
         .Then(x => ThenTheStatusCodeShouldBe(200))
-        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesForRateLimit("/web/something", 1))
+        .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimes(upstreamPath, 1))
         .Then(x => ThenTheStatusCodeShouldBe(428))
         .BDDfy();
     }
 
     private async Task ThenTheConfigIsUpdatedInOcelot()
     {
-        var result = await Wait.WaitFor(20000).UntilAsync(async () =>
+        var result = await Wait.For(20_000).UntilAsync(async () =>
         {
             try
             {
@@ -353,91 +335,59 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
         }
     }
 
-    private void GivenOcelotIsRunningUsingConsulToStoreConfig()
+    private Task GivenOcelotIsRunningUsingConsulToStoreConfig()
     {
-        _webHostBuilder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(_ocelotConfigFileName, true, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot().AddConsul().AddConfigStoredInConsul(); })
-            .Configure(app => app.UseOcelot().GetAwaiter().GetResult()); // Turning as async/await some tests got broken
-
-        _ocelotServer = new TestServer(_webHostBuilder);
-        _ocelotClient = _ocelotServer.CreateClient();
-        Thread.Sleep(1000);
+        static void WithConsulToStoreConfig(IServiceCollection services)
+            => services.AddOcelot().AddConsul().AddConfigStoredInConsul();
+        GivenOcelotIsRunning(WithConsulToStoreConfig);
+        return Task.Delay(1000);
     }
 
-    private Task GivenThereIsAFakeConsulServiceDiscoveryProvider(string url, string serviceName)
+    private void GivenThereIsAFakeConsulServiceDiscoveryProvider(int port, string serviceName)
     {
-        _fakeConsulBuilder = TestHostBuilder.Create()
-                        .UseUrls(url)
-                        .UseKestrel()
-                        .UseContentRoot(Directory.GetCurrentDirectory())
-                        .UseIISIntegration()
-                        .UseUrls(url)
-                        .Configure(app =>
-                        {
-                            app.Run(async context =>
-                            {
-                                if (context.Request.Method.ToLower() == "get" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
-                                {
-                                    var json = JsonSerializer.Serialize(_config, OcelotSerializerOptions.Web);
+        handler.GivenThereIsAServiceRunningOn(port, async context =>
+        {
+            if (context.Request.Method.Equals(HttpMethods.Get, StringComparison.CurrentCultureIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
+            {
+                var json = JsonSerializer.Serialize(_config, OcelotSerializerOptions.Web);
+                var bytes = Encoding.UTF8.GetBytes(json);
+                var base64 = Convert.ToBase64String(bytes);
+                var kvp = new FakeConsulGetResponse(base64);
+                json = JsonSerializer.Serialize(new[] { kvp }, OcelotSerializerOptions.Web);
+                context.Response.Headers.Append("Content-Type", "application/json");
+                await context.Response.WriteAsync(json);
+            }
+            else if (context.Request.Method.Equals(HttpMethods.Put, StringComparison.CurrentCultureIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
+            {
+                try
+                {
+                    var reader = new StreamReader(context.Request.Body);
 
-                                    var bytes = Encoding.UTF8.GetBytes(json);
-
-                                    var base64 = Convert.ToBase64String(bytes);
-
-                                    var kvp = new FakeConsulGetResponse(base64);
-                                    json = JsonSerializer.Serialize(new[] { kvp }, OcelotSerializerOptions.Web);
-                                    context.Response.Headers.Append("Content-Type", "application/json");
-                                    await context.Response.WriteAsync(json);
-                                }
-                                else if (context.Request.Method.ToLower() == "put" && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
-                                {
-                                    try
-                                    {
-                                        var reader = new StreamReader(context.Request.Body);
-
-                                        // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
-                                        // var json = reader.ReadToEnd();                                            
-                                        var json = await reader.ReadToEndAsync();
-
-                                        _config = JsonSerializer.Deserialize<FileConfiguration>(json, OcelotSerializerOptions.Web);
-
-                                        var response = JsonSerializer.Serialize(true, OcelotSerializerOptions.Web);
-
-                                        await context.Response.WriteAsync(response);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine(e);
-                                        throw;
-                                    }
-                                }
-                                else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                                {
-                                    var json = JsonSerializer.Serialize(_consulServices, OcelotSerializerOptions.Web);
-                                    context.Response.Headers.Append("Content-Type", "application/json");
-                                    await context.Response.WriteAsync(json);
-                                }
-                            });
-                        })
-                        .Build();
-        return _fakeConsulBuilder.StartAsync();
+                    // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+                    // var json = reader.ReadToEnd();                                            
+                    var json = await reader.ReadToEndAsync();
+                    _config = JsonSerializer.Deserialize<FileConfiguration>(json, OcelotSerializerOptions.Web);
+                    var response = JsonSerializer.Serialize(true, OcelotSerializerOptions.Web);
+                    await context.Response.WriteAsync(response);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+            else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
+            {
+                var json = JsonSerializer.Serialize(_consulServices, OcelotSerializerOptions.Web);
+                context.Response.Headers.Append("Content-Type", "application/json");
+                await context.Response.WriteAsync(json);
+            }
+        });
     }
 
     public class FakeConsulGetResponse
     {
-        public FakeConsulGetResponse(string value)
-        {
-            Value = value;
-        }
+        public FakeConsulGetResponse(string value) => Value = value;
 
         public int CreateIndex => 100;
         public int ModifyIndex => 200;
@@ -448,40 +398,22 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps, IDispo
         public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
     }
 
-    private Task GivenThereIsAServiceRunningOn(string url, string basePath, int statusCode, string responseBody)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        _builder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
-            {
-                app.UsePathBase(basePath);
-
-                app.Run(async context =>
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-        return _builder.StartAsync();
-    }
-
-    public override void Dispose()
-    {
-        _builder?.Dispose();
-        _fakeConsulBuilder?.Dispose();
-        base.Dispose();
+        Task MapStatus(HttpContext context)
+        {
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(responseBody);
+        }
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatus);
     }
 
     private class FakeCache : IOcelotCache<FileConfiguration>
     {
-        public void Add(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
         public FileConfiguration Get(string key, string region) => throw new NotImplementedException();
         public void ClearRegion(string region) => throw new NotImplementedException();
-        public void AddAndDelete(string key, FileConfiguration value, TimeSpan ttl, string region) => throw new NotImplementedException();
+        public bool TryGetValue(string key, string region, out FileConfiguration value) => throw new NotImplementedException();
+        public bool Add(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
+        public FileConfiguration AddOrUpdate(string key, FileConfiguration value, string region, TimeSpan ttl) => throw new NotImplementedException();
     }
 }

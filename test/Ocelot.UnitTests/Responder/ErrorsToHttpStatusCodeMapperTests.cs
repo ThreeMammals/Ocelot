@@ -76,6 +76,8 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "749")] // https://github.com/ThreeMammals/Ocelot/issues/749
+    [Trait("PR", "1769")] // https://github.com/ThreeMammals/Ocelot/pull/1769
     public void Should_return_request_entity_too_large()
     {
         ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);

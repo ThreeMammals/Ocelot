@@ -24,9 +24,8 @@ public class DistributedCacheRateLimitStorage : IRateLimitStorage
     public RateLimitCounter? Get(string id)
     {
         var stored = _memoryCache.GetString(id);
-        return !string.IsNullOrEmpty(stored)
-            ? JsonSerializer.Deserialize<RateLimitCounter>(stored, OcelotSerializerOptions.Web)
-            : null;
+        return string.IsNullOrEmpty(stored) ? null :
+            JsonSerializer.Deserialize<RateLimitCounter>(stored, OcelotSerializerOptions.Web);
     }
 
     public void Remove(string id) => _memoryCache.Remove(id);

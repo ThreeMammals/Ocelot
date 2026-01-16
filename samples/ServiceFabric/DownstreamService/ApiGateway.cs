@@ -1,14 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Ocelot.Samples.Web;
-using System;
-using System.Collections.Generic;
 using System.Fabric;
-using System.IO;
 
 namespace Ocelot.Samples.ServiceFabric.DownstreamService;
 
@@ -33,19 +27,28 @@ internal sealed class ApiGateway : StatelessService
                 {
                     Console.WriteLine($"Starting Kestrel on {url}");
                     ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
-                    return OcelotHostBuilder.Create()
-                        .UseKestrel()
-                        .ConfigureServices(services => services.AddSingleton(serviceContext))
+
+                    _ = OcelotHostBuilder.Create();
+                    var builder = WebApplication.CreateBuilder(); //(args);
+                    builder.Services
+                        .AddSingleton(serviceContext)
+                        .AddControllers();
+                    builder.WebHost
+                    //.UseKestrel()
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
-                        .UseStartup<Startup>()
-                        .UseUrls(url)
-                        .ConfigureLogging((hostingContext, logging) =>
-                        {
-                            logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                            logging.AddConsole();
-                        })
-                        .Build();
+                        .UseUrls(url);
+                    if (builder.Environment.IsDevelopment())
+                    {
+                        builder.Logging.AddConsole();
+                    }
+                    var app = builder.Build();
+                    app.MapControllers();
+                    if (app.Environment.IsDevelopment())
+                    {
+                        app.UseDeveloperExceptionPage();
+                    }
+                    return app;
                 }))
         };
     }

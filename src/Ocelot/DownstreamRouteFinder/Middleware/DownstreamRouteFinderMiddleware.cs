@@ -13,9 +13,8 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
 
     public DownstreamRouteFinderMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IDownstreamRouteProviderFactory downstreamRouteFinder
-        )
-            : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
+        IDownstreamRouteProviderFactory downstreamRouteFinder)
+        : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
     {
         _next = next;
         _factory = downstreamRouteFinder;
@@ -33,18 +32,18 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
         var upstreamHeaders = httpContext.Request.Headers
             .ToDictionary(h => h.Key, h => string.Join(';', (IList<string>)h.Value));
 
-        Logger.LogDebug(() => $"Upstream URL path is '{upstreamUrlPath}'.");
+        Logger.LogDebug(() => $"Upstream URL path: {upstreamUrlPath}");
 
         var provider = _factory.Get(internalConfiguration);
         var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
         if (response.IsError)
         {
-            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors. IDownstreamRouteFinder returned {response.Errors.ToErrorString()}");
+            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors because {provider.GetType().Name} returned the following ->{response.Errors.ToErrorString(true)}");
             httpContext.Items.UpsertErrors(response.Errors);
             return;
         }
 
-        Logger.LogDebug(() => $"downstream templates are {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
+        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
 
         // why set both of these on HttpContext
         httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);

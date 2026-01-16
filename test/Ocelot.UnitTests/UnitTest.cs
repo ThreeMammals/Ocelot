@@ -1,12 +1,15 @@
-﻿namespace Ocelot.UnitTests;
+﻿using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
+using System.Runtime.CompilerServices;
 
-public class UnitTest
+namespace Ocelot.UnitTests;
+
+public class UnitTest : Unit
 {
-    public UnitTest()
-    {
-    }
+    protected static FileRouteBox<FileRoute> Box(FileRoute route) => new(route);
+    protected string TestName([CallerMemberName] string testName = null) => testName.IfEmpty(TestID);
 
-    protected readonly Guid _testId = Guid.NewGuid();
-
-    protected string TestID { get => _testId.ToString("N"); }
+    protected static bool IsCiCd() => IsRunningInGitHubActions();
+    protected static bool IsRunningInGitHubActions()
+        => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 }

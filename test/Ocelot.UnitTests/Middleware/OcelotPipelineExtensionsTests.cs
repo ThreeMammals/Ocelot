@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.LoadBalancer.Middleware;
+using Ocelot.DownstreamUrlCreator;
+using Ocelot.LoadBalancer;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.WebSockets;
@@ -38,11 +38,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         var configuration = new OcelotPipelineConfiguration();
         configuration.MapWhenOcelotPipeline.Add((httpContext) => httpContext.WebSockets.IsWebSocketRequest, app =>
         {
-            app.UseDownstreamRouteFinderMiddleware();
-            app.UseDownstreamRequestInitialiser();
-            app.UseLoadBalancingMiddleware();
-            app.UseDownstreamUrlCreatorMiddleware();
-            app.UseWebSocketsProxyMiddleware();
+            app.UseMiddleware<DownstreamRouteFinderMiddleware>();
+            app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+            app.UseMiddleware<LoadBalancingMiddleware>();
+            app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
+            app.UseMiddleware<WebSocketsProxyMiddleware>();
         });
 
         // Act

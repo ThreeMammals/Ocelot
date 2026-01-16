@@ -2,14 +2,8 @@
 
 namespace Ocelot.WebSockets;
 
-public interface IClientWebSocket
+public interface IClientWebSocket : IClientWebSocketConnector
 {
-    WebSocket ToWebSocket();
-
-    // ClientWebSocket definitions
-    IClientWebSocketOptions Options { get; }
-    Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
-
     // WebSocket definitions
     WebSocketCloseStatus? CloseStatus { get; }
     string CloseStatusDescription { get; }
@@ -21,4 +15,11 @@ public interface IClientWebSocket
     void Dispose();
     Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken);
     Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+}
+
+public interface IClientWebSocketConnector
+{
+    WebSocket ToWebSocket();
+    IClientWebSocketOptions Options { get; }
+    Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 }

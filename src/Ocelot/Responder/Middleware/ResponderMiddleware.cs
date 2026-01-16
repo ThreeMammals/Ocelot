@@ -26,33 +26,29 @@ public class ResponderMiddleware : OcelotMiddleware
         _codeMapper = codeMapper;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
-        await _next.Invoke(httpContext);
+        await _next.Invoke(context);
 
-        var errors = httpContext.Items.Errors();
-
-        // We are going to dispose the http request message and content in
-        // this middleware (no further use). That's why we are using the 'using' statement.
-        using var downstreamResponse = httpContext.Items.DownstreamResponse();
-
+        var errors = context.Items.Errors();
         if (errors.Count > 0)
         {
-            Logger.LogWarning(() =>
-                $"{errors.ToErrorString()} errors found in {MiddlewareName}. Setting error response for request path:{httpContext.Request.Path}, request method: {httpContext.Request.Method}");
-            await SetErrorResponse(httpContext, errors);
-
+            Logger.LogWarning(() => $"{MiddlewareName} found {errors.Count} error{errors.Count.Plural()} ->{errors.ToErrorString(true, true)}Setting error response for request: {context.Request.Method} {context.Request.Path}");
+            await SetErrorResponse(context, errors);
             return;
         }
 
-        if (downstreamResponse == null)
+        // We are going to dispose the http request message and content in
+        // this middleware (no further use). That's why we are using the 'using' statement.
+        using var response = context.Items.DownstreamResponse();
+        if (response == null)
         {
             Logger.LogDebug(() => $"Pipeline was terminated early in {MiddlewareName}");
             return;
         }
 
-        Logger.LogDebug("no pipeline errors, setting and returning completed response");
-        await _responder.SetResponseOnHttpContext(httpContext, downstreamResponse);
+        Logger.LogDebug("No pipeline errors: setting and returning completed response...");
+        await _responder.SetResponseOnHttpContext(context, response);
     }
 
     private async Task SetErrorResponse(HttpContext context, List<Error> errors)

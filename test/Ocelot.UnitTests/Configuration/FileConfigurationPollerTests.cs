@@ -5,7 +5,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
-using static Ocelot.Infrastructure.Wait;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -149,7 +148,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
     private void ThenTheSetterIsCalled(FileConfiguration fileConfig, int times)
     {
-        var result = WaitFor(4000).Until(() =>
+        var result = Wait.For(4_000).Until(() =>
         {
             try
             {
@@ -167,7 +166,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
     private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
     {
-        var result = WaitFor(4000).Until(() =>
+        var result = Wait.For(4_000).Until(() =>
         {
             try
             {

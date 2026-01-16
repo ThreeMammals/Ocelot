@@ -2,23 +2,18 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class CannotStartOcelotTests : IDisposable
+public class CannotStartOcelotTests : Steps
 {
-    private readonly Steps _steps;
-
-    public CannotStartOcelotTests()
-    {
-        _steps = new Steps();
-    }
+    private static readonly string NL = Environment.NewLine;
 
     [Fact]
-    public void should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered_with_dynamic_re_routes()
+    public void Should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered_with_dynamic_re_routes()
     {
         var invalidConfig = new FileConfiguration
         {
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "https",
                     Host = "localhost",
@@ -29,10 +24,10 @@ public class CannotStartOcelotTests : IDisposable
         };
 
         Exception exception = null;
-        _steps.GivenThereIsAConfiguration(invalidConfig);
+        GivenThereIsAConfiguration(invalidConfig);
         try
         {
-            _steps.GivenOcelotIsRunning();
+            GivenOcelotIsRunning();
         }
         catch (Exception ex)
         {
@@ -40,28 +35,28 @@ public class CannotStartOcelotTests : IDisposable
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?)");
+        exception.Message.ShouldBe($"One or more errors occurred. (Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?{NL})");
     }
 
     [Fact]
-    public void should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered()
+    public void Should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered()
     {
         var invalidConfig = new FileConfiguration
         {
-            Routes = new List<FileRoute>
+            Routes = new()
             {
                 new()
                 {
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     ServiceName = "test",
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
+                ServiceDiscoveryProvider = new()
                 {
                     Scheme = "https",
                     Host = "localhost",
@@ -72,10 +67,10 @@ public class CannotStartOcelotTests : IDisposable
         };
 
         Exception exception = null;
-        _steps.GivenThereIsAConfiguration(invalidConfig);
+        GivenThereIsAConfiguration(invalidConfig);
         try
         {
-            _steps.GivenOcelotIsRunning();
+            GivenOcelotIsRunning();
         }
         catch (Exception ex)
         {
@@ -83,36 +78,32 @@ public class CannotStartOcelotTests : IDisposable
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?,Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?)");
+        exception.Message.ShouldBe($"One or more errors occurred. (Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?{NL})");
     }
 
     [Fact]
-    public void should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_globally()
+    public void Should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_globally()
     {
         var invalidConfig = new FileConfiguration
         {
-            Routes = new List<FileRoute>
+            Routes = new()
             {
                 new()
                 {
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    DownstreamHostAndPorts = new()
                     {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 51878,
-                        },
+                        new("localhost", 51878),
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
                 },
             },
-            GlobalConfiguration = new FileGlobalConfiguration
+            GlobalConfiguration = new()
             {
-                QoSOptions = new FileQoSOptions
+                QoSOptions = new()
                 {
                     TimeoutValue = 1,
                     ExceptionsAllowedBeforeBreaking = 1,
@@ -121,10 +112,10 @@ public class CannotStartOcelotTests : IDisposable
         };
 
         Exception exception = null;
-        _steps.GivenThereIsAConfiguration(invalidConfig);
+        GivenThereIsAConfiguration(invalidConfig);
         try
         {
-            _steps.GivenOcelotIsRunning();
+            GivenOcelotIsRunning();
         }
         catch (Exception ex)
         {
@@ -132,32 +123,28 @@ public class CannotStartOcelotTests : IDisposable
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?)");
+        exception.Message.ShouldBe($"One or more errors occurred. (Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?{NL})");
     }
 
     [Fact]
-    public void should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_for_re_route()
+    public void Should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_for_re_route()
     {
         var invalidConfig = new FileConfiguration
         {
-            Routes = new List<FileRoute>
+            Routes = new()
             {
                 new()
                 {
                     DownstreamPathTemplate = "/",
                     DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    DownstreamHostAndPorts = new()
                     {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 51878,
-                        },
+                        new("localhost", 51878),
                     },
                     UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     Key = "Laura",
-                    QoSOptions = new FileQoSOptions
+                    QoSOptions = new()
                     {
                         TimeoutValue = 1,
                         ExceptionsAllowedBeforeBreaking = 1,
@@ -167,10 +154,10 @@ public class CannotStartOcelotTests : IDisposable
         };
 
         Exception exception = null;
-        _steps.GivenThereIsAConfiguration(invalidConfig);
+        GivenThereIsAConfiguration(invalidConfig);
         try
         {
-            _steps.GivenOcelotIsRunning();
+            GivenOcelotIsRunning();
         }
         catch (Exception ex)
         {
@@ -178,15 +165,15 @@ public class CannotStartOcelotTests : IDisposable
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?)");
+        exception.Message.ShouldBe($"One or more errors occurred. (Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?{NL})");
     }
 
     [Fact]
-    public void should_throw_exception_if_cannot_start()
+    public void Should_throw_exception_if_cannot_start()
     {
         var invalidConfig = new FileConfiguration
         {
-            Routes = new List<FileRoute>
+            Routes = new()
             {
                 new()
                 {
@@ -197,10 +184,10 @@ public class CannotStartOcelotTests : IDisposable
         };
 
         Exception exception = null;
-        _steps.GivenThereIsAConfiguration(invalidConfig);
+        GivenThereIsAConfiguration(invalidConfig);
         try
         {
-            _steps.GivenOcelotIsRunning();
+            GivenOcelotIsRunning();
         }
         catch (Exception ex)
         {
@@ -208,11 +195,6 @@ public class CannotStartOcelotTests : IDisposable
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe("One or more errors occurred. (Unable to start Ocelot, errors are: Downstream Path Template test doesnt start with forward slash,Upstream Path Template api doesnt start with forward slash,When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!)");
-    }
-
-    public void Dispose()
-    {
-        _steps.Dispose();
+        exception.Message.ShouldBe($"One or more errors occurred. (Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Downstream Path Template test doesnt start with forward slash{NL}FileValidationFailedError: Upstream Path Template api doesnt start with forward slash{NL}FileValidationFailedError: When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!{NL})");
     }
 }

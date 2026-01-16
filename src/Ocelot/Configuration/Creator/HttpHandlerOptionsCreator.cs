@@ -6,25 +6,72 @@ namespace Ocelot.Configuration.Creator;
 
 public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
 {
-    private readonly ITracer _tracer;
-
-    //todo: this should be configurable and available as global config parameter in ocelot.json
-    public const int DefaultPooledConnectionLifetimeSeconds = 120;
-
+    private readonly IOcelotTracer _tracer;
     public HttpHandlerOptionsCreator(IServiceProvider services)
-    {
-        _tracer = services.GetService<ITracer>();
-    }
+        => _tracer = services.GetService<IOcelotTracer>();
 
     public HttpHandlerOptions Create(FileHttpHandlerOptions options)
     {
-        var useTracing = _tracer != null && options.UseTracing;
+        options ??= new();
+        var hasTracer = _tracer != null;
+        return new(options, hasTracer);
+    }
 
-        //be sure that maxConnectionPerServer is in correct range of values
-        var maxConnectionPerServer = (options.MaxConnectionsPerServer > 0) ? options.MaxConnectionsPerServer : int.MaxValue;
-        var pooledConnectionLifetime = TimeSpan.FromSeconds(options.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
+    public HttpHandlerOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(globalConfiguration);
+        return Create(route, route.HttpHandlerOptions, globalConfiguration.HttpHandlerOptions);
+    }
 
-        return new HttpHandlerOptions(options.AllowAutoRedirect,
-            options.UseCookieContainer, useTracing, options.UseProxy, maxConnectionPerServer, pooledConnectionLifetime);
+    public HttpHandlerOptions Create(FileDynamicRoute route, FileGlobalConfiguration globalConfiguration)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ArgumentNullException.ThrowIfNull(globalConfiguration);
+        return Create(route, route.HttpHandlerOptions, globalConfiguration.HttpHandlerOptions);
+    }
+
+    protected virtual HttpHandlerOptions Create(IRouteGrouping grouping, FileHttpHandlerOptions options, FileGlobalHttpHandlerOptions globalOptions)
+    {
+        ArgumentNullException.ThrowIfNull(grouping);
+        var group = globalOptions;
+        var isGlobal = group?.RouteKeys is null || // undefined section or array option -> is global
+            group.RouteKeys.Count == 0 || // empty collection -> is global
+            group.RouteKeys.Contains(grouping.Key); // this route is in the group
+        var hasTracer = _tracer != null;
+        if (options == null && globalOptions != null && isGlobal)
+        {
+            return new(globalOptions, hasTracer);
+        }
+
+        if (options != null && globalOptions == null)
+        {
+            return new(options, hasTracer);
+        }
+        else if (options != null && globalOptions != null && !isGlobal)
+        {
+            return new(options, hasTracer);
+        }
+
+        if (options != null && globalOptions != null && isGlobal)
+        {
+            return Merge(options, globalOptions);
+        }
+
+        return new();
+    }
+
+    protected virtual HttpHandlerOptions Merge(FileHttpHandlerOptions options, FileHttpHandlerOptions globalOptions)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(globalOptions);
+        options.AllowAutoRedirect ??= globalOptions.AllowAutoRedirect ?? false;
+        options.MaxConnectionsPerServer ??= globalOptions.MaxConnectionsPerServer ?? int.MaxValue;
+        options.PooledConnectionLifetimeSeconds ??= globalOptions.PooledConnectionLifetimeSeconds ?? HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds;
+        options.UseCookieContainer ??= globalOptions.UseCookieContainer ?? false;
+        options.UseProxy ??= globalOptions.UseProxy ?? false;
+        options.UseTracing ??= globalOptions.UseTracing ?? false;
+        var useTracing = _tracer != null && options.UseTracing.Value;
+        return new(options, useTracing);
     }
 }

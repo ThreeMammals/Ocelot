@@ -1,38 +1,22 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Ocelot.Samples.Web;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
-namespace Ocelot.Samples.Basic.ApiGateway;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+// Ocelot Basic setup
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddOcelot(); // single ocelot.json file in read-only mode
+builder.Services
+    .AddOcelot(builder.Configuration);
+
+// Add your features
+if (builder.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        OcelotHostBuilder.BasicSetup()
-           .ConfigureAppConfiguration((hostingContext, config) =>
-           {
-               config
-                   .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                   .AddJsonFile("appsettings.json", true, true)
-                   .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                   .AddJsonFile("ocelot.json")
-                   .AddEnvironmentVariables();
-           })
-           .ConfigureLogging((hostingContext, logging) =>
-           {
-               if (hostingContext.HostingEnvironment.IsDevelopment())
-               {
-                   logging.ClearProviders();
-                   logging.AddConsole();
-               }
-               //add your logging
-           })
-           .UseIISIntegration()
-           .UseStartup<Startup>()
-           .Build()
-           .Run();
-    }
+    builder.Logging.AddConsole();
 }
+
+// Add middlewares aka app.Use*()
+var app = builder.Build();
+await app.UseOcelot();
+await app.RunAsync();

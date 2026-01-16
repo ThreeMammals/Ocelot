@@ -3,7 +3,7 @@
 public class FileCacheOptions
 {
     public FileCacheOptions() { }
-
+    public FileCacheOptions(int ttl) => TtlSeconds = ttl;
     public FileCacheOptions(FileCacheOptions from)
     {
         Region = from.Region;

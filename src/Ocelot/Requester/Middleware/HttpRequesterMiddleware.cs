@@ -32,7 +32,7 @@ public class HttpRequesterMiddleware : OcelotMiddleware
             return;
         }
 
-        Logger.LogDebug("setting http response message");
+        Logger.LogDebug("Setting HTTP response message...");
         httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(response.Data));
         await _next.Invoke(httpContext);
     }
@@ -43,7 +43,7 @@ public class HttpRequesterMiddleware : OcelotMiddleware
         var reason = response.Data?.ReasonPhrase ?? "unknown";
         var uri = response.Data?.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
 
-        string message() => $"{(int)status} ({reason}) status code of request URI: {uri}.";
+        string message() => $"{(int)status} {reason} status code of request URI: {uri}";
 
         if (status < HttpStatusCode.BadRequest)
         {

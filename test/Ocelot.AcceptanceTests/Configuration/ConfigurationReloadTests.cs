@@ -1,19 +1,21 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.ChangeTracking;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
+using Ocelot.DependencyInjection;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
-[Collection(nameof(SequentialTests))]
-public sealed class ConfigurationReloadTests : IDisposable
+public sealed class ConfigurationReloadTests : Steps
 {
     private readonly FileConfiguration _initialConfig;
     private readonly FileConfiguration _anotherConfig;
-    private readonly Steps _steps;
+    private IOcelotConfigurationChangeTokenSource _changeToken;
 
     public ConfigurationReloadTests()
     {
-        _steps = new Steps();
-
         _initialConfig = new FileConfiguration
         {
             GlobalConfiguration = new FileGlobalConfiguration
@@ -21,7 +23,6 @@ public sealed class ConfigurationReloadTests : IDisposable
                 RequestIdKey = "initialKey",
             },
         };
-
         _anotherConfig = new FileConfiguration
         {
             GlobalConfiguration = new FileGlobalConfiguration
@@ -32,55 +33,89 @@ public sealed class ConfigurationReloadTests : IDisposable
     }
 
     [Fact]
-    public void should_reload_config_on_change()
+    public void Should_reload_config_on_change()
     {
-        this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
-            .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
-            .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
-            .And(x => _steps.ThenConfigShouldBeWithTimeout(_anotherConfig, 10000))
+        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+            .And(x => GivenOcelotIsRunningReloadingConfig(true))
+            .And(x => GivenThereIsAConfiguration(_anotherConfig))
+            .And(x => ThenConfigShouldBeWithTimeout(_anotherConfig, 10000))
             .BDDfy();
     }
 
-    [Fact]
-    public void should_not_reload_config_on_change()
+    private async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
     {
-        this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
-            .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
-            .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+        var result = await Wait.For(timeoutMs).UntilAsync(async () =>
+        {
+            var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+            var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+            var internalConfig = internalConfigRepo.Get();
+            var config = await internalConfigCreator.Create(fileConfig);
+            return internalConfig.Data.RequestId == config.Data.RequestId;
+        });
+        result.ShouldBe(true);
+    }
+
+    [Fact]
+    public void Should_not_reload_config_on_change()
+    {
+        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+            .And(x => GivenOcelotIsRunningReloadingConfig(false))
+            .And(x => GivenThereIsAConfiguration(_anotherConfig))
             .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
-            .And(x => _steps.ThenConfigShouldBe(_initialConfig))
+            .And(x => ThenConfigShouldBe(_initialConfig))
             .BDDfy();
     }
 
-    [Fact]
-    public void should_trigger_change_token_on_change()
+    private async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {
-        this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
-            .And(x => _steps.GivenOcelotIsRunningReloadingConfig(true))
-            .And(x => _steps.GivenIHaveAChangeToken())
-            .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+        var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
+        var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+        var internalConfig = internalConfigRepo.Get();
+        var config = await internalConfigCreator.Create(fileConfig);
+        internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
+    }
+
+    [Fact]
+    public void Should_trigger_change_token_on_change()
+    {
+        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+            .And(x => GivenOcelotIsRunningReloadingConfig(true))
+            .And(x => GivenIHaveAChangeToken())
+            .And(x => GivenThereIsAConfiguration(_anotherConfig))
             .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
-            .Then(x => _steps.TheChangeTokenShouldBeActive(true))
+            .Then(x => TheChangeTokenShouldBeActive(true))
             .BDDfy();
     }
 
     [Fact]
-    public void should_not_trigger_change_token_with_no_change()
+    public void Should_not_trigger_change_token_with_no_change()
     {
-        this.Given(x => _steps.GivenThereIsAConfiguration(_initialConfig))
-            .And(x => _steps.GivenOcelotIsRunningReloadingConfig(false))
-            .And(x => _steps.GivenIHaveAChangeToken())
+        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+            .And(x => GivenOcelotIsRunningReloadingConfig(false))
+            .And(x => GivenIHaveAChangeToken())
             .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
-            .And(x => _steps.GivenThereIsAConfiguration(_anotherConfig))
+            .And(x => GivenThereIsAConfiguration(_anotherConfig))
             .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
-            .Then(x => _steps.TheChangeTokenShouldBeActive(false))
+            .Then(x => TheChangeTokenShouldBeActive(false))
             .BDDfy();
     }
 
     private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1000) - 100;
 
-    public void Dispose()
+    private void GivenOcelotIsRunningReloadingConfig(bool shouldReload)
     {
-        _steps.Dispose();
+        GivenOcelotIsRunning((context, config) => config
+            .SetBasePath(context.HostingEnvironment.ContentRootPath)
+            .AddOcelot(ocelotConfigFileName, false, shouldReload));
+    }
+
+    private void GivenIHaveAChangeToken()
+    {
+        _changeToken = ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
+    }
+
+    private void TheChangeTokenShouldBeActive(bool itShouldBeActive)
+    {
+        _changeToken.ChangeToken.HasChanged.ShouldBe(itShouldBeActive);
     }
 }

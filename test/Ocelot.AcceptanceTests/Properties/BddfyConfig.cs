@@ -3,16 +3,16 @@ using TestStack.BDDfy.Configuration;
 
 namespace Ocelot.AcceptanceTests.Properties;
 
-public class BddfyConfig
+public static class BddfyConfig
 {
-    public BddfyConfig()
+    public static void Configure()
     {
-        // Configurator.Processors.ConsoleReport.RunsOn(story => story.Result != Result.Passed);
-        Configurator.Processors.ConsoleReport.Disable();
-        Configurator.Processors.Add(() => new BddfyProcessor());
+        //// Configurator.Processors.ConsoleReport.RunsOn(story => story.Result != Result.Passed);
+        //Configurator.Processors.ConsoleReport.Disable();
+        //Configurator.Processors.Add(() => new BddfyProcessor());
 
-        //Configurator.BatchProcessors.Add(new BddfyBatchProcessingReporter());
-        Configurator.BatchProcessors.HtmlReport.Disable();
+        ////Configurator.BatchProcessors.Add(new BddfyBatchProcessingReporter());
+        //Configurator.BatchProcessors.HtmlReport.Disable();
     }
 }
 

@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Ocelot.Administration;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
-using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using System.Diagnostics;
@@ -151,7 +152,7 @@ public static class OcelotMiddlewareExtensions
 
     private static void ThrowToStopOcelotStarting(Response config)
     {
-        throw new Exception($"Unable to start Ocelot, errors are: {string.Join(',', config.Errors.Select(x => x.ToString()))}");
+        throw new Exception($"Unable to start Ocelot, errors are:{config.Errors.ToErrorString(true, true)}");
     }
 
     private static void ConfigureDiagnosticListener(IApplicationBuilder builder)

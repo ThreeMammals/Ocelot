@@ -1,19 +1,33 @@
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
+using Ocelot.LoadBalancer.Balancers;
 
 namespace Ocelot.Configuration;
 
 public class LoadBalancerOptions
 {
-    public LoadBalancerOptions(string type, string key, int expiryInMs)
+    public LoadBalancerOptions()
     {
-        Type = string.IsNullOrWhiteSpace(type) ? nameof(NoLoadBalancer) : type;
-        Key = key;
-        ExpiryInMs = expiryInMs;
+        Type = nameof(NoLoadBalancer);
     }
 
-    public string Type { get; }
+    public LoadBalancerOptions(FileLoadBalancerOptions options)
+        : this(options?.Type, options?.Key, options?.Expiry)
+    { }
 
-    public string Key { get; }
+    public LoadBalancerOptions(string type, string key, int? expiryInMs)
+    {
+        Type = type.IfEmpty(nameof(NoLoadBalancer));
+        bool isStickySessions = nameof(CookieStickySessions).Equals(type, StringComparison.OrdinalIgnoreCase);
+        Key = isStickySessions
+            ? key.IfEmpty(CookieStickySessions.DefSessionCookieName)
+            : key;
+        ExpiryInMs = isStickySessions
+            ? expiryInMs ?? CookieStickySessions.DefSessionExpiryMilliseconds
+            : expiryInMs ?? 0;
+    }
 
-    public int ExpiryInMs { get; }
+    public string Type { get; init; }
+    public string Key { get; init; }
+    public int ExpiryInMs { get; init; }
 }

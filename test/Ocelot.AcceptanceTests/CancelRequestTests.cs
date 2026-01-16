@@ -4,17 +4,8 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class CancelRequestTests : Steps, IDisposable
 {
-    private readonly ServiceHandler _serviceHandler;
-
     public CancelRequestTests()
     {
-        _serviceHandler = new ServiceHandler();
-    }
-
-    public override void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        base.Dispose();
     }
 
     [Fact]
@@ -51,11 +42,11 @@ public sealed class CancelRequestTests : Steps, IDisposable
         ex.ShouldNotBeNull().ShouldBeOfType<TaskCanceledException>();
     }
 
-    private Task Cancel(Task t) => Task.Run(_ocelotClient.CancelPendingRequests);
+    private Task Cancel(Task t) => Task.Run(ocelotClient.CancelPendingRequests);
 
     private void GivenThereIsAServiceRunningOn(string baseUrl, Notifier startedNotifier, Notifier stoppedNotifier)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
+        handler.GivenThereIsAServiceRunningOn(baseUrl, async context =>
         {
             startedNotifier.NotificationSent = true;
             await Task.Delay(SERVICE_WORK_TIME, context.RequestAborted);

@@ -11,13 +11,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
@@ -50,7 +53,10 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
-    public void Should_add_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_NotGlobal()
     {
         // Arrange
         _ocelotBuilder = _services.AddOcelot(_configRoot);
@@ -65,7 +71,59 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
-    public void Should_add_type_specific_delegating_handlers_transient()
+    [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
+    [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
+    [Trait("Bug", "456")] // https://github.com/ThreeMammals/Ocelot/pull/456
+    public void AddDelegatingHandler_Generic_Global()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
+        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_TypeCheck()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(
+            () => _ocelotBuilder.AddDelegatingHandler(typeof(OcelotBuilderTests))); // OcelotBuilderTests type is not DelegatingHandler one
+
+        // Assert
+        Assert.Equal("delegateType", ex.ParamName);
+        Assert.Equal(nameof(OcelotBuilderTests), (string)ex.ActualValue);
+        Assert.Equal($"It is not a delegating handler (Parameter 'delegateType'){Environment.NewLine}Actual value was OcelotBuilderTests.", ex.Message);
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_Global()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandler), true);
+        _ocelotBuilder.AddDelegatingHandler(typeof(FakeDelegatingHandlerTwo), true);
+
+        // Assert
+        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
+        ThenTheGlobalHandlersAreTransient();
+    }
+
+    [Fact]
+    [Trait("Feat", "943")] // https://github.com/ThreeMammals/Ocelot/pull/943
+    public void AddDelegatingHandler_Type_NotGlobal()
     {
         // Arrange
         _ocelotBuilder = _services.AddOcelot(_configRoot);
@@ -77,36 +135,6 @@ public class OcelotBuilderTests : UnitTest
         // Assert
         ThenTheProviderIsRegisteredAndReturnsSpecificHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
         ThenTheSpecificHandlersAreTransient();
-    }
-
-    [Fact]
-    public void Should_add_global_delegating_handlers_transient()
-    {
-        // Arrange
-        _ocelotBuilder = _services.AddOcelot(_configRoot);
-
-        // Act
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
-
-        // Assert
-        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-        ThenTheGlobalHandlersAreTransient();
-    }
-
-    [Fact]
-    public void Should_add_global_type_delegating_handlers_transient()
-    {
-        // Arrange
-        _ocelotBuilder = _services.AddOcelot(_configRoot);
-
-        // Act
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandler>(true);
-        _ocelotBuilder.AddDelegatingHandler<FakeDelegatingHandlerTwo>(true);
-
-        // Assert
-        ThenTheProviderIsRegisteredAndReturnsHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-        ThenTheGlobalHandlersAreTransient();
     }
 
     [Fact]
@@ -357,8 +385,41 @@ public class OcelotBuilderTests : UnitTest
         ShouldFindConfiguration();
     }
 
-    private bool _fakeCustomBuilderCalled;
+    [Fact]
+    public void CreateInstance_CreatedFromImplementationInstance()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+        ServiceDescriptor descriptor = new(GetType(), this);
 
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    [Fact]
+    public void CreateInstance_CreatedByImplementationFactory()
+    {
+        // Arrange
+        var method = typeof(OcelotBuilder).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static);
+
+        object factory(IServiceProvider p) => this;
+        ServiceDescriptor descriptor = new(GetType(), factory, ServiceLifetime.Singleton);
+
+        // Act
+        var result = method.Invoke(null, [null, descriptor]);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<OcelotBuilderTests>(result);
+        Assert.Equal(this, result);
+    }
+
+    private bool _fakeCustomBuilderCalled;
     private IMvcCoreBuilder FakeCustomBuilder(IMvcCoreBuilder builder, Assembly assembly)
     {
         _fakeCustomBuilderCalled = true;
@@ -455,6 +516,17 @@ public class OcelotBuilderTests : UnitTest
         creators.Count(c => c.GetType() == typeof(CookieStickySessionsCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(LeastConnectionCreator)).ShouldBe(1);
         creators.Count(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>)).ShouldBe(1);
+
+        // Call Create
+        var creator = creators.Single(c => c.GetType() == typeof(DelegateInvokingLoadBalancerCreator<FakeCustomLoadBalancer>));
+        Assert.NotNull(creator);
+        var route = new DownstreamRouteBuilder().Build();
+        var provider = _serviceProvider.GetService<IServiceDiscoveryProvider>();
+        var response = creator.Create(route, provider);
+        Assert.NotNull(response);
+        Assert.False(response.IsError);
+        Assert.NotNull(response.Data);
+        Assert.IsType<FakeCustomLoadBalancer>(response.Data);
     }
 
     private class FakeCustomLoadBalancer : ILoadBalancer

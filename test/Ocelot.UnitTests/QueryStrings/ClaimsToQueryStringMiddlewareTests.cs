@@ -5,13 +5,17 @@ using Ocelot.DownstreamRouteFinder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings;
-using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using System.Security.Claims;
 
 namespace Ocelot.UnitTests.QueryStrings;
 
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-query-string-parameters">Claims to Query String Parameters</see>.
+/// </summary>
+[Trait("Commit", "f7f4a39")] // https://github.com/ThreeMammals/Ocelot/commit/f7f4a392f0743b38cd0206a81b4c094e60fe7b93
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public class ClaimsToQueryStringMiddlewareTests : UnitTest
 {
     private readonly Mock<IAddQueriesToRequest> _addQueries;
@@ -37,19 +41,17 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("any old string")
+            .WithClaimsToQueries(new List<ClaimToThing>
+            {
+                new("UserId", "Subject", string.Empty, 0),
+            })
+            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .Build();
         var downstreamRoute = new DownstreamRouteHolder(
             new(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToQueries(new List<ClaimToThing>
-                    {
-                        new("UserId", "Subject", string.Empty, 0),
-                    })
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
-                    .Build())
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build());
+            new Route(route, HttpMethod.Get));
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
         _addQueries.Setup(x => x.SetQueriesOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), It.IsAny<DownstreamRequest>()))

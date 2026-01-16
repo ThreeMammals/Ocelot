@@ -42,7 +42,7 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     {
         // Arrange
         _shouldThrowAnException = false;
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
+        var config = new InternalConfiguration();
         _httpContext.Items.Add(nameof(IInternalConfiguration), config);
 
         // Act
@@ -58,7 +58,7 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     {
         // Arrange
         _shouldThrowAnException = true;
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
+        var config = new InternalConfiguration();
         _httpContext.Items.Add(nameof(IInternalConfiguration), config);
 
         // Act
@@ -73,7 +73,10 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     {
         // Arrange
         _shouldThrowAnException = false;
-        var config = new InternalConfiguration(null, null, null, "requestidkey", null, null, null, null, null, null);
+        var config = new InternalConfiguration()
+        {
+            RequestId = "requestidkey",
+        };
         _httpContext.Items.Add(nameof(IInternalConfiguration), config);
         _httpContext.Request.Headers.Append("requestidkey", "1234");
 
@@ -90,7 +93,7 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     {
         // Arrange
         _shouldThrowAnException = false;
-        var config = new InternalConfiguration(null, null, null, null, null, null, null, null, null, null);
+        var config = new InternalConfiguration();
         _httpContext.Items.Add(nameof(IInternalConfiguration), config);
         _httpContext.Request.Headers.Append("requestidkey", "1234");
 

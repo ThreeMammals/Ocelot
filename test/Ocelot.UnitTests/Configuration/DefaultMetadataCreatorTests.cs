@@ -62,12 +62,9 @@ public class DefaultMetadataCreatorTests : UnitTest
 
     private static FileGlobalConfiguration GivenSomeMetadataInGlobalConfiguration() => new()
     {
-        MetadataOptions = new()
+        Metadata = new Dictionary<string, string>
         {
-            Metadata = new Dictionary<string, string>
-            {
-                ["foo"] = "bar",
-            },
+            ["foo"] = "bar",
         },
     };
 

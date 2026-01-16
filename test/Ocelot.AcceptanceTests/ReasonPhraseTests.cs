@@ -1,68 +1,32 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests;
 
-public class ReasonPhraseTests : IDisposable
+public sealed class ReasonPhraseTests : Steps
 {
-    private readonly Steps _steps;
-    private readonly ServiceHandler _serviceHandler;
-
-    public ReasonPhraseTests()
-    {
-        _serviceHandler = new ServiceHandler();
-        _steps = new Steps();
-    }
+    public ReasonPhraseTests() { }
 
     [Fact]
-    public void should_return_reason_phrase()
+    public void Should_return_reason_phrase()
     {
         var port = PortFinder.GetRandomPort();
-
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
-                },
-            },
-        };
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn($"http://localhost:{port}", "/", "some reason"))
-            .And(x => _steps.GivenThereIsAConfiguration(configuration))
-            .And(x => _steps.GivenOcelotIsRunning())
-            .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
-            .And(_ => _steps.ThenTheReasonPhraseIs("some reason"))
+        var route = GivenDefaultRoute(port);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", "some reason"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .And(_ => ThenTheResponseReasonPhraseIs("some reason"))
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, string reasonPhrase)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, string reasonPhrase)
     {
-        _serviceHandler.GivenThereIsAServiceRunningOn(baseUrl, basePath, async context =>
+        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
         {
             context.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase;
-
-            await context.Response.WriteAsync("YOYO!");
+            return context.Response.WriteAsync("YOYO!");
         });
-    }
-
-    public void Dispose()
-    {
-        _serviceHandler?.Dispose();
-        _steps.Dispose();
     }
 }

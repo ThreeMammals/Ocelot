@@ -115,7 +115,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         }
 
         File.WriteAllText(ocelotJson.FullName, "Doesnt matter");
-        _files.Add(ocelotJson.FullName);
+        files.Add(ocelotJson.FullName);
         return ocelotJson;
     }
 
@@ -172,7 +172,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         }
 
         File.WriteAllText(environmentSpecific.FullName, jsonConfiguration);
-        _files.Add(environmentSpecific.FullName);
+        files.Add(environmentSpecific.FullName);
     }
 
     private void ThenTheConfigurationJsonIsIndented(FileConfiguration expecteds, [CallerMemberName] string environmentName = null)
@@ -181,7 +181,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         var actual = File.ReadAllText(environmentSpecific);
         var expectedText = JsonSerializer.Serialize(expecteds, OcelotSerializerOptions.WebWriteIndented);
         actual.ShouldBe(expectedText);
-        _files.Add(environmentSpecific);
+        files.Add(environmentSpecific);
     }
 
     private void ThenTheFollowingIsReturned(FileConfiguration expecteds)
