@@ -297,6 +297,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         FileHttpHandlerOptions options = new()
         {
             AllowAutoRedirect = isDef ? null : true,
+            EnableMultipleHttp2Connections = isDef ? null : true,
             MaxConnectionsPerServer = isDef ? null : 333,
             PooledConnectionLifetimeSeconds = isDef ? null : 333,
             UseCookieContainer = isDef ? null : true,
@@ -306,6 +307,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         FileHttpHandlerOptions globalOptions = new()
         {
             AllowAutoRedirect = isDef ? null : false,
+            EnableMultipleHttp2Connections = isDef ? null : false,
             MaxConnectionsPerServer = isDef ? null : 111,
             PooledConnectionLifetimeSeconds = isDef ? null : 111,
             UseCookieContainer = isDef ? null : false,
