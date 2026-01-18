@@ -7,6 +7,8 @@ using System.Text;
 
 namespace Ocelot.AcceptanceTests.Requester;
 
+[Trait("Bug", "749")] // https://github.com/ThreeMammals/Ocelot/issues/749
+[Trait("PR", "1769")] // https://github.com/ThreeMammals/Ocelot/pull/1769
 public sealed class PayloadTooLargeTests : Steps
 {
     private IHost _host;

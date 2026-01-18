@@ -4,5 +4,5 @@ namespace Ocelot.Configuration.Creator;
 
 public interface IConfigurationCreator
 {
-    InternalConfiguration Create(FileConfiguration fileConfiguration, List<Route> routes);
+    InternalConfiguration Create(FileConfiguration configuration, Route[] routes);
 }

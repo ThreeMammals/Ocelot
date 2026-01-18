@@ -24,12 +24,12 @@ As you may already know from the :doc:`../features/configuration` chapter and th
   },  
 
 Typically, a ``transformation_expression`` is a constant header value, a single placeholder from the :ref:`ht-placeholders` list, or a ":ref:`Find and Replace <ht-find-and-replace>`" expression.
-Additionally, the :ref:`config-global-configuration-schema` allows configuring global *Headers Transformations*. [#f1]_
+Additionally, the :ref:`config-global-configuration-schema` allows configuring global *Headers Transformations* (refer to the :ref:`Configuration <ht-configuration>` section).
 
 .. _ht-configuration:
 
-Configuration
--------------
+Configuration [#f1]_
+--------------------
 
 A complete *configuration* consists of both route-level and global *Headers Transformations*.
 
@@ -254,7 +254,7 @@ Ideas and proposals are welcome in the repository's `Discussions <https://github
 
 """"
 
-.. [#f1] The global :ref:`ht-configuration` feature was requested in issue `1658`_ and released in version `24.1`_.
+.. [#f1] The global :ref:`Configuration <ht-configuration>` feature was requested in issue `1658`_ and released in version `24.1`_.
 .. [#f2] The ":ref:`Find and Replace <ht-find-and-replace>`" feature was requested in issue `190`_, initially released in version `2.0.11`_, and the team decided that it would be useful in various ways.
 .. [#f3] The ":ref:`Add to Request <ht-add-to-request>`" feature was requested in issue `313`_ and released in version `5.5.3`_.
 .. [#f4] The ":ref:`Add to Response <ht-add-to-response>`" feature was requested in issue `280`_ and released in version `5.1.0`_.

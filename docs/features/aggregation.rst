@@ -278,7 +278,7 @@ Gotchas
 """"
 
 .. [#f1] This feature was requested as part of issue `79`_, and further improvements were made as part of issue `298`_. A significant refactoring and revision of the `Multiplexer <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Multiplexer>`_ design was carried out on March 4, 2024, in version `23.1`_. See pull requests `1462`_ and `1826`_ for more details.
-.. [#f2] The ":ref:`agg-complex-aggregation`" feature is still in its early stages, but it enables searching for data based on an initial request. This feature was requested as part of issue `661`_, introduced in pull request `704`_, and released in version `13.4`_.
+.. [#f2] The ":ref:`Complex Aggregation <agg-complex-aggregation>`" feature is still in its early stages, but it enables searching for data based on an initial request. This feature was requested as part of issue `661`_, introduced in pull request `704`_, and released in version `13.4`_.
 .. [#f3] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 
 .. _79: https://github.com/ThreeMammals/Ocelot/issues/79

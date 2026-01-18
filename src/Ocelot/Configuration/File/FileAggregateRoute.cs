@@ -11,7 +11,7 @@ public class FileAggregateRoute : IRouteUpstream, IRouteGroup
     public List<AggregateRouteConfig> RouteKeysConfig { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public string UpstreamHost { get; set; }
-    public IList<string> UpstreamHttpMethod { get; set; }
+    public HashSet<string> UpstreamHttpMethod { get; set; }
     public string UpstreamPathTemplate { get; set; }
 
     public FileAggregateRoute()

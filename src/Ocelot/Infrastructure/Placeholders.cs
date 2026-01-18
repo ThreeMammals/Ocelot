@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -106,7 +107,7 @@ public class Placeholders : IPlaceholders
 
     private Response<string> GetTraceId()
     {
-        var traceId = _repo.Get<string>("TraceId");
+        var traceId = _repo.Get<string>(OcelotHttpTracingHandler.TraceId);
         return traceId.IsError
             ? new ErrorResponse<string>(traceId.Errors)
             : new OkResponse<string>(traceId.Data);

@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Errors;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.Values;
 
@@ -122,6 +125,58 @@ public class LoadBalancerHouseTests : UnitTest
         // Act, Assert
         result = _house.Get(route2, _serviceProviderConfig);
         result.Data.ShouldBeOfType<LeastConnection>();
+    }
+
+    [Fact]
+    public void GetResponse_IsError()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("test")
+            .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig))
+            .Returns(new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreatorError($"Could not find load balancer creator for Type: FakeLoadBalancer, please check your config specified the correct load balancer and that you have registered a class with the same name.")));
+
+        // Act
+        var result = _house.Get(route, _serviceProviderConfig);
+
+        // Assert
+        result.IsError.ShouldBeTrue();
+        result.ShouldBeOfType<ErrorResponse<ILoadBalancer>>();
+        result.Data.ShouldBeNull();
+        _factory.Verify(x => x.Get(route, _serviceProviderConfig), Times.Once);
+        result.Errors.Single().ShouldBeOfType<CouldNotFindLoadBalancerCreatorError>();
+    }
+
+    [Fact]
+    public void TypesMismatched_ShouldReturnError()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey("test")
+            .Build();
+        var loadBalancer = new FakeLoadBalancer();
+        _factory.Setup(x => x.Get(route, _serviceProviderConfig)).Returns(new OkResponse<ILoadBalancer>(loadBalancer));
+
+        // Other route has the same LoadBalancerKey but types are different
+        var route2 = new DownstreamRouteBuilder()
+            .WithLoadBalancerKey(route.LoadBalancerKey)
+            .WithLoadBalancerOptions(new() { Type = "bla-bla" })
+            .Build();
+        _factory.Setup(x => x.Get(route2, _serviceProviderConfig))
+            .Returns(new ErrorResponse<ILoadBalancer>(new CouldNotFindLoadBalancerCreatorError($"Could not find load balancer creator for Type: {route2.LoadBalancerOptions.Type}, please check your config specified the correct load balancer and that you have registered a class with the same name.")));
+
+        // Act
+        var result = _house.Get(route2, _serviceProviderConfig);
+
+        // Assert: Then It Is Added
+        result.IsError.ShouldBeTrue();
+        result.ShouldBeOfType<ErrorResponse<ILoadBalancer>>();
+        result.Data.ShouldBeNull();
+        _factory.Verify(x => x.Get(route2, _serviceProviderConfig), Times.Once);
+        result.Errors.Single().ShouldBeOfType<CouldNotFindLoadBalancerCreatorError>()
+            .Message.ShouldBe("Could not find load balancer creator for Type: bla-bla, please check your config specified the correct load balancer and that you have registered a class with the same name.");
     }
 
     private class FakeLoadBalancer : ILoadBalancer

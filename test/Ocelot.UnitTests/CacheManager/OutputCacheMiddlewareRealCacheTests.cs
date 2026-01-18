@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Cache;
 using Ocelot.Cache.CacheManager;
-using Ocelot.Cache.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
@@ -64,7 +63,7 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
 
     private void ThenTheContentTypeHeaderIsCached()
     {
-        var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123");
+        var cacheKey = MD5Helper.GenerateMd5("GET-https://some.url/blah?abcd=123-"); // absent header -> '-' dash char is added at the end
         var result = _cacheManager.Get(cacheKey, "kanken");
         var header = result.ContentHeaders["Content-Type"];
         header.First().ShouldBe("application/json");
@@ -78,7 +77,6 @@ public class OutputCacheMiddlewareRealCacheTests : UnitTest
     private void GivenTheDownstreamRouteIs()
     {
         var route = new DownstreamRouteBuilder()
-            .WithIsCached(true)
             .WithCacheOptions(new CacheOptions(100, "kanken", null, false))
             .WithUpstreamHttpMethod(new List<string> { "Get" })
             .Build();

@@ -35,19 +35,21 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
     public async Task Should_call_claims_to_request_correctly()
     {
         // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("any old string")
+            .WithClaimsToClaims(new()
+            {
+                new("sub", "UserType", "|", 0),
+            })
+            .WithUpstreamHttpMethod([HttpMethods.Get])
+            .Build();
         var downstreamRoute = new DownstreamRouteHolder(
             new List<PlaceholderNameAndValue>(),
-            new RouteBuilder()
-                .WithDownstreamRoute(new DownstreamRouteBuilder()
-                    .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToClaims(new()
-                    {
-                        new("sub", "UserType", "|", 0),
-                    })
-                    .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-                    .Build())
-                .WithUpstreamHttpMethod(new() { HttpMethods.Get })
-                .Build());
+            new Route()
+            {
+                DownstreamRoute = [route],
+                UpstreamHttpMethod = [HttpMethod.Get],
+            });
 
         GivenTheDownStreamRouteIs(downstreamRoute);
         GivenTheAddClaimsToRequestReturns();

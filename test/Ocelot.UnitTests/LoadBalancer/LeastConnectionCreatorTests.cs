@@ -1,6 +1,8 @@
 ﻿using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
 using Ocelot.ServiceDiscovery.Providers;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 
@@ -15,19 +17,26 @@ public class LeastConnectionCreatorTests : UnitTest
         _serviceProvider = new();
     }
 
-    [Fact]
-    public void Should_return_instance_of_expected_load_balancer_type()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_return_instance_of_expected_load_balancer_type(bool isNullServiceName)
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithServiceName("myService")
+            .WithServiceName(isNullServiceName ? null : "myService")
+            .WithLoadBalancerKey("key")
             .Build();
 
         // Act
-        var loadBalancer = _creator.Create(route, _serviceProvider.Object);
+        var response = _creator.Create(route, _serviceProvider.Object);
 
         // Assert
-        loadBalancer.Data.ShouldBeOfType<LeastConnection>();
+        response.Data.ShouldBeOfType<LeastConnection>();
+        var balancer = response.Data as LeastConnection;
+        var field = balancer.GetType().GetField("_serviceName", BindingFlags.Instance | BindingFlags.NonPublic);
+        var serviceName = field.GetValue(balancer) as string;
+        serviceName.ShouldBe(isNullServiceName ? "key" : "myService");
     }
 
     [Fact]

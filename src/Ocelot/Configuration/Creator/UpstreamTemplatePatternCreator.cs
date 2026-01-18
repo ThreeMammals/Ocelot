@@ -103,7 +103,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         if (!_cache.TryGetValue(key, nameof(UpstreamPathTemplate), out var rgx))
         {
             rgx = RegexGlobal.New(key, RegexOptions.Singleline);
-            _cache.Add(key, rgx, RegexCachingTTL, nameof(UpstreamPathTemplate));
+            _cache.Add(key, rgx, nameof(UpstreamPathTemplate), RegexCachingTTL);
         }
 
         return rgx;

@@ -52,7 +52,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     [Fact]
     public async Task Should_not_multiplex()
     {
-        var route = new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().Build()).Build();
+        var route = new Route(new DownstreamRouteBuilder().Build());
         GivenTheFollowing(route);
 
         // Act
@@ -325,13 +325,13 @@ public class MultiplexingMiddlewareTests : UnitTest
 
     private static Route GivenDefaultRoute(int count)
     {
-        var b = new RouteBuilder();
+        var r = new Route();
         for (var i = 0; i < count; i++)
         {
-            b.WithDownstreamRoute(new DownstreamRouteBuilder().Build());
+            r.DownstreamRoute.Add(new DownstreamRouteBuilder().Build());
         }
 
-        return b.Build();
+        return r;
     }
 
     private static Route GivenRoutesWithAggregator()
@@ -340,20 +340,15 @@ public class MultiplexingMiddlewareTests : UnitTest
         var route2 = new DownstreamRouteBuilder().WithKey("UserDetails").Build();
         var route3 = new DownstreamRouteBuilder().WithKey("PostDetails").Build();
 
-        var b = new RouteBuilder();
-        b.WithDownstreamRoute(route1);
-        b.WithDownstreamRoute(route2);
-        b.WithDownstreamRoute(route3);
-
-        b.WithAggregateRouteConfig(new()
+        return new Route()
         {
-            new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-            new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
-        });
-
-        b.WithAggregator("TestAggregator");
-
-        return b.Build();
+            DownstreamRoute = [route1, route2, route3],
+            DownstreamRouteConfig = [
+                new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
+                new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
+            ],
+            Aggregator = "TestAggregator",
+        };
     }
 
     private void GivenTheFollowing(Route route)

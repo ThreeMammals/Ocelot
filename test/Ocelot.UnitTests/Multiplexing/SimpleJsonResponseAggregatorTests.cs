@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
@@ -24,24 +23,21 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
     {
         var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
-
         var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
             .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 0, false, "/v1/users/{userId}"))
             .Build();
-
         var downstreamRoutes = new List<DownstreamRoute>
         {
             commentsDownstreamRoute,
             userDetailsDownstreamRoute,
         };
-
-        var route = new RouteBuilder()
-            .WithDownstreamRoutes(downstreamRoutes)
-            .WithAggregateRouteConfig(new List<AggregateRouteConfig>
-            {
+        var route = new Route()
+        {
+            DownstreamRoute = downstreamRoutes,
+            DownstreamRouteConfig = [
                 new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
-            })
-            .Build();
+            ],
+        };
 
         var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
 
@@ -71,18 +67,16 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
-
         var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
-
         var downstreamRoutes = new List<DownstreamRoute>
         {
             billDownstreamRoute,
             georgeDownstreamRoute,
         };
-
-        var route = new RouteBuilder()
-            .WithDownstreamRoutes(downstreamRoutes)
-            .Build();
+        var route = new Route()
+        {
+            DownstreamRoute = downstreamRoutes,
+        };
 
         var billDownstreamContext = new DefaultHttpContext();
         billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
@@ -109,18 +103,16 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     public async Task Should_return_error_if_any_downstreams_have_errored()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
-
         var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
-
         var downstreamRoutes = new List<DownstreamRoute>
         {
             billDownstreamRoute,
             georgeDownstreamRoute,
         };
-
-        var route = new RouteBuilder()
-            .WithDownstreamRoutes(downstreamRoutes)
-            .Build();
+        var route = new Route()
+        {
+            DownstreamRoute = downstreamRoutes,
+        };
 
         var billDownstreamContext = new DefaultHttpContext();
         billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));

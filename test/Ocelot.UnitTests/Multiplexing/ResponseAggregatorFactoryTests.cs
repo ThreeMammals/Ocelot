@@ -1,5 +1,4 @@
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Multiplexer;
 
 namespace Ocelot.UnitTests.Multiplexing;
@@ -21,7 +20,7 @@ public class ResponseAggregatorFactoryTests : UnitTest
     public void Should_return_simple_json_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder().Build();
+        var route = new Route();
 
         // Act
         _aggregator = _factory.Get(route);
@@ -34,9 +33,10 @@ public class ResponseAggregatorFactoryTests : UnitTest
     public void Should_return_user_defined_aggregator()
     {
         // Arrange
-        var route = new RouteBuilder()
-            .WithAggregator("doesntmatter")
-            .Build();
+        var route = new Route()
+        {
+            Aggregator = "doesntmatter",
+        };
 
         // Act
         _aggregator = _factory.Get(route);

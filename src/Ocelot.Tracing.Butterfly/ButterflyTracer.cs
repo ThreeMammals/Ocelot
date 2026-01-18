@@ -4,13 +4,14 @@ using Butterfly.OpenTracing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Logging;
 
 namespace Ocelot.Tracing.Butterfly;
 
-public class ButterflyTracer : DelegatingHandler, Logging.ITracer
+public class ButterflyTracer : DelegatingHandler, IOcelotTracer
 {
     private readonly IServiceTracer _tracer;
-    private const string PrefixSpanId = "ot-spanId";
+    public const string PrefixSpanId = "ot-spanId";
 
     public ButterflyTracer(IServiceProvider services)
     {
@@ -27,7 +28,6 @@ public class ButterflyTracer : DelegatingHandler, Logging.ITracer
         }
 
         var span = httpContext.GetSpan();
-
         if (span == null)
         {
             var spanBuilder = new SpanBuilder($"server {httpContext.Request.Method} {httpContext.Request.Path}");
@@ -44,21 +44,20 @@ public class ButterflyTracer : DelegatingHandler, Logging.ITracer
         span?.Log(LogField.CreateNew().Event(@event));
     }
 
-    public Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken,
+    public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync, // TODO This is design issue
+        CancellationToken cancellationToken)
     {
-        return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow, span => TracingSendAsync(span, request, cancellationToken, addTraceIdToRepo, baseSendAsync));
+        return _tracer.ChildTraceAsync($"httpclient {request.Method}", DateTimeOffset.UtcNow,
+            span => TracingSendAsync(span, request, addTraceIdToRepo, baseSendAsync, cancellationToken));
     }
 
-    protected virtual async Task<HttpResponseMessage> TracingSendAsync(
-        ISpan span,
+    protected virtual async Task<HttpResponseMessage> TracingSendAsync(ISpan span,
         HttpRequestMessage request,
-        CancellationToken cancellationToken,
         Action<string> addTraceIdToRepo,
-        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync)
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> baseSendAsync, // TODO WTF? 8)
+        CancellationToken cancellationToken)
     {
         if (request.Headers.Contains(PrefixSpanId))
         {
@@ -76,7 +75,6 @@ public class ButterflyTracer : DelegatingHandler, Logging.ITracer
             .PeerAddress(request.RequestUri.OriginalString)
             .PeerHostName(request.RequestUri.Host)
             .PeerPort(request.RequestUri.Port);
-
         _tracer.Tracer.Inject(span.SpanContext, request.Headers, (c, k, v) =>
         {
             if (!c.Contains(k))
@@ -84,13 +82,12 @@ public class ButterflyTracer : DelegatingHandler, Logging.ITracer
                 c.Add(k, v);
             }
         });
-
         span.Log(LogField.CreateNew().ClientSend());
 
+        // TODO There's a design issue here because it should actually be base.SendAsync, haha!
         var responseMessage = await baseSendAsync(request, cancellationToken);
 
         span.Log(LogField.CreateNew().ClientReceive());
-
         return responseMessage;
     }
 }

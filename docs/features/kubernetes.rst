@@ -216,22 +216,22 @@ The example here shows a typical configuration:
     }
   }
 
-Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``, you also can set :ref:`k8s-pollkube-provider` or :ref:`k8s-watchkube-provider` type.
+Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``, you also can set :ref:`PollKube <k8s-pollkube-provider>` or :ref:`WatchKube <k8s-watchkube-provider>` provider type.
 
   **Note 1**: ``Scheme``, ``Host``, ``Port``, and ``Token`` are not used if ``usePodServiceAccount`` is true when `KubeClient`_ is created from a pod service account.
   Please refer to the :ref:`k8s-install` section for technical details.
 
   **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
   Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
-  Please refer to the :ref:`k8s-downstream-scheme-vs-port-names` section for technical details.
+  Please refer to the ":ref:`Downstream Scheme vs Port Names <k8s-downstream-scheme-vs-port-names>`" section for technical details.
 
 .. _k8s-pollkube-provider:
 
-``PollKube`` provider
----------------------
+``PollKube`` provider [#f3]_
+----------------------------
 
 You use Ocelot to poll Kubernetes for latest service information rather than per request.
-If you want to poll Kubernetes for the latest services rather than per request (default behaviour) then you need to set the following configuration:
+If you want to poll Kubernetes for the latest services rather than per request (default behaviour of the :ref:`k8s-kube-provider`) then you need to set the following configuration:
 
 .. code-block:: json
 
@@ -251,7 +251,7 @@ The polling interval is in milliseconds and tells Ocelot how often to call Kuber
 
 .. _k8s-watchkube-provider:
 
-``WatchKube`` provider [#f3]_
+``WatchKube`` provider [#f4]_
 -----------------------------
 .. _Kubernetes API: https://kubernetes.io/docs/reference/using-api/
 .. _watch requests: https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes
@@ -267,6 +267,11 @@ Changes streamed through this connection will be used to update the list of avai
     "Type": "WatchKube"
   }
 
+.. note::
+
+  The ``WatchKube`` provider is specifically designed for high-load Ocelot vs. Kubernetes environments with high RPS ratios.
+  To better understand which type is suitable for your needs, we have added a table :ref:`k8s-comparing-providers`.
+
 The provider has an implicit configuration for fine-tuned watching, which are available and can only be initialized in C# code.
 
 * ``WatchKube.FirstResultsFetchingTimeoutSeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FirstResultsFetchingTimeoutSeconds&type=code>`_ is the default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint. :sup:`1`
@@ -274,10 +279,7 @@ The provider has an implicit configuration for fine-tuned watching, which are av
 
 .. _break3: http://break.do
 
-  **Note 1**: For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
-
-  **Note 2**: The ``WatchKube`` provider is specifically designed for high-load Ocelot vs. Kubernetes environments with high RPS ratios.
-  To better understand which type is suitable for your needs, we have added a table :ref:`k8s-comparing-providers`.
+  :sup:`1` For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
   
 .. _k8s-comparing-providers:
 
@@ -323,7 +325,7 @@ The evolution path of all providers follows: ``Kube`` -> ``PollKube`` -> ``Watch
 
 .. _k8s-downstream-scheme-vs-port-names:
 
-Downstream Scheme vs Port Names [#f4]_
+Downstream Scheme vs Port Names [#f5]_
 --------------------------------------
 
 Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
@@ -357,25 +359,32 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
     }
   ]
 
-.. _break5: http://break.do
+.. note::
 
-  **Note**: In the absence of a specified ``DownstreamScheme`` (which is the default behavior), the ``Kube`` provider will select **the first available port** from the ``EndpointSubsetV1.Ports`` collection.
+  In the absence of a specified ``DownstreamScheme`` (the default behavior), the :ref:`k8s-kube-provider`—as well as other providers—will select *the first available port* from the ``EndpointSubsetV1.Ports`` collection.
   Consequently, if the port name is not designated, the default downstream scheme utilized will be ``http``.
 
 """"
 
-.. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
-.. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
-.. [#f3] The :ref:`k8s-watchkube-provider` was discussed in thread `2168`_ and released in version `24.1`_
-.. [#f4] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
+.. [#f1] The ":doc:`../features/kubernetes`" feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.5.0`_ 
+.. [#f2] The ":ref:`AddKubernetes(Action{KubeClientOptions}) method <k8s-addkubernetes-action-method>`" was requested as part of issue `2255`_ (pull request `2257`_), and released in version `24.0`_
+.. [#f3] The evolution of the ":ref:`PollKube provider <k8s-pollkube-provider>`" began with pull request `772`_ (version `13.2.0`_).
+  Since then, the provider's design was reviewed due to reported bug `2304`_, and patch `2335`_ was applied and rolled out in version `24.1`_.
+.. [#f4] The ":ref:`WatchKube provider <k8s-watchkube-provider>`" was first discussed in thread `2168`_, later implemented in pull request `2174`_, and released in version `24.1`_.
+.. [#f5] The ":ref:`Downstream Scheme vs Port Names <k8s-downstream-scheme-vs-port-names>`" feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
+.. _772: https://github.com/ThreeMammals/Ocelot/pull/772
 .. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134
 .. _1967: https://github.com/ThreeMammals/Ocelot/issues/1967
 .. _2168: https://github.com/ThreeMammals/Ocelot/discussions/2168
+.. _2174: https://github.com/ThreeMammals/Ocelot/pull/2174
 .. _2255: https://github.com/ThreeMammals/Ocelot/issues/2255
 .. _2257: https://github.com/ThreeMammals/Ocelot/pull/2257
-.. _13.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
+.. _2304: https://github.com/ThreeMammals/Ocelot/issues/2304
+.. _2335: https://github.com/ThreeMammals/Ocelot/pull/2335
+.. _13.2.0: https://github.com/ThreeMammals/Ocelot/releases/tag/13.2.0
+.. _13.5.0: https://github.com/ThreeMammals/Ocelot/releases/tag/13.5.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0

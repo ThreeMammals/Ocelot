@@ -40,7 +40,7 @@ public class RateLimitingMiddleware : OcelotMiddleware
             return _next.Invoke(context);
         }
 
-        if (!options.Policy.IsNullOrEmpty())
+        if (!options.Policy.IsEmpty())
         {
             // Add EnableRateLimiting attribute to endpoint, so that .Net rate limiter can pick it up and do its thing
             var metadata = new EndpointMetadataCollection(new EnableRateLimitingAttribute(options.Policy));
@@ -59,12 +59,12 @@ public class RateLimitingMiddleware : OcelotMiddleware
         // Log warnings and break execution
         var rule = options.Rule;
         var warning = string.Empty;
-        if (identity.ClientId.IsNullOrEmpty()) // unknown client aka security check, so block unknown clients
+        if (identity.ClientId.IsEmpty()) // unknown client aka security check, so block unknown clients
         {
             warning = $"Rate limiting client could not be identified for the route '{downstreamRoute.Name(true)}' due to a missing or unknown client ID header required by rule '{rule}'!"; // and don't log the header name because of security
         }
 
-        if (!warning.IsNullOrEmpty())
+        if (!warning.IsEmpty())
         {
             Logger.LogWarning(warning);
             RateLimitOptions errorOpts = new(options)

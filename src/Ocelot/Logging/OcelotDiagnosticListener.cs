@@ -7,12 +7,12 @@ namespace Ocelot.Logging;
 public class OcelotDiagnosticListener
 {
     private readonly IOcelotLogger _logger;
-    private readonly ITracer _tracer;
+    private readonly IOcelotTracer _tracer;
 
     public OcelotDiagnosticListener(IOcelotLoggerFactory factory, IServiceProvider serviceProvider)
     {
         _logger = factory.CreateLogger<OcelotDiagnosticListener>();
-        _tracer = serviceProvider.GetService<ITracer>();
+        _tracer = serviceProvider.GetService<IOcelotTracer>();
     }
 
     [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]
@@ -35,7 +35,7 @@ public class OcelotDiagnosticListener
         Event(httpContext, $"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");
     }
 
-    private void Event(HttpContext httpContext, string @event)
+    protected virtual void Event(HttpContext httpContext, string @event)
     {
         _tracer?.Event(httpContext, @event);
     }

@@ -17,7 +17,7 @@ public class EurekaMiddlewareConfigurationProviderTests
         // Arrange
         var configRepo = new Mock<IInternalConfigurationRepository>();
         configRepo.Setup(x => x.Get())
-            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, null, null, null, null, null, null, null, null)));
+            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration()));
         var services = new ServiceCollection();
         services.AddSingleton(configRepo.Object);
         var sp = services.BuildServiceProvider(true);
@@ -37,7 +37,7 @@ public class EurekaMiddlewareConfigurationProviderTests
         var client = new Mock<IDiscoveryClient>();
         var configRepo = new Mock<IInternalConfigurationRepository>();
         configRepo.Setup(x => x.Get())
-            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration(null, null, serviceProviderConfig, null, null, null, null, null, null, null)));
+            .Returns(new OkResponse<IInternalConfiguration>(new InternalConfiguration() { ServiceProviderConfiguration = serviceProviderConfig }));
         var services = new ServiceCollection();
         services.AddSingleton(configRepo.Object);
         services.AddSingleton(client.Object);

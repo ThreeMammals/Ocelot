@@ -5,28 +5,22 @@ namespace Ocelot.Configuration;
 
 public class Route
 {
-    public Route(List<DownstreamRoute> downstreamRoute,
-        List<AggregateRouteConfig> downstreamRouteConfig,
-        IList<HttpMethod> upstreamHttpMethod,
-        UpstreamPathTemplate upstreamTemplatePattern,
-        string upstreamHost,
-        string aggregator,
-        IDictionary<string, UpstreamHeaderTemplate> upstreamHeaderTemplates)
+    public Route() => DownstreamRoute = new();
+    public Route(bool isDynamic) : this() => IsDynamic = isDynamic;
+    public Route(bool isDynamic, DownstreamRoute route) : this(route) => IsDynamic = isDynamic;
+    public Route(DownstreamRoute route) => DownstreamRoute = [route];
+    public Route(DownstreamRoute route, HttpMethod method)
     {
-        UpstreamHost = upstreamHost;
-        DownstreamRoute = downstreamRoute;
-        DownstreamRouteConfig = downstreamRouteConfig;
-        UpstreamHttpMethod = upstreamHttpMethod;
-        UpstreamTemplatePattern = upstreamTemplatePattern;
-        Aggregator = aggregator;
-        UpstreamHeaderTemplates = upstreamHeaderTemplates;
+        DownstreamRoute = [route];
+        UpstreamHttpMethod = [method];
     }
 
-    public IDictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; }
-    public UpstreamPathTemplate UpstreamTemplatePattern { get; }
-    public IList<HttpMethod> UpstreamHttpMethod { get; }
-    public string UpstreamHost { get; }
-    public List<DownstreamRoute> DownstreamRoute { get; }
-    public List<AggregateRouteConfig> DownstreamRouteConfig { get; }
-    public string Aggregator { get; }
+    public bool IsDynamic { get; }
+    public string Aggregator { get; init; }
+    public List<DownstreamRoute> DownstreamRoute { get; init; }
+    public List<AggregateRouteConfig> DownstreamRouteConfig { get; init; }
+    public IDictionary<string, UpstreamHeaderTemplate> UpstreamHeaderTemplates { get; init; }
+    public string UpstreamHost { get; init; }
+    public HashSet<HttpMethod> UpstreamHttpMethod { get; init; }
+    public UpstreamPathTemplate UpstreamTemplatePattern { get; init; }
 }

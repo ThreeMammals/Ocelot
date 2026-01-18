@@ -1,4 +1,5 @@
 using Ocelot.Configuration.Creator;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration;
@@ -14,11 +15,9 @@ public class DownstreamRoute
         string serviceName,
         string serviceNamespace,
         HttpHandlerOptions httpHandlerOptions,
-        bool useServiceDiscovery,
         QoSOptions qosOptions,
         string downstreamScheme,
         string requestIdKey,
-        bool isCached,
         CacheOptions cacheOptions,
         LoadBalancerOptions loadBalancerOptions,
         RateLimitOptions rateLimitOptions,
@@ -27,8 +26,6 @@ public class DownstreamRoute
         List<ClaimToThing> claimsToHeaders,
         List<ClaimToThing> claimsToClaims,
         List<ClaimToThing> claimsToPath,
-        bool isAuthenticated,
-        bool isAuthorized,
         AuthenticationOptions authenticationOptions,
         DownstreamPathTemplate downstreamPathTemplate,
         string loadBalancerKey,
@@ -55,11 +52,9 @@ public class DownstreamRoute
         ServiceName = serviceName;
         ServiceNamespace = serviceNamespace;
         HttpHandlerOptions = httpHandlerOptions;
-        UseServiceDiscovery = useServiceDiscovery;
         QosOptions = qosOptions;
         DownstreamScheme = downstreamScheme;
         RequestIdKey = requestIdKey;
-        IsCached = isCached;
         CacheOptions = cacheOptions;
         LoadBalancerOptions = loadBalancerOptions;
         RateLimitOptions = rateLimitOptions;
@@ -68,8 +63,6 @@ public class DownstreamRoute
         ClaimsToHeaders = claimsToHeaders ?? new List<ClaimToThing>();
         ClaimsToClaims = claimsToClaims ?? new List<ClaimToThing>();
         ClaimsToPath = claimsToPath ?? new List<ClaimToThing>();
-        IsAuthenticated = isAuthenticated;
-        IsAuthorized = isAuthorized;
         AuthenticationOptions = authenticationOptions;
         DownstreamPathTemplate = downstreamPathTemplate;
         LoadBalancerKey = loadBalancerKey;
@@ -94,7 +87,6 @@ public class DownstreamRoute
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }
-    public bool IsCached { get; }
     public CacheOptions CacheOptions { get; }
     public LoadBalancerOptions LoadBalancerOptions { get; }
     public RateLimitOptions RateLimitOptions { get; }
@@ -103,8 +95,9 @@ public class DownstreamRoute
     public List<ClaimToThing> ClaimsToHeaders { get; }
     public List<ClaimToThing> ClaimsToClaims { get; }
     public List<ClaimToThing> ClaimsToPath { get; }
-    public bool IsAuthenticated { get; }
-    public bool IsAuthorized { get; }
+
+    public bool IsAuthenticated => AuthenticationOptions is not null && !AuthenticationOptions.AllowAnonymous && AuthenticationOptions.HasScheme;
+    public bool IsAuthorized => RouteClaimsRequirement?.Count > 0;
     public AuthenticationOptions AuthenticationOptions { get; }
     public DownstreamPathTemplate DownstreamPathTemplate { get; }
     public string LoadBalancerKey { get; }
@@ -128,7 +121,6 @@ public class DownstreamRoute
     /// </remarks>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
     public Dictionary<string, UpstreamHeaderTemplate> UpstreamHeaders { get; }
-    public bool UseServiceDiscovery { get; }
     public MetadataOptions MetadataOptions { get; }
 
     /// <summary>The timeout duration for the downstream request in seconds.</summary>
@@ -164,4 +156,7 @@ public class DownstreamRoute
             ? string.Join(':', ServiceNamespace, ServiceName, path)
             : path;
     }
+
+    public override string ToString() => LoadBalancerKey;
+    public bool UseServiceDiscovery => !ServiceName.IsEmpty();
 }

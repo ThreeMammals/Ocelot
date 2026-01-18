@@ -1,6 +1,6 @@
 ﻿namespace Ocelot.Configuration.File;
 
-public interface IRouteRateLimiting : IRouteUpstream, IRouteGrouping
+public interface IRouteRateLimiting : IRouteGrouping
 {
     FileRateLimitByHeaderRule RateLimitOptions { get; }
 }

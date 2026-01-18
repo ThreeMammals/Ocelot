@@ -13,15 +13,27 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
         _regions = new();
     }
 
-    public void Add(string key, T value, TimeSpan ttl, string region)
+    public bool Add(string key, T value, string region, TimeSpan ttl)
     {
         if (ttl.TotalMilliseconds <= 0)
         {
-            return;
+            return false;
         }
 
         _memoryCache.Set(key, value, ttl);
         SetRegion(region, key);
+        return true;
+    }
+
+    public T AddOrUpdate(string key, T value, string region, TimeSpan ttl)
+    {
+        if (_memoryCache.TryGetValue(key, out var cached))
+        {
+            _memoryCache.Remove(key);
+        }
+
+        Add(key, value, region, ttl);
+        return value;
     }
 
     public T Get(string key, string region)
@@ -45,16 +57,6 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
 
             keys.Clear();
         }
-    }
-
-    public void AddAndDelete(string key, T value, TimeSpan ttl, string region)
-    {
-        if (_memoryCache.TryGetValue(key, out T _))
-        {
-            _memoryCache.Remove(key);
-        }
-
-        Add(key, value, ttl, region);
     }
 
     private void SetRegion(string region, string key)

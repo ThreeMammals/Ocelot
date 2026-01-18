@@ -10,20 +10,17 @@ public class DefaultMetadataCreator : IMetadataCreator
 {
     public MetadataOptions Create(IDictionary<string, string> metadata, FileGlobalConfiguration globalConfiguration)
     {
-        // metadata from the route could be null when no metadata is defined
         metadata ??= new Dictionary<string, string>();
-
-        // metadata from the global configuration is never null
-        var options = globalConfiguration.MetadataOptions;
-        var mergedMetadata = new Dictionary<string, string>(options.Metadata);
-
+        globalConfiguration.Metadata ??= new Dictionary<string, string>();
+        var merged = new Dictionary<string, string>(globalConfiguration.Metadata);
         foreach (var (key, value) in metadata)
         {
-            mergedMetadata[key] = value;
+            merged[key] = value;
         }
 
+        var options = globalConfiguration.MetadataOptions;
         return new MetadataOptionsBuilder()
-            .WithMetadata(mergedMetadata)
+            .WithMetadata(merged)
             .WithSeparators(options.Separators)
             .WithTrimChars(options.TrimChars)
             .WithStringSplitOption(options.StringSplitOption)

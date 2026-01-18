@@ -48,7 +48,7 @@ public sealed class SslTests : Steps
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
-        handler.GivenThereIsAHttpsServiceRunningOn(DownstreamUrl(port), basePath, "mycert.pfx", "password", port, async context =>
+        handler.GivenThereIsAHttpsServiceRunningOn(DownstreamUrl(port), basePath, "mycert2.pfx", "password", port, async context =>
         {
             var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
             bool oK = downstreamPath == basePath;

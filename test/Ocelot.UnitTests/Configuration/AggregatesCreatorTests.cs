@@ -81,10 +81,10 @@ public class AggregatesCreatorTests : UnitTest
         };
         var routes = new List<Route>
         {
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key1").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key2").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key3").Build()).Build(),
-            new RouteBuilder().WithDownstreamRoute(new DownstreamRouteBuilder().WithKey("key4").Build()).Build(),
+            new(new DownstreamRouteBuilder().WithKey("key1").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key2").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key3").Build()),
+            new(new DownstreamRouteBuilder().WithKey("key4").Build()),
         };
 
         GivenThe(fileConfig);

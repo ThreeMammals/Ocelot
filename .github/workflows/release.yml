@@ -3,254 +3,175 @@ on:
   push:
     branches:
       - main
-      #- 'release/24.0'
+      - 'release/24.**'
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '8.0', '9.0' ]
-    steps:
-      - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}.x
-      - name: .NET Info
-        run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
-      - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Add DNS-records & Install mycert.pfx certificate
-        run: |
-          sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-          ping -c 1 threemammals.com
-          # Install mycert.pfx certificate
-          pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-          openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-          cert='/usr/local/share/ca-certificates/mycert.crt'
-          sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-          sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-          sudo ls /etc/ssl/certs/ | grep mycert
-          sudo chmod 644 $cert # adjusting the permissions
-          ls -l $cert # verify ownership
-          openssl x509 -in $cert -text -noout
-          echo Installation is DONE
-      - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-      - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
   build-windows:
-    needs: build-linux
-    runs-on: windows-latest
     strategy:
       matrix:
-        dotnet-version: [ '8.0', '9.0' ]
+        dotnet-version: [ '8', '9' ]
+    runs-on: windows-latest
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
       - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ matrix.dotnet-version }}.x
+          cache: true
+          cache-dependency-path: |
+            samples/**/packages.lock.json
+            src/**/packages.lock.json
+            test/**/packages.lock.json
       - name: .NET Info
         run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Add DNS-records
+        run: ./.github/steps/windows.add-dns-records.ps1
+      - name: Install certificate
+        run: ./.github/steps/windows.install-certificate.ps1
       - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+        run: dotnet restore --locked-mode ./Ocelot.Release.sln
       - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Add DNS-records & Install mycert.pfx certificate
-        run: |
-          sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-          ping -c 1 threemammals.com
-          # Install mycert.pfx certificate
-          pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-          openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-          cert='/usr/local/share/ca-certificates/mycert.crt'
-          sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-          sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-          sudo ls /etc/ssl/certs/ | grep mycert
-          sudo chmod 644 $cert # adjusting the permissions
-          ls -l $cert # verify ownership
-          openssl x509 -in $cert -text -noout
-          echo Installation is DONE
+        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
   build-macos:
     needs: build-windows
-    runs-on: macos-latest
     strategy:
       matrix:
-        dotnet-version: [ '8.0', '9.0' ]
+        dotnet-version: [ '8', '9' ]
+    runs-on: macos-latest
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: SH-scripts executable
+        run: |
+          chmod +x .github/steps/*.sh
+          ls -l .github/steps/*.sh
       - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ matrix.dotnet-version }}.x
+          cache: true
+          cache-dependency-path: |
+            samples/**/packages.lock.json
+            src/**/packages.lock.json
+            test/**/packages.lock.json
       - name: .NET Info
         run: dotnet --info
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Add DNS-records
+        run: ./.github/steps/macos.add-dns-records.sh
+      - name: Install certificate
+        run: ./.github/steps/macos.install-certificate.sh
       - name: Restore
-        run: dotnet restore ./Ocelot.Release.sln -p:TargetFramework=net${{ matrix.dotnet-version }}
+        run: dotnet restore --locked-mode ./Ocelot.Release.sln
       - name: Build
-        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}
-      - name: Add DNS-records & Install mycert.pfx certificate
-        run: |
-          sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-          ping -c 1 threemammals.com
-          # Install mycert.pfx certificate
-          pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-          openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-          cert='/usr/local/share/ca-certificates/mycert.crt'
-          sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-          sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-          sudo ls /etc/ssl/certs/ | grep mycert
-          sudo chmod 644 $cert # adjusting the permissions
-          ls -l $cert # verify ownership
-          openssl x509 -in $cert -text -noout
-          echo Installation is DONE
+        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }} ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-  # display-variables:
-  #   # name: ${{ vars.JOB_NAME }}
-  #   # You can use configuration variables with the `vars` context for dynamic jobs
-  #   if: true # ${{ vars.USE_VARIABLES == 'true' }}
-  #   runs-on: ubuntu-latest # ${{ vars.RUNNER }}
-  #   environment: build.cake
-  #   steps:
-  #   - name: Use variables
-  #     run: |
-  #       echo "CAKE_RELEASE_MYVAR variable : $CAKE_RELEASE_MYVAR"
-  #       echo "WORKFLOW_VAR : $WORKFLOW_VAR"
-  #     env:
-  #       ENV_CONTEXT_VAR: ${{ vars.ENV_CONTEXT_VAR }}
-  #       CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
-  #   - name: HELLO_WORLD
-  #     # if: ${{ vars.HELLO_WORLD_ENABLED == 'true' }}
-  #     uses: actions/hello-world-javascript-action@main
-  #     with:
-  #       who-to-greet: Raman # ${{ vars.GREET_NAME }}
-  release-cake:
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
+  build-linux:
     needs: build-macos
+    strategy:
+      matrix:
+        dotnet-version: [ '8', '9' ]
     runs-on: ubuntu-latest
-    environment: build.cake
     env:
-      # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
-      DOTNET_INSTALL_DIR: "/usr/lib/dotnet" # override /usr/share/dotnet
-      # NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
-    - name: Env Variables
-      env:
-        ENV_CONTEXT_VAR:  ${{ vars.ENV_CONTEXT_VAR }}
-        CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
-        TEMP_KEY: ${{ secrets.TEMP_KEY }} # leaked secret LoL
-        GITHUB_CONTEXT: ${{ toJson(github) }} 
-      run: |
-        echo "ENV_CONTEXT_VAR : $ENV_CONTEXT_VAR"
-        echo "CAKE_RELEASE_MYVAR : $CAKE_RELEASE_MYVAR"
-        echo "TEMP_KEY : $TEMP_KEY" # leak me LoL
-        echo "github context >>>" # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
-        echo "$GITHUB_CONTEXT"
-        echo "<<<"
-    - name: /usr/lib/dotnet
-      run: |
-        ls -ld /usr/lib/dotnet
-        sudo chmod -R 775 /usr/lib/dotnet
-        sudo chown -R $USER:$USER /usr/lib/dotnet
-        ls -ld /usr/lib/dotnet
-    - name: .NET Version 
-      run: dotnet --version
-    - name: .NET Info
-      run: dotnet --info
-    - name: Check .NET 8
-      id: check-dotnet8
-      run: |
-        DOTNET8_VERSION=$(dotnet --version)
-        if [[ "$DOTNET8_VERSION" =~ ^8\.0\.[0-9]+$ ]]; then
-          echo "dotnet8_installed=true" >> $GITHUB_ENV
-        else
-          echo "dotnet8_installed=false" >> $GITHUB_ENV
-        fi
-    - name: Setup .NET 8
-      if: env.dotnet8_installed == 'false'
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
-    - name: Check .NET 9
-      id: check-dotnet9
-      run: |
-        DOTNET9_VERSION=$(dotnet --version)
-        if [[ "$DOTNET9_VERSION" =~ ^9\.0\.[0-9]+$ ]]; then
-          echo "dotnet9_installed=true" >> $GITHUB_ENV
-        else
-          echo "dotnet9_installed=false" >> $GITHUB_ENV
-        fi
-    - name: Setup .NET 9
-      if: env.dotnet9_installed == 'false'
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 9.0.x
-    - name: .NET Info
-      run: dotnet --info
-    - name: Branch Name
-      run: echo "Branch name is ${{ github.ref_name }}"
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Add DNS-records & Install mycert.pfx certificate
-      run: |
-        sudo sed -i '$a 127.0.0.1 threemammals.com' /etc/hosts
-        ping -c 1 threemammals.com
-        # Install mycert.pfx certificate
-        pfx='./test/Ocelot.AcceptanceTests/mycert.pfx'
-        openssl pkcs12 -in $pfx -out mycert.pem -nodes -legacy -passin pass:password # This extracts the certificate and private key
-        cert='/usr/local/share/ca-certificates/mycert.crt'
-        sudo cp mycert.pem $cert # Copy the certificate to the system's trusted CA directory
-        sudo update-ca-certificates # This will add mycert.crt to the trusted root storage
-        sudo ls /etc/ssl/certs/ | grep mycert
-        sudo chmod 644 $cert # adjusting the permissions
-        ls -l $cert # verify ownership
-        openssl x509 -in $cert -text -noout
-        echo Installation is DONE
-    - name: Cake Release
-      uses: cake-build/cake-action@v3
-      with:
-        target: Release
-      env:
-        # TEMP_KEY: ${{ secrets.TEMP_KEY }}
-        OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
-        OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
-        # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    - name: Prepare Coveralls
-      run: |
-        echo "github.ref : ${{ github.ref }}"
-        echo "github.ref_name : ${{ github.ref_name }}"
-        echo "github.sha : ${{ github.sha }}"
-        coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
-        echo "Detected first folder : $coverage_1st_folder"
-        coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
-        echo "Detecting file $coverage_file ..."
-        if [ -f "$coverage_file" ]; then
-          echo "Coverage file exists."
-          echo "COVERALLS_coverage_file_exists=true" >> $GITHUB_ENV
-          echo "COVERALLS_coverage_file=$coverage_file" >> $GITHUB_ENV
-        else
-          echo "Coverage file DOES NOT exist!"
-          echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
-        fi
-    - name: Coveralls
-      if: env.COVERALLS_coverage_file_exists == 'true'
-      uses: coverallsapp/github-action@v2
-      with:
-        file: ${{ env.COVERALLS_coverage_file }}
-        compare-ref: main
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: SH-scripts executable
+        run: |
+          chmod +x .github/steps/*.sh
+          ls -l .github/steps/*.sh
+      - name: Check .NET ${{ matrix.dotnet-version }}
+        id: check-dotnet
+        run: ./.github/steps/check-dotnet.sh ${{ matrix.dotnet-version }}
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        # if: env.DOTNET${{ matrix.dotnet-version }}_installed == 'false'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}.x
+          cache: true
+          cache-dependency-path: |
+            samples/**/packages.lock.json
+            src/**/packages.lock.json
+            test/**/packages.lock.json
+      - name: .NET Info
+        run: dotnet --info
+      - name: Add DNS-records
+        run: ./.github/steps/ubuntu.add-dns-records.sh  
+      - name: Install certificate
+        run: ./.github/steps/ubuntu.install-certificate.sh
+      - name: Restore
+        run: dotnet restore --locked-mode ./Ocelot.Release.sln
+      - name: Build
+        run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
+      - name: Unit Tests
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      - name: Acceptance Tests
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
+  release-cake:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    environment: build.cake # TODO Rename to Release
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - name: Env Variables
+        env:
+          # CAKE_RELEASE_MYVAR: ${{ vars.CAKE_RELEASE_MYVAR }}
+          # TEMP_KEY: ${{ secrets.TEMP_KEY }} # leaked secret LoL
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "github context >>>" # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+          echo "$GITHUB_CONTEXT"
+          echo "<<<"
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: SH-scripts executable
+        run: |
+          chmod +x .github/steps/*.sh
+          ls -l .github/steps/*.sh
+      - name: Check .NET 9
+        id: check-dotnet
+        run: ./.github/steps/check-dotnet.sh 9
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.x
+          cache: true
+          cache-dependency-path: |
+            samples/**/packages.lock.json
+            src/**/packages.lock.json
+            test/**/packages.lock.json
+      - name: Cake Build
+        uses: cake-build/cake-action@v3
+        with:
+          target: Release
+        env:
+          OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
+          OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
+          # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      - name: Prepare Coveralls
+        run: ./.github/steps/prepare-coveralls.sh
+      - name: Coveralls
+        if: env.COVERALLS_coverage_file_exists == 'true'
+        uses: coverallsapp/github-action@v2
+        with:
+          file: ${{ env.COVERALLS_coverage_file }}
+          compare-ref: main
+        # env:
+        #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

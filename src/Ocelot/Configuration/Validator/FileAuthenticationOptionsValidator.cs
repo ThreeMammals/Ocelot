@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Validator;
 
@@ -19,7 +20,8 @@ public class FileAuthenticationOptionsValidator : AbstractValidator<FileAuthenti
 
     private async Task<bool> IsSupportedAuthenticationProviders(FileAuthenticationOptions options, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(options.AuthenticationProviderKey) && options.AuthenticationProviderKeys.Length == 0)
+        var keys = options.AuthenticationProviderKeys;
+        if (options.AuthenticationProviderKey.IsEmpty() && (keys is null || keys.Length == 0))
         {
             return true;
         }
@@ -28,6 +30,6 @@ public class FileAuthenticationOptionsValidator : AbstractValidator<FileAuthenti
         var supportedSchemes = schemes.Select(scheme => scheme.Name);
         var primary = options.AuthenticationProviderKey;
         return !string.IsNullOrWhiteSpace(primary) && supportedSchemes.Contains(primary)
-            || (string.IsNullOrWhiteSpace(primary) && options.AuthenticationProviderKeys.All(supportedSchemes.Contains));
+            || (string.IsNullOrWhiteSpace(primary) && keys.All(supportedSchemes.Contains));
     }
 }

@@ -253,7 +253,7 @@ public class WebSocketsSteps : Steps
     protected static void WithHttp2(ListenOptions options)
     {
         options.Protocols = HttpProtocols.Http2;
-        options.UseHttps("mycert.pfx", "password");
+        options.UseHttps("mycert2.pfx", "password");
     }
     protected async Task StartHttp2OcelotWithWebSockets(int port)
     {

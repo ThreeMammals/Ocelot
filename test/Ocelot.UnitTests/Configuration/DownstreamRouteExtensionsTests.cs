@@ -1,5 +1,4 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Metadata;
@@ -23,12 +22,10 @@ public class DownstreamRouteExtensionsTests
             new List<DownstreamHostAndPort>(),
             null,
             null,
-            new HttpHandlerOptions(false, false, false, false, 0, TimeSpan.Zero),
-            default,
-            new QoSOptionsBuilder().Build(),
+            new HttpHandlerOptions(),
+            new QoSOptions(),
             null,
             null,
-            default,
             new CacheOptions(0, null, null, null),
             new LoadBalancerOptions(null, null, 0),
             new RateLimitOptions(false),
@@ -37,9 +34,7 @@ public class DownstreamRouteExtensionsTests
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
-            default,
-            default,
-            new AuthenticationOptions(null, null, null),
+            new AuthenticationOptions(null, null),
             new DownstreamPathTemplate(null),
             null,
             new List<string>(),

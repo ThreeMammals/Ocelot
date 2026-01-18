@@ -4,7 +4,7 @@ namespace Ocelot.Provider.Polly;
 
 /// <summary>
 /// Polly requirements for the <see href="https://www.pollydocs.org/strategies/timeout.html">Timeout resilience strategy</see>.
-/// The subject of this strategy is the <see cref="QoSOptions.TimeoutValue"/> property.
+/// The subject of this strategy is the <see cref="QoSOptions.Timeout"/> property.
 /// </summary>
 public static class TimeoutStrategy
 {

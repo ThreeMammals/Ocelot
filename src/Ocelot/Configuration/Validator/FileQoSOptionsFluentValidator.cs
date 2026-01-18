@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
-using Ocelot.Requester;
+using Ocelot.QualityOfService;
 
 namespace Ocelot.Configuration.Validator;
 
