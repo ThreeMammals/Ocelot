@@ -26,7 +26,8 @@ public sealed class ThreadSafeHeadersTests : Steps
         WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300);
         ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
-    private void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
+
+    protected override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
     {
         Task MapGet(HttpContext context)
         {

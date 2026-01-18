@@ -4,7 +4,7 @@ Websockets
     * `WebSockets Standard <https://websockets.spec.whatwg.org/>`_ by WHATWG organization
     * `The WebSocket Protocol <https://datatracker.ietf.org/doc/html/rfc6455>`_ by Internet Engineering Task Force (IETF) organization
 
-Ocelot supports proxying `WebSockets <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ with some extra bits [#f1]_.
+Ocelot supports proxying `WebSockets <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ [#f1]_ with some extra bits.
 
 Configuration
 -------------
@@ -110,7 +110,7 @@ If you define a route with the *secured WebSockets* protocol, use the ``wss`` sc
 
   "DownstreamScheme": "wss",
 
-Keep in mind that you can use WebSocket SSL for both :ref:`ws-signalr` and :doc:`../features/websockets`.
+Keep in mind that you can use WebSocket SSL for both :ref:`SignalR <ws-signalr>` and :doc:`../features/websockets`.
 
   **Note**: To understand ``wss`` scheme, browse to this documentation:
 
@@ -118,7 +118,7 @@ Keep in mind that you can use WebSocket SSL for both :ref:`ws-signalr` and :doc:
   * Microsoft Learn: `Secure your connection with TLS/SSL <https://learn.microsoft.com/en-us/windows/uwp/networking/websockets#secure-your-connection-with-tlsssl>`_
   * Microsoft Learn: `Search for "secure websocket" <https://learn.microsoft.com/en-us/search/?terms=secure%20websocket>`_
 
-If you want to ignore SSL warnings (errors), configure your route as follows: [#f3]_
+If you want to ignore SSL warnings (errors) [#f3]_, configure your route as follows:
 
 .. code-block:: json
 
@@ -163,7 +163,7 @@ Below is a list of features that will not work:
 
 We cannot be entirely sure how this feature will behave once it is widely used. Therefore, thorough testing is strongly recommended!
 
-Gotchas
+Roadmap
 -------
 
 *WebSockets* and *SignalR* are being actively developed by the .NET community.
@@ -176,14 +176,15 @@ As a team, we are unable to provide direct development advice.
 However, feel free to ask questions or explore coding recipes in `Discussions <https://github.com/ThreeMammals/Ocelot/discussions>`_ of the repository.
 Additionally, we welcome any bug reports, enhancement suggestions, or proposals related to this feature. |octocat|
 
-  **Note**: The Ocelot team considers the current implementation of the *WebSockets* feature to be obsolete, as it is based on the `WebSocketsProxyMiddleware <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20WebSocketsProxyMiddleware&type=code>`_ class.
+.. note::
+  The Ocelot team considers the current implementation of the *WebSockets* feature to be obsolete, as it is based on the `WebSocketsProxyMiddleware <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20WebSocketsProxyMiddleware&type=code>`_ class.
   *WebSockets* are a part of the ASP.NET Core framework, which includes the native `WebSocketMiddleware <https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.websockets.websocketmiddleware>`_ class.
   We have a strong intention to either migrate or redesign this feature. For more details, see issue `1707`_.
 
 """"
 
 .. [#f1] The :doc:`../features/websockets` functionality was requested in issue `212 <https://github.com/ThreeMammals/Ocelot/issues/212>`_ and introduced in version `5.3.0`_.
-.. [#f2] The :ref:`ws-signalr` functionality was requested in issue `344`_ and published in version `8.0.7`_.
+.. [#f2] The :ref:`SignalR <ws-signalr>` functionality was requested in issue `344`_ and published in version `8.0.7`_.
 .. [#f3] The ":ref:`ws-secure`"  feature includes a ``wss`` scheme fake validator, which was introduced in pull request `1377`_ as part of issues `1375`_, `1237`_, and others.
   This "life hack" for self-signed SSL certificates is available starting from version `20.0`_.
   However, it will be either removed or reworked in future releases. For further details, refer to the :ref:`ssl-errors` section.

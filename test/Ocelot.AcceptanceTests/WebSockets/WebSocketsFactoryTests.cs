@@ -1,5 +1,5 @@
 using Ocelot.Configuration.File;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
 
@@ -32,7 +32,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         int port1 = PortFinder.GetRandomPort();
         int port2 = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port1, port2);
-        route.LoadBalancerOptions.Type = nameof(RoundRobin);
+        route.LoadBalancerOptions = new(nameof(RoundRobin));
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
         this.Given(_ => GivenThereIsAConfiguration(configuration))
@@ -44,7 +44,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
             .BDDfy();
     }
 
-    private static FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
+    private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
     {
         UpstreamPathTemplate = "/",
         DownstreamPathTemplate = downstream ?? "/ws",

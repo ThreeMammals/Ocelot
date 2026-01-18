@@ -167,7 +167,7 @@ public sealed class ContentTests : Steps
                     new FileHostAndPort("localhost", port),
                 },
                 UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = new() {method ?? HttpMethods.Get },
+                UpstreamHttpMethod = [method ?? HttpMethods.Get],
             },
         },
     };

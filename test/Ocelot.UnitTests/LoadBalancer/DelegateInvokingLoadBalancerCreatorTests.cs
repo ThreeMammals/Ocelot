@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -61,6 +62,13 @@ public class DelegateInvokingLoadBalancerCreatorTests : UnitTest
 
         // Assert
         loadBalancer.IsError.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Type()
+    {
+        // Arrange, Act, Assert
+        Assert.Equal(nameof(FakeLoadBalancer), _creator.Type);
     }
 
     private class FakeLoadBalancer : ILoadBalancer

@@ -64,7 +64,7 @@ public sealed class LogLevelTests : Steps
                     },
                     DownstreamScheme = "http",
                     UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = new List<string> { "Get" },
+                    UpstreamHttpMethod = ["Get"],
                     RequestIdKey = "Oc-RequestId",
                 },
             },

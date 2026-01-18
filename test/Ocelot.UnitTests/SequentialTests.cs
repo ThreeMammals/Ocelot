@@ -9,26 +9,6 @@ namespace Ocelot.UnitTests;
 public class SequentialTests
 {
     /// <summary>
-    /// Unstable <see cref="RateLimiting.RateLimitingTests"/>.
-    /// </summary>
-    [Collection(nameof(SequentialTests))]
-    public class RateLimitingTests
-    {
-        [Fact]
-        public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
-        {
-            // Skip in MacOS because the test is very unstable.
-            // The test is stable in Linux and Windows only
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Test #1
-                var test = new RateLimiting.RateLimitingTests();
-                test.ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod();
-            }
-        }
-    }
-
-    /// <summary>
     /// Unstable <see cref="Requester.MessageInvokerPoolTests"/>.
     /// </summary>
     [Collection(nameof(SequentialTests))]

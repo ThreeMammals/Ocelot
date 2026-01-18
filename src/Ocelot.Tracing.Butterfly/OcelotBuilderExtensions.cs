@@ -9,8 +9,9 @@ public static class OcelotBuilderExtensions
 {
     public static IOcelotBuilder AddButterfly(this IOcelotBuilder builder, Action<ButterflyOptions> settings)
     {
-        builder.Services.AddSingleton<ITracer, ButterflyTracer>();
-        builder.Services.AddButterfly(settings);
+        builder.Services
+            .AddSingleton<IOcelotTracer, ButterflyTracer>()
+            .AddButterfly(settings);
         return builder;
     }
 }

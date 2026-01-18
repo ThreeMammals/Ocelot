@@ -1,5 +1,5 @@
-using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Configuration.Creator;
 
@@ -14,7 +14,7 @@ public class AggregatesCreator : IAggregatesCreator
         _headerCreator = headerCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration, List<Route> routes)
+    public List<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes)
     {
         return fileConfiguration.Aggregates
             .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))
@@ -39,17 +39,16 @@ public class AggregatesCreator : IAggregatesCreator
 
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
         var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
-
-        var route = new RouteBuilder()
-            .WithUpstreamHttpMethod(aggregateRoute.UpstreamHttpMethod)
-            .WithUpstreamPathTemplate(upstreamTemplatePattern)
-            .WithDownstreamRoutes(applicableRoutes)
-            .WithAggregateRouteConfig(aggregateRoute.RouteKeysConfig)
-            .WithUpstreamHost(aggregateRoute.UpstreamHost)
-            .WithAggregator(aggregateRoute.Aggregator)
-            .WithUpstreamHeaders(upstreamHeaderTemplates)
-            .Build();
-
-        return route;
+        var upstreamHttpMethod = aggregateRoute.UpstreamHttpMethod.ToHttpMethods();
+        return new Route()
+        {
+            Aggregator = aggregateRoute.Aggregator,
+            DownstreamRoute = applicableRoutes,
+            DownstreamRouteConfig = aggregateRoute.RouteKeysConfig,
+            UpstreamHeaderTemplates = upstreamHeaderTemplates,
+            UpstreamHost = aggregateRoute.UpstreamHost,
+            UpstreamHttpMethod = upstreamHttpMethod,
+            UpstreamTemplatePattern = upstreamTemplatePattern,
+        };
     }
 }

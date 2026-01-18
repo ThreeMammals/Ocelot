@@ -1,10 +1,5 @@
 ﻿using Ocelot.DependencyInjection;
-using Ocelot.ManualTest.DelegatingHandlers;
-using Ocelot.ManualTest.Middlewares;
 using Ocelot.Middleware;
-using Ocelot.Requester;
-using System;
-using System.Reflection;
 
 namespace Ocelot.ManualTest.Actions;
 
@@ -19,17 +14,18 @@ public class Basic
             .AddOcelot();
 
         builder.Services
-            /*.AddAuthentication()
-            .AddJwtBearer("TestKey", x =>
-            {
-                x.Authority = "test";
-                x.Audience = "test";
-            });*/
+
+            //.AddAuthentication()
+            //.AddJwtBearer("TestKey", x =>
+            //{
+            //    x.Authority = "test";
+            //    x.Audience = "test";
+            //});
             //.AddSingleton<QosDelegatingHandlerDelegate>((x, t, f) => new FakeHandler(f))
             .AddOcelot(builder.Configuration);
+
             //.AddDelegatingHandler<FakeHandler>(true);
             //.AddAdministration("/administration", "secret");
-
         builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
         if (builder.Environment.IsDevelopment())
         {
@@ -39,6 +35,7 @@ public class Basic
         var app = builder.Build();
 
         await app.UseOcelot();
+
         //await app.UseOcelot(pipeline =>
         //{
         //    pipeline.PreAuthenticationMiddleware = MetadataMiddleware.Invoke;

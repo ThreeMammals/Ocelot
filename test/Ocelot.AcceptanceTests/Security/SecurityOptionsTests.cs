@@ -146,7 +146,7 @@ public sealed class SecurityOptionsTests: Steps
     {
         DownstreamPathTemplate = downstream,
         UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = new() { HttpMethods.Get },
+        UpstreamHttpMethod = [HttpMethods.Get],
         SecurityOptions = fileSecurityOptions ?? new(),
     };
 }

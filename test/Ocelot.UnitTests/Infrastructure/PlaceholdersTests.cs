@@ -42,6 +42,8 @@ public class PlaceholdersTests
     }
 
     [Fact]
+    [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
+    [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public void Should_return_remote_ip_address()
     {
         // Arrange

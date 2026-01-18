@@ -68,7 +68,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
 
         if (fileConfig.IsError)
         {
-            _logger.LogWarning(() =>$"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+            _logger.LogWarning(() => $"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
             return;
         }
 

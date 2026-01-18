@@ -306,7 +306,8 @@ We are pleased to invite you to run logging benchmarks on your machine by follow
 
 """"
 
-.. [#f1] Ocelot's logging :ref:`lg-performance` has been improved in version `22.0`_ (see PR `1745`_). These changes were requested as part of issue `1744`_ after team's discussion `1736`_.
+.. [#f1] Logging :ref:`performance <lg-performance>` was improved in pull request `1745`_ and released in version `22.0`_.
+  These changes were requested as part of issue `1744`_ following the team's discussion in thread `1736`_.
 
 .. _22.0: https://github.com/ThreeMammals/Ocelot/releases/tag/22.0.0
 .. _1745: https://github.com/ThreeMammals/Ocelot/pull/1745

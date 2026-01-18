@@ -8,7 +8,9 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Creators;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
@@ -94,7 +96,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     [Fact]
     [Trait("Bug", "213")]
-    [Trait("Feat", "201 340")]
+    [Trait("Feat", "201")]
+    [Trait("Feat", "340")]
     public void ShouldHandleRequestToConsulForDownstreamServiceAndMakeRequestWhenDynamicRoutingWithNoRoutes()
     {
         const string serviceName = "web";
@@ -250,8 +253,9 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     }
 
     [Theory]
+    [Trait("Bug", "849")]
+    [Trait("Bug", "1496")]
     [Trait("PR", "1944")]
-    [Trait("Bugs", "849 1496")]
     [InlineData(nameof(NoLoadBalancer))]
     [InlineData(nameof(RoundRobin))]
     [InlineData(nameof(LeastConnection))]
@@ -392,13 +396,13 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .When(x => WhenIGetUrlOnTheApiGateway("/projects/api/projects"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 1))
-            .And(x => x.ThenTheResponseBodyShouldBe($"1:{Bug2119ServiceNames[0]}")) // !
+            .And(x => x.ThenTheResponseBodyShouldBe($"1^:^{Bug2119ServiceNames[0]}")) // !
 
             // Step 2
             .When(x => WhenIGetUrlOnTheApiGateway("/customers/api/customers"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 1))
-            .And(x => x.ThenTheResponseBodyShouldBe($"1:{Bug2119ServiceNames[1]}")) // !!
+            .And(x => x.ThenTheResponseBodyShouldBe($"1^:^{Bug2119ServiceNames[1]}")) // !!
 
             // Finally
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
@@ -432,14 +436,14 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             await WhenIGetUrlOnTheApiGateway("/projects/api/projects");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(0, count);
-            ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[0]}", $"i is {i}");
+            ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[0]}", $"i is {i}");
             _responses[2 * i] = response;
 
             // Step 2
             await WhenIGetUrlOnTheApiGateway("/customers/api/customers");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(1, count);
-            ThenTheResponseBodyShouldBe($"{count}:{Bug2119ServiceNames[1]}", $"i is {i}");
+            ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[1]}", $"i is {i}");
             _responses[(2 * i) + 1] = response;
         };
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
@@ -491,6 +495,35 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .BDDfy();
     }
 
+    [Fact]
+    [Trait("Feat", "585")]
+    [Trait("Feat", "2319")]
+    [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
+    public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes()
+    {
+        var ports = PortFinder.GetPorts(5);
+        var serviceName = ServiceName();
+        var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
+        var consulPort = PortFinder.GetRandomPort();
+        var configuration = GivenServiceDiscovery(consulPort);
+        configuration.GlobalConfiguration.LoadBalancerOptions = new(nameof(RoundRobin));
+        configuration.GlobalConfiguration.DownstreamScheme = Uri.UriSchemeHttp;
+        configuration.Routes = []; // dynamic routing
+        configuration.DynamicRoutes = []; // no dynamic routes, for ALL dynamic routes
+
+        var urls = ports.Select(DownstreamUrl).ToArray();
+        this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
+            .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
+            .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntries))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithConsul))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(9, 11)) // soft assertion
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(10, 10, 10, 10, 10)) // distribution by RoundRobin algorithm, aka strict assertion
+            .BDDfy();
+    }
+
     private Action<IServiceCollection> WithLbAnalyzer(string loadBalancer) => loadBalancer switch
     {
         nameof(LeastConnection) => WithLbAnalyzer<LeastConnection, LeastConnectionCreator>,
@@ -520,7 +553,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
             headers.TryGetValues(HeaderNames.Counter, out var counterValues).ShouldBeTrue();
             var counter = counterValues.ShouldNotBeNull().FirstOrDefault().ShouldNotBeNull();
-            body.ShouldBe($"{counter}:{serviceName}");
+            body.ShouldBe($"{counter}^:^{serviceName}");
         }
     }
 
@@ -555,7 +588,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
         UpstreamPathTemplate = upstream ?? "/",
-        UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : new() { HttpMethods.Get },
+        UpstreamHttpMethod = httpMethods != null ? new(httpMethods) : [HttpMethods.Get],
         UpstreamHost = upstreamHost,
         ServiceName = serviceName,
         LoadBalancerOptions = new()

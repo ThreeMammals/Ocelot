@@ -1,6 +1,6 @@
 ﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 

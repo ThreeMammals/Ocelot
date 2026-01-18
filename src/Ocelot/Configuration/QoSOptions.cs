@@ -4,64 +4,63 @@ namespace Ocelot.Configuration;
 
 public class QoSOptions
 {
+    public QoSOptions() { }
+    public QoSOptions(int? timeout) => Timeout = timeout;
+    public QoSOptions(int? exceptions, int? breakMs)
+    {
+        BreakDuration = breakMs;
+        MinimumThroughput = exceptions;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class.</summary>
+    /// <remarks>This is the copying constructor.</remarks>
+    /// <param name="from">The object to copy the properties from.</param>
     public QoSOptions(QoSOptions from)
     {
-        DurationOfBreak = from.DurationOfBreak;
-        ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
-        Key = from.Key;
-        TimeoutValue = from.TimeoutValue;
+        BreakDuration = from.BreakDuration;
+        MinimumThroughput = from.MinimumThroughput;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
+        Timeout = from.Timeout;
     }
 
+    /// <summary>Initializes a new instance of the <see cref="QoSOptions"/> class from a <see cref="FileQoSOptions"/> model.</summary>
+    /// <remarks>This is the converting constructor.</remarks>
+    /// <param name="from">The File-model to copy the properties from.</param>
     public QoSOptions(FileQoSOptions from)
     {
-        DurationOfBreak = from.DurationOfBreak;
-        ExceptionsAllowedBeforeBreaking = from.ExceptionsAllowedBeforeBreaking;
-        Key = string.Empty;
-        TimeoutValue = from.TimeoutValue;
+        BreakDuration = from.DurationOfBreak ?? from.BreakDuration;
+        MinimumThroughput = from.ExceptionsAllowedBeforeBreaking ?? from.MinimumThroughput;
+        FailureRatio = from.FailureRatio;
+        SamplingDuration = from.SamplingDuration;
+        Timeout = from.TimeoutValue ?? from.Timeout;
     }
 
-    public QoSOptions(
-        int exceptionsAllowedBeforeBreaking,
-        int durationOfBreak,
-        int timeoutValue, 
-        string key)
-    {
-        DurationOfBreak = durationOfBreak;
-        ExceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
-        Key = key;
-        TimeoutValue = timeoutValue;
-    }
+    /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
+    public int? BreakDuration { get; init; }
 
-    /// <summary>How long the circuit should stay open before resetting in milliseconds.</summary>
-    /// <remarks>If using Polly version 8 or above, this value must be 500 (0.5 sec) or greater.</remarks>
-    /// <value>An <see cref="int"/> value (milliseconds).</value>
-    public int DurationOfBreak { get; } = DefaultBreakDuration;
-    public const int LowBreakDuration = 500; // 0.5 seconds
-    public const int DefaultBreakDuration = 5_000; // 5 seconds
+    /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (exceptions number).</value>
+    public int? MinimumThroughput { get; init; }
 
-    /// <summary>
-    /// How many times a circuit can fail before being set to open.
-    /// </summary>
-    /// <remarks>
-    /// If using Polly version 8 or above, this value must be 2 or greater.
-    /// </remarks>
-    /// <value>
-    /// An <see cref="int"/> value (no of exceptions).
-    /// </value>
-    public int ExceptionsAllowedBeforeBreaking { get; }
+    /// <summary>Gets or sets the failure-to-success ratio at which the circuit will break.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="double"/>) value.</value>
+    public double? FailureRatio { get; init; }
 
-    public string Key { get; }
+    /// <summary>Gets or sets the milliseconds duration of the sampling over which <see cref="FailureRatio"/> is assessed.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
+    public int? SamplingDuration { get; init; }
 
-    /// <summary>
-    /// Value for TimeoutStrategy in milliseconds.
-    /// </summary>
-    /// <remarks>
-    /// If using Polly version 8 or above, this value must be 1000 (1 sec) or greater.
-    /// </remarks>
-    /// <value>
-    /// An <see cref="int"/> value (milliseconds).
-    /// </value>
-    public int TimeoutValue { get; }
+    /// <summary>Gets the timeout in milliseconds.</summary>
+    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
+    public int? Timeout { get; init; }
 
-    public bool UseQos => ExceptionsAllowedBeforeBreaking > 0 || TimeoutValue > 0;
+    public bool UseQos => (MinimumThroughput.HasValue && MinimumThroughput > 0)
+        || (Timeout.HasValue && Timeout > 0);
 }

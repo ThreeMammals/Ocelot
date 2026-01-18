@@ -113,7 +113,7 @@ public sealed class RequestMapperTests : Steps
             new("localhost", port),
         },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
 }
 

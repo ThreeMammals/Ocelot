@@ -3,10 +3,12 @@ namespace Ocelot.Configuration.File;
 public class FileLoadBalancerOptions
 {
     public FileLoadBalancerOptions()
+    { }
+
+    public FileLoadBalancerOptions(string type)
+        : this()
     {
-        Expiry = int.MaxValue;
-        Key = string.Empty;
-        Type = string.Empty;
+        Type = type;
     }
 
     public FileLoadBalancerOptions(FileLoadBalancerOptions from)
@@ -16,7 +18,7 @@ public class FileLoadBalancerOptions
         Type = from.Type;
     }
 
-    public int Expiry { get; set; }
+    public int? Expiry { get; set; }
     public string Key { get; set; }
     public string Type { get; set; }
 }

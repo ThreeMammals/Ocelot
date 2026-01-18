@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Builder;
 using Ocelot.Infrastructure;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.LoadBalancer;
+using Ocelot.LoadBalancer.Balancers;
+using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
@@ -11,6 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 
+[Trait("Feat", "336")]
 public sealed class CookieStickySessionsTests : UnitTest
 {
     private readonly CookieStickySessions _stickySessions;
@@ -34,22 +37,6 @@ public sealed class CookieStickySessionsTests : UnitTest
             .WithLoadBalancerKey(serviceName)
             .Build();
         _httpContext.Items.UpsertDownstreamRoute(route);
-    }
-
-    [Fact]
-    public async Task Should_expire_sticky_session()
-    {
-        Arrange();
-        GivenTheLoadBalancerReturns();
-        GivenTheDownstreamRequestHasSessionId("321");
-        GivenIHackAMessageInWithAPastExpiry();
-
-        // Act
-        var result = await _stickySessions.LeaseAsync(_httpContext);
-        _bus.Process();
-
-        // Assert
-        _loadBalancer.Verify(x => x.Release(It.IsAny<ServiceHostAndPort>()), Times.Once);
     }
 
     [Fact]
@@ -131,10 +118,33 @@ public sealed class CookieStickySessionsTests : UnitTest
     }
 
     [Fact]
+    public async Task Should_expire_sticky_session()
+    {
+        Arrange();
+        GivenTheLoadBalancerReturns();
+        GivenTheDownstreamRequestHasSessionId("321");
+        GivenIHackAMessageInWithAPastExpiry();
+
+        // Act
+        var result = await _stickySessions.LeaseAsync(_httpContext);
+        _bus.Process();
+
+        // Assert
+        _loadBalancer.Verify(x => x.Release(It.IsAny<ServiceHostAndPort>()), Times.Once);
+    }
+
+    [Fact]
     public void Should_release()
     {
         // Arrange, Act, Assert
         _stickySessions.Release(new ServiceHostAndPort(string.Empty, 0));
+    }
+
+    [Fact]
+    public void Type_Is_CookieStickySessions()
+    {
+        // Arrange, Act, Assert
+        Assert.Equal("CookieStickySessions", _stickySessions.Type);
     }
 
     private void GivenIHackAMessageInWithAPastExpiry()

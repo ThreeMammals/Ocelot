@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Ocelot.Configuration;
+using Ocelot.Administration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
@@ -77,6 +77,24 @@ public class FileConfigurationControllerTests : UnitTest
         // Assert
         _setter.Verify(x => x.Set(expected), Times.Once);
         result.ShouldBeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task Should_catch_exception_when_cannot_set_config()
+    {
+        // Arrange
+        var expected = new FileConfiguration();
+        _setter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
+            .Throws(new Exception("Service failed"));
+
+        // Act
+        var result = await _controller.Post(expected);
+
+        // Assert
+        _setter.Verify(x => x.Set(expected), Times.Once);
+        result.ShouldBeOfType<BadRequestObjectResult>();
+        var actual = result as BadRequestObjectResult;
+        Assert.StartsWith("Service failed:", actual.Value.ToString());
     }
 
     private class FakeError : Error

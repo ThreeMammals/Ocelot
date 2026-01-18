@@ -7,7 +7,6 @@ public class FileMetadataOptions
     public FileMetadataOptions()
     {
         CurrentCulture = CultureInfo.CurrentCulture.Name;
-        Metadata = new Dictionary<string, string>();
         NumberStyle = Enum.GetName(NumberStyles.Any);
         Separators = new[] { "," };
         StringSplitOption = Enum.GetName(StringSplitOptions.None);
@@ -17,7 +16,6 @@ public class FileMetadataOptions
     public FileMetadataOptions(FileMetadataOptions from)
     {
         CurrentCulture = from.CurrentCulture;
-        Metadata = from.Metadata;
         NumberStyle = from.NumberStyle;
         Separators = from.Separators;
         StringSplitOption = from.StringSplitOption;
@@ -29,5 +27,4 @@ public class FileMetadataOptions
     public string[] Separators { get; set; }
     public string StringSplitOption { get; set; }
     public char[] TrimChars { get; set; }
-    public IDictionary<string, string> Metadata { get; set; }
 }

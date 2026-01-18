@@ -20,5 +20,5 @@ This feature is useful when interacting with downstream APIs that only support `
 
 """"
 
-.. [#f1] This feature was released in version `14.0.8`_.
+.. [#f1] The *"Method Transformation"* feature was released in version `14.0.8`_.
 .. _14.0.8: https://github.com/ThreeMammals/Ocelot/releases/tag/14.0.8

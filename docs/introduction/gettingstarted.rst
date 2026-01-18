@@ -28,12 +28,12 @@ It won't do anything but should get Ocelot starting.
 .. code-block:: json
 
   {
+    "Aggregates": [], // optional
     "Routes": [], // required section
+    "DynamicRoutes": [], // optional section
     "GlobalConfiguration": { // required
       "BaseUrl": "https://api.mybusiness.com"
-    },
-    "DynamicRoutes": [], // optional section
-    "Aggregates": [] // optional
+    }
   }
 
 If you want some example that actually does something use the following:

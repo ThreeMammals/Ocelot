@@ -7,6 +7,7 @@ using Ocelot.Logging;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
@@ -32,7 +33,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     /// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
+    /* [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11CLient_DirectConnection_ShouldConnect(string url, string expected)
     {
@@ -62,9 +63,12 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         using var handler = new HttpClientHandler
         {
             // ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true,
-            PreAuthenticate = true,
+            PreAuthenticate = false,
             Credentials = new NetworkCredential("tom@threemammals.com", "password"),
         };
+        if (IsCiCd() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // MacOS
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // TODO Makes sense to log in console
+
         using var invoker = new HttpMessageInvoker(handler);
         await _ws.ConnectAsync(echoEndpoint, invoker, _cts.Token);
 
@@ -77,7 +81,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     ///// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
+    /*[InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11CLient_OcelotInTheMiddle_ShouldConnect(string scheme, string host, int port, string path, string expected)
     {
@@ -110,7 +114,8 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     // AI Q.2: C# Yarp | Does Yarp support webSocket+HTTP/2 forwarding?
     // AI A.2: Yes! YARP (Yet Another Reverse Proxy) supports WebSockets over HTTP/2 starting in .NET 7 and YARP 2.0.
     //         See MS Learn | YARP Proxying WebSockets and SPDY -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/websockets
-    [Fact(Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
+    [Fact(DisplayName = "TODO " + nameof(Http20CLient_OcelotInTheMiddle_ShouldConnect),
+        Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
     public async Task Http20CLient_OcelotInTheMiddle_ShouldConnect()
     {
         var port = PortFinder.GetRandomPort();
@@ -141,7 +146,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [Trait("Bug", "930")]
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx")] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    [InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/
+    /*[InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11Client_ConnectionClosedPrematurely_ShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
     {

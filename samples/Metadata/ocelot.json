@@ -161,11 +161,11 @@
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5139",
+    "Metadata": {
+      "app-name": "Ocelot Metadata sample"
+    },
     "MetadataOptions": {
-      "CurrentCulture": "en-GB",
-      "Metadata": {
-        "app-name": "Ocelot Metadata sample"
-      }
+      "CurrentCulture": "en-GB"
     }
   }
 }

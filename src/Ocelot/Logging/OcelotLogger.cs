@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.RequestId.Middleware;
-using System;
 
 namespace Ocelot.Logging;
 
@@ -27,7 +26,7 @@ public class OcelotLogger : IOcelotLogger
     public OcelotLogger(ILogger logger, IRequestScopedDataRepository scopedDataRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _scopedDataRepository = scopedDataRepository;
+        _scopedDataRepository = scopedDataRepository ?? throw new ArgumentNullException(nameof(scopedDataRepository));
     }
 
     public void LogTrace(string message) => WriteLog(LogLevel.Trace, message);
@@ -51,13 +50,13 @@ public class OcelotLogger : IOcelotLogger
     private string GetOcelotRequestId()
     {
         var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.RequestIdName);
-        return requestId?.IsError ?? true ? "-" : requestId.Data;
+        return requestId.IsError ? "-" : requestId.Data;
     }
 
     private string GetOcelotPreviousRequestId()
     {
         var requestId = _scopedDataRepository.Get<string>(RequestIdMiddleware.PreviousRequestIdName);
-        return requestId?.IsError ?? true ? "-" : requestId.Data;
+        return requestId.IsError ? "-" : requestId.Data;
     }
 
     private void WriteLog(LogLevel logLevel, string message, Exception exception = null)
@@ -82,7 +81,7 @@ public class OcelotLogger : IOcelotLogger
 
         if (messageFactory != null)
         {
-            message = messageFactory.Invoke() ?? string.Empty;
+            message = messageFactory.Invoke();
         }
 
         _logger.Log(logLevel, default,
@@ -90,7 +89,7 @@ public class OcelotLogger : IOcelotLogger
             exception, NoFormatter);
     }
 
-    private static string NoFormatter(string state, Exception e) => state;
-    private static string ExceptionFormatter(string state, Exception e)
+    public static string NoFormatter(string state, Exception e) => state;
+    public static string ExceptionFormatter(string state, Exception e)
         => e == null ? state : $"{state}, {Environment.NewLine + nameof(Exception)}: {e}";
 }

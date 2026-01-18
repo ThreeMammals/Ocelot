@@ -20,7 +20,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         _cache = cache;
     }
 
-    public UpstreamPathTemplate Create(IRoute route)
+    public UpstreamPathTemplate Create(IRouteUpstream route)
     {
         var upstreamTemplate = route.UpstreamPathTemplate;
         var placeholders = new List<string>();
@@ -103,7 +103,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         if (!_cache.TryGetValue(key, nameof(UpstreamPathTemplate), out var rgx))
         {
             rgx = RegexGlobal.New(key, RegexOptions.Singleline);
-            _cache.Add(key, rgx, RegexCachingTTL, nameof(UpstreamPathTemplate));
+            _cache.Add(key, rgx, nameof(UpstreamPathTemplate), RegexCachingTTL);
         }
 
         return rgx;

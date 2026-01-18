@@ -46,7 +46,7 @@ public sealed class StreamContentTests : Steps
             .BDDfy();
     }
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath)
+    protected override void GivenThereIsAServiceRunningOn(int port, string basePath)
     {
         static void options(KestrelServerOptions o)
         {
@@ -82,7 +82,7 @@ public sealed class StreamContentTests : Steps
             new("localhost", port),
         },
         UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = new() { method ?? HttpMethods.Get },
+        UpstreamHttpMethod = [method ?? HttpMethods.Get],
     };
 }
 

@@ -1,10 +1,15 @@
 ﻿using Ocelot.Errors;
-using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Infrastructure.Claims;
 using Ocelot.Responses;
 using System.Security.Claims;
 
 namespace Ocelot.UnitTests.Infrastructure;
 
+/// <summary>
+/// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-headers">Claims to Headers</see>.
+/// </summary>
+[Trait("Commit", "84256e7")] // https://github.com/ThreeMammals/Ocelot/commit/84256e7bac0fa2c8ceba92bd8fe64c8015a37cea
+[Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public class ClaimParserTests : UnitTest
 {
     private readonly ClaimsParser _claimsParser;

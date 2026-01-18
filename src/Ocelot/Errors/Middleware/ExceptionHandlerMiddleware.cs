@@ -42,7 +42,7 @@ public class ExceptionHandlerMiddleware : OcelotMiddleware
             Logger.LogWarning(() => CreateMessage(context, e, true));
             if (!context.Response.HasStarted)
             {
-                context.Response.StatusCode = 499; // custom Ocelot code
+                context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest; // custom Ocelot code
             }
         }
         catch (Exception e)
