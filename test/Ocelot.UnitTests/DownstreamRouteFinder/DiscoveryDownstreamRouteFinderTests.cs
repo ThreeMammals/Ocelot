@@ -57,6 +57,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "1229")]
+    [Trait("Feat", "2138")]
     public void Should_create_downstream_route_with_rate_limit_options()
     {
         // Arrange
@@ -64,6 +65,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         {
             EnableRateLimiting = true,
             ClientIdHeader = "test",
+            Policy = "test",
         };
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("auth")

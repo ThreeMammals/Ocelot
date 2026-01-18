@@ -1,7 +1,5 @@
-﻿#if NET7_0_OR_GREATER
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
-#endif
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;

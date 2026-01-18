@@ -11,9 +11,6 @@ using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.Logging;
 using Ocelot.RateLimiting;
 
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
-
 namespace Ocelot.DependencyInjection;
 
 public static class Features
@@ -37,13 +34,11 @@ public static class Features
     /// Read The Docs: <see href="https://ocelot.readthedocs.io/en/latest/features/ratelimiting.html">Rate Limiting</see>.
     /// </remarks>
     /// <param name="services">The services collection to add the feature to.</param>
-    /// <param name="configurationRoot">Root configuration object.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddOcelotRateLimiting(this IServiceCollection services) => services
         .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
         .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
     
-#if NET7_0_OR_GREATER
     /// <summary>
     /// Ocelot feature: <see href="">AspNet Rate Limiting</see>.
     /// </summary>
@@ -69,7 +64,6 @@ public static class Features
 
         return services;
     }
-#endif
 
     /// <summary>
     /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/caching.rst">Request Caching</see>.

@@ -11,13 +11,10 @@ public static class RateLimitingMiddlewareExtensions
         builder.UseMiddleware<RateLimitingMiddleware>();
 
         //use AspNet rate limiter
-#if NET7_0_OR_GREATER
         builder.UseWhen(UseAspNetRateLimiter, rateLimitedApp =>
         {
             rateLimitedApp.UseRateLimiter();
         });
-#endif
-
         return builder;
     }
 
