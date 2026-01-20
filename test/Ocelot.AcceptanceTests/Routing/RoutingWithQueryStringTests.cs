@@ -19,12 +19,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/subscriptions/{subscriptionId}/updates"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?unitId={unitId}"))
             .BDDfy();
     }
 
@@ -42,12 +44,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unit}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", $"?unitId={unitId}{additionalParams}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/subscriptions/{subscriptionId}/updates"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?unitId={unitId}{additionalParams}"))
             .BDDfy();
     }
 
@@ -62,12 +66,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/persons?personId={userId}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userId}", "Hello from @webley"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={userId}"))
             .BDDfy();
     }
 
@@ -82,12 +88,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/persons?personId={uid}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={uid}&userId={uid}", "Hello from @webley"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={uid}&userId={uid}"))
             .BDDfy();
     }
 
@@ -102,12 +110,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/persons?personId={userid}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", $"?personId={userid}&userId={userid}", "Hello from @webley"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userid}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={userid}&userId={userid}"))
             .BDDfy();
     }
 
@@ -123,12 +133,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/contracts?{everythingelse}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", $"?{expected}", "Hello from @sunilk3"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", "Hello from @sunilk3"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @sunilk3"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/api/contracts"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?{expected}"))
             .BDDfy();
     }
 
@@ -141,12 +153,14 @@ public sealed class RoutingWithQueryStringTests : Steps
         var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "?$filter=Name%20eq%20'Sam'", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/odata/customers?$filter=Name eq 'Sam' "))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/odata/customers"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?$filter=Name%20eq%20'Sam'"))
             .BDDfy();
     }
 
@@ -162,12 +176,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/units/{subscriptionId}/{unitId}/updates"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(string.Empty))
             .BDDfy();
     }
 
@@ -183,7 +199,7 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
@@ -203,7 +219,7 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", string.Empty, "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
@@ -223,12 +239,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "?productId=1", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/units/{subscriptionId}/{unitId}/updates"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?productId=1"))
             .BDDfy();
     }
 
@@ -246,15 +264,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port,
-                $"/account/{username}/groups/{groupName}/roles",
-                $"?roleId={roleid}&{everything}",
-                "Hello from Béchir"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/account/{username}/groups/{groupName}/roles", "Hello from Béchir"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Béchir"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/account/{username}/groups/{groupName}/roles"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?roleId={roleid}&{everything}"))
             .BDDfy();
     }
 
@@ -275,17 +292,52 @@ public sealed class RoutingWithQueryStringTests : Steps
             $"/cpx/t1/{{{idName}}}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", $"?{queryName}={queryValue}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/safe/{idValue}?{queryName}={queryValue}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe($"/cpx/t1/{idValue}"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?{queryName}={queryValue}"))
+            .BDDfy();
+    }
+
+    #region PR 2351
+    [Fact]
+    [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
+    [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
+    public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder_as_a_Catch_All_Query_String()
+    {
+        // This test ensures that a placeholder like {id} does not remove or corrupt parameters like customer_id
+        const string customer_id = "12345";
+        var port = PortFinder.GetRandomPort();
+        var route1 = GivenRoute(port,
+            upstream: "/finance/v1/payment-methods?{id}", // Catch All query string placeholder -> https://ocelot.readthedocs.io/en/latest/features/routing.html#catch-all-query-string
+            downstream: "/v1/payment-methods?{id}");
+        var route2 = GivenRoute(port,
+            upstream: "/finance/v1/payment-methods",
+            downstream: "/v1/payment-methods");
+        var configuration = GivenConfiguration(route1, route2);
+        var query = $"?{nameof(customer_id)}={customer_id}";
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", "Hello from Bhargav"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate.Replace("?{id}", query)))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Bhargav"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(query))
+            .When(x => WhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(string.Empty))
             .BDDfy();
     }
 
     [Fact]
-    [Trait("Bug", "2346")]
+    [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
+    [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder_acceptance()
     {
         // This test ensures that a placeholder like {id} does not remove or corrupt parameters like customer_id
@@ -297,12 +349,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/payment-methods");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", $"?customer_id={customerId}", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/payment-methods?customer_id={customerId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?customer_id={customerId}"))
             .BDDfy();
     }
 
@@ -319,12 +373,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/orders");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/orders", $"?orderid={orderId}&customer_id={customerId}", "Order OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/orders", "Order OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/orders?orderid={orderId}&customer_id={customerId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Order OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/orders"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?orderid={orderId}&customer_id={customerId}"))
             .BDDfy();
     }
 
@@ -340,12 +396,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/users");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/users", $"?id={id}", "User OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/users", "User OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/users?id={id}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("User OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/users"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id={id}"))
             .BDDfy();
     }
 
@@ -362,12 +420,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/items");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/items", $"?id={id}&Id={Id}", "Item OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/items", "Item OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/items?id={id}&Id={Id}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Item OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/items"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id={id}&Id={Id}"))
             .BDDfy();
     }
 
@@ -385,12 +445,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/data");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/data", $"?xid={xid}&idx={idx}&id={id}", "Data OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/data", "Data OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/data?xid={xid}&idx={idx}&id={id}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Data OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/data"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?xid={xid}&idx={idx}&id={id}"))
             .BDDfy();
     }
 
@@ -407,12 +469,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/records");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/records", $"?id1={id1}&id10={id10}", "Records OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/records", "Records OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/records?id1={id1}&id10={id10}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Records OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/records"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id1={id1}&id10={id10}"))
             .BDDfy();
     }
 
@@ -430,12 +494,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/v1/alpha");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/alpha", $"?id_={id_}&_id={_id}&id={id}", "Alpha OK"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/alpha", "Alpha OK"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/v1/alpha?id_={id_}&_id={_id}&id={id}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Alpha OK"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/alpha"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id_={id_}&_id={_id}&id={id}"))
             .BDDfy();
     }
 
@@ -456,36 +522,18 @@ public sealed class RoutingWithQueryStringTests : Steps
 
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(
-                port,
-                "/v2/orders/42",
-                $"?status={status}&customer_id={customerId}",
-                "orders-response"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v2/orders/42", "orders-response"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-
-            // Act
-            .When(x => WhenIGetUrlOnTheApiGateway(
-                $"/v2/orders/42?status={status}&customer_id={customerId}"))
-
-            // Assert
+            .When(x => WhenIGetUrlOnTheApiGateway($"/v2/orders/42?status={status}&customer_id={customerId}"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("orders-response"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/v2/orders/42"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?status={status}&customer_id={customerId}"))
             .BDDfy();
     }
-
-
-    //private static FileRoute GivenRouteWithKey(int port, string downstream, string upstream) => new()
-    //{
-    //    DownstreamPathTemplate = downstream,
-    //    DownstreamScheme = Uri.UriSchemeHttp,
-    //    DownstreamHostAndPorts = new()
-    //    {
-    //        new("localhost", port),
-    //    },
-    //    UpstreamPathTemplate = upstream,
-    //    UpstreamHttpMethod = new() { HttpMethods.Get },
-    //};
+    #endregion of PR 2351
+    /*
     private void GivenThereIsAServiceRunningOn(int port, string basePath, string queryString, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
@@ -494,5 +542,26 @@ public sealed class RoutingWithQueryStringTests : Steps
             context.Response.StatusCode = failed ? StatusCodes.Status500InternalServerError : StatusCodes.Status200OK;
             return context.Response.WriteAsync(failed ? "downstream path didnt match base path" : responseBody);
         });
+    }*/
+
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, /*string queryString,*/ string responseBody)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
+
+        Task MapStatusCode(HttpContext context)
+        {
+            _downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                ? context.Request.PathBase.Value + context.Request.Path.Value
+                : context.Request.Path.Value;
+            _downstreamQuery = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : string.Empty;
+            bool oK = _downstreamPath == basePath; // || _downstreamQuery != queryString; // TODO this is strict assertion, it can be without query string
+            context.Response.StatusCode = oK ? StatusCodes.Status200OK : StatusCodes.Status404NotFound;
+            return context.Response.WriteAsync(oK ? responseBody : "Downstream path didn't match base path");
+        }
     }
+
+    private string _downstreamPath;
+    private string _downstreamQuery;
+    private void ThenTheDownstreamUrlPathShouldBe(string expected) => _downstreamPath.ShouldBe(expected);
+    private void ThenTheDownstreamUrlQueryStringShouldBe(string expected) => _downstreamQuery.ShouldBe(expected);
 }

@@ -20,7 +20,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private DownstreamPath _downstreamPath;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private DownstreamUrlCreatorMiddleware _middleware;
+    private readonly DownstreamUrlCreatorMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly HttpRequestMessage _request;
     private readonly DefaultHttpContext _httpContext;
@@ -662,14 +662,16 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
+    #region PR 2351
     [Fact]
-    [Trait("Bug", "2346")]
+    [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
+    [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     public async Task Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder()
     {
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/v1/payment-methods")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .WithDownstreamScheme("http")
+            .WithUpstreamHttpMethod([HttpMethods.Get])
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
             .Build();
@@ -692,8 +694,9 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/payment-methods?customer_id=12345");
         ThenTheQueryStringIs("?customer_id=12345");
     }
-    
+
     [Fact]
+    [Trait("Bug", "2346")]
     public async Task Should_not_remove_query_parameter_when_placeholder_is_substring_of_param_name()
     {
         // Placeholder: {id}, Query: orderid, customer_id
@@ -715,6 +718,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "2346")]
     public async Task Should_not_remove_query_parameter_when_placeholder_is_superstring_of_param_name()
     {
         // Placeholder: {customer_id}, Query: id
@@ -736,6 +740,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "2346")]
     public async Task Should_not_remove_query_parameter_when_placeholder_is_numeric()
     {
         // Placeholder: {id1}, Query: id1, id10
@@ -755,6 +760,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/records?id10=456");
         ThenTheQueryStringIs("?id10=456");
     }
+    #endregion of PR 2351
 
     private static ReadOnlySpan<char> GetPath(string downstreamPath)
         => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);
