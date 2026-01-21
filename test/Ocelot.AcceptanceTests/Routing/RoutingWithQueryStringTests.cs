@@ -122,9 +122,9 @@ public sealed class RoutingWithQueryStringTests : Steps
     }
 
     [Theory]
-    [Trait("Bug", "1174")]
-    [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
-    [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00:00:00z%20and%20DateOfSale%20le%202020-03-15T00:00:00z")]
+    [Trait("Bug", "1174")] // https://github.com/ThreeMammals/Ocelot/issues/1174
+    [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "?projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
+    [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "?$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00%3A00%3A00z%20and%20DateOfSale%20le%202020-03-15T00%3A00%3A00z")]
     public void Should_return_200_and_forward_query_parameters_without_duplicates(string everythingelse, string expected)
     {
         var port = PortFinder.GetRandomPort();
@@ -140,11 +140,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from @sunilk3"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/api/contracts"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?{expected}"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(expected))
             .BDDfy();
     }
 
     [Fact]
+    [Trait("Bug", "548")] // https://github.com/ThreeMammals/Ocelot/issues/548
+    [Trait("Commit", "00a6000")] // https://github.com/ThreeMammals/Ocelot/commit/00a600064deea0877058d04e6189d7e0278c99a5
+    [Trait("Release", "10.0.4")]
     public void Should_return_response_200_with_odata_query_string()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -160,7 +163,7 @@ public sealed class RoutingWithQueryStringTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/odata/customers"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?$filter=Name%20eq%20'Sam'"))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?$filter=Name%20eq%20%27Sam%27"))
             .BDDfy();
     }
 
@@ -251,7 +254,9 @@ public sealed class RoutingWithQueryStringTests : Steps
     }
 
     [Fact]
-    [Trait("Bug", "2002")]
+    [Trait("Bug", "2002")] // https://github.com/ThreeMammals/Ocelot/issues/2002
+    [Trait("Commit", "a034e8c")] // https://github.com/ThreeMammals/Ocelot/commit/a034e8c1e3fc23a086ad10000c85615b9696a43e
+    [Trait("Release", "23.3.0")]
     public void Should_map_when_query_parameters_has_same_names_with_placeholder()
     {
         const string username = "bbenameur";
