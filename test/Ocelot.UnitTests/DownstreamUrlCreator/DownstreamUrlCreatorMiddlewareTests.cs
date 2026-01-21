@@ -20,7 +20,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private DownstreamPath _downstreamPath;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private DownstreamUrlCreatorMiddleware _middleware;
+    private readonly DownstreamUrlCreatorMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly HttpRequestMessage _request;
     private readonly DefaultHttpContext _httpContext;
@@ -481,10 +481,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Theory]
-    [Trait("Bug", "1174")]
-    [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
-    [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z")]
-    public async Task Should_forward_query_parameters_without_duplicates(string everythingelse)
+    [Trait("Bug", "1174")] // https://github.com/ThreeMammals/Ocelot/issues/1174
+    [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
+    [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00%3A00%3A00z%20and%20DateOfSale%20le%202020-03-15T00%3A00%3A00z")]
+    public async Task Should_forward_query_parameters_without_duplicates(string everythingelse, string query)
     {
         // Arrange
         var methods = new List<string> { "Get" };
@@ -510,7 +510,6 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        var query = everythingelse;
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/api/contracts?{query}");
         ThenTheQueryStringIs($"?{query}");
     }
@@ -660,6 +659,43 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Assert
         ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
+    }
+
+    [Theory]
+    [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
+    [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
+    [InlineData("/v1/payment-methods", "{id}",
+        "http://localhost:5003/v1/payment-methods?customer_id=12345", null, "?customer_id=12345")]
+    [InlineData("/v1/orders", "{id}",
+        "http://localhost:5003/v1/orders?orderid=999&customer_id=12345", null, "?orderid=999&customer_id=12345")]
+    [InlineData("/v1/users", "{customer_id}",
+        "http://localhost:5003/v1/users?id=999", null, "?id=999")]
+    [InlineData("/v1/records", "{id1}",
+        "http://localhost:5003/v1/records?id1=123&id10=456", "http://localhost:5003/v1/records?id10=456", "?id10=456")]
+    public async Task Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder(
+        string downstreamPath, string placeholder, string url, string downstreamUrl, string query)
+    {
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate(downstreamPath)
+            .WithUpstreamHttpMethod([HttpMethods.Get])
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        var config = new ServiceProviderConfigurationBuilder()
+            .Build();
+        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
+            [ new(placeholder, "123") ],
+            new(downstreamRoute, HttpMethod.Get)
+        ));
+        GivenTheDownstreamRequestUriIs(url);
+        GivenTheServiceProviderConfigIs(config);
+        GivenTheUrlReplacerWillReturn(downstreamPath);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheDownstreamRequestUriIs(downstreamUrl ?? url);
+        ThenTheQueryStringIs(query);
     }
 
     private static ReadOnlySpan<char> GetPath(string downstreamPath)

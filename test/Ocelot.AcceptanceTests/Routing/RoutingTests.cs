@@ -345,13 +345,13 @@ public sealed class RoutingTests : Steps
     }
 
     [Theory]
-    [Trait("Bug", "748")]
-    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/1", "/downstream/test/1", "?p1=v1&p2=v2&something-else")]
-    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/", "/downstream/test/", "?p1=v1&p2=v2&something-else")]
-    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test", "/downstream/test", "?p1=v1&p2=v2&something-else")]
+    [Trait("Bug", "748")] // https://github.com/ThreeMammals/Ocelot/issues/748
+    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/1", "/downstream/test/1", "?p1=v1&p2=v2&something-else=")]
+    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/", "/downstream/test/", "?p1=v1&p2=v2&something-else=")]
+    [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test", "/downstream/test", "?p1=v1&p2=v2&something-else=")]
     [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test123", null, null)]
-    [InlineData("/downstream/{version}/test/{everything}", "/upstream/{version}/test/{everything}", "/upstream/v1/test/123", "/downstream/v1/test/123", "?p1=v1&p2=v2&something-else")]
-    [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/v1/test", "/downstream/v1/test", "?p1=v1&p2=v2&something-else")]
+    [InlineData("/downstream/{version}/test/{everything}", "/upstream/{version}/test/{everything}", "/upstream/v1/test/123", "/downstream/v1/test/123", "?p1=v1&p2=v2&something-else=")]
+    [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/v1/test", "/downstream/v1/test", "?p1=v1&p2=v2&something-else=")]
     [InlineData("/downstream/{version}/test", "/upstream/{version}/test", "/upstream/test", null, null)]
     public void Should_return_correct_downstream_when_omitting_ending_placeholder(string downstreamPathTemplate, string upstreamPathTemplate, string requestURL, string downstreamURL, string queryString)
     {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -19,8 +19,6 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
 
     private const char Ampersand = '&';
     private const char QuestionMark = '?';
-    private const char OpeningBrace = Placeholders.OpeningBrace;
-    private const char ClosingBrace = Placeholders.ClosingBrace;
     protected const char Slash = '/';
 
     public DownstreamUrlCreatorMiddleware(
@@ -80,8 +78,8 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             }
             else
             {
-                RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
                 downstreamRequest.AbsolutePath = dsPath;
+                downstreamRequest.Query = RemoveQueryStringParametersThatHaveBeenUsedInTemplate(downstreamRequest, placeholders);
             }
         }
 
@@ -102,50 +100,41 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         var newQueries = HttpUtility.ParseQueryString(newQueryString);
 
         // Remove old replaced query parameters
-        var placeholderNames = new HashSet<string>(placeholders.Select(p => p.Name.Trim(OpeningBrace, ClosingBrace)));
-        foreach (var queryKey in queries.AllKeys.Where(placeholderNames.Contains))
+        var placeholderKeys = new HashSet<string>(placeholders.Select(p => p.Key));
+        foreach (var queryKey in queries.AllKeys.Where(placeholderKeys.Contains))
         {
             queries.Remove(queryKey);
         }
 
         var parameters = newQueries.AllKeys
-            .Where(key => !string.IsNullOrEmpty(key))
+            .Where(key => key.IsNotEmpty())
             .ToDictionary(key => key, key => newQueries[key]);
 
         _ = queries.AllKeys
-            .Where(key => !string.IsNullOrEmpty(key) && !parameters.ContainsKey(key))
+            .Where(key => key.IsNotEmpty() && !parameters.ContainsKey(key))
             .All(key => parameters.TryAdd(key, queries[key]));
 
-        return QuestionMark + string.Join(Ampersand, parameters.Select(MapQueryParameter));
+        return QueryHelpers.AddQueryString(string.Empty, parameters);
     }
 
-    protected static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
-
     /// <summary>
-    /// Feature <see href="https://github.com/ThreeMammals/Ocelot/pull/467">467</see>:
-    /// Added support for query string parameters in upstream path template.
+    /// Feature 467: <see href="https://github.com/ThreeMammals/Ocelot/pull/467">Added support for query string parameters in upstream path template</see>.
     /// </summary>
-    protected static void RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest downstreamRequest, List<PlaceholderNameAndValue> templatePlaceholders)
+    /// <returns>A <see cref="string"/> object without wanted parameters.</returns>
+    protected static string RemoveQueryStringParametersThatHaveBeenUsedInTemplate(DownstreamRequest request, List<PlaceholderNameAndValue> templatePlaceholders)
     {
-        var builder = new StringBuilder();
-        foreach (var nAndV in templatePlaceholders)
+        if (templatePlaceholders.Count == 0 || request.Query.IsEmpty())
         {
-            var name = nAndV.Name.Trim(OpeningBrace, ClosingBrace);
-            var parameter = $"{name}={nAndV.Value}";
-            if (!downstreamRequest.Query.Contains(parameter))
-            {
-                continue;
-            }
-
-            int questionMarkOrAmpersand = downstreamRequest.Query.IndexOf(name, StringComparison.Ordinal);
-            builder.Clear()
-                .Append(downstreamRequest.Query)
-                .Replace(parameter, string.Empty)
-                .Remove(--questionMarkOrAmpersand, 1);
-            downstreamRequest.Query = builder.Length > 0
-                ? builder.Remove(0, 1).Insert(0, QuestionMark).ToString()
-                : string.Empty;
+            return request.Query;
         }
+
+        var query = QueryHelpers.ParseQuery(request.Query);
+        foreach (var placeholder in templatePlaceholders.Where(p => query.ContainsKey(p.Key)))
+        {
+            query.Remove(placeholder.Key);
+        }
+
+        return QueryHelpers.AddQueryString(string.Empty, query);
     }
 
     protected static ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)

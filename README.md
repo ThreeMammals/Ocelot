@@ -2,8 +2,8 @@
 
 [![Release Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
 [![Development Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
-[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
+[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop)
+[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
 [![NuGet](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=NuGet&color=blue)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
