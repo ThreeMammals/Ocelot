@@ -15,7 +15,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHostAndPorts = new List<FileHostAndPort>();
         Priority = 1; // to be reviewed WTF?
-        RouteClaimsRequirement = new Dictionary<string, string>();
+        RouteClaimsRequirement = new Dictionary<string, string[]>();
         SecurityOptions = new FileSecurityOptions();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
@@ -41,7 +41,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
     public FileCacheOptions FileCacheOptions { get; set; }
     public int Priority { get; set; }
     public string RequestIdKey { get; set; }
-    public Dictionary<string, string> RouteClaimsRequirement { get; set; }
+    public Dictionary<string, string[]> RouteClaimsRequirement { get; set; }
     public bool RouteIsCaseSensitive { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }

@@ -23,7 +23,7 @@ public partial class ClaimsAuthorizer : IClaimsAuthorizer
 
     public Response<bool> Authorize(
         ClaimsPrincipal claimsPrincipal,
-        Dictionary<string, string> routeClaimsRequirement,
+        Dictionary<string, string[]> routeClaimsRequirement,
         List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues
     )
     {
@@ -36,10 +36,15 @@ public partial class ClaimsAuthorizer : IClaimsAuthorizer
                 return new ErrorResponse<bool>(values.Errors);
             }
 
+            if(!required.Value.Any())
+            {
+                continue;
+            }
+
             if (values.Data != null)
             {
                 // dynamic claim
-                var match = RegexAuthorize().Match(required.Value);
+                var match = RegexAuthorize().Match(required.Value.FirstOrDefault());
                 if (match.Success)
                 {
                     var variableName = match.Captures[0].Value;
@@ -74,7 +79,7 @@ public partial class ClaimsAuthorizer : IClaimsAuthorizer
                 else
                 {
                     // static claim
-                    var authorized = values.Data.Contains(required.Value);
+                    var authorized = required.Value.Any(x=>values.Data.Contains(x));
                     if (!authorized)
                     {
                         return new ErrorResponse<bool>(new ClaimValueNotAuthorizedError(

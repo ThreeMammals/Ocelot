@@ -10,6 +10,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
@@ -133,7 +134,7 @@ public class AuthenticationSteps : Steps
         => GivenIHaveAddedATokenToMyRequest(token.AccessToken, JwtBearerDefaults.AuthenticationScheme);
 
     public AuthenticationTokenRequest GivenAuthTokenRequest(string scope,
-        IEnumerable<KeyValuePair<string, string>> claims = null,
+        IEnumerable<KeyValuePair<string, string[]>> claims = null,
         [CallerMemberName] string testName = "")
     {
         var auth = new AuthenticationTokenRequest()
@@ -152,7 +153,7 @@ public class AuthenticationSteps : Steps
         => GivenIHaveAToken(OcelotScopes.Api, null, JwtSigningServerUrl, null, testName);
 
     public async Task<BearerToken> GivenIHaveAToken(string scope,
-        IEnumerable<KeyValuePair<string, string>> claims = null,
+        IEnumerable<KeyValuePair<string, string[]>> claims = null,
         string issuerUrl = null,
         string audience = null,
         [CallerMemberName] string testName = "")
@@ -265,21 +266,21 @@ public class AuthenticationSteps : Steps
         return bt;
     }
 
-    private static bool IsRoleKey(KeyValuePair<string, string> kv)
+    private static bool IsRoleKey(KeyValuePair<string, string[]> kv)
         => nameof(ClaimTypes.Role).Equals(kv.Key, StringComparison.OrdinalIgnoreCase)
             || ClaimTypes.Role.Equals(kv.Key);
-    private static bool IsNotRoleKey(KeyValuePair<string, string> kv)
+    private static bool IsNotRoleKey(KeyValuePair<string, string[]> kv)
         => !IsRoleKey(kv);
 
     public static BearerToken GenerateToken(string issuerUrl, AuthenticationTokenRequest auth)
     {
         var userClaims = auth.Claims // await _userManager.GetClaimsAsync(user);
             .Where(IsNotRoleKey)
-            .Select(kv => new Claim(kv.Key, kv.Value))
+            .SelectMany(kv => kv.Value.Select(x=> new Claim(kv.Key, x)))
             .ToList();
         var roleClaims = auth.Claims // await _userManager.GetRolesAsync(user);
             .Where(IsRoleKey)
-            .Select(kv => new Claim(/*ClaimTypes.Role*/kv.Key, kv.Value)) // ClaimTypes.Role is not supported, see AuthorizationTests.Should_fix_issue_240
+            .SelectMany(kv => kv.Value.Select(x=> new Claim(/*ClaimTypes.Role*/kv.Key, x))) // ClaimTypes.Role is not supported, see AuthorizationTests.Should_fix_issue_240
             .ToList();
         var claims = new List<Claim>(4 + auth.Claims.Count)
         {

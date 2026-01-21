@@ -10,7 +10,7 @@ public class ClaimsAuthorizerTests : UnitTest
 {
     private readonly ClaimsAuthorizer _claimsAuthorizer;
     private ClaimsPrincipal _claimsPrincipal;
-    private Dictionary<string, string> _requirement;
+    private Dictionary<string, string[]> _requirement;
     private List<PlaceholderNameAndValue> _urlPathPlaceholderNameAndValues;
     private Response<bool> _result;
 
@@ -27,9 +27,9 @@ public class ClaimsAuthorizerTests : UnitTest
         {
             new("UserType", "registered"),
         })));
-        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        GivenARouteClaimsRequirement(new Dictionary<string, string[]>
         {
-            {"UserType", "registered"},
+            {"UserType", new [] { "registered" } },
         });
 
         // Act
@@ -47,9 +47,9 @@ public class ClaimsAuthorizerTests : UnitTest
         {
             new("userid", "14"),
         })));
-        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        GivenARouteClaimsRequirement(new Dictionary<string, string[]>
         {
-            {"userid", "{userId}"},
+            {"userid", new[] { "{userId}" }},
         });
         GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
         {
@@ -71,9 +71,9 @@ public class ClaimsAuthorizerTests : UnitTest
         {
             new("userid", "15"),
         })));
-        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        GivenARouteClaimsRequirement(new Dictionary<string, string[]>
         {
-            {"userid", "{userId}"},
+            {"userid", new [] { "{userId}" } },
         });
         GivenAPlaceHolderNameAndValueList(new List<PlaceholderNameAndValue>
         {
@@ -96,9 +96,9 @@ public class ClaimsAuthorizerTests : UnitTest
             new("UserType", "guest"),
             new("UserType", "registered"),
         })));
-        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        GivenARouteClaimsRequirement(new Dictionary<string, string[]>
         {
-            {"UserType", "registered"},
+            {"UserType", new[] { "registered" }},
         });
 
         // Act
@@ -113,9 +113,9 @@ public class ClaimsAuthorizerTests : UnitTest
     {
         // Arrange
         GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>())));
-        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        GivenARouteClaimsRequirement(new Dictionary<string, string[]>
         {
-            { "UserType", "registered" },
+            { "UserType", new[] { "registered" } },
         });
 
         // Act
@@ -130,7 +130,7 @@ public class ClaimsAuthorizerTests : UnitTest
         _claimsPrincipal = claimsPrincipal;
     }
 
-    private void GivenARouteClaimsRequirement(Dictionary<string, string> requirement)
+    private void GivenARouteClaimsRequirement(Dictionary<string, string[]> requirement)
     {
         _requirement = requirement;
     }

@@ -12,7 +12,7 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
 {
-    private static Dictionary<string, string> GivenAddQueriesToRequest(FileRoute route)
+    private static Dictionary<string, string[]> GivenAddQueriesToRequest(FileRoute route)
     {
         route.AddQueriesToRequest = new()
         {
@@ -21,10 +21,10 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
             { "UserType", $"Claims[{OcelotClaims.OcSub}] > value[0] > |" },
             { "UserId", $"Claims[{OcelotClaims.OcSub}] > value[1] > |" },
         };
-        var claims = new Dictionary<string, string>()
+        var claims = new Dictionary<string, string[]>()
         {
-            { "CustomerId", "111" },
-            { "LocationId", "222" },
+            { "CustomerId", new [] { "111" } },
+            { "LocationId", new [] { "222" } },
         };
         return claims;
     }

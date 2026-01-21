@@ -136,7 +136,7 @@ public class FileRouteTests : UnitTest
         expected.QoSOptions = new() { DurationOfBreak = 20 };
         expected.RateLimitOptions ??= new() { Period = "value21" };
         expected.RequestIdKey = "value22";
-        expected.RouteClaimsRequirement.Add("key23", "value23");
+        expected.RouteClaimsRequirement.Add("key23", new[] { "value23" });
         expected.RouteIsCaseSensitive = true;
         expected.SecurityOptions.IPAllowedList.Add("value24");
         expected.ServiceName = "test-service";

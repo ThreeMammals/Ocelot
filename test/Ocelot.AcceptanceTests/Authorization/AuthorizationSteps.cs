@@ -16,6 +16,6 @@ public class AuthorizationSteps : AuthenticationSteps
     public const string DefaultAudience = null;
     public Task<BearerToken> GivenIHaveATokenWithScope(string scope, [CallerMemberName] string testName = "")
         => GivenIHaveAToken(scope, null, JwtSigningServerUrl, DefaultAudience, testName);
-    public Task<BearerToken> GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string>> claims, [CallerMemberName] string testName = "")
+    public Task<BearerToken> GivenIHaveATokenWithClaims(IEnumerable<KeyValuePair<string, string[]>> claims, [CallerMemberName] string testName = "")
         => GivenIHaveAToken(OcelotScopes.Api, claims, JwtSigningServerUrl, DefaultAudience, testName);
 }

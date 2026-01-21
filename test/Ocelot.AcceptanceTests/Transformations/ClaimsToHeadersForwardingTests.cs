@@ -26,10 +26,10 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             { "UserId", $"Claims[{OcelotClaims.OcSub}] > value[1] > |" },
         };
         var configuration = GivenConfiguration(route);
-        var claims = new Dictionary<string, string>()
+        var claims = new Dictionary<string, string[]>()
         {
-            { "CustomerId", "111" },
-            { "LocationId", "222" },
+            { "CustomerId", new [] { "111" } },
+            { "LocationId", new[] { "222" } },
         };
         var testName = TestName();
         this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
