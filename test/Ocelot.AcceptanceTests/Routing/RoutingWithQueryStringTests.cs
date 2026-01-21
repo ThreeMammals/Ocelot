@@ -340,216 +340,52 @@ public sealed class RoutingWithQueryStringTests : Steps
             .BDDfy();
     }
 
-    [Fact]
+    [Theory]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
-    public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder_acceptance()
+    [InlineData("/finance/v1/payment-methods/{id}", "/v1/payment-methods/{id}", // Placeholder: {id}, Query: customer_id
+        "/finance/v1/payment-methods/?customer_id=123",
+        "/v1/payment-methods/", "?customer_id=123")]
+    [InlineData("/finance/v1/payment-methods/{id}/orders/{oid}", "/v1/orders/{id}/{oid}", // Placeholder: {id}, Query: orderid, customer_id
+        "/finance/v1/payment-methods/1/orders/2?id=1&oid=2&orderid=3&customer_id=4",
+        "/v1/orders/1/2", "?orderid=3&customer_id=4")]
+    [InlineData("/finance/v1/users/{customer_id}", "/v1/users/{customer_id}", // Placeholder: {customer_id}, Query: id
+        "/finance/v1/users/123?id=999&customer_id=x",
+        "/v1/users/123", "?id=999")]
+    [InlineData("/finance/v1/items/{id}/{Id}", "/v1/items/{Id}/{id}", // Placeholder: {Id}, Query: id, Id
+        "/finance/v1/items/1/2?id=3&Id=4&ID=5&extra=x", // case insensitive params will be removed
+        "/v1/items/2/1", "?extra=x")]
+    [InlineData("/finance/v1/data/{id}", "/v1/data/{id}", // Placeholder: {id}, Query: xid, idx, id
+        "/finance/v1/data/123/?xid=1&idx=2&id=3&extra=x",
+        "/v1/data/123/", "?xid=1&idx=2&extra=x")]
+    [InlineData("/finance/v1/records/{id1}", "/v1/records/{id1}", // Placeholder: {id1}, Query: id1, id10
+        "/finance/v1/records/123/?id1=1&id10=10&extra=x",
+        "/v1/records/123/", "?id10=10&extra=x")]
+    [InlineData("/finance/v1/alpha/{id}", "/v1/alpha/{id}", // Placeholder: {id}, Query: id_, _id, id
+        "/finance/v1/alpha/123/?id_=1&_id=2&id=3&extra=x",
+        "/v1/alpha/123/", "?id_=1&_id=2&extra=x")]
+    [InlineData("/finance/v2/orders/{id}", "/v2/orders/{id}", // Placeholder: {id}, Query: multiple query parameters
+        "/finance/v2/orders/42?status=active&customer_id=123&extra=x",
+        "/v2/orders/42", "?status=active&customer_id=123&extra=x")]
+    public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder(
+        string upstream, string downstream, string url, string path, string query)
     {
-        // This test ensures that a placeholder like {id} does not remove or corrupt parameters like customer_id
-        var id = "123";
-        var customerId = "12345";
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port,
-            "/v1/payment-methods",
-            "/v1/payment-methods");
+        var route = GivenRoute(port, upstream, downstream);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", "Hello from Laura"))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, path, "Hello from Bhargav"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/payment-methods?customer_id={customerId}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?customer_id={customerId}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_is_substring_of_param_name_acceptance()
-    {
-        // Placeholder: {id}, Query: orderid, customer_id
-        var port = PortFinder.GetRandomPort();
-        var customerId = "12345";
-        var orderId = "999";
-        var route = GivenRoute(port,
-            "/v1/orders",
-            "/v1/orders");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/orders", "Order OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/orders?orderid={orderId}&customer_id={customerId}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Order OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/orders"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?orderid={orderId}&customer_id={customerId}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_is_superstring_of_param_name_acceptance()
-    {
-        // Placeholder: {customer_id}, Query: id
-        var port = PortFinder.GetRandomPort();
-        var id = "999";
-        var route = GivenRoute(port,
-            "/v1/users",
-            "/v1/users");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/users", "User OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/users?id={id}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("User OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/users"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id={id}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_and_param_differ_by_case_acceptance()
-    {
-        // Placeholder: {Id}, Query: id, Id
-        var port = PortFinder.GetRandomPort();
-        var id = "999";
-        var Id = "123";
-        var route = GivenRoute(port,
-            "/v1/items",
-            "/v1/items");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/items", "Item OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/items?id={id}&Id={Id}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Item OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/items"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id={id}&Id={Id}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_is_surrounded_by_other_characters_acceptance()
-    {
-        // Placeholder: {id}, Query: xid, idx, id
-        var port = PortFinder.GetRandomPort();
-        var xid = "1";
-        var idx = "2";
-        var id = "3";
-        var route = GivenRoute(port,
-            "/v1/data",
-            "/v1/data");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/data", "Data OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/data?xid={xid}&idx={idx}&id={id}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Data OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/data"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?xid={xid}&idx={idx}&id={id}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_is_numeric_acceptance()
-    {
-        // Placeholder: {id1}, Query: id1, id10
-        var port = PortFinder.GetRandomPort();
-        var id1 = "123";
-        var id10 = "456";
-        var route = GivenRoute(port,
-            "/v1/records",
-            "/v1/records");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/records", "Records OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/records?id1={id1}&id10={id10}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Records OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/records"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id1={id1}&id10={id10}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_not_remove_query_parameter_when_placeholder_is_prefix_or_suffix_acceptance()
-    {
-        // Placeholder: {id}, Query: id_, _id, id
-        var port = PortFinder.GetRandomPort();
-        var id_ = "1";
-        var _id = "2";
-        var id = "3";
-        var route = GivenRoute(port,
-            "/v1/alpha",
-            "/v1/alpha");
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/alpha", "Alpha OK"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v1/alpha?id_={id_}&_id={_id}&id={id}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Alpha OK"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/alpha"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?id_={id_}&_id={_id}&id={id}"))
-            .BDDfy();
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public void Should_preserve_query_parameters_with_id_suffix_when_multiple_query_parameters_exist()
-    {
-        // Arrange
-        const string customerId = "456789";
-        const string status = "active";
-        var port = PortFinder.GetRandomPort();
-
-        var route = GivenRoute(
-            port,
-            "/v2/orders/{id}",
-            "/v2/orders/{id}"
-        );
-
-        var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v2/orders/42", "orders-response"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway($"/v2/orders/42?status={status}&customer_id={customerId}"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("orders-response"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/v2/orders/42"))
-            .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?status={status}&customer_id={customerId}"))
+            .When(x => WhenIGetUrlOnTheApiGateway(url))
+            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Bhargav"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe(path))
+            .And(x => ThenTheDownstreamUrlQueryStringShouldBe(query))
             .BDDfy();
     }
     #endregion of PR 2351
-    /*
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, string queryString, string responseBody)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
-        {
-            bool failed = context.Request.PathBase.Value != basePath || context.Request.QueryString.Value != queryString;
-            context.Response.StatusCode = failed ? StatusCodes.Status500InternalServerError : StatusCodes.Status200OK;
-            return context.Response.WriteAsync(failed ? "downstream path didnt match base path" : responseBody);
-        });
-    }*/
 
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, /*string queryString,*/ string responseBody)
+    private void GivenThereIsAServiceRunningOn(int port, string basePath, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
 

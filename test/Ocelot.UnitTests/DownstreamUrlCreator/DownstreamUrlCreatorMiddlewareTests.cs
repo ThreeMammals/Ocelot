@@ -661,105 +661,42 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
-    #region PR 2351
-    [Fact]
+    [Theory]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
-    public async Task Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder()
+    [InlineData("/v1/payment-methods", "{id}",
+        "http://localhost:5003/v1/payment-methods?customer_id=12345", null, "?customer_id=12345")]
+    [InlineData("/v1/orders", "{id}",
+        "http://localhost:5003/v1/orders?orderid=999&customer_id=12345", null, "?orderid=999&customer_id=12345")]
+    [InlineData("/v1/users", "{customer_id}",
+        "http://localhost:5003/v1/users?id=999", null, "?id=999")]
+    [InlineData("/v1/records", "{id1}",
+        "http://localhost:5003/v1/records?id1=123&id10=456", "http://localhost:5003/v1/records?id10=456", "?id10=456")]
+    public async Task Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder(
+        string downstreamPath, string placeholder, string url, string downstreamUrl, string query)
     {
         var downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownstreamPathTemplate("/v1/payment-methods")
+            .WithDownstreamPathTemplate(downstreamPath)
             .WithUpstreamHttpMethod([HttpMethods.Get])
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
             .Build();
-        
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>
-            {
-                new("{id}", "123"), // This {id} placeholder should not affect customer_id query parameter
-            },
-            new Route(downstreamRoute, HttpMethod.Get)));
-        
-        GivenTheDownstreamRequestUriIs("http://localhost:5003/v1/payment-methods?customer_id=12345");
+            [ new(placeholder, "123") ],
+            new(downstreamRoute, HttpMethod.Get)
+        ));
+        GivenTheDownstreamRequestUriIs(url);
         GivenTheServiceProviderConfigIs(config);
-        GivenTheUrlReplacerWillReturn("/v1/payment-methods");
+        GivenTheUrlReplacerWillReturn(downstreamPath);
 
         // Act
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/payment-methods?customer_id=12345");
-        ThenTheQueryStringIs("?customer_id=12345");
+        ThenTheDownstreamRequestUriIs(downstreamUrl ?? url);
+        ThenTheQueryStringIs(query);
     }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public async Task Should_not_remove_query_parameter_when_placeholder_is_substring_of_param_name()
-    {
-        // Placeholder: {id}, Query: orderid, customer_id
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownstreamPathTemplate("/v1/orders")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .WithDownstreamScheme("http")
-            .Build();
-        var config = new ServiceProviderConfigurationBuilder().Build();
-        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue> { new("{id}", "123") },
-            new Route(downstreamRoute, HttpMethod.Get)));
-        GivenTheDownstreamRequestUriIs("http://localhost:5003/v1/orders?orderid=999&customer_id=12345");
-        GivenTheServiceProviderConfigIs(config);
-        GivenTheUrlReplacerWillReturn("/v1/orders");
-        await _middleware.Invoke(_httpContext);
-        ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/orders?orderid=999&customer_id=12345");
-        ThenTheQueryStringIs("?orderid=999&customer_id=12345");
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public async Task Should_not_remove_query_parameter_when_placeholder_is_superstring_of_param_name()
-    {
-        // Placeholder: {customer_id}, Query: id
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownstreamPathTemplate("/v1/users")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .WithDownstreamScheme("http")
-            .Build();
-        var config = new ServiceProviderConfigurationBuilder().Build();
-        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue> { new("{customer_id}", "123") },
-            new Route(downstreamRoute, HttpMethod.Get)));
-        GivenTheDownstreamRequestUriIs("http://localhost:5003/v1/users?id=999");
-        GivenTheServiceProviderConfigIs(config);
-        GivenTheUrlReplacerWillReturn("/v1/users");
-        await _middleware.Invoke(_httpContext);
-        ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/users?id=999");
-        ThenTheQueryStringIs("?id=999");
-    }
-
-    [Fact]
-    [Trait("Bug", "2346")]
-    public async Task Should_not_remove_query_parameter_when_placeholder_is_numeric()
-    {
-        // Placeholder: {id1}, Query: id1, id10
-        var downstreamRoute = new DownstreamRouteBuilder()
-            .WithDownstreamPathTemplate("/v1/records")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
-            .WithDownstreamScheme("http")
-            .Build();
-        var config = new ServiceProviderConfigurationBuilder().Build();
-        GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue> { new("{id1}", "123") },
-            new Route(downstreamRoute, HttpMethod.Get)));
-        GivenTheDownstreamRequestUriIs("http://localhost:5003/v1/records?id1=123&id10=456");
-        GivenTheServiceProviderConfigIs(config);
-        GivenTheUrlReplacerWillReturn("/v1/records");
-        await _middleware.Invoke(_httpContext);
-        ThenTheDownstreamRequestUriIs("http://localhost:5003/v1/records?id10=456");
-        ThenTheQueryStringIs("?id10=456");
-    }
-    #endregion of PR 2351
 
     private static ReadOnlySpan<char> GetPath(string downstreamPath)
         => DownstreamUrlCreatorMiddlewareTestWrapper.GetPath(downstreamPath);

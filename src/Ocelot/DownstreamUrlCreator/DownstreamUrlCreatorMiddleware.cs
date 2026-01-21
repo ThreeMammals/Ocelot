@@ -117,8 +117,6 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
         return QueryHelpers.AddQueryString(string.Empty, parameters);
     }
 
-    //protected static string MapQueryParameter(KeyValuePair<string, string> pair) => $"{pair.Key}={pair.Value}";
-
     /// <summary>
     /// Feature 467: <see href="https://github.com/ThreeMammals/Ocelot/pull/467">Added support for query string parameters in upstream path template</see>.
     /// </summary>
