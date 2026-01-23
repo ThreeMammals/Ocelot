@@ -1,0 +1,46 @@
+{
+  "Routes": [
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/laura",
+      "DownstreamPathTemplate": "/fact",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        { "Host": "catfact.ninja", "Port": 443 }
+      ],
+      "Key": "Laura",
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "5s",
+        "PeriodTimespan": 1,
+        "Limit": 1
+      }
+    },
+    {
+      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamPathTemplate": "/tom",
+      "DownstreamPathTemplate": "/fact",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        { "Host": "catfact.ninja", "Port": 443 }
+      ],
+      "Key": "Tom",
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Policy": "fixed"
+      }
+    }
+  ],
+  "Aggregates": [
+    {
+      "UpstreamPathTemplate": "/",
+      "RouteKeys": [ "Tom", "Laura" ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "RateLimitOptions": {
+      "QuotaExceededMessage": "Customize Tips!",
+      "HttpStatusCode": 418 // I'm a teapot
+    }
+  }
+}

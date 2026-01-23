@@ -137,6 +137,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotMessageInvokerPool();
         Services.AddOcelotMetadata();
         Services.AddOcelotRateLimiting();
+        Services.AddAspNetRateLimiting(configurationRoot); // Feature: AspNet Rate Limiting
 
         // Add ASP.NET services
         var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
