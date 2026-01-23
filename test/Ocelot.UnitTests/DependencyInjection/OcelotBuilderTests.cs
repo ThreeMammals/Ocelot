@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.MiddlewareAnalysis;
@@ -345,9 +347,26 @@ public class OcelotBuilderTests : UnitTest
         _serviceProvider.GetService<IControllerActivator>()
             .ShouldNotBeNull().ShouldBeOfType<ServiceBasedControllerActivator>();
 
-        // .AddAuthorization()
+        // .AddAuthorization() -> .AddAuthorizationCore()
+        //_serviceProvider.GetService<Microsoft.AspNetCore.Authorization.AuthorizationMetrics>()
+        //    .ShouldNotBeNull().ShouldBeOfType<AuthorizationMetrics>();
+        _serviceProvider.GetService<IAuthorizationService>()
+            .ShouldNotBeNull()
+            .GetType().Name.ShouldBe("DefaultAuthorizationServiceImpl");
+        _serviceProvider.GetService<IAuthorizationPolicyProvider>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationPolicyProvider>();
+        _serviceProvider.GetService<IAuthorizationHandlerProvider>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationHandlerProvider>();
+        _serviceProvider.GetService<IAuthorizationEvaluator>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationEvaluator>();
+        _serviceProvider.GetService<IAuthorizationHandlerContextFactory>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationHandlerContextFactory>();
+        _serviceProvider.GetService<IAuthorizationHandler>()
+            .ShouldNotBeNull().ShouldBeOfType<PassThroughAuthorizationHandler>();
+
         scope.ServiceProvider.GetService<IAuthenticationService>()
-            .ShouldNotBeNull().ShouldBeOfType<AuthenticationService>();
+            .ShouldNotBeNull()
+            .GetType().Name.ShouldBe("AuthenticationServiceImpl");
         _serviceProvider.GetService<IApplicationModelProvider>()
             .ShouldNotBeNull()
             .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
