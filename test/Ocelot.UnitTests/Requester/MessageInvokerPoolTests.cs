@@ -231,6 +231,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
 
         var handler = AssertTimeoutDelegatingHandler(invoker);
         var baseHandler = handler.InnerHandler as SocketsHttpHandler;
+        Assert.NotNull(baseHandler.CookieContainer);
         Assert.NotNull(baseHandler?.SslOptions?.RemoteCertificateValidationCallback);
         bool alwaysTrue = baseHandler.SslOptions.RemoteCertificateValidationCallback.Invoke(this, null, null, SslPolicyErrors.None);
         Assert.True(alwaysTrue);
@@ -385,6 +386,7 @@ public class MessageInvokerPoolBase : UnitTest
         var handlerOptions = new HttpHandlerOptions()
         {
             MaxConnectionsPerServer = int.MaxValue,
+            UseCookieContainer = true,
         };
         var route = new DownstreamRouteBuilder()
             .WithQosOptions(qosOptions)
