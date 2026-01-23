@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -20,7 +18,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
 {
     private DownstreamRoute _downstreamRoute1;
     private DownstreamRoute _downstreamRoute2;
-    private IWebHost _host;
 
     [Fact]
     [Trait("PR", "1824")]
@@ -106,41 +103,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         _ocelotLogger.Verify(
             x => x.LogWarning(It.Is<Func<string>>(y => y.Invoke() == $"You have ignored all SSL warnings by using DangerousAcceptAnyServerCertificateValidator for this DownstreamRoute -> {_context.Items.DownstreamRoute().Name()}")),
             Times.Once);
-    }
-
-    // Actually it should be moved to acceptance testing because of usage of running downstream service host,
-    // and the test requires a design review
-    [Fact(Skip = nameof(SequentialTests) + ": It is unstable and should be tested in sequential mode")]
-    [Trait("PR", "1824")]
-    public async Task Should_reuse_cookies_from_container()
-    {
-        // Arrange
-        var route = new DownstreamRouteBuilder()
-            .WithQosOptions(new())
-            .WithHttpHandlerOptions(new() { UseCookieContainer = true, UseProxy = true })
-            .WithLoadBalancerKey(string.Empty)
-            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
-
-            // The test should pass without timeout definition -> implicit default timeout
-            //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
-            .Build();
-
-        //using ServiceHandler handler = new();
-        var port = PortFinder.GetRandomPort();
-        GivenADownstreamService(port); // sometimes it fails because of port binding
-
-        GivenTheFactoryReturns(new());
-        GivenAMessageInvokerPool();
-        GivenARequest(route, port);
-
-        // Act, Assert
-        var toUrl = Url(port);
-        await WhenICallTheClient(toUrl);
-        _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
-
-        // Act, Assert
-        await WhenICallTheClient(toUrl);
-        _response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     #region PR 2073
@@ -300,45 +262,6 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never());
     }
 
-    private void GivenADownstreamService(int port)
-    {
-        var count = 0;
-        _host = TestHostBuilder.Create()
-            .UseUrls(Url(port))
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .Configure(app =>
-            {
-                app.Run(context =>
-                {
-                    if (count == 0)
-                    {
-                        context.Response.Cookies.Append("test", "0");
-                        context.Response.StatusCode = 200;
-                        count++;
-                        return Task.CompletedTask;
-                    }
-
-                    if (count == 1)
-                    {
-                        if (context.Request.Cookies.TryGetValue("test", out var cookieValue) ||
-                            context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
-                        {
-                            context.Response.StatusCode = 200;
-                            return Task.CompletedTask;
-                        }
-
-                        context.Response.StatusCode = 500;
-                    }
-
-                    return Task.CompletedTask;
-                });
-            })
-            .Build();
-        _host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
-    }
-
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
 
     private async Task WhenICallTheClient(string url)
@@ -367,73 +290,73 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
             .WithHttpHandlerOptions(new() { MaxConnectionsPerServer = 10, PooledConnectionLifeTime = TimeSpan.FromSeconds(120) })
             .WithUpstreamHttpMethod(["Get"])
             .Build();
-}
 
-[Collection(nameof(SequentialTests))]
-public sealed class MessageInvokerPoolSequentialTests : MessageInvokerPoolBase
-{
-    [Fact]
-    [Trait("Bug", "1833")]
-    public void SendAsync_NoQosAndNoRouteTimeouts_ShouldTimeoutAfterDefaultSeconds()
+    [Collection(nameof(SequentialTests))]
+    public sealed class Sequential : MessageInvokerPoolBase
     {
-        // Arrange
-        var route = GivenRoute(null, null);
-        GivenTheFactoryReturnsNothing();
-        GivenAMessageInvokerPool();
-        GivenARequest(route, PortFinder.GetRandomPort());
-
-        // Act, Assert
-        DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // minimum possible
-        try
+        [Fact]
+        [Trait("Bug", "1833")]
+        public void SendAsync_NoQosAndNoRouteTimeouts_ShouldTimeoutAfterDefaultSeconds()
         {
-            //int marginMs = 50;
-            //var expected = TimeSpan.FromSeconds(DownstreamRoute.LowTimeout);
-            //var watcher = await TestRetry.NoWaitAsync(
-            //    () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
-            //AssertTimeoutPrecisely(watcher, expected);
-            // Act
-            using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+            // Arrange
+            var route = GivenRoute(null, null);
+            GivenTheFactoryReturnsNothing();
+            GivenAMessageInvokerPool();
+            GivenARequest(route, PortFinder.GetRandomPort());
 
-            // Assert
-            AssertTimeout(invoker, DownstreamRoute.LowTimeout);
+            // Act, Assert
+            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // minimum possible
+            try
+            {
+                //int marginMs = 50;
+                //var expected = TimeSpan.FromSeconds(DownstreamRoute.LowTimeout);
+                //var watcher = await TestRetry.NoWaitAsync(
+                //    () => WhenICallTheClientWillThrowAfterTimeout(expected, marginMs *= 2)); // call up to 3 times with margins 100, 200, 400
+                //AssertTimeoutPrecisely(watcher, expected);
+                // Act
+                using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+
+                // Assert
+                AssertTimeout(invoker, DownstreamRoute.LowTimeout);
+            }
+            finally
+            {
+                DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+            }
         }
-        finally
-        {
-            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
-        }
-    }
 
-    [Fact]
-    [Trait("PR", "2073")]
-    [Trait("Feat", "1314")]
-    [Trait("Feat", "1869")]
-    public void EnsureRouteTimeoutIsGreaterThanQosOne_RouteQosTimeoutIsGreaterThanRouteOne_EnsuredQos()
-    {
-        // Arrange
-        var route = GivenRoute(DownstreamRoute.LowTimeout + 1, null);
-        GivenTheFactoryReturnsNothing();
-        GivenAMessageInvokerPool();
-        GivenARequest(route, PortFinder.GetRandomPort());
-        Func<string> fMsg = null;
-        _ocelotLogger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
-            .Callback<Func<string>>(f => fMsg = f);
-
-        // Act, Assert
-        DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // minimum possible
-        try
+        [Fact]
+        [Trait("PR", "2073")]
+        [Trait("Feat", "1314")]
+        [Trait("Feat", "1869")]
+        public void EnsureRouteTimeoutIsGreaterThanQosOne_RouteQosTimeoutIsGreaterThanRouteOne_EnsuredQos()
         {
-            // Act
-            using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+            // Arrange
+            var route = GivenRoute(DownstreamRoute.LowTimeout + 1, null);
+            GivenTheFactoryReturnsNothing();
+            GivenAMessageInvokerPool();
+            GivenARequest(route, PortFinder.GetRandomPort());
+            Func<string> fMsg = null;
+            _ocelotLogger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+                .Callback<Func<string>>(f => fMsg = f);
 
-            // Assert
-            AssertTimeout(invoker, 8); // should have doubled QoS timeout
-            _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
-            var message = fMsg?.Invoke() ?? string.Empty;
-            Assert.Equal("Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS Timeout is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the QoS Timeout (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!", message);
-        }
-        finally
-        {
-            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+            // Act, Assert
+            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // minimum possible
+            try
+            {
+                // Act
+                using var invoker = _pool.Get(_context.Items.DownstreamRoute());
+
+                // Assert
+                AssertTimeout(invoker, 8); // should have doubled QoS timeout
+                _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Once());
+                var message = fMsg?.Invoke() ?? string.Empty;
+                Assert.Equal("Route '/' has Quality of Service settings (QoSOptions) enabled, but either the DownstreamRoute.DefaultTimeoutSeconds or the QoS Timeout is misconfigured: specifically, the DownstreamRoute.DefaultTimeoutSeconds (3000 ms) is shorter than the QoS Timeout (4000 ms). To mitigate potential request failures, logged errors, or unexpected behavior caused by Polly's timeout strategy, Ocelot auto-doubled the QoS Timeout and applied 8000 ms to the route Timeout instead of using DownstreamRoute.DefaultTimeoutSeconds. However, this adjustment does not guarantee correct Polly behavior. Therefore, it's essential to assign correct values to both timeouts as soon as possible!", message);
+            }
+            finally
+            {
+                DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+            }
         }
     }
 }
