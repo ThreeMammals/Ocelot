@@ -55,6 +55,10 @@ public class RateLimitOptionsCreator : IRateLimitOptionsCreator
 
         rule.ClientIdHeader = rule.ClientIdHeader.IfEmpty(globalRule.ClientIdHeader.IfEmpty(RateLimitOptions.DefaultClientHeader));
         rule.ClientWhitelist ??= globalRule.ClientWhitelist ?? [];
+        if (!(rule.ClientWhitelist?.Count > 0)) // TODO IfEmpty ICollection
+        {
+            rule.ClientWhitelist = globalRule.ClientWhitelist ?? [];
+        }
 
         // Final merging of EnableHeaders is implemented in the constructor
         rule.DisableRateLimitHeaders ??= globalRule.DisableRateLimitHeaders;
