@@ -350,9 +350,12 @@ public class OcelotBuilderTests : UnitTest
         // .AddAuthorization() -> .AddAuthorizationCore()
         //_serviceProvider.GetService<Microsoft.AspNetCore.Authorization.AuthorizationMetrics>()
         //    .ShouldNotBeNull().ShouldBeOfType<AuthorizationMetrics>();
-        _serviceProvider.GetService<IAuthorizationService>()
-            .ShouldNotBeNull()
+        _serviceProvider.GetService<IAuthorizationService>().ShouldNotBeNull()
+#if NET10_0_OR_GREATER
             .GetType().Name.ShouldBe("DefaultAuthorizationServiceImpl");
+#else
+            .ShouldBeOfType<DefaultAuthorizationService>();
+#endif
         _serviceProvider.GetService<IAuthorizationPolicyProvider>()
             .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationPolicyProvider>();
         _serviceProvider.GetService<IAuthorizationHandlerProvider>()
@@ -364,9 +367,12 @@ public class OcelotBuilderTests : UnitTest
         _serviceProvider.GetService<IAuthorizationHandler>()
             .ShouldNotBeNull().ShouldBeOfType<PassThroughAuthorizationHandler>();
 
-        scope.ServiceProvider.GetService<IAuthenticationService>()
-            .ShouldNotBeNull()
+        scope.ServiceProvider.GetService<IAuthenticationService>().ShouldNotBeNull()
+#if NET10_0_OR_GREATER
             .GetType().Name.ShouldBe("AuthenticationServiceImpl");
+#else
+            .ShouldBeOfType<AuthenticationService>();
+#endif
         _serviceProvider.GetService<IApplicationModelProvider>()
             .ShouldNotBeNull()
             .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");
