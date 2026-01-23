@@ -66,9 +66,6 @@
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
     <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <!-- Microsoft -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.2" />

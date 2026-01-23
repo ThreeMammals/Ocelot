@@ -23,17 +23,11 @@
     <PackageIcon>ocelot_icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
     <None Include="..\ocelot_icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTracing" Version="0.12.1" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />

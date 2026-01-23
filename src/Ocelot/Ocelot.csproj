@@ -48,9 +48,6 @@
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 8.0 target -->

@@ -41,9 +41,6 @@
   <ItemGroup>
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
     <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />
   </ItemGroup>
 </Project>

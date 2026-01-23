@@ -137,8 +137,6 @@ public sealed class ClientWebSocketOptionsProxyTests : UnitTest, IDisposable
 
         // Act
         var actual = _proxy.RemoteCertificateValidationCallback;
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SA1129 // Do not use default value type constructor
         var actualValue = actual?.Invoke(new(), new(), new(), new());
 
         // Assert
