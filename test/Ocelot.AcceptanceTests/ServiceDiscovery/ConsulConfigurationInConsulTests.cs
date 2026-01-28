@@ -1,13 +1,14 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.RateLimiting;
 using Ocelot.Cache;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Provider.Consul;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -348,11 +349,11 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
         {
             if (context.Request.Method.Equals(HttpMethods.Get, StringComparison.CurrentCultureIgnoreCase) && context.Request.Path.Value == "/v1/kv/InternalConfiguration")
             {
-                var json = JsonConvert.SerializeObject(_config);
+                var json = JsonSerializer.Serialize(_config, OcelotSerializerOptions.Web);
                 var bytes = Encoding.UTF8.GetBytes(json);
                 var base64 = Convert.ToBase64String(bytes);
                 var kvp = new FakeConsulGetResponse(base64);
-                json = JsonConvert.SerializeObject(new[] { kvp });
+                json = JsonSerializer.Serialize(new[] { kvp }, OcelotSerializerOptions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }
@@ -365,8 +366,8 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
                     // Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
                     // var json = reader.ReadToEnd();                                            
                     var json = await reader.ReadToEndAsync();
-                    _config = JsonConvert.DeserializeObject<FileConfiguration>(json);
-                    var response = JsonConvert.SerializeObject(true);
+                    _config = JsonSerializer.Deserialize<FileConfiguration>(json, OcelotSerializerOptions.Web);
+                    var response = JsonSerializer.Serialize(true, OcelotSerializerOptions.Web);
                     await context.Response.WriteAsync(response);
                 }
                 catch (Exception e)
@@ -377,7 +378,7 @@ public sealed class ConsulConfigurationInConsulTests : RateLimitingSteps
             }
             else if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
             {
-                var json = JsonConvert.SerializeObject(_consulServices);
+                var json = JsonSerializer.Serialize(_consulServices, OcelotSerializerOptions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 await context.Response.WriteAsync(json);
             }

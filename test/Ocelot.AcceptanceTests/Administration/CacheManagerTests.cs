@@ -2,17 +2,11 @@
 using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using System.Net;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;

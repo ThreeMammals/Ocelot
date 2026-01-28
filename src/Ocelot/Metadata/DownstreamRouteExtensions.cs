@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.Infrastructure;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -68,7 +69,7 @@ public static class DownstreamRouteExtensions
         var metadata = route?.MetadataOptions.Metadata;
         return (metadata == null || !metadata.TryGetValue(key, out var metadataValue) || metadataValue == null)
             ? defaultValue
-            : (T)ConvertTo(typeof(T), metadataValue, route.MetadataOptions, options ?? new(JsonSerializerDefaults.Web));
+            : (T)ConvertTo(typeof(T), metadataValue, route.MetadataOptions, options ?? OcelotSerializerOptions.Web);
     }
 
     // TODO See Metadata sample

@@ -1,12 +1,13 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.WebSockets;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Provider.Consul;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -100,7 +101,7 @@ public sealed class ConsulWebSocketTests : WebSocketsSteps
         {
             if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
             {
-                var json = JsonConvert.SerializeObject(_serviceEntries);
+                var json = JsonSerializer.Serialize(_serviceEntries, OcelotSerializerOptions.Web);
                 context.Response.Headers.Append("Content-Type", "application/json");
                 return context.Response.WriteAsync(json);
             }

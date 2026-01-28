@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -333,7 +334,7 @@ public sealed class CachingTests : Steps
             LastName = "Test",
         };
 
-        var testBody1String = JsonSerializer.Serialize(testBody1);
+        var testBody1String = JsonSerializer.Serialize(testBody1, OcelotSerializerOptions.Web);
 
         var testBody2 = new TestBody
         {
@@ -343,7 +344,7 @@ public sealed class CachingTests : Steps
             LastName = "Test",
         };
 
-        var testBody2String = JsonSerializer.Serialize(testBody2);
+        var testBody2String = JsonSerializer.Serialize(testBody2, OcelotSerializerOptions.Web);
 
         return (testBody1String, testBody2String);
     }

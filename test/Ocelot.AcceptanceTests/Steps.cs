@@ -8,6 +8,8 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests;
 

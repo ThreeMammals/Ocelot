@@ -3,12 +3,13 @@ using KubeClient.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.Kubernetes;
 
@@ -19,8 +20,7 @@ namespace Ocelot.UnitTests.Kubernetes;
 [Collection(nameof(SequentialTests))]
 public class KubeTests : FileUnitTest
 {
-    static JsonSerializerSettings JsonSerializerSettings => KubeClient.ResourceClients.KubeResourceClient.SerializerSettings;
-
+    // static JsonSerializerSettings JsonSerializerSettings => KubeClient.ResourceClients.KubeResourceClient.SerializerSettings;
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
 
@@ -233,17 +233,17 @@ public class KubeTests : FileUnitTest
 
                 if (responseStatusCode == HttpStatusCode.OK)
                 {
-                    responseBody = JsonConvert.SerializeObject(endpointEntries, JsonSerializerSettings);
+                    responseBody = JsonSerializer.Serialize(endpointEntries, OcelotSerializerOptions.Web);
                 }
                 else
                 {
-                    responseBody = JsonConvert.SerializeObject(new StatusV1
+                    responseBody = JsonSerializer.Serialize(new StatusV1
                     {
                         Message = GetKubeApiErrorMessage(serviceName, namespaces, responseStatusCode),
                         Reason = responseStatusCode.ToString(),
                         Code = (int)responseStatusCode,
                         Status = StatusV1.FailureStatus,
-                    }, JsonSerializerSettings);
+                    }, OcelotSerializerOptions.Web); // JsonSerializerSettings);
                 }
 
                 context.Response.StatusCode = (int)responseStatusCode;

@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using Ocelot.Logging;
+using System.Text.Json;
 
 namespace Ocelot.Configuration.Repository;
 
@@ -95,7 +96,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
     /// <returns>hash of the config.</returns>
     private static string ToJson(FileConfiguration config)
     {
-        var currentHash = JsonConvert.SerializeObject(config);
+        var currentHash = JsonSerializer.Serialize(config, OcelotSerializerOptions.Web);
         return currentHash;
     }
 

@@ -465,8 +465,8 @@
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "NfGnevAV0r2gqtZWxa/7uCm3MNRYz1o4WRHhFahgBq46LuG2eaLwXIlPgtgaRUvf9CCrGFnuzN47MOzJUH1HKg=="
+        "resolved": "9.0.12",
+        "contentHash": "LyvCiOzotNkRgn4wtksKjp/KEljoNtQpuAdunh6PipeyRP/qIdzmeeIjFLUaknkk237eMuYYi2YbkG0pbFBpDg=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -483,16 +483,16 @@
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "l5L3Ov+pyD0dfK2bv6IMU2KPEyaaWnix6U0/YhgkNBGEOAgVTVlvh5ZyXWuuRlCtLnOziz+VtM5HFeqLlH2AbA=="
+        "resolved": "9.0.12",
+        "contentHash": "T69549unMgkU+kbmDOVWYplDiJP6+b1V4NxXh/ao6ITp9xfWCeNPd/H8OI/WLxM/jjYreAVOLJaNayxtFVd7vA=="
       },
       "System.Text.Json": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "DGToqSFbBSU6pMSbZuJ+7jDvLa73rvpcYdGFqZIB3FKdCVlEAbrBJrl9PuCT6E0QbdhXjPwqalYc5lxjUqMQzw==",
+        "resolved": "9.0.12",
+        "contentHash": "wHv2GrfYd4/uaoZQJj6NOR8M0AlnWJ2/MFAHQomSMqk+/rSIY6AlcitL6LXbTgXf8+ngGjAAmQm17kfbNplQ9w==",
         "dependencies": {
-          "System.IO.Pipelines": "9.0.11",
-          "System.Text.Encodings.Web": "9.0.11"
+          "System.IO.Pipelines": "9.0.12",
+          "System.Text.Encodings.Web": "9.0.12"
         }
       },
       "ocelot": {
@@ -501,8 +501,8 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.22, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.22, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[9.0.12, )"
         }
       }
     },
@@ -522,8 +522,8 @@
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "l5L3Ov+pyD0dfK2bv6IMU2KPEyaaWnix6U0/YhgkNBGEOAgVTVlvh5ZyXWuuRlCtLnOziz+VtM5HFeqLlH2AbA=="
+        "resolved": "9.0.12",
+        "contentHash": "T69549unMgkU+kbmDOVWYplDiJP6+b1V4NxXh/ao6ITp9xfWCeNPd/H8OI/WLxM/jjYreAVOLJaNayxtFVd7vA=="
       }
     },
     "net8.0/win-x64": {
@@ -542,8 +542,8 @@
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "l5L3Ov+pyD0dfK2bv6IMU2KPEyaaWnix6U0/YhgkNBGEOAgVTVlvh5ZyXWuuRlCtLnOziz+VtM5HFeqLlH2AbA=="
+        "resolved": "9.0.12",
+        "contentHash": "T69549unMgkU+kbmDOVWYplDiJP6+b1V4NxXh/ao6ITp9xfWCeNPd/H8OI/WLxM/jjYreAVOLJaNayxtFVd7vA=="
       }
     },
     "net9.0": {
@@ -1022,8 +1022,8 @@
       },
       "System.Text.Json": {
         "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "DGToqSFbBSU6pMSbZuJ+7jDvLa73rvpcYdGFqZIB3FKdCVlEAbrBJrl9PuCT6E0QbdhXjPwqalYc5lxjUqMQzw=="
+        "resolved": "9.0.12",
+        "contentHash": "wHv2GrfYd4/uaoZQJj6NOR8M0AlnWJ2/MFAHQomSMqk+/rSIY6AlcitL6LXbTgXf8+ngGjAAmQm17kfbNplQ9w=="
       },
       "ocelot": {
         "type": "Project",
@@ -1031,8 +1031,8 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.11, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.11, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[9.0.12, )"
         }
       }
     },

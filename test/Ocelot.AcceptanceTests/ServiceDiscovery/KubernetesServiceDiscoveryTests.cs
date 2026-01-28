@@ -4,11 +4,11 @@ using KubeClient.ResourceClients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
@@ -18,6 +18,7 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -442,7 +443,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
                     }
 
                     endpoints.Metadata.Generation = _k8sServiceGeneration;
-                    json = JsonConvert.SerializeObject(endpoints, KubeResourceClient.SerializerSettings);
+                    json = JsonSerializer.Serialize(endpoints, OcelotSerializerOptions.Web);
                 }
 
                 if (context.Request.Headers.TryGetValue("Authorization", out var values))
@@ -494,7 +495,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             foreach (var @event in events)
             {
                 _k8sWatchResetEvent.WaitOne();
-                var json = JsonConvert.SerializeObject(@event, KubeResourceClient.SerializerSettings);
+                // var json = JsonSerializer.Serialize(@event, OcelotSerializerOptions.Web); // KubeResourceClient.SerializerSettings);
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(@event, KubeResourceClient.SerializerSettings);
                 await using var sw = new StreamWriter(context.Response.Body);
                 await sw.WriteLineAsync(json);
                 await sw.FlushAsync();
