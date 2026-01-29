@@ -53,7 +53,11 @@ public class AuthenticationOptionsCreator : IAuthenticationOptionsCreator
         options.AllowAnonymous ??= globalOptions.AllowAnonymous;
         options.AllowedScopes ??= globalOptions.AllowedScopes;
         options.AuthenticationProviderKey = options.AuthenticationProviderKey.IfEmpty(globalOptions.AuthenticationProviderKey);
-        options.AuthenticationProviderKeys ??= globalOptions.AuthenticationProviderKeys;
+        if (!(options.AuthenticationProviderKeys?.Length > 0)) // TODO IfEmpty ICollection
+        {
+            options.AuthenticationProviderKeys = globalOptions.AuthenticationProviderKeys ?? [];
+        }
+
         return new(options);
     }
 }

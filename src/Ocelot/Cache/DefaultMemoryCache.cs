@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.Cache;
 
@@ -27,7 +28,7 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
 
     public T AddOrUpdate(string key, T value, string region, TimeSpan ttl)
     {
-        if (_memoryCache.TryGetValue(key, out var cached))
+        if (_memoryCache.TryGetValue(key, out _))
         {
             _memoryCache.Remove(key);
         }
@@ -48,7 +49,7 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
 
     public void ClearRegion(string region)
     {
-        if (_regions.TryGetValue(region, out var keys))
+        if (region.IsNotEmpty() && _regions.TryGetValue(region, out var keys))
         {
             foreach (var key in keys)
             {
@@ -61,16 +62,16 @@ public class DefaultMemoryCache<T> : IOcelotCache<T>
 
     private void SetRegion(string region, string key)
     {
-        if (_regions.TryGetValue(region, out var current))
+        if (region.IsNotEmpty() && _regions.TryGetValue(region, out var current))
         {
-            if (!current.Contains(key))
+            if (key.IsNotEmpty() && !current.Contains(key))
             {
                 current.Add(key);
             }
         }
-        else
+        else if (region.IsNotEmpty())
         {
-            _regions.TryAdd(region, new() { key });
+            _regions.TryAdd(region, [key]);
         }
     }
 

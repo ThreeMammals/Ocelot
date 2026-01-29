@@ -1,7 +1,4 @@
-﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SA1133 // Do not combine attributes
-
-using Ocelot.Configuration.Creator;
+﻿using Ocelot.Configuration.Creator;
 using System.Text.Json.Serialization;
 using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 

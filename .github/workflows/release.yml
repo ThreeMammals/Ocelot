@@ -8,7 +8,7 @@ jobs:
   build-windows:
     strategy:
       matrix:
-        dotnet-version: [ '8', '9' ]
+        dotnet-version: [ '8', '9', '10' ]
     runs-on: windows-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
@@ -43,7 +43,7 @@ jobs:
     needs: build-windows
     strategy:
       matrix:
-        dotnet-version: [ '8', '9' ]
+        dotnet-version: [ '8', '9', '10' ]
     runs-on: macos-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
@@ -82,7 +82,7 @@ jobs:
     needs: build-macos
     strategy:
       matrix:
-        dotnet-version: [ '8', '9' ]
+        dotnet-version: [ '8', '9', '10' ]
     runs-on: ubuntu-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
@@ -145,13 +145,13 @@ jobs:
         run: |
           chmod +x .github/steps/*.sh
           ls -l .github/steps/*.sh
-      - name: Check .NET 9
+      - name: Check .NET 10
         id: check-dotnet
-        run: ./.github/steps/check-dotnet.sh 9
-      - name: Setup .NET 9
+        run: ./.github/steps/check-dotnet.sh 10
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9.x
+          dotnet-version: 10.x
           cache: true
           cache-dependency-path: |
             samples/**/packages.lock.json

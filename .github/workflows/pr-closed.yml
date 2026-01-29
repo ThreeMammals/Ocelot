@@ -17,10 +17,18 @@ jobs:
           echo Pull request $pr_no cache items to be deleted...
           gh cache list --ref refs/pull/$pr_no/merge          
           echo --------------------------------------
-          echo All cache items to be deleted...
+          echo All cache items...
           gh cache list
           echo --------------------------------------
           # gh cache list --ref refs/pull/$pr_no/merge --json id --jq '.[].id' | xargs -n1 gh cache delete
           # Sometimes, items produced by other workflows get reused in the PR workflow
-          gh cache delete --all --succeed-on-no-caches
+          # gh cache delete --all --succeed-on-no-caches
+          echo "PR $pr_no: deleting caches for refs/pull/$pr_no/merge..."
+          ids=$(gh cache list --ref refs/pull/$pr_no/merge --json id --jq '.[].id')
+          if [ -z "$ids" ]; then
+            echo "No PR caches found."
+          else
+            echo "$ids" | xargs -r -I{} sh -c 'gh cache delete {} || echo "delete {} failed (ignored)"'
+          fi
           echo DONE
+        continue-on-error: true

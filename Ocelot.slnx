@@ -1,0 +1,14 @@
+<Solution>
+  <Project Path="src/Ocelot/Ocelot.csproj" />
+  <Project Path="src/Ocelot.Cache.CacheManager/Ocelot.Cache.CacheManager.csproj" />
+  <Project Path="src/Ocelot.Provider.Consul/Ocelot.Provider.Consul.csproj" />
+  <Project Path="src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj" />
+  <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
+  <Project Path="src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj" />
+  <Project Path="src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj" />
+  <Project Path="src/Ocelot.Tracing.OpenTracing/Ocelot.Tracing.OpenTracing.csproj" />
+  <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
+  <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />
+  <Project Path="test/Ocelot.ManualTest/Ocelot.ManualTest.csproj" />
+  <Project Path="test/Ocelot.UnitTests/Ocelot.UnitTests.csproj" />
+</Solution>
