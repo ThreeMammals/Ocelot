@@ -15,8 +15,13 @@ public class MessageInvokerHttpRequester : IHttpRequester
         IMessageInvokerPool messageHandlerPool,
         IExceptionToErrorMapper mapper)
     {
+        ArgumentNullException.ThrowIfNull(loggerFactory);
         _logger = loggerFactory.CreateLogger<MessageInvokerHttpRequester>();
+
+        ArgumentNullException.ThrowIfNull(messageHandlerPool);
         _messageHandlerPool = messageHandlerPool;
+
+        ArgumentNullException.ThrowIfNull(mapper);
         _mapper = mapper;
     }
 

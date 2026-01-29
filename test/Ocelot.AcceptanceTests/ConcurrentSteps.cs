@@ -265,6 +265,7 @@ public class ConcurrentSteps : Steps
         if (analyzer == null) return;
         int bottom = analyzer.BottomOfConnections(),
             top = analyzer.TopOfConnections();
+        bottom = Math.Min(bottom, _counters.Min());
         ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
     }
 

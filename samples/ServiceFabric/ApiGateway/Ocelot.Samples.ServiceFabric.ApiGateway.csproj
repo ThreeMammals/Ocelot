@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Stateless Web Service for Stateful OcelotApplicationApiGateway App</Description>
     <Platforms>Any CPU;x64</Platforms>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -23,8 +23,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceFabric" Version="10.1.2493" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="7.1.2493" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="11.3.475" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.3.475" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />

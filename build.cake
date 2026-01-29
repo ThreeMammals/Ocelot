@@ -2,7 +2,7 @@
 #tool nuget:?package=ReportGenerator&version=5.5.1
 
 #addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
-#addin nuget:?package=System.Text.Encodings.Web&version=9.0.11
+#addin nuget:?package=System.Text.Encodings.Web&version=10.0.2
 
 #r "Spectre.Console"
 using Spectre.Console;
@@ -15,8 +15,8 @@ using System.Text.RegularExpressions;
 
 bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net8.0;net9.0";
-const string LatestFramework = "net9.0";
+const string AllFrameworks = "net8.0;net9.0;net10.0";
+const string LatestFramework = "net10.0";
 string NL = Environment.NewLine;
 
 // Create a CultureInfo object for UK English
@@ -67,7 +67,7 @@ string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
 
 var target = Argument("target", "Default");
-var slnFile = (target == Release) ? $"./Ocelot.{Release}.sln" : "./Ocelot.sln";
+var slnFile = "./Ocelot.slnx";
 Information($"{NL}Target: {target}");
 Information($"Build: {compileConfig}");
 Information($"Solution: {slnFile}");
@@ -126,7 +126,7 @@ Task("Compile")
 		};
 		if (target == "LatestFramework")
 		{
-			settings.Framework = LatestFramework; // build using .NET 9 SDK only
+			settings.Framework = LatestFramework; // build using .NET 10 SDK only
 		}
 		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
@@ -780,7 +780,9 @@ private GitVersion GetNuGetVersionForCommit()
 private void PersistVersion(string committedVersion, string newVersion)
 {
 	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, newVersion));
-	var projectFiles = GetFiles("./**/*.csproj").ToList();
+	var projectFiles = GetFiles("./**/*.csproj")
+		.Where(f => !f.FullPath.Contains("Ocelot.Samples."))
+		.ToList();
 	foreach(var projectFile in projectFiles)
 	{
 		var file = projectFile.ToString();

@@ -12,7 +12,7 @@ public class InternalConfiguration : IInternalConfiguration
     public CacheOptions CacheOptions { get; set; }
     public Version DownstreamHttpVersion { get; init; }
 
-    /// <summary>Global HTTP version policy. It is related to <see cref="FileRoute.DownstreamHttpVersionPolicy"/> property.</summary>
+    /// <summary>Global HTTP version policy. It is related to <see cref="FileRouteBase.DownstreamHttpVersionPolicy"/> property.</summary>
     /// <value>An <see cref="HttpVersionPolicy"/> enumeration value.</value>
     public HttpVersionPolicy DownstreamHttpVersionPolicy { get; init; }
     public string DownstreamScheme { get; init; }

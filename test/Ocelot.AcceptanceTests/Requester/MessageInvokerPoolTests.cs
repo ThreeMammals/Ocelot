@@ -1,13 +1,123 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Logging;
+using Ocelot.Middleware;
+using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 
 namespace Ocelot.AcceptanceTests.Requester;
 
 public sealed class MessageInvokerPoolTests : RequesterSteps
 {
+    #region TODO Redevelop to minimize the code
+    [Fact]
+    [Trait("PR", "1824")] // https://github.com/ThreeMammals/Ocelot/pull/1824
+    public async Task Should_reuse_cookies_from_container()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(new())
+            .WithHttpHandlerOptions(new() { UseCookieContainer = true, UseProxy = true })
+            .WithLoadBalancerKey(string.Empty)
+            .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue(string.Empty).Build())
+
+            // The test should pass without timeout definition -> implicit default timeout
+            //.WithTimeout(DownstreamRoute.DefaultTimeoutSeconds)
+            .Build();
+
+        //using ServiceHandler handler = new();
+        var port = PortFinder.GetRandomPort();
+        GivenADownstreamService(port); // sometimes it fails because of port binding
+
+        GivenTheFactoryReturns(new());
+        GivenAMessageInvokerPool();
+        GivenARequest(route, port);
+
+        // Act, Assert
+        var toUrl = DownstreamUrl(port);
+        await WhenICallTheClient(toUrl);
+        _response.Headers.TryGetValues("Set-Cookie", out _).ShouldBeTrue();
+
+        // Act, Assert
+        await WhenICallTheClient(toUrl);
+        _response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+    private Mock<IDelegatingHandlerFactory> _handlerFactory;
+    private HttpResponseMessage _response;
+    private MessageInvokerPool _pool;
+    private readonly DefaultHttpContext _context = new();
+    private readonly Mock<IOcelotLogger> _ocelotLogger = new();
+    private readonly Mock<IOcelotLoggerFactory> _ocelotLoggerFactory = new();
+    private async Task WhenICallTheClient(string url)
+    {
+        var messageInvoker = _pool.Get(_context.Items.DownstreamRoute());
+        _response = await messageInvoker
+            .SendAsync(new HttpRequestMessage(HttpMethod.Get, url), CancellationToken.None);
+    }
+    private void GivenAMessageInvokerPool() =>
+        _pool = new MessageInvokerPool(_handlerFactory.Object, _ocelotLoggerFactory.Object);
+    private void GivenTheFactoryReturns(List<DelegatingHandler> handlers)
+    {
+        _handlerFactory = new Mock<IDelegatingHandlerFactory>();
+        _handlerFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
+            .Returns(handlers);
+    }
+    private void GivenARequest(DownstreamRoute downstream, int port)
+        => GivenARequestWithAUrlAndMethod(downstream, port, HttpMethod.Get);
+    private void GivenARequestWithAUrlAndMethod(DownstreamRoute downstream, int port, HttpMethod method)
+    {
+        var url = DownstreamUrl(port);
+        _context.Items.UpsertDownstreamRoute(downstream);
+        _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
+        { RequestUri = new Uri(url), Method = method }));
+    }
+    private IWebHost _host;
+    private void GivenADownstreamService(int port)
+    {
+        var count = 0;
+        var hostUrl = DownstreamUrl(port);
+        _host = TestHostBuilder.Create()
+            .UseUrls(hostUrl)
+            .UseKestrel()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseIISIntegration()
+            .Configure(app =>
+            {
+                app.Run(context =>
+                {
+                    if (count == 0)
+                    {
+                        context.Response.Cookies.Append("test", "0");
+                        context.Response.StatusCode = 200;
+                        count++;
+                        return Task.CompletedTask;
+                    }
+
+                    if (count == 1)
+                    {
+                        if (context.Request.Cookies.TryGetValue("test", out var cookieValue) ||
+                            context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
+                        {
+                            context.Response.StatusCode = 200;
+                            return Task.CompletedTask;
+                        }
+
+                        context.Response.StatusCode = 500;
+                    }
+
+                    return Task.CompletedTask;
+                });
+            })
+            .Build();
+        _host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
+    }
+    #endregion
+
     [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "2320")]

@@ -168,7 +168,7 @@ public class AuthenticationSteps : Steps
     }
 
     protected readonly Dictionary<string, AuthenticationTokenRequest> AuthTokens = new();
-    protected AuthenticationTokenRequest AuthToken => AuthTokens.First().Value;
+    protected AuthenticationTokenRequest AuthToken => AuthTokens.Count > 0 ? AuthTokens.First().Value : new();
     public event EventHandler<AuthenticationTokenRequestEventArgs> AuthTokenRequesting;
     protected virtual void OnAuthenticationTokenRequest(AuthenticationTokenRequestEventArgs e)
         => AuthTokenRequesting?.Invoke(this, e);
