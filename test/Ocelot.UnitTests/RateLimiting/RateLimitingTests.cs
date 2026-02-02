@@ -283,12 +283,15 @@ public class RateLimitingTests : RateLimitingTestsBase
     [Collection(nameof(SequentialTests))]
     public class Sequential : RateLimitingTestsBase
     {
-        [SkippableFact]
+        [Fact]
         [Trait("Bug", "1590")]
         public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
         {
             // The test is stable in Linux and Windows only
-            Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Assert.Skip("Skip in MacOS because the test is very unstable");
+            }
 
             // Arrange: user scenario
             const long limit = 100L, requestsPerSecond = 20L;
