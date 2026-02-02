@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Tracing.Butterfly;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Ocelot.AcceptanceTests.Tracing;
 
