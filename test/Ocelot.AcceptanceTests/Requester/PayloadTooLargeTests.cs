@@ -42,7 +42,7 @@ public sealed class PayloadTooLargeTests : Steps
     [Fact]
     public void Should_throw_payload_too_large_exception_using_http_sys()
     {
-        Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skip in MacOS because the test is very unstable");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Test is unstable for all platforms except Windows OS");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethods.Post);
