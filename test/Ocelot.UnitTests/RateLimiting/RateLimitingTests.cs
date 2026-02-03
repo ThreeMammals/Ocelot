@@ -288,7 +288,7 @@ public class RateLimitingTests : RateLimitingTestsBase
         public void ProcessRequest_PeriodTimespanValueIsGreaterThanPeriod_ExpectedBehaviorAndExpirationInPeriod()
         {
             // The test is stable in Linux and Windows only
-            Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
+            Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
 
             // Arrange: user scenario
             const long limit = 100L, requestsPerSecond = 20L;
