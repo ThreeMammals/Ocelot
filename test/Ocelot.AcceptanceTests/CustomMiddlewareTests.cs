@@ -223,6 +223,54 @@ public class CustomMiddlewareTests : Steps
             .BDDfy();
     }
 
+    [Fact]
+    public void Should_call_after_http_authentication_middleware()
+    {
+        var pipelineConfiguration = new OcelotPipelineConfiguration
+        {
+            AfterAuthenticationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    public void Should_call_after_authorization_middleware()
+    {
+        var pipelineConfiguration = new OcelotPipelineConfiguration
+        {
+            AfterAuthorizationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
     private void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)
     {
         var builder = TestHostBuilder.Create()

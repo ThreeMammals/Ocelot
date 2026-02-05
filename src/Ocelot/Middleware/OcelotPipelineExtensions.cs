@@ -91,6 +91,9 @@ public static class OcelotPipelineExtensions
         // We allow the Ocelot middleware to be overriden by whatever the user wants.
         app.UseIfNotNull<AuthenticationMiddleware>(configuration.AuthenticationMiddleware);
 
+        // Allow After authentication logic. The idea being people might want to run something custom after what is built in.
+        app.UseIfNotNull(configuration.AfterAuthenticationMiddleware);
+
         // The next thing we do is look at any claims transforms in case this is important for authorization
         app.UseMiddleware<ClaimsToClaimsMiddleware>();
 
@@ -100,6 +103,9 @@ public static class OcelotPipelineExtensions
         // Now we have authenticated and done any claims transformation, we can authorize the request by AuthorizationMiddleware.
         // We allow the Ocelot middleware to be overriden by whatever the user wants.
         app.UseIfNotNull<AuthorizationMiddleware>(configuration.AuthorizationMiddleware);
+
+        // Allow after authorization logic. The idea being people might want to run something custom after what is built in.
+        app.UseIfNotNull(configuration.AfterAuthorizationMiddleware);
 
         // Now we can run the ClaimsToHeadersMiddleware: we allow the Ocelot middleware to be overriden by whatever the user wants.
         app.UseIfNotNull<ClaimsToHeadersMiddleware>(configuration.ClaimsToHeadersMiddleware);
