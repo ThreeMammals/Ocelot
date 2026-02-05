@@ -237,4 +237,26 @@ public sealed class AuthenticationTests : AuthenticationSteps
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
         await ThenTheResponseBodyShouldBeEmpty();
     }
+
+    [Fact]
+    [Trait("Feat", "1387")] // https://github.com/ThreeMammals/Ocelot/pull/1387
+    public void Should_return_www_authenticate_header_on_401()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        var configuration = GivenConfiguration(route);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveNoTokenForMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+            .And(x => ThenTheResponseShouldContainAuthChallenge())
+            .BDDfy();
+    }
+    private void GivenIHaveNoTokenForMyRequest() => ocelotClient.DefaultRequestHeaders.Authorization = null;
+    private void ThenTheResponseShouldContainAuthChallenge()
+    {
+        response.Headers.TryGetValues("WWW-Authenticate", out var headerValue).ShouldBeTrue();
+        headerValue.ShouldNotBeEmpty();
+    }
 }

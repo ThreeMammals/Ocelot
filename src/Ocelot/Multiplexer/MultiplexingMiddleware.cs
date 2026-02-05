@@ -89,6 +89,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     protected virtual Task ProcessSingleRouteAsync(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
+        context.Items.SetAuthChallenge(/*finished*/context.Items.AuthChallenge());
         return _next.Invoke(context);
     }
 
