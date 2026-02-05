@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -28,6 +29,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
+    private readonly IHeaderDictionary _requestHeaders;
 
     public DiscoveryDownstreamRouteFinderTests()
     {
@@ -38,6 +40,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _rateLimitOptions = new RateLimitOptions();
         _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
+        _requestHeaders = new HeaderDictionary();
     }
 
     [Fact]
@@ -419,11 +422,11 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     private void WhenICreate()
     {
-        _result = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        _result = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders, _requestHeaders);
     }
 
     private void WhenICreateAgain()
     {
-        _resultTwo = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        _resultTwo = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders, _requestHeaders);
     }
 }

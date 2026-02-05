@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Errors;
@@ -26,9 +26,9 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
         RuleFor(configuration => configuration.GlobalConfiguration)
             .SetValidator(fileGlobalConfigurationFluentValidator);
 
-        RuleForEach(configuration => configuration.Routes)
-            .Must((config, route) => IsNotDuplicateIn(route, config.Routes))
-            .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} has duplicate");
+            RuleForEach(configuration => configuration.Routes)
+                .Must((config, route) => IsNotDuplicateIn(route, config.Routes))
+                .WithMessage((_, route) => $"{nameof(route)} {route.UpstreamPathTemplate} has duplicate upstream path or routing header mapping");
 
         RuleForEach(configuration => configuration.Routes)
             .Must((config, route) => HaveServiceDiscoveryProviderRegistered(route, config.GlobalConfiguration.ServiceDiscoveryProvider))
@@ -123,7 +123,8 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
         var matchingRoutes = routes
             .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate
                         && r.UpstreamHost == route.UpstreamHost
-                        && AreTheSame(r.UpstreamHeaderTemplates, route.UpstreamHeaderTemplates))
+                        && AreTheSame(r.UpstreamHeaderTemplates, route.UpstreamHeaderTemplates)
+                        && AreDuplicates(route.UpstreamHeaderRoutingOptions.Headers, r.UpstreamHeaderRoutingOptions.Headers))
             .ToArray();
 
         if (matchingRoutes.Length == 1)
@@ -161,11 +162,46 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
 
         return !duplicate;
     }
-
     private static bool IsNotDuplicateIn(FileAggregateRoute route, IEnumerable<FileAggregateRoute> aggregateRoutes)
     {
         var matchingRoutes = aggregateRoutes
             .Where(r => r.UpstreamPathTemplate == route.UpstreamPathTemplate & r.UpstreamHost == route.UpstreamHost);
         return matchingRoutes.Count() <= 1;
+    }
+
+    private static bool AreDuplicates(IDictionary<string, ICollection<string>> first, IDictionary<string, ICollection<string>> second)
+    {
+        if (!first.Any() && !second.Any())
+        {
+            return true;
+        }
+
+        // if either of the two header collections is empty while the other is not, it's obvious that they can never be duplicate
+        if (first.Any() ^ second.Any())
+        {
+            return false;
+        }
+
+        var firstKeySet = first.Keys.Select(k => k.ToUpperInvariant());
+        var secondKeySet = second.Keys.Select(k => k.ToUpperInvariant());
+        if (!firstKeySet.Intersect(secondKeySet).Any())
+        {
+            return false;
+        }
+
+        foreach (var (key, firstValues) in first)
+        {
+            if (!second.TryGetValue(key, out var secondValues))
+            {
+                continue;
+            }
+
+            if (firstValues.Intersect(secondValues, StringComparer.OrdinalIgnoreCase).Any())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

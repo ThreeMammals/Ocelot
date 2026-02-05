@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
@@ -28,7 +29,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
-        IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
+        IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders, IHeaderDictionary requestHeaders)
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);

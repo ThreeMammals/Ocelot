@@ -1,0 +1,59 @@
+using Ocelot.Configuration;
+using Ocelot.Configuration.Creator;
+using Ocelot.Configuration.File;
+
+namespace Ocelot.UnitTests.Configuration;
+
+public class UpstreamHeaderRoutingOptionsCreatorTests
+{
+    private FileUpstreamHeaderRoutingOptions _fileUpstreamHeaderRoutingOptions;
+    private readonly IUpstreamHeaderRoutingOptionsCreator _creator = new UpstreamHeaderRoutingOptionsCreator();
+    private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
+
+    [Fact]
+    public void Should_create_upstream_routing_header_options()
+    {
+        UpstreamHeaderRoutingOptions expected = new(
+            headers: new Dictionary<string, ICollection<string>>()
+            {
+                { "HEADER1", new[] { "Value1", "Value2" }},
+                { "HEADER2", new[] { "Value3" }},
+            },
+            mode: UpstreamHeaderRoutingTriggerMode.All
+        );
+
+        GivenTheseFileUpstreamHeaderRoutingOptions();
+        WhenICreate();
+        ThenTheCreatedMatchesThis(expected);
+    }
+
+    private void GivenTheseFileUpstreamHeaderRoutingOptions()
+    {
+        _fileUpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions()
+        {
+            Headers = new Dictionary<string, ICollection<string>>()
+            {
+                { "Header1", new[] { "Value1", "Value2" }},
+                { "Header2", new[] { "Value3" }},
+            },
+            TriggerOn = "all",
+        };
+    }
+
+    private void WhenICreate()
+    {
+        _upstreamHeaderRoutingOptions = _creator.Create(_fileUpstreamHeaderRoutingOptions);
+    }
+
+    private void ThenTheCreatedMatchesThis(UpstreamHeaderRoutingOptions expected)
+    {
+        _upstreamHeaderRoutingOptions.Headers.Headers.Count.ShouldBe(expected.Headers.Headers.Count);
+        foreach (var pair in _upstreamHeaderRoutingOptions.Headers.Headers)
+        {
+            expected.Headers.Headers.TryGetValue(pair.Key, out var expectedValue).ShouldBe(true);
+            expectedValue.ShouldBeEquivalentTo(pair.Value);
+        }
+
+        _upstreamHeaderRoutingOptions.Mode.ShouldBe(expected.Mode);
+    }
+}

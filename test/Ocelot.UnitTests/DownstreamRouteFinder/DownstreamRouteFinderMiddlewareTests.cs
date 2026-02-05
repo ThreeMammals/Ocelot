@@ -67,7 +67,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
     {
         _downstreamRoute = new OkResponse<DownstreamRouteHolder>(downstreamRoute);
         _finder
-            .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
+            .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<HeaderDictionary>()))
             .Returns(_downstreamRoute);
     }
 

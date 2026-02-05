@@ -23,6 +23,7 @@ public class StaticRoutesCreator : IRoutesCreator
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
     private readonly IMetadataCreator _metadataCreator;
+    private readonly IUpstreamHeaderRoutingOptionsCreator _upstreamHeaderRoutingOptionsCreator;
 
     public StaticRoutesCreator(
         IClaimsToThingCreator claimsToThingCreator,
@@ -41,7 +42,8 @@ public class StaticRoutesCreator : IRoutesCreator
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
         IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
-        IMetadataCreator metadataCreator)
+        IMetadataCreator metadataCreator,
+        IUpstreamHeaderRoutingOptionsCreator upstreamHeaderRoutingOptionsCreator)
     {
         _routeKeyCreator = routeKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -61,6 +63,7 @@ public class StaticRoutesCreator : IRoutesCreator
         _versionPolicyCreator = versionPolicyCreator;
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
         _metadataCreator = metadataCreator;
+        _upstreamHeaderRoutingOptionsCreator = upstreamHeaderRoutingOptionsCreator;
     }
 
     public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
@@ -83,6 +86,7 @@ public class StaticRoutesCreator : IRoutesCreator
         var requestIdKey = _requestIdKeyCreator.Create(fileRoute, globalConfiguration);
 
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute);
+        var upstreamHeaderRoutingOptions = _upstreamHeaderRoutingOptionsCreator.Create(fileRoute.UpstreamHeaderRoutingOptions);
 
         var authOptions = _authOptionsCreator.Create(fileRoute, globalConfiguration);
 
@@ -151,6 +155,7 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
             .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
+            .WithUpstreamHeaderRoutingOptions(upstreamHeaderRoutingOptions)
             .Build();
         return route;
     }
@@ -160,12 +165,14 @@ public class StaticRoutesCreator : IRoutesCreator
         var upstreamTemplatePattern = _upstreamTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamPathTemplate
         var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(fileRoute); // TODO It should be downstreamRoute.UpstreamHeaders
         var upstreamHttpMethods = fileRoute.UpstreamHttpMethod.ToHttpMethods();
+        var upstreamHeaderRoutingOptions = _upstreamHeaderRoutingOptionsCreator.Create(fileRoute.UpstreamHeaderRoutingOptions);
         return new Route(downstreamRoute)
         {
             UpstreamHeaderTemplates = upstreamHeaderTemplates, // downstreamRoute.UpstreamHeaders
             UpstreamHost = fileRoute.UpstreamHost,
             UpstreamHttpMethod = upstreamHttpMethods,
             UpstreamTemplatePattern = upstreamTemplatePattern,
+            UpstreamHeaderRoutingOptions = upstreamHeaderRoutingOptions,
         };
     }
 }

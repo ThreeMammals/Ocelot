@@ -69,6 +69,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IClaimsToThingCreator, ClaimsToThingCreator>();
         Services.TryAddSingleton<IAuthenticationOptionsCreator, AuthenticationOptionsCreator>();
         Services.TryAddSingleton<IUpstreamTemplatePatternCreator, UpstreamTemplatePatternCreator>();
+        Services.TryAddSingleton<IUpstreamHeaderRoutingOptionsCreator, UpstreamHeaderRoutingOptionsCreator>();
         Services.TryAddSingleton<IRequestIdKeyCreator, RequestIdKeyCreator>();
         Services.TryAddSingleton<IServiceProviderConfigurationCreator, ServiceProviderConfigurationCreator>();
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
