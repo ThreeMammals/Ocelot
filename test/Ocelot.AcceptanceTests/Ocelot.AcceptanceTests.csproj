@@ -45,7 +45,7 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot.Testing" Version="24.1.0" />
+    <PackageReference Include="Ocelot.Testing" Version="25.0.0-beta.1" />
     <PackageReference Include="xunit" Version="2.9.3" /><!-- TODO Update to v3 -->
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">

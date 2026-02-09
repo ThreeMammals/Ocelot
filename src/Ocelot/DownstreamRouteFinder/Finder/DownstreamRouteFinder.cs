@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
@@ -25,7 +26,7 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
-        IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders)
+        IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
         var downstreamRoutes = new List<DownstreamRouteHolder>();
 
@@ -61,7 +62,7 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
                (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
     }
 
-    private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, IDictionary<string, string> upstreamHeaders)
+    private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, IHeaderDictionary upstreamHeaders)
     {
         var templatePlaceholderNameAndValues = _pathPlaceholderFinder
             .Find(path, query, route.UpstreamTemplatePattern.OriginalValue)

@@ -202,12 +202,12 @@
       },
       "Ocelot.Testing": {
         "type": "Direct",
-        "requested": "[24.1.0, )",
-        "resolved": "24.1.0",
-        "contentHash": "G2AgyUTjGeJip7ZkSNvNQq4l7+lmo95ju7rVnkjDnTF6vmWhSafQr1VBZ+o7OHh2LeqaMyNdq68+WZWFu9ArSw==",
+        "requested": "[25.0.0-beta.1, )",
+        "resolved": "25.0.0-beta.1",
+        "contentHash": "M1cJE0nsNhcD7U+b2hu2or2oYS7nUsXV62p8zhseLbNo52OoxjfuVB591hvwgpUiZWr9Pb4IMl3GIdcXR3MhLw==",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.11",
-          "Microsoft.AspNetCore.TestHost": "9.0.11",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "10.0.2",
+          "Microsoft.AspNetCore.TestHost": "10.0.2",
           "Shouldly": "4.3.0"
         }
       },
@@ -1491,14 +1491,14 @@
       },
       "Ocelot.Testing": {
         "type": "Direct",
-        "requested": "[24.1.0, )",
-        "resolved": "24.1.0",
-        "contentHash": "G2AgyUTjGeJip7ZkSNvNQq4l7+lmo95ju7rVnkjDnTF6vmWhSafQr1VBZ+o7OHh2LeqaMyNdq68+WZWFu9ArSw==",
+        "requested": "[25.0.0-beta.1, )",
+        "resolved": "25.0.0-beta.1",
+        "contentHash": "M1cJE0nsNhcD7U+b2hu2or2oYS7nUsXV62p8zhseLbNo52OoxjfuVB591hvwgpUiZWr9Pb4IMl3GIdcXR3MhLw==",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "8.0.22",
-          "Microsoft.AspNetCore.TestHost": "8.0.22",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "8.0.23",
+          "Microsoft.AspNetCore.TestHost": "8.0.23",
           "Shouldly": "4.3.0",
-          "System.Text.Json": "9.0.11"
+          "System.Text.Json": "10.0.2"
         }
       },
       "Polly": {
@@ -2813,13 +2813,14 @@
       },
       "Ocelot.Testing": {
         "type": "Direct",
-        "requested": "[24.1.0, )",
-        "resolved": "24.1.0",
-        "contentHash": "G2AgyUTjGeJip7ZkSNvNQq4l7+lmo95ju7rVnkjDnTF6vmWhSafQr1VBZ+o7OHh2LeqaMyNdq68+WZWFu9ArSw==",
+        "requested": "[25.0.0-beta.1, )",
+        "resolved": "25.0.0-beta.1",
+        "contentHash": "M1cJE0nsNhcD7U+b2hu2or2oYS7nUsXV62p8zhseLbNo52OoxjfuVB591hvwgpUiZWr9Pb4IMl3GIdcXR3MhLw==",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.11",
-          "Microsoft.AspNetCore.TestHost": "9.0.11",
-          "Shouldly": "4.3.0"
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.12",
+          "Microsoft.AspNetCore.TestHost": "9.0.12",
+          "Shouldly": "4.3.0",
+          "System.Text.Json": "10.0.2"
         }
       },
       "Polly": {

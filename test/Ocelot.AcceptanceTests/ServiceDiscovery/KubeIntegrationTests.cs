@@ -10,21 +10,21 @@ using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.UnitTests.Kubernetes;
+namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
 /// <summary>
 /// Contains integration tests.
 /// Move to integration testing, and add at least one "happy path" unit test.
 /// </summary>
-[Collection(nameof(SequentialTests))]
-public class KubeTests : FileUnitTest
+// [Collection(nameof(SequentialTests))]
+public class KubeIntegrationTests : Steps
 {
     static JsonSerializerSettings JsonSerializerSettings => KubeClient.ResourceClients.KubeResourceClient.SerializerSettings;
 
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IOcelotLogger> _logger;
 
-    public KubeTests()
+    public KubeIntegrationTests()
     {
         _factory = new();
         _logger = new();
@@ -41,7 +41,7 @@ public class KubeTests : FileUnitTest
             .Returns(new Service[] { new(nameof(Should_return_service_from_k8s), new("localhost", 80), string.Empty, string.Empty, Array.Empty<string>()) });
 
         var endpoints = GivenEndpoints();
-        using var kubernetes = GivenThereIsAFakeKubeServiceDiscoveryProvider(
+        GivenThereIsAFakeKubeServiceDiscoveryProvider(
             given.ClientOptions.ApiEndPoint.ToString(),
             given.ProviderOptions.KubeNamespace,
             given.ProviderOptions.KeyOfServiceInK8s,
@@ -71,7 +71,7 @@ public class KubeTests : FileUnitTest
             .Returns(new Service[] { new(nameof(Should_not_return_service_from_k8s_when_k8s_api_returns_error_response), new("localhost", 80), string.Empty, string.Empty, Array.Empty<string>()) });
 
         var endpoints = GivenEndpoints();
-        using var kubernetes = GivenThereIsAFakeKubeServiceDiscoveryProvider(
+        GivenThereIsAFakeKubeServiceDiscoveryProvider(
             given.ClientOptions.ApiEndPoint.ToString(),
             given.ProviderOptions.KubeNamespace,
             given.ProviderOptions.KeyOfServiceInK8s,
@@ -132,7 +132,7 @@ public class KubeTests : FileUnitTest
             });
 
         var endpoints = GivenEndpoints();
-        using var kubernetes = GivenThereIsAFakeKubeServiceDiscoveryProvider(
+        GivenThereIsAFakeKubeServiceDiscoveryProvider(
             given.ClientOptions.ApiEndPoint.ToString(),
             given.ProviderOptions.KubeNamespace,
             given.ProviderOptions.KeyOfServiceInK8s,
@@ -157,7 +157,7 @@ public class KubeTests : FileUnitTest
     private (IKubeApiClient Client, KubeClientOptions ClientOptions, Kube Provider, KubeRegistryConfiguration ProviderOptions)
         GivenClientAndProvider(out Mock<IKubeServiceBuilder> serviceBuilder, string namespaces = null, [CallerMemberName] string serviceName = null)
     {
-        namespaces ??= nameof(KubeTests);
+        namespaces ??= nameof(KubeIntegrationTests);
         var kubePort = PortFinder.GetRandomPort();
         serviceName ??= "test" + kubePort;
         var kubeEndpointUrl = $"{Uri.UriSchemeHttp}://localhost:{kubePort}";
@@ -181,7 +181,7 @@ public class KubeTests : FileUnitTest
     }
 
     protected EndpointsV1 GivenEndpoints(
-        string namespaces = nameof(KubeTests),
+        string namespaces = nameof(KubeIntegrationTests),
         [CallerMemberName] string serviceName = "test")
     {
         var endpoints = new EndpointsV1
@@ -208,18 +208,16 @@ public class KubeTests : FileUnitTest
         return endpoints;
     }
 
-    protected IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
-        EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
-    {
-        return GivenThereIsAFakeKubeServiceDiscoveryProvider(url, namespaces, serviceName, HttpStatusCode.OK, endpointEntries, out receivedToken);
-    }
+    protected void GivenThereIsAFakeKubeServiceDiscoveryProvider(
+        string url, string namespaces, string serviceName, EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
+        => GivenThereIsAFakeKubeServiceDiscoveryProvider(url, namespaces, serviceName, HttpStatusCode.OK, endpointEntries, out receivedToken);
 
-    protected IWebHost GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
+    protected void GivenThereIsAFakeKubeServiceDiscoveryProvider(string url, string namespaces, string serviceName,
         HttpStatusCode responseStatusCode, EndpointsV1 endpointEntries, out Lazy<string> receivedToken)
     {
         var token = string.Empty;
         receivedToken = new(() => token);
-
+        handler.GivenThereIsAServiceRunningOn(url, ProcessKubernetesRequest);
         Task ProcessKubernetesRequest(HttpContext context)
         {
             if (context.Request.Path.Value == $"/api/v1/namespaces/{namespaces}/endpoints/{serviceName}")
@@ -253,17 +251,6 @@ public class KubeTests : FileUnitTest
 
             return Task.CompletedTask;
         }
-
-        var host = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app => app.Run(ProcessKubernetesRequest))
-            .Build();
-        host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
-        return host;
     }
 
     private static string GetKubeApiErrorMessage(string serviceName, string kubeNamespace, HttpStatusCode responseStatusCode)

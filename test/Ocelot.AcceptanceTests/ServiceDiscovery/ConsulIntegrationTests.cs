@@ -1,6 +1,4 @@
 ﻿using Consul;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Logging;
@@ -9,13 +7,10 @@ using Ocelot.Provider.Consul.Interfaces;
 using System.Runtime.CompilerServices;
 using ConsulProvider = Ocelot.Provider.Consul.Consul;
 
-namespace Ocelot.UnitTests.Consul;
+namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-/// <summary>
-/// TODO Move to integration tests.
-/// </summary>
-[Collection(nameof(SequentialTests))]
-public class ConsulTests : UnitTest, IDisposable
+// [Collection(nameof(SequentialTests))]
+public class ConsulIntegrationTests : Steps
 {
     private readonly int _consulPort;
     private readonly string _consulHost;
@@ -27,11 +22,10 @@ public class ConsulTests : UnitTest, IDisposable
     private IConsulClientFactory _clientFactory;
     private IConsulServiceBuilder _serviceBuilder;
     private ConsulRegistryConfiguration _config;
-    private IWebHost _fakeConsulBuilder;
     private ConsulProvider _provider;
     private string _receivedToken;
 
-    public ConsulTests()
+    public ConsulIntegrationTests()
     {
         _consulPort = PortFinder.GetRandomPort();
         _consulHost = "localhost";
@@ -43,12 +37,6 @@ public class ConsulTests : UnitTest, IDisposable
         _factory.Setup(x => x.CreateLogger<ConsulProvider>()).Returns(_logger.Object);
         _factory.Setup(x => x.CreateLogger<PollConsul>()).Returns(_logger.Object);
         _factory.Setup(x => x.CreateLogger<DefaultConsulServiceBuilder>()).Returns(_logger.Object);
-    }
-
-    public void Dispose()
-    {
-        _fakeConsulBuilder?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private void Arrange([CallerMemberName] string serviceName = null)
@@ -189,30 +177,19 @@ public class ConsulTests : UnitTest, IDisposable
     private void GivenThereIsAFakeConsulServiceDiscoveryProvider([CallerMemberName] string serviceName = "test")
     {
         string url = $"{_consulScheme}://{_consulHost}:{_consulPort}";
-        _fakeConsulBuilder = TestHostBuilder.Create()
-            .UseUrls(url)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .UseUrls(url)
-            .Configure(app =>
+        handler.GivenThereIsAServiceRunningOn(url, async context =>
+        {
+            if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
             {
-                app.Run(async context =>
+                if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
                 {
-                    if (context.Request.Path.Value == $"/v1/health/service/{serviceName}")
-                    {
-                        if (context.Request.Headers.TryGetValue("X-Consul-Token", out var values))
-                        {
-                            _receivedToken = values.First();
-                        }
+                    _receivedToken = values.First();
+                }
 
-                        var json = JsonConvert.SerializeObject(_consulServiceEntries);
-                        context.Response.Headers.Append("Content-Type", "application/json");
-                        await context.Response.WriteAsync(json);
-                    }
-                });
-            })
-            .Build();
-        _fakeConsulBuilder.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
+                var json = JsonConvert.SerializeObject(_consulServiceEntries);
+                context.Response.Headers.Append("Content-Type", "application/json");
+                await context.Response.WriteAsync(json);
+            }
+        });
     }
 }

@@ -6,17 +6,10 @@
 [CollectionDefinition(nameof(SequentialTests), DisableParallelization = true)]
 public class SequentialTests
 {
-    /// <summary>
-    /// Unstable <see cref="Consul.ConsulTests"/>.
-    /// </summary>
-    [Collection(nameof(SequentialTests))]
-    public class ConsulTests : Consul.ConsulTests
-    { } // all tests
-
-    /// <summary>
-    /// Unstable <see cref="Kubernetes.KubeTests"/>.
-    /// </summary>
-    [Collection(nameof(SequentialTests))]
-    public class KubeTests : Kubernetes.KubeTests
-    { } // all tests
+    ///// <summary>
+    ///// Unstable <see cref="Kubernetes.KubeTests"/>.
+    ///// </summary>
+    //[Collection(nameof(SequentialTests))]
+    //public class KubeTests : Kubernetes.KubeTests
+    //{ } // all tests
 }

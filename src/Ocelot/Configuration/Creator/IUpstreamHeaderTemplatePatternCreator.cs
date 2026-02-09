@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
 
@@ -15,5 +16,5 @@ public interface IUpstreamHeaderTemplatePatternCreator
     /// <returns>An <see cref="IDictionary{TKey, TValue}"/> object where TKey is <see langword="string"/>, TValue is <see cref="UpstreamHeaderTemplate"/>.</returns>
     IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route);
 
-    IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive);
+    IDictionary<string, UpstreamHeaderTemplate> Create(IHeaderDictionary upstreamHeaderTemplates, bool routeIsCaseSensitive);
 }

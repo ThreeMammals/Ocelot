@@ -578,9 +578,9 @@ public class DynamicRoutingTests : ConcurrentSteps
     private void ThenRouteHttpHandlerOptionsAre(string serviceName, IDictionary<string, string> metadata,
         int maxConnections, int seconds, bool useTracing)
     {
-        var pool = ocelotServer.Services.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
+        var pool = OcelotServices.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
         pool.ShouldNotBeNull();
-        var tracer = ocelotServer.Services.GetService<IOcelotTracer>() as TestTracer;
+        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestTracer;
         tracer.ShouldNotBeNull();
         foreach (var kv in pool.CreatedHandlers.Where(x => x.Key.ServiceName == serviceName))
         {

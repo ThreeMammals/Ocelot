@@ -59,14 +59,11 @@ public sealed class ReturnsErrorTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningWithLogger()
-    {
-        GivenOcelotIsRunning(s =>
-        {
-            s.AddOcelot();
-            s.AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>();
-        });
-    }
+    private Task<int> GivenOcelotIsRunningWithLogger()
+        => GivenOcelotIsRunningAsync(s => s
+            .AddOcelot()
+            .Services
+            .AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>());
 
     private void GivenThereIsAServiceRunningOn(int port)
     {
@@ -75,7 +72,7 @@ public sealed class ReturnsErrorTests : Steps
 
     private void ThenWarningShouldBeLogged(int howMany)
     {
-        var loggerFactory = (MockLoggerFactory)ocelotServer.Host.Services.GetService<IOcelotLoggerFactory>();
+        var loggerFactory = (MockLoggerFactory)OcelotServices.GetService<IOcelotLoggerFactory>();
         loggerFactory.Verify(Times.Exactly(howMany));
     }
 

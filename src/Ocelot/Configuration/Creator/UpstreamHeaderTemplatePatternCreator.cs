@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
 using Ocelot.Values;
@@ -13,10 +14,20 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
     [GeneratedRegex(@"(\{header:.*?\})", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex RegexPlaceholders();
 
-    public IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
+    {
+        return Create(route.UpstreamHeaderTemplates, route.RouteIsCaseSensitive);
+    }
+
+    public IDictionary<string, UpstreamHeaderTemplate> Create(IHeaderDictionary upstreamHeaderTemplates, bool routeIsCaseSensitive)
+    {
+        var headers = upstreamHeaderTemplates.ToDictionary(h => h.Key, h => h.Value.ToString()); // TODO Review usage
+        return Create(headers, routeIsCaseSensitive);
+    }
+
+    protected virtual IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)
     {
         var result = new Dictionary<string, UpstreamHeaderTemplate>();
-
         foreach (var headerTemplate in upstreamHeaderTemplates)
         {
             var headerTemplateValue = headerTemplate.Value;
@@ -27,9 +38,9 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
                 var placeholders = matches.Select(m => m.Groups[1].Value).ToArray();
                 for (int i = 0; i < placeholders.Length; i++)
                 {
-                    var indexOfPlaceholder = headerTemplateValue.IndexOf(placeholders[i]);
-                    var placeholderName = placeholders[i][8..^1]; // remove "{header:" and "}"
-                    headerTemplateValue = headerTemplateValue.Replace(placeholders[i], $"(?<{placeholderName}>.+)");
+                    var placeholder = placeholders[i];
+                    var placeholderName = placeholder[8..^1]; // remove "{header:" and "}"
+                    headerTemplateValue = headerTemplateValue.Replace(placeholder, $"(?<{placeholderName}>.+)");
                 }
             }
 
@@ -42,7 +53,4 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
         return result;
     }
-
-    public IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route)
-        => Create(route.UpstreamHeaderTemplates, route.RouteIsCaseSensitive);
 }

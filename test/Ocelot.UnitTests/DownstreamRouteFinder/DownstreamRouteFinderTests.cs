@@ -24,7 +24,7 @@ public class DownstreamRouteFinderTests : UnitTest
     private UrlMatch _match;
     private string _upstreamHttpMethod;
     private string _upstreamHost;
-    private Dictionary<string, string> _upstreamHeaders;
+    private IHeaderDictionary _upstreamHeaders;
     private string _upstreamQuery;
 
     public DownstreamRouteFinderTests()
@@ -490,7 +490,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["header1"] = "headerValue1",
             ["header2"] = "headerValue2",
@@ -541,7 +541,7 @@ public class DownstreamRouteFinderTests : UnitTest
         };
         _upstreamUrlPath = "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
-        _upstreamHeaders = new Dictionary<string, string>() { { "header1", "headerValue1" } };
+        _upstreamHeaders = new HeaderDictionary() { { "header1", "headerValue1" } };
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
@@ -634,7 +634,7 @@ public class DownstreamRouteFinderTests : UnitTest
     private void GivenTheHeaderPlaceholderAndNameFinderReturns(List<PlaceholderNameAndValue> placeholders)
     {
         _headerPlaceholderFinder
-            .Setup(x => x.Find(It.IsAny<Dictionary<string, string>>(), It.IsAny<Dictionary<string, UpstreamHeaderTemplate>>()))
+            .Setup(x => x.Find(It.IsAny<IHeaderDictionary>(), It.IsAny<Dictionary<string, UpstreamHeaderTemplate>>()))
             .Returns(placeholders);
     }
 
@@ -667,7 +667,7 @@ public class DownstreamRouteFinderTests : UnitTest
     private void GivenTheHeadersMatcherReturns(bool headersMatch)
     {
         _mockHeadersMatcher
-            .Setup(x => x.Match(It.IsAny<Dictionary<string, string>>(), It.IsAny<Dictionary<string, UpstreamHeaderTemplate>>()))
+            .Setup(x => x.Match(It.IsAny<IHeaderDictionary>(), It.IsAny<Dictionary<string, UpstreamHeaderTemplate>>()))
             .Returns(headersMatch);
     }
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using System.Net.Sockets;
+using Ocelot.Middleware;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.Transformations;
@@ -65,7 +65,11 @@ public sealed class HeaderTests : Steps
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
             .BDDfy();
@@ -85,7 +89,11 @@ public sealed class HeaderTests : Steps
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
             .BDDfy();
@@ -106,7 +114,11 @@ public sealed class HeaderTests : Steps
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://anotherapp.azurewebsites.net/pay/Receive"))
             .BDDfy();
@@ -210,17 +222,23 @@ public sealed class HeaderTests : Steps
             .Unbox();
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
         GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, X_Forwarded_For);
+        var ocelotIP = string.Empty;
+        var pipeline = new OcelotPipelineConfiguration
+        {
+            PreErrorResponderMiddleware = async (ctx, next) =>
+            {
+                ocelotIP = ctx.Connection.RemoteIpAddress.ToString();
+                await next.Invoke();
+            },
+        };
+        await GivenOcelotIsRunningAsync(pipeline);
 
         //var remoteIpAddress = Dns.GetHostAddresses("dns.google").First(a => a.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6).ToString();
         //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        var expectedIP = Dns.GetHostAddresses(string.Empty)
-            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
-            .ToString();
-        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/expectedIP);
+        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/ocelotIP);
     }
 
     public const string X_Forwarded_For = "X-Forwarded-For";
@@ -233,9 +251,6 @@ public sealed class HeaderTests : Steps
     public async Task ShouldApplyGlobalUpstreamHeaderTransformsForAllRoutes()
     {
         const string Ot_Route = "Ot-Route";
-        var ocelotIP = Dns.GetHostAddresses(string.Empty)
-            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
-            .ToString();
         var port1 = PortFinder.GetRandomPort();
         var route1 = Box(GivenRoute(port1, "/route1"))
             .UpstreamHeaderTransform(Ot_Route, "Raman").Out();
@@ -260,7 +275,17 @@ public sealed class HeaderTests : Steps
         GivenThereIsAServiceEchoingAHeader(port2, HttpStatusCode.OK, allHeaders);
         GivenThereIsAServiceEchoingAHeader(port3, HttpStatusCode.OK, allHeaders);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+
+        var ocelotIP = string.Empty;
+        var pipeline = new OcelotPipelineConfiguration
+        {
+            PreErrorResponderMiddleware = async (ctx, next) =>
+            {
+                ocelotIP = ctx.Connection.RemoteIpAddress.ToString();
+                await next.Invoke();
+            },
+        };
+        await GivenOcelotIsRunningAsync(pipeline);
 
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
@@ -387,5 +412,22 @@ Ot-Route: ?");
             return context.Response.WriteAsync(body.ToString());
         }
         handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseBody);
+    }
+
+    /// <summary>
+    /// Using HttpClientHandler to configure auto-redirect behavior
+    /// </summary>
+    private async Task WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect(string url, bool allowAutoRedirect)
+    {
+        var handler = new HttpClientHandler()
+        {
+            AllowAutoRedirect = allowAutoRedirect,
+        };
+        var baseAddr = ocelotClient.BaseAddress;
+        ocelotClient = new(handler)
+        {
+            BaseAddress = baseAddr,
+        };
+        response = await ocelotClient.GetAsync(url);
     }
 }

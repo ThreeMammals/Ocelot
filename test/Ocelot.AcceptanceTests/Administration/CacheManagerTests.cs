@@ -1,18 +1,11 @@
 //using Ocelot.Administration;
 using CacheManager.Core;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using System.Net;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;
@@ -27,8 +20,8 @@ public sealed class CacheManagerTests : AuthenticationSteps
         Skip = "TODO: Requires redevelopment after deprecation of Ocelot.Administration.IdentityServer4 package.")]
     public async Task ShouldClearCacheRegionViaAdministrationAPI()
     {
-        int port = PortFinder.GetRandomPort();
-        var ocelotUrl = DownstreamUrl(port);
+        //int port = PortFinder.GetRandomPort();
+        //var ocelotUrl = DownstreamUrl(port);
         var configuration = new FileConfiguration
         {
             Routes = [
@@ -37,23 +30,18 @@ public sealed class CacheManagerTests : AuthenticationSteps
             ],
             GlobalConfiguration = new()
             {
-                BaseUrl = ocelotUrl,
+                //BaseUrl = ocelotUrl,
             },
         };
-        GivenThereIsAConfiguration(configuration);
+        //GivenThereIsAConfiguration(configuration);
         const string AdminPath = "/administration";
 
         //GivenOcelotIsRunning(s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath));
-        using var ocelot = await GivenOcelotHostIsRunning(
+        var port = await GivenOcelotHostIsRunning(
             WithBasicConfiguration, // Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate,
             s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath), // Action<IServiceCollection> configureServices,
             WithUseOcelot, // Action<IApplicationBuilder> configureApp,
-            (host) => host.UseUrls(ocelotUrl) // Action<IWebHostBuilder> configureHost
-        );
-        ocelotClient = new()
-        {
-            BaseAddress = new(ocelotUrl),
-        };
+            null, null, null, null);
         bool isExternal = true;
         await GivenThereIsExternalJwtSigningService(OcelotScopes.OcAdmin);
         var token = await GivenIHaveATokenWithUrlPath(

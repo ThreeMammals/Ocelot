@@ -77,35 +77,35 @@ public class TimeoutTests : TimeoutTestsBase
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
         await ThenTheResponseBodyShouldBeAsync(string.Empty);
     }
-}
 
-[Collection(nameof(SequentialTests))]
-public class TimeoutSequentialTests : TimeoutTestsBase
-{
-    [Fact]
-    [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
-    [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
-    public async Task NoRouteTimeoutAndNoGlobalOne_ShouldTimeoutAfterCustomDefaultTimeout()
+    [Collection(nameof(SequentialTests))]
+    public class Sequential : TimeoutTestsBase
     {
-        try
+        [Fact]
+        [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
+        [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
+        public async Task NoRouteTimeoutAndNoGlobalOne_ShouldTimeoutAfterCustomDefaultTimeout()
         {
-            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // override original 90s with 3s
-            int serviceTimeoutMs = Ms(DownstreamRoute.LowTimeout) + 500; // total 3.5 sec
-            var port = PortFinder.GetRandomPort();
-            var configuration = GivenConfiguration(port, routeTimeout: null, globalTimeout: null); // !!! no route timeout -> DownstreamRoute.DefaultTimeoutSeconds
-            GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs); // 3.5s > 3s -> ServiceUnavailable
-            GivenThereIsAConfiguration(configuration);
-            GivenOcelotIsRunning();
+            try
+            {
+                DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.LowTimeout; // override original 90s with 3s
+                int serviceTimeoutMs = Ms(DownstreamRoute.LowTimeout) + 500; // total 3.5 sec
+                var port = PortFinder.GetRandomPort();
+                var configuration = GivenConfiguration(port, routeTimeout: null, globalTimeout: null); // !!! no route timeout -> DownstreamRoute.DefaultTimeoutSeconds
+                GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs); // 3.5s > 3s -> ServiceUnavailable
+                GivenThereIsAConfiguration(configuration);
+                GivenOcelotIsRunning();
 
-            var watcher = await WatchWhenIGetUrlOnTheApiGateway();
+                var watcher = await WatchWhenIGetUrlOnTheApiGateway();
 
-            ThenTimeoutIsInRange(watcher, Ms(DownstreamRoute.LowTimeout), serviceTimeoutMs);
-            ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
-            await ThenTheResponseBodyShouldBeAsync(string.Empty);
-        }
-        finally
-        {
-            DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+                ThenTimeoutIsInRange(watcher, Ms(DownstreamRoute.LowTimeout), serviceTimeoutMs);
+                ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
+                await ThenTheResponseBodyShouldBeAsync(string.Empty);
+            }
+            finally
+            {
+                DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
+            }
         }
     }
 }
