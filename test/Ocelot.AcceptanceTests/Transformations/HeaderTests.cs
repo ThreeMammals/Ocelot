@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Middleware;
+using System.Net.Sockets;
 using System.Text;
 
 namespace Ocelot.AcceptanceTests.Transformations;
@@ -13,8 +14,8 @@ namespace Ocelot.AcceptanceTests.Transformations;
 public sealed class HeaderTests : Steps
 {
     private static FileHttpHandlerOptions DoNotAllowAutoRedirect => new() { AllowAutoRedirect = false };
-    private static FileHttpHandlerOptions UseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = true };
-    private static FileHttpHandlerOptions DoNotUseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = false };
+    private static FileHttpHandlerOptions UseCookieContainer => new() { UseCookieContainer = true };
+    private static FileHttpHandlerOptions DoNotUseCookieContainer => new() { UseCookieContainer = false };
 
     [Fact]
     public void Should_transform_upstream_header()
@@ -228,7 +229,7 @@ public sealed class HeaderTests : Steps
         {
             PreErrorResponderMiddleware = async (ctx, next) =>
             {
-                ocelotIP = ctx.Connection.RemoteIpAddress.ToString();
+                ocelotIP = GetRemoteIpAddress(ctx);
                 await next.Invoke();
             },
         };
@@ -281,7 +282,7 @@ public sealed class HeaderTests : Steps
         {
             PreErrorResponderMiddleware = async (ctx, next) =>
             {
-                ocelotIP = ctx.Connection.RemoteIpAddress.ToString();
+                ocelotIP = GetRemoteIpAddress(ctx);
                 await next.Invoke();
             },
         };
@@ -344,6 +345,13 @@ Ot-Route: ?");
         await WhenIGetUrlOnTheApiGateway("/route3");
         ThenTheResponseHeaderIs(Who, "? Mark");
         ThenTheResponseHeaderIs(X_Forwarded_By, configuration.GlobalConfiguration.BaseUrl);
+    }
+
+    private static string GetRemoteIpAddress(HttpContext context)
+    {
+        var ip = context.Connection.RemoteIpAddress
+                ?? Dns.GetHostAddresses(string.Empty).FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6);
+        return ip.ToString();
     }
 
     private int _count;
