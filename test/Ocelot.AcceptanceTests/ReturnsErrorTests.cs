@@ -79,22 +79,43 @@ public sealed class ReturnsErrorTests : Steps
     internal class MockLoggerFactory : IOcelotLoggerFactory
     {
         private Mock<IOcelotLogger> _logger;
+        private bool _disposed;
 
         public IOcelotLogger CreateLogger<T>()
         {
+            if (_disposed)
+                return null;
+
             if (_logger != null)
-            {
                 return _logger.Object;
-            }
 
             _logger = new Mock<IOcelotLogger>();
             _logger.Setup(x => x.LogWarning(It.IsAny<string>())).Verifiable();
             _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>())).Verifiable();
-
             return _logger.Object;
         }
 
         public void Verify(Times howMany)
             => _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), howMany);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                _logger = null;
+            }
+
+            _logger = null;
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

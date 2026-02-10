@@ -13,7 +13,7 @@ namespace Ocelot.Provider.Kubernetes;
 /// <item>GitHub: <see href="https://github.com/tintoy/dotnet-kube-client">dotnet-kube-client</see></item>
 /// </list>
 /// </remarks>
-public class Kube : IServiceDiscoveryProvider
+public class Kube : IServiceDiscoveryProvider, IDisposable
 {
     private static readonly (string ResourceKind, string ResourceApiVersion) EndPointsKubeKind = KubeObjectV1.GetKubeKind<EndpointsV1>();
 
@@ -21,6 +21,7 @@ public class Kube : IServiceDiscoveryProvider
     private readonly IOcelotLogger _logger;
     private readonly IKubeApiClient _kubeApi;
     private readonly IKubeServiceBuilder _serviceBuilder;
+    private bool _disposed;
 
     public Kube(
         KubeRegistryConfiguration configuration,
@@ -36,8 +37,10 @@ public class Kube : IServiceDiscoveryProvider
 
     public virtual async Task<List<Service>> GetAsync()
     {
-        var endpoint = await Retry.OperationAsync(GetEndpoint, CheckErroneousState, logger: _logger);
+        if (_disposed)
+            return new(0);
 
+        var endpoint = await Retry.OperationAsync(GetEndpoint, CheckErroneousState, logger: _logger);
         if (CheckErroneousState(endpoint))
         {
             _logger.LogWarning(() => GetMessage($"Unable to use bad result returned by {nameof(Kube)} integration endpoint because the final result is invalid/unknown after multiple retries!"));
@@ -53,6 +56,9 @@ public class Kube : IServiceDiscoveryProvider
 
     private async Task<EndpointsV1> GetEndpoint()
     {
+        if (_disposed)
+            return null;
+
         try
         {
             return await _kubeApi
@@ -94,5 +100,27 @@ public class Kube : IServiceDiscoveryProvider
         => $"{nameof(Kube)} provider. Namespace:{_configuration.KubeNamespace}, Service:{_configuration.KeyOfServiceInK8s}; {message}";
 
     protected virtual IEnumerable<Service> BuildServices(KubeRegistryConfiguration configuration, EndpointsV1 endpoint)
-        => _serviceBuilder.BuildServices(configuration, endpoint);
+        => _disposed
+            ? Enumerable.Empty<Service>()
+            : _serviceBuilder.BuildServices(configuration, endpoint);
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            _logger?.Dispose();
+            _kubeApi?.Dispose();
+        }
+
+        _disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

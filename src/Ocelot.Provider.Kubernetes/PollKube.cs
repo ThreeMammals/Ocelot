@@ -7,11 +7,11 @@ namespace Ocelot.Provider.Kubernetes;
 public class PollKube : IServiceDiscoveryProvider, IDisposable
 {
     private readonly IOcelotLogger _logger;
-    private readonly IServiceDiscoveryProvider _discoveryProvider;
+    private readonly IServiceDiscoveryProvider _discoveryProvider; // TODO IDisposable
     private readonly ConcurrentQueue<List<Service>> _queue = new();
 
     private Timer _timer;
-    private bool _polling;
+    private bool _polling, _disposed;
 
     public PollKube(int pollingInterval, IOcelotLoggerFactory factory, IServiceDiscoveryProvider kubeProvider)
     {
@@ -24,10 +24,8 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
     {
         // Avoid polling if already in progress due to a slow completion of the Poll task,
         // and ensure no more than three versions of services remain in the queue.
-        if (_polling || _queue.Count > 3)
-        {
+        if (_disposed || _polling || _queue.Count > 3)
             return;
-        }
 
         _polling = true;
         await Poll();
@@ -57,12 +55,19 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
 
     protected virtual async Task<List<Service>> Poll()
     {
+        if (_disposed)
+            return new(0);
+
         _polling = true;
         try
         {
             var services = await _discoveryProvider.GetAsync();
             _queue.Enqueue(services);
             return services;
+        }
+        catch (ObjectDisposedException)
+        {
+            return new(0);
         }
         finally
         {
@@ -78,10 +83,18 @@ public class PollKube : IServiceDiscoveryProvider, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
+        if (_disposed)
+            return;
+
         if (disposing)
         {
-            _timer.Dispose();
-            _timer = null;
+            _timer?.Dispose();
+            _logger?.Dispose();
         }
+
+        _timer = null;
+        _disposed = true;
     }
+
+    ~PollKube() => Dispose(false);
 }

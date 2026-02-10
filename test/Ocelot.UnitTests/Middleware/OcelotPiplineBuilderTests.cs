@@ -115,4 +115,5 @@ internal class FakeLogger : IOcelotLogger
     public void LogTrace(string message) { }
     public void LogTrace(Func<string> messageFactory) { }
     public void LogWarning(Func<string> messageFactory) { }
+    public void Dispose() { }
 }
