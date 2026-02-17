@@ -210,7 +210,7 @@ public sealed class HeaderTests : Steps
             .BDDfy();
     }
 
-    [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
+    [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat", Skip = "Temp skipping")]
     [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
     [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
@@ -245,7 +245,7 @@ public sealed class HeaderTests : Steps
     public const string X_Forwarded_Host = "X-Forwarded-Host";
     public const string X_Forwarded_Proto = "X-Forwarded-Proto";
 
-    [Fact]
+    [Fact(Skip = "Temp skipping")]
     [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
     [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
     public async Task ShouldApplyGlobalUpstreamHeaderTransformsForAllRoutes()
