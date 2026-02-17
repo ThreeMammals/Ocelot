@@ -19,15 +19,6 @@ public class WebSocketsSteps : Steps
     private readonly List<string> _secondRecieved = new();
     protected readonly List<string> _firstRecieved = new();
 
-    protected IHost Host { get; private set; }
-
-    public override void Dispose()
-    {
-        Host?.Dispose();
-        base.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
     protected static void WithConsole(WebHostBuilderContext context, ILoggingBuilder logging) => logging
         .AddConfiguration(context.Configuration.GetSection("Logging"))
         .AddConsole();
@@ -239,13 +230,14 @@ public class WebSocketsSteps : Steps
 
     protected Task StartOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices)
         => StartOcelotWithWebSockets(port, Uri.UriSchemeHttp, configureServices);
-    protected async Task StartOcelotWithWebSockets(int port, string scheme, Action<IServiceCollection> configureServices)
+    protected Task StartOcelotWithWebSockets(int port, string scheme, Action<IServiceCollection> configureServices)
     {
         var url = DownstreamUrl(port, scheme);
         void ConfigureWebHost(IWebHostBuilder b) => b
             .UseUrls(url)
             .ConfigureLogging(WithConsole);
-        Host = await GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot, WithWebSockets, ConfigureWebHost);
+        return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
+            WithWebSockets, null, ConfigureWebHost, null, null);
     }
 
     protected static void WithWebSockets(IApplicationBuilder app)
@@ -255,13 +247,13 @@ public class WebSocketsSteps : Steps
         options.Protocols = HttpProtocols.Http2;
         options.UseHttps("mycert2.pfx", "password");
     }
-    protected async Task StartHttp2OcelotWithWebSockets(int port)
+    protected Task StartHttp2OcelotWithWebSockets(int port)
     {
         void WithOptions(KestrelServerOptions o) => o.ListenAnyIP(port, WithHttp2);
         var url = DownstreamUrl(port, Uri.UriSchemeHttps);
         void ConfigureWebHost(IWebHostBuilder b) => b.UseUrls(url)
             .ConfigureLogging(WithConsole)
             .ConfigureKestrel(WithOptions).UseKestrel(); // UseKestrelHttpsConfiguration()
-        Host = await GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, ConfigureWebHost);
+        return GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, null, ConfigureWebHost, null, null);
     }
 }

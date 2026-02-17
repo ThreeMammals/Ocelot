@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Routing;
@@ -369,10 +370,11 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         var headerName = "country_code";
         var headerValue1 = "PL";
         var headerValue2 = "UK";
+        var multipleValues = new StringValues([headerValue1, "{header:whatever}"]);
         var route = GivenRouteWithUpstreamHeaderTemplates(port,
             new()
             {
-                [headerName] = headerValue1 + ";{header:whatever}",
+                [headerName] = multipleValues.ToString(), // headerValue1 + ";{header:whatever}",
             });
         var configuration = GivenConfiguration(route);
 

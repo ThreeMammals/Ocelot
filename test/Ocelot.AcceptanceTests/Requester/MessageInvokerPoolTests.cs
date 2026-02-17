@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -76,45 +74,34 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
         _context.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage
         { RequestUri = new Uri(url), Method = method }));
     }
-    private IWebHost _host;
+
     private void GivenADownstreamService(int port)
     {
         var count = 0;
-        var hostUrl = DownstreamUrl(port);
-        _host = TestHostBuilder.Create()
-            .UseUrls(hostUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .Configure(app =>
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            if (count == 0)
             {
-                app.Run(context =>
+                context.Response.Cookies.Append("test", "0");
+                context.Response.StatusCode = 200;
+                count++;
+                return Task.CompletedTask;
+            }
+
+            if (count == 1)
+            {
+                if (context.Request.Cookies.TryGetValue("test", out var cookieValue) ||
+                    context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
                 {
-                    if (count == 0)
-                    {
-                        context.Response.Cookies.Append("test", "0");
-                        context.Response.StatusCode = 200;
-                        count++;
-                        return Task.CompletedTask;
-                    }
-
-                    if (count == 1)
-                    {
-                        if (context.Request.Cookies.TryGetValue("test", out var cookieValue) ||
-                            context.Request.Headers.TryGetValue("Set-Cookie", out var headerValue))
-                        {
-                            context.Response.StatusCode = 200;
-                            return Task.CompletedTask;
-                        }
-
-                        context.Response.StatusCode = 500;
-                    }
-
+                    context.Response.StatusCode = 200;
                     return Task.CompletedTask;
-                });
-            })
-            .Build();
-        _host.Start(); // problematic starting in case of parallel running of unit tests because of failing of port binding
+                }
+
+                context.Response.StatusCode = 500;
+            }
+
+            return Task.CompletedTask;
+        });
     }
     #endregion
 
@@ -175,7 +162,7 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
         GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
         GivenThereIsAServiceRunningOnPath(ports[2], "/noTracing");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithRequesterTesting);
+        await GivenOcelotIsRunningAsync(WithRequesterTesting);
 
         await WhenIGetUrlOnTheApiGateway("/route1");
         await WhenIGetUrlOnTheApiGateway("/route2");
@@ -189,8 +176,8 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
 
     private void ThenRouteHttpHandlerOptionsAre(FileRoute route, int maxConnections, int seconds, bool useTracing)
     {
-        var pool = ocelotServer.Services.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
-        var tracer = ocelotServer.Services.GetService<IOcelotTracer>() as TestTracer;
+        var pool = OcelotServices.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
+        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestTracer;
         var kv = pool.ShouldNotBeNull()
             .CreatedHandlers.Single(x => x.Key.UpstreamPathTemplate.OriginalValue == route.UpstreamPathTemplate);
         var downstream = kv.Key;

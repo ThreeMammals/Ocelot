@@ -1,4 +1,5 @@
-﻿using Ocelot.Values;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 
@@ -7,5 +8,5 @@ namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 /// </summary>
 public interface IHeadersToHeaderTemplatesMatcher
 {
-    bool Match(IDictionary<string, string> upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> routeHeaders);
+    bool Match(IHeaderDictionary upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> routeHeaders);
 }

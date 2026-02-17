@@ -46,8 +46,8 @@ public sealed class ConfigurationReloadTests : Steps
     {
         var result = await Wait.For(timeoutMs).UntilAsync(async () =>
         {
-            var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-            var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+            var internalConfigCreator = OcelotServices.GetService<IInternalConfigurationCreator>();
+            var internalConfigRepo = OcelotServices.GetService<IInternalConfigurationRepository>();
             var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
             return internalConfig.Data.RequestId == config.Data.RequestId;
@@ -68,8 +68,8 @@ public sealed class ConfigurationReloadTests : Steps
 
     private async Task ThenConfigShouldBe(FileConfiguration fileConfig)
     {
-        var internalConfigCreator = ocelotServer.Host.Services.GetService<IInternalConfigurationCreator>();
-        var internalConfigRepo = ocelotServer.Host.Services.GetService<IInternalConfigurationRepository>();
+        var internalConfigCreator = OcelotServices.GetService<IInternalConfigurationCreator>();
+        var internalConfigRepo = OcelotServices.GetService<IInternalConfigurationRepository>();
         var internalConfig = internalConfigRepo.Get();
         var config = await internalConfigCreator.Create(fileConfig);
         internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
@@ -111,7 +111,7 @@ public sealed class ConfigurationReloadTests : Steps
 
     private void GivenIHaveAChangeToken()
     {
-        _changeToken = ocelotServer.Host.Services.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
+        _changeToken = OcelotServices.GetRequiredService<IOcelotConfigurationChangeTokenSource>();
     }
 
     private void TheChangeTokenShouldBeActive(bool itShouldBeActive)

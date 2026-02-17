@@ -94,33 +94,22 @@ public sealed class CachingTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningUsingJsonSerializedCache()
-    {
-        var builder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCacheManager((x) =>
-                    {
-                        //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
-                        x.WithJsonSerializer();
-                        x.WithHandle(typeof(InMemoryJsonHandle<>));
-                    });
-            })
-            .Configure(async app => await app.UseOcelot());
-
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
+    private Task<int> GivenOcelotIsRunningUsingJsonSerializedCache()
+        => GivenOcelotIsRunningAsync(
+            (hostingContext, config) => config
+                .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", true, false)
+                .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, false)
+                .AddJsonFile(ocelotConfigFileName, false, false)
+                .AddEnvironmentVariables(),
+            s => s.AddOcelot()
+                .AddCacheManager((x) =>
+                {
+                    //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
+                    x.WithJsonSerializer();
+                    x.WithHandle(typeof(InMemoryJsonHandle<>));
+                }),
+            WithUseOcelot);
 
     [Fact]
     public void Should_not_return_cached_response_as_ttl_expires()

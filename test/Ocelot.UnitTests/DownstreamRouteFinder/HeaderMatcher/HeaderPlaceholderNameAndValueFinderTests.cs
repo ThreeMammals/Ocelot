@@ -1,4 +1,5 @@
-﻿using Ocelot.DownstreamRouteFinder.HeaderMatcher;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
 
@@ -15,7 +16,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
     {
         // Arrange
         var upstreamHeaderTemplates = new Dictionary<string, UpstreamHeaderTemplate>();
-        var upstreamHeaders = new Dictionary<string, string>();
+        var upstreamHeaders = new HeaderDictionary();
         var expected = new List<PlaceholderNameAndValue>();
 
         // Act
@@ -33,7 +34,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             ["country"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["country"] = "PL",
         };
@@ -57,7 +58,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             ["country"] = new("^(?<countrycode>.+)-V1$", "{header:countrycode}-V1"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["country"] = "PL-V1",
         };
@@ -81,7 +82,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             ["country"] = new("^V1-(?<countrycode>.+)$", "V1-{header:countrycode}"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["country"] = "V1-PL",
         };
@@ -105,7 +106,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             ["country"] = new("^cc:(?<countrycode>.+)-V1$", "cc:{header:countrycode}-V1"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["country"] = "cc:PL-V1",
         };
@@ -129,7 +130,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
         {
             ["countryAndVersion"] = new("^(?i)(?<countrycode>.+)-(?<version>.+)$", "{header:countrycode}-{header:version}"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["countryAndVersion"] = "PL-v1",
         };
@@ -155,7 +156,7 @@ public class HeaderPlaceholderNameAndValueFinderTests : UnitTest
             ["country"] = new("^(?i)(?<countrycode>.+)$", "{header:countrycode}"),
             ["version"] = new("^(?i)(?<version>.+)$", "{header:version}"),
         };
-        var upstreamHeaders = new Dictionary<string, string>
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["country"] = "PL",
             ["version"] = "v1",

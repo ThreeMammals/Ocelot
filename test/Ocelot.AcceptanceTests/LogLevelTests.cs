@@ -83,28 +83,14 @@ public sealed class LogLevelTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
-    {
-        var builder = TestHostBuilder.Create()
-            .UseKestrel()
-            .ConfigureAppConfiguration((_, config) =>
-            {
-                config.AddJsonFile(appsettingsFileName, false, false);
-                config.AddJsonFile(ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot(); })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddSerilog(logger);
-            })
-            .Configure(async app =>
+    private Task<int> GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
+        => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
+            async app =>
             {
                 app.Use(async (context, next) =>
                 {
                     var loggerFactory = context.RequestServices.GetService<IOcelotLoggerFactory>();
-                    var ocelotLogger = loggerFactory.CreateLogger<Steps>();
+                    var ocelotLogger = loggerFactory.CreateLogger<LogLevelTests>();
                     ocelotLogger.LogDebug(() => $"DEBUG: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
                     ocelotLogger.LogTrace(() => $"TRACE: {nameof(ocelotLogger)},  {nameof(loggerFactory)}");
                     ocelotLogger.LogInformation(() =>
@@ -118,11 +104,10 @@ public sealed class LogLevelTests : Steps
                     await next.Invoke();
                 });
                 await app.UseOcelot();
-            });
-
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
+            },
+            null,
+            host => host.ConfigureLogging(l => l.ClearProviders().AddSerilog(logger)),
+            null, null);
 
     [Fact]
     public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(

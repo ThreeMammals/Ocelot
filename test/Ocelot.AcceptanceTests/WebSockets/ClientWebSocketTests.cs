@@ -179,7 +179,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         _ws.Abort(); // !!! after cancellation of operations, let the connection be disposed aka finalized
         await Task.Delay(1_000);
 
-        var factory = Host.Services.GetService<IOcelotLoggerFactory>();
+        var factory = ocelotHost.Services.GetService<IOcelotLoggerFactory>();
         var logger = (factory as TestLoggerFactory<ClientWebSocketTests>).Logger;
         Assert.NotNull(logger);
         logger.Messages.ShouldNotBeEmpty();

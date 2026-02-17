@@ -33,7 +33,7 @@ public class CustomMiddlewareTests : Steps
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -57,7 +57,7 @@ public class CustomMiddlewareTests : Steps
         var configuration = GivenConfiguration(route);
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -82,7 +82,7 @@ public class CustomMiddlewareTests : Steps
 
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -107,7 +107,7 @@ public class CustomMiddlewareTests : Steps
 
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -132,7 +132,7 @@ public class CustomMiddlewareTests : Steps
 
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -157,7 +157,7 @@ public class CustomMiddlewareTests : Steps
 
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -183,7 +183,7 @@ public class CustomMiddlewareTests : Steps
 
         this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(pipelineConfiguration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
@@ -223,17 +223,9 @@ public class CustomMiddlewareTests : Steps
             .BDDfy();
     }
 
-    private void GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)
-    {
-        var builder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration(WithBasicConfiguration)
-            .ConfigureServices(WithAddOcelot)
-            .Configure(async app => await app
-                .UseMiddleware<T>(middleware)
-                .UseOcelot());
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
+    private Task<int> GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)
+        => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
+            async app => await app.UseMiddleware<T>(middleware).UseOcelot());
 
     private void ThenTheCounterIs(int expected)
     {

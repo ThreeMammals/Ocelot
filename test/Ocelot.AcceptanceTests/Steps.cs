@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.AcceptanceTests.Properties;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -23,19 +19,11 @@ public class Steps : AcceptanceSteps
 
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
-    {
-        GivenOcelotIsRunning(s => s.AddOcelot().AddDelegatingHandler<THandler>(global));
-    }
+        => GivenOcelotIsRunning(s => s.AddOcelot().AddDelegatingHandler<THandler>(global));
 
-    public void GivenOcelotIsRunning(OcelotPipelineConfiguration pipelineConfig)
-    {
-        var builder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration(WithBasicConfiguration)
-            .ConfigureServices(WithAddOcelot)
-            .Configure(async a => await a.UseOcelot(pipelineConfig));
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
+    public Task<int> GivenOcelotIsRunningAsync(OcelotPipelineConfiguration pipelineConfig)
+        => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
+            async a => await a.UseOcelot(pipelineConfig));
 
     protected virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
         => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
@@ -88,7 +76,5 @@ public class Steps : AcceptanceSteps
         return ThenTheResponseBodyShouldBeAsync(expectedBody ?? Body(expectedBody));
     }
     public Task ThenTheResponseBodyShouldBeEmpty() => ThenTheResponseBodyShouldBeAsync(string.Empty);
-    public Task<int> GivenOcelotIsRunningAsync(Action<IServiceCollection> configureServices)
-        => Task.Run(() => GivenOcelotIsRunning(configureServices)); // TODO Need async version in the lib
     #endregion
 }

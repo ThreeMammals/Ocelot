@@ -1,4 +1,5 @@
-﻿using Ocelot.DownstreamRouteFinder.HeaderMatcher;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder.HeaderMatcher;
@@ -13,7 +14,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_when_no_template_headers()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "anyHeaderValue",
         };
@@ -30,7 +31,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_the_same_headers()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "anyHeaderValue",
         };
@@ -50,7 +51,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_not_match_the_same_headers_when_differ_case_and_case_sensitive()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "ANYHEADERVALUE",
         };
@@ -70,7 +71,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_the_same_headers_when_differ_case_and_case_insensitive()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "ANYHEADERVALUE",
         };
@@ -90,7 +91,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_not_match_different_headers_values()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "anyHeaderValueDifferent",
         };
@@ -110,7 +111,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_not_match_the_same_headers_names()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeaderDifferent"] = "anyHeaderValue",
         };
@@ -130,7 +131,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_all_the_same_headers()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "anyHeaderValue",
             ["notNeededHeader"] = "notNeededHeaderValue",
@@ -155,7 +156,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_not_match_the_headers_when_one_of_them_different()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "anyHeaderValue",
             ["notNeededHeader"] = "notNeededHeaderValue",
@@ -180,7 +181,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_the_header_with_placeholder()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "PL",
         };
@@ -200,7 +201,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_match_the_header_with_placeholders()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "PL-V1",
         };
@@ -220,7 +221,7 @@ public class HeadersToHeaderTemplatesMatcherTests : UnitTest
     public void Should_not_match_the_header_with_placeholders()
     {
         // Arrange
-        var upstreamHeaders = new Dictionary<string, string>()
+        var upstreamHeaders = new HeaderDictionary()
         {
             ["anyHeader"] = "PL",
         };
