@@ -15,7 +15,7 @@ public class InMemoryBusTests
 
         // Act
         _bus.Publish(new object(), 1);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Assert
         called.ShouldBeTrue();

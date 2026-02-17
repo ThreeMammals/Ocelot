@@ -274,12 +274,12 @@ public class PollyQoSResiliencePipelineProviderTests
         var response = new HttpResponseMessage(errorCode);
 
         // Act
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Assert
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -292,9 +292,9 @@ public class PollyQoSResiliencePipelineProviderTests
         var response = new HttpResponseMessage(HttpStatusCode.OK);
 
         // Act, Assert
-        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken)).StatusCode);
     }
 
     [Fact]
@@ -305,18 +305,18 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = GivenDownstreamRoute("/");
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Act, Assert
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
 
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.Current.CancellationToken);
 
         // Act, Assert 2
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -327,17 +327,17 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = GivenDownstreamRoute("/");
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Act, Assert
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
 
-        await Task.Delay(6000);
+        await Task.Delay(6000, TestContext.Current.CancellationToken);
 
         // Act 2
-        var response2 = await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        var response2 = await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Assert 2
         Assert.Equal(HttpStatusCode.InternalServerError, response2.StatusCode);
@@ -351,21 +351,21 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = GivenDownstreamRoute("/");
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Act, Assert
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
 
-        await Task.Delay(6000);
+        await Task.Delay(6000, TestContext.Current.CancellationToken);
 
         // Act, Assert 2
-        Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response))).StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken)).StatusCode);
 
         // Act, Assert 3
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -376,24 +376,24 @@ public class PollyQoSResiliencePipelineProviderTests
         var route = GivenDownstreamRoute("/");
         var resiliencePipeline = provider.GetResiliencePipeline(route);
         var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
 
         // Act, Assert
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
 
-        await Task.Delay(10000);
+        await Task.Delay(10000, TestContext.Current.CancellationToken);
 
         // Act, Assert 2
         var response2 = new HttpResponseMessage(HttpStatusCode.OK);
-        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response2))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response2), TestContext.Current.CancellationToken)).StatusCode);
 
         // Act, Assert 3
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
-        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response));
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
+        await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken);
         await Assert.ThrowsAsync<BrokenCircuitException>(async () =>
-            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response)));
+            await resiliencePipeline.ExecuteAsync((_) => ValueTask.FromResult(response), TestContext.Current.CancellationToken));
     }
 
     [Theory]

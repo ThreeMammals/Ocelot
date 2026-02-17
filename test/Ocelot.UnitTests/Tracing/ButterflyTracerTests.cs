@@ -83,7 +83,7 @@ public class ButterflyTracerTests : UnitTest
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(HttpStatusCode.Created, actual.StatusCode);
-        var actualBody = await actual.Content.ReadAsStringAsync();
+        var actualBody = await actual.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal($"{TestID}->https://ocelot.net:34567/->HttpStatusCode(Created);ot-spanId({TestID})", actualBody);
 
         var actualCarrier = carrier as DelegatingCarrier<HttpRequestHeaders>;

@@ -51,7 +51,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
 
         //await WhenIGetUrlOnTheApiGateway("/");
         //ThenTheStatusCodeShouldBeOK(); // currently HttpStatusCode.BadGateway
-        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}");
+        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}", Xunit.TestContext.Current.CancellationToken);
         ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent); // currently HttpStatusCode.Unauthorized
     }
 

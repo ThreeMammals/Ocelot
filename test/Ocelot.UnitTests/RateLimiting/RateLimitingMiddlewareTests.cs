@@ -65,7 +65,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         {
             var response = _downstreamResponses[i].ShouldNotBeNull();
             response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, $"Downstream Response no is {i}");
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             body.ShouldBe("Exceeding!");
         }
     }
@@ -224,7 +224,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         _downstreamResponses.ShouldNotBeNull();
         var ds = _downstreamResponses.SingleOrDefault().ShouldNotBeNull();
         ds.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, $"Downstream Response no {limit + 1}");
-        var body = await ds.Content.ReadAsStringAsync();
+        var body = await ds.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         body.ShouldBe("Exceeding!");
         contexts[0].Items.Errors().ShouldNotBeNull().ShouldNotBeEmpty(); // having errors
         contexts[0].Items.Errors().Single().HttpStatusCode.ShouldBe((int)HttpStatusCode.TooManyRequests);
@@ -252,7 +252,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         Assert.Equal("Rate limiting client could not be identified for the route '?' due to a missing or unknown client ID header required by rule '3/1s/w1s'!", err.Message);
         var ds = _downstreamResponses.SingleOrDefault().ShouldNotBeNull();
         Assert.Equal(HttpStatusCode.ServiceUnavailable, ds.StatusCode);
-        var body = await ds.Content.ReadAsStringAsync();
+        var body = await ds.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("Rate limiting client could not be identified for the route '?' due to a missing or unknown client ID header required by rule '3/1s/w1s'!", body);
         _logger.Verify(x => x.LogWarning(err.Message), Times.Once);
     }

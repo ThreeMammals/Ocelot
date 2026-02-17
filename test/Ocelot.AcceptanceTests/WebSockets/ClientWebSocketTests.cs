@@ -177,7 +177,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
             return _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, Expected() + " has been sent", _cts.Token);
         });
         _ws.Abort(); // !!! after cancellation of operations, let the connection be disposed aka finalized
-        await Task.Delay(1_000);
+        await Task.Delay(1_000, Xunit.TestContext.Current.CancellationToken);
 
         var factory = ocelotHost.Services.GetService<IOcelotLoggerFactory>();
         var logger = (factory as TestLoggerFactory<ClientWebSocketTests>).Logger;

@@ -32,7 +32,7 @@ public class RouteFluentValidatorTests : UnitTest
         var route = new FileRoute();
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -49,7 +49,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -66,7 +66,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -83,7 +83,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -104,7 +104,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -122,7 +122,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -140,7 +140,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -162,7 +162,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -187,7 +187,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBe(valid);
@@ -206,7 +206,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.ThenTheErrorsContains("RateLimitOptions.Period is empty");
@@ -224,7 +224,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.ThenSingleErrorIs("RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
@@ -278,7 +278,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -296,7 +296,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -315,7 +315,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeTrue();
@@ -340,7 +340,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeTrue();
@@ -371,7 +371,7 @@ public class RouteFluentValidatorTests : UnitTest
         GivenAnAuthProvider(key);
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeTrue();
@@ -407,7 +407,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeTrue();
@@ -439,7 +439,7 @@ public class RouteFluentValidatorTests : UnitTest
         };
 
         // Act
-        var result = await _validator.ValidateAsync(route);
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsValid.ShouldBeFalse();

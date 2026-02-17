@@ -91,7 +91,7 @@ public class RateLimitOptions
     /// <value>A <see cref="string"/> representing the name of the HTTP header.</value>
     public string ClientIdHeader { get; init; }
 
-    /// <summary>Gets or sets the rejection status code returned during the Quota Exceeded period, aka the <see cref="Wait"/> window, or the remainder of the <see cref="Period"/> fixed window following the moment of exceeding.
+    /// <summary>Gets or sets the rejection status code returned during the Quota Exceeded period, aka the <see cref="RateLimitRule.Wait"/> window, or the remainder of the <see cref="RateLimitRule.Period"/> fixed window following the moment of exceeding.
     /// <para>Default value: <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429">429 (Too Many Requests)</see>.</para></summary>
     /// <value>A <see cref="int"/> value.</value>
     public int StatusCode { get; init; }
