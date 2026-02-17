@@ -42,7 +42,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [InlineData(nameof(Kube))]
-    //[InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldReturnServicesFromK8s(string discoveryType)
     {
@@ -120,7 +120,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [InlineData(8, 99, null)]
     [InlineData(9, 999, null)]
     [InlineData(10, 999, nameof(Kube))]
-    //[InlineData(10, 999, nameof(PollKube))]
+    [InlineData(10, 999, nameof(PollKube))]
     [InlineData(10, 999, nameof(WatchKube))]
     public void ShouldHighlyLoadOnStableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, string discoveryType)
     {
@@ -148,7 +148,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [InlineData(5, 50, 2, null)]
     [InlineData(5, 50, 3, null)]
     [InlineData(5, 50, 4, nameof(Kube))]
-    //[InlineData(5, 50, 4, nameof(PollKube))]
+    [InlineData(5, 50, 4, nameof(PollKube))]
     [InlineData(5, 50, 4, nameof(WatchKube))]
     public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration, string discoveryType)
     {
@@ -169,7 +169,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
     [Theory]
     [InlineData(nameof(Kube))]
-    //[InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     [Trait("Feat", "2256")]
     public void ShouldReturnServicesFromK8s_AddKubernetesWithNullConfigureOptions(string discoveryType)
@@ -248,7 +248,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
     [InlineData(nameof(Kube))]
-    //[InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
+    [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
     public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes(string discoveryType)
     {
