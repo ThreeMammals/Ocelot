@@ -27,10 +27,10 @@ public sealed class PayloadTooLargeTests : Steps
             .BDDfy();
     }
 
-    [SkippableFact]
+    [Fact]
     public void Should_throw_payload_too_large_exception_using_http_sys()
     {
-        Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Test is unstable for all platforms except Windows OS");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethods.Post);

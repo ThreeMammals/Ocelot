@@ -8,7 +8,7 @@ using Ocelot.Tracing.OpenTracing;
 using OpenTracing;
 using OpenTracing.Propagation;
 using OpenTracing.Tag;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Ocelot.AcceptanceTests.Tracing;
 
