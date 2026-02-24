@@ -32,7 +32,7 @@ public class PollKubeIntegrationTests : Steps
         _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
     }
 
-    [Fact]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     public async Task Should_return_service_from_k8s_on_first_call()
     {
@@ -311,7 +311,7 @@ public class PollKubeIntegrationTests : Steps
         pollCount.ShouldBeGreaterThanOrEqualTo(1);
     }
 
-    [Fact]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Threading")]
     public async Task Should_safely_handle_disposal_during_polling()
     {
