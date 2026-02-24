@@ -40,6 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Consul" Version="1.7.14.10" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103" />
   </ItemGroup>
 </Project>

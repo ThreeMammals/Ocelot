@@ -41,15 +41,15 @@
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot.Testing" Version="25.0.0-beta.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.2" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />
+    <PackageReference Include="Ocelot.Testing" Version="25.0.0-beta.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103" />
   </ItemGroup>
 </Project>
