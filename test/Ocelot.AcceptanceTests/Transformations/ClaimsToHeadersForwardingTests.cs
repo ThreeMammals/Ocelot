@@ -32,7 +32,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             { "LocationId", "222" },
         };
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))

@@ -4,11 +4,11 @@ namespace Ocelot.AcceptanceTests.Administration;
 
 public sealed class AdministrationSteps : AuthenticationSteps
 {
-    private Task GivenThereIsOcelotInternalJwtAuthServiceRunning()
+    private Task GivenThereIsOcelotInternalJwtAuthServiceRunning(CancellationToken token)
     {
         var scopes = new string[] { OcelotScopes.Api, OcelotScopes.Api2 };
         var jwtSigningServer = CreateJwtSigningServer(JwtSigningServerUrl, scopes);
-        return jwtSigningServer.StartAsync()
-            .ContinueWith(t => VerifyJwtSigningServerStarted(JwtSigningServerUrl));
+        return jwtSigningServer.StartAsync(token)
+            .ContinueWith(t => VerifyJwtSigningServerStarted(JwtSigningServerUrl, token), token);
     }
 }

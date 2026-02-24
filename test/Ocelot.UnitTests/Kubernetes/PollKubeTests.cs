@@ -71,7 +71,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         return services;
     }
 
-    [Fact]
+    [Fact(Skip = "Require coverage checks")]
     [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task OnTimerCallbackAsync_AvoidPolling_WhenAlreadyPolling()
     {

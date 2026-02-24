@@ -43,8 +43,8 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
         GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         Setup(authSchemes.Length);
-        _serverUrls[0] = await GivenThereIsExternalJwtSigningService("invalid", "unknown");
-        _serverUrls[1] = await GivenThereIsExternalJwtSigningService("api1", "api2");
+        _serverUrls[0] = await GivenThereIsExternalJwtSigningService(["invalid", "unknown"], Xunit.TestContext.Current.CancellationToken);
+        _serverUrls[1] = await GivenThereIsExternalJwtSigningService(["api1", "api2"], Xunit.TestContext.Current.CancellationToken);
         GivenOcelotIsRunningWithIdentityServerAuthSchemes("api2", authSchemes);
         await GivenIHaveTokenWithScope(0, "invalid"); // authentication should fail because of invalid scope
         await GivenIHaveTokenWithScope(1, "api2"); // authentication should succeed

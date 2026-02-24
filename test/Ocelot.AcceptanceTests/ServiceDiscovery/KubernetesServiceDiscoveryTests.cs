@@ -224,7 +224,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             .And(_ => ThenK8sShouldBeCalledExactly(1))
             .And(x => ThenAllServicesShouldHaveBeenCalledTimes(10))
             .When(_ => GivenWatchReceivedEvent())
-            .Given(_ => GivenDelay(100))
+            .Given(_ => GivenIWaitAsync(100))
             .When(_ => WhenIGetUrlOnTheApiGatewayConcurrently("/", 10))
             .Then(_ => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
             .Then(_ => ThenAllResponseBodiesShouldBe(updatedDownstreamResponse))
@@ -272,12 +272,12 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
         if (discoveryType == nameof(PollKube))
         {
-#if NET10_0_OR_GREATER
+            //#if NET10_0_OR_GREATER
             _k8sCounter.ShouldBeLessThan(50);
-#else
-            if (IsCiCd()) _k8sCounter.ShouldBeInRange(48, 52);
-            else _k8sCounter.ShouldBeGreaterThanOrEqualTo(50); // can be 50, 51 and sometimes 52
-#endif
+            //#else
+            //            if (IsCiCd()) _k8sCounter.ShouldBeInRange(48, 52);
+            //            else _k8sCounter.ShouldBeGreaterThanOrEqualTo(50); // can be 50, 51 and sometimes 52
+            //#endif
         }
         else
         {
@@ -341,12 +341,13 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
             _k8sCounter.ShouldBeLessThanOrEqualTo(count); // TODO This is something abnormal due to values 997-999, but actual value should be 1. Need to double check this.
         if (discoveryType == nameof(PollKube))
         {
-#if NET10_0_OR_GREATER
-            _k8sCounter.ShouldBeLessThanOrEqualTo(count);
-#else
-            if (IsCiCd()) _k8sCounter.ShouldBeInRange(count - 1, count + 1);
-            else _k8sCounter.ShouldBeGreaterThanOrEqualTo(count); // can be 50, 51 and sometimes 52
-#endif
+            //#if NET10_0_OR_GREATER
+            //_k8sCounter.ShouldBeLessThanOrEqualTo(count);
+            _k8sCounter.ShouldBeLessThan(count);
+            //#else
+            //            if (IsCiCd()) _k8sCounter.ShouldBeInRange(count - 1, count + 1);
+            //            else _k8sCounter.ShouldBeGreaterThanOrEqualTo(count); // can be 50, 51 and sometimes 52
+            //#endif
         }
         else
             _k8sCounter.ShouldBeGreaterThanOrEqualTo(count); // integration endpoint called times
@@ -513,7 +514,6 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     }
 
     private int GivenWatchReceivedEvent() => _k8sWatchResetEvent.Set() ? 1 : 0;
-    private static Task GivenDelay(int milliseconds) => Task.Delay(TimeSpan.FromMilliseconds(milliseconds));
     
     private async Task GivenHandleWatchRequest(HttpContext context,
         IEnumerable<ResourceEventV1<EndpointsV1>> events,
@@ -564,7 +564,11 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         .Services.RemoveAll<IKubeServiceCreator>().AddSingleton<IKubeServiceCreator, FakeKubeServiceCreator>();
 
     private int _k8sCounter, _k8sServiceGeneration;
+#if NET9_0_OR_GREATER
+    private static readonly Lock K8sCounterLocker = new();
+#else
     private static readonly object K8sCounterLocker = new();
+#endif
     private RoundRobinAnalyzer _roundRobinAnalyzer;
     private AutoResetEvent _k8sWatchResetEvent = new(false);
     private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)

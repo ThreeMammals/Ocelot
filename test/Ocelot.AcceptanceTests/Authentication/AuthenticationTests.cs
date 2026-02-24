@@ -16,7 +16,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, method: HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsExternalJwtSigningService())
+        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty))
            .And(x => GivenThereIsAConfiguration(configuration))
            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -34,7 +34,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenThereIsExternalJwtSigningService();
+        await GivenThereIsExternalJwtSigningService([], Xunit.TestContext.Current.CancellationToken);
         await GivenIHaveAToken();
         GivenIHaveAddedATokenToMyRequest();
 
@@ -65,7 +65,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         }
         GivenOcelotIsRunning(WithOtherApiBearerAuthentication);
 
-        await GivenThereIsExternalJwtSigningService();
+        await GivenThereIsExternalJwtSigningService([], Xunit.TestContext.Current.CancellationToken);
         var token = await GivenIHaveAToken(scope: "api2");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -81,7 +81,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenThereIsExternalJwtSigningService();
+        await GivenThereIsExternalJwtSigningService([], Xunit.TestContext.Current.CancellationToken);
         await GivenIHaveAToken();
         GivenIHaveAddedATokenToMyRequest();
         await WhenIPostUrlOnTheApiGateway("/", "postContent");
@@ -103,7 +103,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
-        await GivenThereIsExternalJwtSigningService();
+        await GivenThereIsExternalJwtSigningService([], Xunit.TestContext.Current.CancellationToken);
         if (hasToken)
         {
             await GivenIHaveAToken();
@@ -128,7 +128,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
-        await GivenThereIsExternalJwtSigningService();
+        await GivenThereIsExternalJwtSigningService([], Xunit.TestContext.Current.CancellationToken);
 
         // await GivenIHaveAToken();
         // GivenIHaveAddedATokenToMyRequest();
@@ -165,7 +165,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
             .AddOAuth(route2.AuthenticationOptions.AuthenticationProviderKey,
                 opts => opts.ClientSecret = "bla-bla... actually, there are no options"); // -> 'test' scheme and it is registered now, but the auth will fail
         GivenOcelotIsRunning(withAuth + WithOAuthNotConfigured);
-        await GivenThereIsExternalJwtSigningService("api", "apiGlobal", "Mr.Who");
+        await GivenThereIsExternalJwtSigningService(["api", "apiGlobal", "Mr.Who"], Xunit.TestContext.Current.CancellationToken);
 
         await GivenIHaveAToken(scope: globalOptions.AllowedScopes[0]);
         GivenIHaveAddedATokenToMyRequest();
@@ -217,7 +217,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenThereIsExternalJwtSigningService("api", "apiGlobal", "Mr.Who");
+        await GivenThereIsExternalJwtSigningService(["api", "apiGlobal", "Mr.Who"], Xunit.TestContext.Current.CancellationToken);
 
         await GivenIHaveAToken(scope: "Mr.Who");
         GivenIHaveAddedATokenToMyRequest();

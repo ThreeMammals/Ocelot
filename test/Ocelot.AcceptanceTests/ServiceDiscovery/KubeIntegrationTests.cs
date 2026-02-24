@@ -1,7 +1,5 @@
 ﻿using KubeClient;
 using KubeClient.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Ocelot.Logging;
@@ -32,7 +30,8 @@ public class KubeIntegrationTests : Steps
     }
 
     [Fact]
-    [Trait("Feat", "345")]
+    [Trait("Feat", "345")] // https://github.com/ThreeMammals/Ocelot/issues/345
+    [Trait("Release", "13.2.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.2.0
     public async Task Should_return_service_from_k8s()
     {
         // Arrange
@@ -62,7 +61,8 @@ public class KubeIntegrationTests : Steps
     [InlineData(HttpStatusCode.Forbidden)]
     [InlineData(HttpStatusCode.InternalServerError)]
     [InlineData(HttpStatusCode.NotFound)]
-    [Trait("PR", "2266")]
+    [Trait("PR", "2266")] // https://github.com/ThreeMammals/Ocelot/pull/2266
+    [Trait("Release", "24.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
     public async Task Should_not_return_service_from_k8s_when_k8s_api_returns_error_response(HttpStatusCode expectedStatusCode)
     {
         // Arrange
@@ -117,8 +117,9 @@ public class KubeIntegrationTests : Steps
         _logger.Verify();
     }
 
-    [Fact] // This is not unit test! LoL :) This should be an integration test or even an acceptance test...
-    [Trait("Bug", "2110")]
+    [Fact]
+    [Trait("Bug", "2110")] // https://github.com/ThreeMammals/Ocelot/issues/2110
+    [Trait("Release", "23.3.4")] // https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
     public async Task Should_return_single_service_from_k8s_during_concurrent_calls()
     {
         // Arrange
@@ -163,10 +164,10 @@ public class KubeIntegrationTests : Steps
         var kubeEndpointUrl = $"{Uri.UriSchemeHttp}://localhost:{kubePort}";
         var options = new KubeClientOptions
         {
-            ApiEndPoint = new Uri(kubeEndpointUrl),
             AccessToken = serviceName, // "txpc696iUhbVoudg164r93CxDTrKRVWG",
-            AuthStrategy = KubeAuthStrategy.BearerToken,
             AllowInsecure = true,
+            ApiEndPoint = new Uri(kubeEndpointUrl),
+            AuthStrategy = KubeAuthStrategy.BearerToken,
         };
         IKubeApiClient client = KubeApiClient.Create(options);
 
