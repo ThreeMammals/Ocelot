@@ -10,6 +10,7 @@ public class TestLoggerFactory<TConsumer> : IOcelotLoggerFactory
     private readonly IRequestScopedDataRepository _repository;
     private readonly MemoryLogger _logger;
     private readonly OcelotLogger _ologger;
+    private bool _disposed;
 
     public TestLoggerFactory(ILoggerFactory factory, IRequestScopedDataRepository repository)
     {
@@ -21,4 +22,25 @@ public class TestLoggerFactory<TConsumer> : IOcelotLoggerFactory
 
     public MemoryLogger Logger => _logger;
     public IOcelotLogger CreateLogger<TActualConsumer>() => _ologger;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            _factory?.Dispose();
+        }
+
+        _disposed = true;
+    }
+
+    ~TestLoggerFactory() => Dispose(false);
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 }

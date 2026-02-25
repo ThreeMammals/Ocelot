@@ -40,7 +40,7 @@ public class ObservableExtensionsTests
             {
                 _testScheduler.Start();
             }
-        });
+        }, TestContext.Current.CancellationToken);
         
         var result = await observable.RetryAfter(delaySeconds, _testScheduler).FirstAsync();
         await cts.CancelAsync();

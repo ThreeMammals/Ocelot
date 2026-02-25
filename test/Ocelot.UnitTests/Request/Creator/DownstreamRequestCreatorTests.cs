@@ -31,7 +31,7 @@ public class DownstreamRequestCreatorTests : UnitTest
         result.Method.ToLower().ShouldBe("get");
         result.Scheme.ToLower().ShouldBe("http");
         result.Host.ToLower().ShouldBe("www.test.com");
-        var resultContent = await result.ToHttpRequestMessage().Content.ReadAsStringAsync();
+        var resultContent = await result.ToHttpRequestMessage().Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         resultContent.ShouldBe("test");
     }
 

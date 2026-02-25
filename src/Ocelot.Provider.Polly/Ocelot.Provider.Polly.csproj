@@ -40,6 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Polly" Version="8.6.5" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.102" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103" />
   </ItemGroup>
 </Project>

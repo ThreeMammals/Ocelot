@@ -19,8 +19,12 @@ public static class ConsulProviderFactory // TODO : IServiceDiscoveryProviderFac
     /// <summary>String constant used for provider type definition.</summary>
     public const string PollConsul = nameof(Provider.Consul.PollConsul);
 
-    private static readonly List<PollConsul> ServiceDiscoveryProviders = new(); // TODO It must be scoped service in DI-container
+    private static readonly List<PollConsul> ServiceDiscoveryProviders = new(); // TODO It must be singleton service in DI-container
+#if NET9_0_OR_GREATER
+    private static readonly System.Threading.Lock SyncRoot = new();
+#else
     private static readonly object SyncRoot = new();
+#endif
 
     public static ServiceDiscoveryFinderDelegate Get { get; } = CreateProvider;
     private static IServiceDiscoveryProvider CreateProvider(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)

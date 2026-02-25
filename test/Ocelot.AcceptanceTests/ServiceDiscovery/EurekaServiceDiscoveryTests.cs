@@ -18,8 +18,12 @@ public sealed class EurekaServiceDiscoveryTests : Steps
         _eurekaInstances = new List<IServiceInstance>();
     }
 
+#if NET10_0_OR_GREATER
+    [Theory(Skip = "TODO Requires upgrade to v4.0 after package upgraded")]
+#else
     [Theory]
-    [Trait("Feat", "262")]
+#endif
+    [Trait("Feat", "262")] // https://github.com/ThreeMammals/Ocelot/issues/262
     [InlineData(true)]
     [InlineData(false)]
     public async Task Should_use_eureka_service_discovery_and_make_request(bool dotnetRunningInContainer)

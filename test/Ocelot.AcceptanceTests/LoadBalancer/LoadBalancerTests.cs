@@ -38,9 +38,21 @@ public sealed class LoadBalancerTests : ConcurrentSteps
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
             .And(x => ThenAllServicesCalledOptimisticAmountOfTimes(lbAnalyzer))
             .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzer, ports, 99))
-            //.And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(99, ports.Length), Top(99, ports.Length)))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(
+#if NET10_0_OR_GREATER
+                Bottom(99, ports.Length) - 3, Top(99, ports.Length) + 3
+#else
+                Bottom(99, ports.Length), Top(99, ports.Length)
+#endif
+                ))
             // .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion, this is ideal case when load is not high
-            //.And(x => _counters.ShouldAllBe(c => c == 50 || c == 49, CalledTimesMessage())) // LeastConnection algorithm distributes counters as 49/50 or 50/49 depending on thread synchronization
+            .And(x => _counters.ShouldAllBe(c =>
+#if NET10_0_OR_GREATER
+                c <= 53 && c >= 46,
+#else
+                c == 50 || c == 49,
+#endif
+                CalledTimesMessage())) // LeastConnection algorithm distributes counters as 49/50 or 50/49 depending on thread synchronization
             .BDDfy();
     }
 
@@ -180,7 +192,11 @@ public sealed class LoadBalancerTests : ConcurrentSteps
     private sealed class CustomLoadBalancer : ILoadBalancer
     {
         private readonly Func<Task<List<Service>>> _services;
+#if NET9_0_OR_GREATER
+        private static readonly Lock _lock = new();
+#else
         private static readonly object _lock = new();
+#endif
         private int _last;
 
         public string Type => nameof(CustomLoadBalancer);

@@ -107,25 +107,25 @@ public class AuthenticationSteps : Steps
         return app;
     }
 
-    protected static async Task VerifyJwtSigningServerStarted(string url, HttpClient client = null)
+    protected static async Task VerifyJwtSigningServerStarted(string url, CancellationToken token, HttpClient client = null)
     {
         client ??= new HttpClient();
-        var response = await client.GetAsync($"{url}/connect");
+        var response = await client.GetAsync($"{url}/connect", token);
         response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(token);
         json.ShouldNotBeNullOrEmpty();
     }
 
-    public Task<string> GivenThereIsExternalJwtSigningService(params string[] extraScopes)
+    public Task<string> GivenThereIsExternalJwtSigningService(string[] extraScopes, CancellationToken token)
     {
         List<string> scopes = [OcelotScopes.Api, OcelotScopes.Api2];
         scopes.AddRange(extraScopes);
         var url = DownstreamUrl(PortFinder.GetRandomPort());
         var server = CreateJwtSigningServer(url, scopes.ToArray());
         _jwtSigningServers.Add(url, server);
-        return server.StartAsync()
-            .ContinueWith(t => VerifyJwtSigningServerStarted(url))
-            .ContinueWith(t => url);
+        return server.StartAsync(token)
+            .ContinueWith(t => VerifyJwtSigningServerStarted(url, token), token)
+            .ContinueWith(t => url, token);
     }
 
     public void GivenIHaveAddedATokenToMyRequest() => GivenIHaveAddedATokenToMyRequest(token);

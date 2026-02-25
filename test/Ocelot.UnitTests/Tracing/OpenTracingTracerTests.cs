@@ -58,7 +58,7 @@ public class OpenTracingTracerTests : UnitTest
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(HttpStatusCode.NoContent, actual.StatusCode);
-        var actualBody = await actual.Content.ReadAsStringAsync();
+        var actualBody = await actual.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal($"{TestID}->https://ocelot.net:55555/->HttpStatusCode(NoContent)", actualBody);
 
         // Scenario 2: catch (HttpRequestException ex)

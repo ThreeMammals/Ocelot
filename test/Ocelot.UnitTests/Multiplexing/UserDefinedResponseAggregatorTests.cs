@@ -47,7 +47,7 @@ public class UserDefinedResponseAggregatorTests : UnitTest
 
         // Assert
         _provider.Verify(x => x.Get(route), Times.Once);
-        var content = await context.Items.DownstreamResponse().Content.ReadAsStringAsync();
+        var content = await context.Items.DownstreamResponse().Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldBe("Tom, Laura");
     }
 
