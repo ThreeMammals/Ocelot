@@ -146,4 +146,5 @@ jobs:
         if: env.COVERALLS_coverage_file_exists == 'true'
         uses: coverallsapp/github-action@v2
         with:
+          fail-on-error: false
           file: ${{ env.COVERALLS_coverage_file }}

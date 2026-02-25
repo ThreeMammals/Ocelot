@@ -23,7 +23,7 @@
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>

@@ -24,7 +24,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageIcon>ocelot_icon.png</PackageIcon>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <Product>Ocelot Gateway</Product>
     <Company>Three Mammals</Company>
   </PropertyGroup>
