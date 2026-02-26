@@ -1,7 +1,9 @@
 #!/bin/bash
 # Prepare Coveralls
-echo ------------ Listing environment variables ------------
+echo "::group::Listing environment variables"
 env | sort
+echo "::endgroup::"
+
 echo ------------ Detect coverage file ------------ 
 coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
 echo "Detected first folder : $coverage_1st_folder"
