@@ -175,8 +175,9 @@ jobs:
         if: env.COVERALLS_coverage_file_exists == 'true'
         uses: coverallsapp/github-action@v2
         with:
-          fail-on-error: false
+          # fail-on-error: false
           file: ${{ env.COVERALLS_coverage_file }}
+        continue-on-error: true
       - name: Codecov
         if: env.COVERALLS_coverage_file_exists == 'true'
         uses: codecov/codecov-action@v5
@@ -186,4 +187,4 @@ jobs:
           fail_ci_if_error: true
           files: ${{ env.COVERALLS_coverage_file }}
           flags: unittests
-          verbose: true
+        continue-on-error: true
