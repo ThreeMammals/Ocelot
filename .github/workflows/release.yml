@@ -165,7 +165,7 @@ jobs:
           OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
           OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
           # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      - name: Prepare Coveralls
+      - name: Coverage files
         run: ./.github/steps/prepare-coveralls.sh
       - name: Coveralls
         if: env.COVERALLS_coverage_file_exists == 'true'
@@ -173,5 +173,14 @@ jobs:
         with:
           file: ${{ env.COVERALLS_coverage_file }}
           compare-ref: main
-        # env:
-        #   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        continue-on-error: true
+      - name: Codecov
+        if: env.COVERALLS_coverage_file_exists == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: ThreeMammals/Ocelot
+          fail_ci_if_error: true
+          files: ${{ env.COVERALLS_coverage_file }}
+          flags: unittests
+        continue-on-error: true
