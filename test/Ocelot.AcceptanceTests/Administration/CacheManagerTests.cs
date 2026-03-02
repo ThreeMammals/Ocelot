@@ -1,9 +1,9 @@
 //using Ocelot.Administration;
-using CacheManager.Core;
+//x using CacheManager.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Authentication;
-using Ocelot.Cache.CacheManager;
+//x using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using System.Runtime.CompilerServices;
@@ -74,13 +74,13 @@ public sealed class CacheManagerTests : AuthenticationSteps
         string adminPath,
         [CallerMemberName] string testName = nameof(CacheManagerTests))
     {
-        static void WithSettings(ConfigurationBuilderCachePart settings)
-        {
-            settings.WithDictionaryHandle();
-        }
+        //x static void WithSettings(ConfigurationBuilderCachePart settings)
+        //x {
+        //x    settings.WithDictionaryHandle();
+        //x }
         services.AddMvc(option => option.EnableEndpointRouting = false);
         services.AddOcelot()
-            .AddCacheManager(WithSettings)
+            //x.AddCacheManager(WithSettings)
 
             //.AddAdministration(adminPath, "secret") // this is for internal server
             .AddAdministration(adminPath, testName,

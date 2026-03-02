@@ -55,7 +55,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /><!-- TODO Remove after package deprecation -->
-    <PackageReference Include="CacheManager.Serialization.Json" Version="3.0.0" /><!-- TODO Remove after package deprecation -->
     <PackageReference Include="Consul" Version="1.7.14.10" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="OpenTracing" Version="0.12.1" /><!-- TODO Remove after package deprecation -->

@@ -1,12 +1,5 @@
-using CacheManager.Core;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -70,46 +63,6 @@ public sealed class CachingTests : Steps
             .And(x => ThenTheResponseContentHeaderIs(headerExpires, "-1"))
             .BDDfy();
     }
-
-    [Fact]
-    public void Should_return_cached_response_when_using_jsonserialized_cache()
-    {
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-        };
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningUsingJsonSerializedCache())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .BDDfy();
-    }
-
-    private Task<int> GivenOcelotIsRunningUsingJsonSerializedCache()
-        => GivenOcelotIsRunningAsync(
-            (hostingContext, config) => config
-                .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                .AddJsonFile("appsettings.json", true, false)
-                .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, false)
-                .AddJsonFile(ocelotConfigFileName, false, false)
-                .AddEnvironmentVariables(),
-            s => s.AddOcelot()
-                .AddCacheManager((x) =>
-                {
-                    //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
-                    x.WithJsonSerializer();
-                    x.WithHandle(typeof(InMemoryJsonHandle<>));
-                }),
-            WithUseOcelot);
 
     [Fact]
     public void Should_not_return_cached_response_as_ttl_expires()
@@ -243,30 +196,18 @@ public sealed class CachingTests : Steps
             .BDDfy();
     }
 
-    private static FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions, bool asGlobalConfig = false) => new()
+    private FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions, bool asGlobalConfig = false)
     {
-        Routes = new()
-        {
-            new FileRoute()
-            {
-                DownstreamPathTemplate = "/",
-                DownstreamHostAndPorts = new()
-                {
-                    new FileHostAndPort("localhost", port),
-                },
-                DownstreamHttpMethod = "Post",
-                DownstreamScheme = Uri.UriSchemeHttp,
-                UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post ],
-                FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
-            },
-        },
-        GlobalConfiguration = !asGlobalConfig ? null :
+        var route = GivenRoute(port);
+        route.CacheOptions = asGlobalConfig ? new() { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions;
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration = !asGlobalConfig ? null :
             new()
             {
                 CacheOptions = new(cacheOptions),
-            },
-    };
+            };
+        return configuration;
+    }
 
     private static void GivenTheCacheExpires()
     {

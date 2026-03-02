@@ -1,10 +1,7 @@
-using CacheManager.Core;
 using Consul;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Ocelot.AcceptanceTests.Caching;
-using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Provider.Consul;
@@ -36,7 +33,7 @@ public sealed class ConfigurationInConsulTests : Steps
             Port = consulPort,
         };
         this.Given(x => GivenThereIsAFakeConsulServiceDiscoveryProvider(consulPort, string.Empty))
-            .And(x => x.GivenThereIsAServiceRunningOn(servicePort, string.Empty, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAServiceRunningOn(servicePort, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningUsingConsulToStoreConfigAndJsonSerializedCache())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -49,11 +46,6 @@ public sealed class ConfigurationInConsulTests : Steps
     {
         static void WithConsulToStoreConfigAndJsonSerializedCache(IServiceCollection services) => services
             .AddOcelot()
-            .AddCacheManager(x => x
-
-                //.WithMicrosoftLogging(_ => { /*log.AddConsole(LogLevel.Debug);*/ })
-                .WithJsonSerializer()
-                .WithHandle(typeof(InMemoryJsonHandle<>)))
             .AddConsul()
             .AddConfigStoredInConsul();
         GivenOcelotIsRunning(WithConsulToStoreConfigAndJsonSerializedCache);
@@ -111,14 +103,5 @@ public sealed class ConfigurationInConsulTests : Steps
         public int Flags => 0;
         public string Value { get; }
         public string Session => "adf4238a-882b-9ddc-4a9d-5b6758e4159e";
-    }
-
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
-        {
-            context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(responseBody);
-        });
     }
 }
