@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="src/Ocelot/Ocelot.csproj" />
-  <Project Path="src/Ocelot.Cache.CacheManager/Ocelot.Cache.CacheManager.csproj" />
   <Project Path="src/Ocelot.Provider.Consul/Ocelot.Provider.Consul.csproj" />
   <Project Path="src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj" />
   <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
