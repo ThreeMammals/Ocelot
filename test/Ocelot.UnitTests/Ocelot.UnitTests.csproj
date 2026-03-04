@@ -28,7 +28,6 @@
     <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
   </ItemGroup>
   <ItemGroup>
