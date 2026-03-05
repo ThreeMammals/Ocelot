@@ -1195,14 +1195,6 @@
           "Polly": "[8.6.5, )"
         }
       },
-      "ocelot.tracing.butterfly": {
-        "type": "Project",
-        "dependencies": {
-          "Butterfly.Client": "[0.0.8, )",
-          "Butterfly.Client.AspNetCore": "[0.0.8, )",
-          "Ocelot": "[0.0.0-dev, )"
-        }
-      },
       "ocelot.tracing.opentracing": {
         "type": "Project",
         "dependencies": {
@@ -2480,14 +2472,6 @@
         "dependencies": {
           "Ocelot": "[0.0.0-dev, )",
           "Polly": "[8.6.5, )"
-        }
-      },
-      "ocelot.tracing.butterfly": {
-        "type": "Project",
-        "dependencies": {
-          "Butterfly.Client": "[0.0.8, )",
-          "Butterfly.Client.AspNetCore": "[0.0.8, )",
-          "Ocelot": "[0.0.0-dev, )"
         }
       },
       "ocelot.tracing.opentracing": {
@@ -3773,14 +3757,6 @@
         "dependencies": {
           "Ocelot": "[0.0.0-dev, )",
           "Polly": "[8.6.5, )"
-        }
-      },
-      "ocelot.tracing.butterfly": {
-        "type": "Project",
-        "dependencies": {
-          "Butterfly.Client": "[0.0.8, )",
-          "Butterfly.Client.AspNetCore": "[0.0.8, )",
-          "Ocelot": "[0.0.0-dev, )"
         }
       },
       "ocelot.tracing.opentracing": {
