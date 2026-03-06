@@ -9,7 +9,6 @@ using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Middleware;
-using OpenTracing;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
