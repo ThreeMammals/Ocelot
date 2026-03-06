@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Tracing.Butterfly;
+//using Ocelot.Tracing.Butterfly;
 using Ocelot.Tracing.OpenTracing;
 using OpenTracing;
 using OpenTracing.Propagation;

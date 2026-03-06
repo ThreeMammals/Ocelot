@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34728.123
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CFB79B7-C9DC-45A4-9A75-625D92471702}"
 EndProject
@@ -38,8 +38,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{72C8E528-B4F5-45CE-8A06-CD3787364856}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Provider.Polly", "src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.Butterfly", "src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj", "{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ocelot.Tracing.OpenTracing", "src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj", "{11C622AD-8C0A-4CF4-811B-3DBB76550797}"
 EndProject
@@ -85,10 +83,6 @@ Global
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -107,7 +101,6 @@ Global
 		{9BBD3586-145C-4FA0-91C5-9ED58287D753} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{72C8E528-B4F5-45CE-8A06-CD3787364856} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{1F6E5DCF-8A2E-4E24-A25D-064362DE8D0E} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
-		{6045E23D-669C-4F27-AF8E-8EEE6DB3557F} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 		{11C622AD-8C0A-4CF4-811B-3DBB76550797} = {5CFB79B7-C9DC-45A4-9A75-625D92471702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

@@ -20,7 +20,14 @@ public class LoadBalancerHouseTests : UnitTest
     {
         _factory = new Mock<ILoadBalancerFactory>();
         _house = new LoadBalancerHouse(_factory.Object);
-        _serviceProviderConfig = new ServiceProviderConfiguration("myType", "myScheme", "myHost", 123, string.Empty, "configKey", 0);
+        _serviceProviderConfig = new()
+        {
+            Type = "myType",
+            Scheme = "myScheme",
+            Host = "myHost",
+            Port = 123,
+            ConfigurationKey = "configKey",
+        };
     }
 
     [Fact]

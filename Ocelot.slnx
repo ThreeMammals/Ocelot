@@ -4,7 +4,6 @@
   <Project Path="src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj" />
   <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
   <Project Path="src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj" />
-  <Project Path="src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj" />
   <Project Path="src/Ocelot.Tracing.OpenTracing/Ocelot.Tracing.OpenTracing.csproj" />
   <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
   <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />

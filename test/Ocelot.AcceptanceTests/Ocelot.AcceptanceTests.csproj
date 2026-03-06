@@ -37,7 +37,6 @@
     <ProjectReference Include="..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Tracing.Butterfly\Ocelot.Tracing.Butterfly.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Tracing.OpenTracing\Ocelot.Tracing.OpenTracing.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +53,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" /><!-- TODO Remove after package deprecation -->
+    <PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />
     <PackageReference Include="Consul" Version="1.7.14.10" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="OpenTracing" Version="0.12.1" /><!-- TODO Remove after package deprecation -->
