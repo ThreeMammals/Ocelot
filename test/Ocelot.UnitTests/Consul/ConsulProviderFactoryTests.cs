@@ -149,7 +149,12 @@ public sealed class ConsulProviderFactoryTests : UnitTest, IDisposable
         var stopsFromPolling = 10000;
         return ConsulProviderFactory.Get.Invoke(
             _provider,
-            new ServiceProviderConfiguration(providerType, Uri.UriSchemeHttp, string.Empty, 1, string.Empty, string.Empty, stopsFromPolling),
+            new ServiceProviderConfiguration()
+            {
+                Type = providerType,
+                Scheme = Uri.UriSchemeHttp,
+                PollingInterval = stopsFromPolling,
+            }, 
             route);
     }
 }

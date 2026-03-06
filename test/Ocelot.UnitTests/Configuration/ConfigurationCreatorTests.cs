@@ -139,7 +139,7 @@ public class ConfigurationCreatorTests : UnitTest
             GlobalConfiguration = new FileGlobalConfiguration(),
         };
         _routes = Array.Empty<Route>();
-        _spc = new ServiceProviderConfiguration(string.Empty, string.Empty, string.Empty, 1, string.Empty, string.Empty, 1);
+        _spc = new ServiceProviderConfiguration();
         _lbo = new();
         _qoso = new QoSOptions();
         _hho = new HttpHandlerOptions();

@@ -59,8 +59,15 @@ public class ServiceProviderConfigurationBuilder
         return this;
     }
 
-    public ServiceProviderConfiguration Build()
+    public ServiceProviderConfiguration Build() => new()
     {
-        return new ServiceProviderConfiguration(_type, _serviceDiscoveryProviderScheme, _serviceDiscoveryProviderHost, _serviceDiscoveryProviderPort, _token, _configurationKey, _pollingInterval, _namespace);
-    }
+        ConfigurationKey = _configurationKey,
+        Host = _serviceDiscoveryProviderHost,
+        Namespace = _namespace,
+        PollingInterval = _pollingInterval,
+        Port = _serviceDiscoveryProviderPort,
+        Scheme = _serviceDiscoveryProviderScheme,
+        Token = _token,
+        Type = _type,
+    };
 }
