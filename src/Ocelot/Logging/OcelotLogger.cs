@@ -84,8 +84,6 @@ public class OcelotLogger : IOcelotLogger, IDisposable
 
         try
         {
-            if (_disposed)
-                return;
             _logger.Log(logLevel, default,
                 $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{Environment.NewLine + message}",
                 exception, NoFormatter);
