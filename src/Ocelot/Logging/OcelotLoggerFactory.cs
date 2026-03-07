@@ -11,8 +11,8 @@ public class OcelotLoggerFactory : IOcelotLoggerFactory, IDisposable
 
     public OcelotLoggerFactory(ILoggerFactory loggerFactory, IRequestScopedDataRepository scopedDataRepository)
     {
-        _loggerFactory = loggerFactory;
-        _scopedDataRepository = scopedDataRepository;
+        _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        _scopedDataRepository = scopedDataRepository ?? throw new ArgumentNullException(nameof(scopedDataRepository));
     }
 
     public IOcelotLogger CreateLogger<T>()
@@ -35,7 +35,7 @@ public class OcelotLoggerFactory : IOcelotLoggerFactory, IDisposable
 
         if (disposing)
         {
-            _loggerFactory?.Dispose();
+            _loggerFactory.Dispose();
         }
 
         _disposed = true;
