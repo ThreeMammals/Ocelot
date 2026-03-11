@@ -23,7 +23,7 @@ public static class PortFinder
         {
             ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
             while (!TryUsePort(CurrentPort++));
-            return CurrentPort++;
+            return CurrentPort - 1;
         }
     }
 
