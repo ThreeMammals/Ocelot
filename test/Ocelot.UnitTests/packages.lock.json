@@ -161,17 +161,6 @@
           "Nito.Cancellation": "1.1.2"
         }
       },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "10.0.3",
-          "Microsoft.AspNetCore.TestHost": "10.0.3",
-          "Shouldly": "4.3.0"
-        }
-      },
       "Polly": {
         "type": "Direct",
         "requested": "[8.6.5, )",
@@ -325,6 +314,14 @@
         "type": "Transitive",
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
+      },
+      "Microsoft.AspNetCore.Authentication.JwtBearer": {
+        "type": "Transitive",
+        "resolved": "10.0.3",
+        "contentHash": "TBDs8e9y2vJHp14EwNfnIZUNrm6siw8PAAU5laOrYFuGgRxx8oCdxZyfTgp1Oy/icUk9h/XtpYBHPnXIG0f2/g==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.0.1"
+        }
       },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
@@ -612,6 +609,23 @@
           "Microsoft.IdentityModel.Abstractions": "8.16.0"
         }
       },
+      "Microsoft.IdentityModel.Protocols": {
+        "type": "Transitive",
+        "resolved": "8.0.1",
+        "contentHash": "uA2vpKqU3I2mBBEaeJAWPTjT9v1TZrGWKdgK6G5qJd03CLx83kdiqO9cmiK8/n1erkHzFBwU/RphP83aAe3i3g==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Tokens": "8.0.1"
+        }
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect": {
+        "type": "Transitive",
+        "resolved": "8.0.1",
+        "contentHash": "AQDbfpL+yzuuGhO/mQhKNsp44pm5Jv8/BI4KiFXR7beVGZoSH35zMV3PrmcfvSTsyI6qrcR898NzUauD6SRigg==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols": "8.0.1",
+          "System.IdentityModel.Tokens.Jwt": "8.0.1"
+        }
+      },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
         "resolved": "8.16.0",
@@ -741,11 +755,6 @@
         "type": "Transitive",
         "resolved": "2.2.1",
         "contentHash": "6sZ5uynQeAE9dPWBQGKebNmxbY4xsvcc5VplB5WkYEESUS7oy4AwnFp0FhqxTSKm/PaFrFqLrYr696CYN8cugg=="
-      },
-      "OpenTracing": {
-        "type": "Transitive",
-        "resolved": "0.12.1",
-        "contentHash": "8i/Vnx/lbWzqqJ6J5lofguT4wBS99rfqKujWrFrTGAclQBZ5h1CgBlzGOTqsNjmMsxSTLpC+Ns6/f1RB0c4O/g=="
       },
       "Polly.Core": {
         "type": "Transitive",
@@ -995,11 +1004,14 @@
           "Polly": "[8.6.5, )"
         }
       },
-      "ocelot.tracing.opentracing": {
+      "ocelot.testing": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.3, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.3, )",
+          "Microsoft.AspNetCore.TestHost": "[10.0.3, )",
           "Ocelot": "[0.0.0-dev, )",
-          "OpenTracing": "[0.12.1, )"
+          "Shouldly": "[4.3.0, )"
         }
       }
     },
@@ -1208,18 +1220,6 @@
           "Nito.Cancellation": "1.1.2"
         }
       },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "8.0.24",
-          "Microsoft.AspNetCore.TestHost": "8.0.24",
-          "Shouldly": "4.3.0",
-          "System.Text.Json": "10.0.3"
-        }
-      },
       "Polly": {
         "type": "Direct",
         "requested": "[8.6.5, )",
@@ -1373,6 +1373,14 @@
         "type": "Transitive",
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
+      },
+      "Microsoft.AspNetCore.Authentication.JwtBearer": {
+        "type": "Transitive",
+        "resolved": "8.0.24",
+        "contentHash": "Uwr3m28coB7AIYn4CN/qlTh4FZTGMs51oSyXUyYKYHJTH1xCfnZOeaNe0T3qCKzYc8gvZJPZ9KzKLpJlAZ7mlQ==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.1.2"
+        }
       },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
@@ -1661,6 +1669,24 @@
           "Microsoft.IdentityModel.Abstractions": "8.16.0"
         }
       },
+      "Microsoft.IdentityModel.Protocols": {
+        "type": "Transitive",
+        "resolved": "7.1.2",
+        "contentHash": "SydLwMRFx6EHPWJ+N6+MVaoArN1Htt92b935O3RUWPY1yUF63zEjvd3lBu79eWdZUwedP8TN2I5V9T3nackvIQ==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Logging": "7.1.2",
+          "Microsoft.IdentityModel.Tokens": "7.1.2"
+        }
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect": {
+        "type": "Transitive",
+        "resolved": "7.1.2",
+        "contentHash": "6lHQoLXhnMQ42mGrfDkzbIOR3rzKM1W1tgTeMPLgLCqwwGw0d96xFi/UiX/fYsu7d6cD5MJiL3+4HuI8VU+sVQ==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols": "7.1.2",
+          "System.IdentityModel.Tokens.Jwt": "7.1.2"
+        }
+      },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
         "resolved": "8.16.0",
@@ -1790,11 +1816,6 @@
         "type": "Transitive",
         "resolved": "2.2.1",
         "contentHash": "6sZ5uynQeAE9dPWBQGKebNmxbY4xsvcc5VplB5WkYEESUS7oy4AwnFp0FhqxTSKm/PaFrFqLrYr696CYN8cugg=="
-      },
-      "OpenTracing": {
-        "type": "Transitive",
-        "resolved": "0.12.1",
-        "contentHash": "8i/Vnx/lbWzqqJ6J5lofguT4wBS99rfqKujWrFrTGAclQBZ5h1CgBlzGOTqsNjmMsxSTLpC+Ns6/f1RB0c4O/g=="
       },
       "Polly.Core": {
         "type": "Transitive",
@@ -2068,11 +2089,15 @@
           "Polly": "[8.6.5, )"
         }
       },
-      "ocelot.tracing.opentracing": {
+      "ocelot.testing": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.24, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.24, )",
+          "Microsoft.AspNetCore.TestHost": "[8.0.24, )",
           "Ocelot": "[0.0.0-dev, )",
-          "OpenTracing": "[0.12.1, )"
+          "Shouldly": "[4.3.0, )",
+          "System.Text.Json": "[10.0.3, )"
         }
       }
     },
@@ -2288,18 +2313,6 @@
           "Nito.Cancellation": "1.1.2"
         }
       },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.13",
-          "Microsoft.AspNetCore.TestHost": "9.0.13",
-          "Shouldly": "4.3.0",
-          "System.Text.Json": "10.0.3"
-        }
-      },
       "Polly": {
         "type": "Direct",
         "requested": "[8.6.5, )",
@@ -2453,6 +2466,14 @@
         "type": "Transitive",
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
+      },
+      "Microsoft.AspNetCore.Authentication.JwtBearer": {
+        "type": "Transitive",
+        "resolved": "9.0.13",
+        "contentHash": "CGlxaW5m8Dx52yWVYlcT2qL3kmbdb6FMSSdzS7CCBCBfmL16PV/e2fZiMsiOHovvOkc774h5ULpkSsFKf7Yzqw==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.0.1"
+        }
       },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
@@ -2741,6 +2762,23 @@
           "Microsoft.IdentityModel.Abstractions": "8.16.0"
         }
       },
+      "Microsoft.IdentityModel.Protocols": {
+        "type": "Transitive",
+        "resolved": "8.0.1",
+        "contentHash": "uA2vpKqU3I2mBBEaeJAWPTjT9v1TZrGWKdgK6G5qJd03CLx83kdiqO9cmiK8/n1erkHzFBwU/RphP83aAe3i3g==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Tokens": "8.0.1"
+        }
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect": {
+        "type": "Transitive",
+        "resolved": "8.0.1",
+        "contentHash": "AQDbfpL+yzuuGhO/mQhKNsp44pm5Jv8/BI4KiFXR7beVGZoSH35zMV3PrmcfvSTsyI6qrcR898NzUauD6SRigg==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols": "8.0.1",
+          "System.IdentityModel.Tokens.Jwt": "8.0.1"
+        }
+      },
       "Microsoft.IdentityModel.Tokens": {
         "type": "Transitive",
         "resolved": "8.16.0",
@@ -2870,11 +2908,6 @@
         "type": "Transitive",
         "resolved": "2.2.1",
         "contentHash": "6sZ5uynQeAE9dPWBQGKebNmxbY4xsvcc5VplB5WkYEESUS7oy4AwnFp0FhqxTSKm/PaFrFqLrYr696CYN8cugg=="
-      },
-      "OpenTracing": {
-        "type": "Transitive",
-        "resolved": "0.12.1",
-        "contentHash": "8i/Vnx/lbWzqqJ6J5lofguT4wBS99rfqKujWrFrTGAclQBZ5h1CgBlzGOTqsNjmMsxSTLpC+Ns6/f1RB0c4O/g=="
       },
       "Polly.Core": {
         "type": "Transitive",
@@ -3148,11 +3181,15 @@
           "Polly": "[8.6.5, )"
         }
       },
-      "ocelot.tracing.opentracing": {
+      "ocelot.testing": {
         "type": "Project",
         "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[9.0.13, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.13, )",
+          "Microsoft.AspNetCore.TestHost": "[9.0.13, )",
           "Ocelot": "[0.0.0-dev, )",
-          "OpenTracing": "[0.12.1, )"
+          "Shouldly": "[4.3.0, )",
+          "System.Text.Json": "[10.0.3, )"
         }
       }
     },

@@ -147,17 +147,6 @@
           "Castle.Core": "5.1.1"
         }
       },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "10.0.3",
-          "Microsoft.AspNetCore.TestHost": "10.0.3",
-          "Shouldly": "4.3.0"
-        }
-      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.3.1-dev-02404, )",
@@ -1019,6 +1008,16 @@
           "Ocelot": "[0.0.0-dev, )",
           "Polly": "[8.6.5, )"
         }
+      },
+      "ocelot.testing": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.3, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.3, )",
+          "Microsoft.AspNetCore.TestHost": "[10.0.3, )",
+          "Ocelot": "[0.0.0-dev, )",
+          "Shouldly": "[4.3.0, )"
+        }
       }
     },
     "net10.0/osx-x64": {
@@ -1210,18 +1209,6 @@
         "contentHash": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
         "dependencies": {
           "Castle.Core": "5.1.1"
-        }
-      },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "8.0.24",
-          "Microsoft.AspNetCore.TestHost": "8.0.24",
-          "Shouldly": "4.3.0",
-          "System.Text.Json": "10.0.3"
         }
       },
       "Serilog": {
@@ -2116,6 +2103,17 @@
           "Ocelot": "[0.0.0-dev, )",
           "Polly": "[8.6.5, )"
         }
+      },
+      "ocelot.testing": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.24, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.24, )",
+          "Microsoft.AspNetCore.TestHost": "[8.0.24, )",
+          "Ocelot": "[0.0.0-dev, )",
+          "Shouldly": "[4.3.0, )",
+          "System.Text.Json": "[10.0.3, )"
+        }
       }
     },
     "net8.0/osx-x64": {
@@ -2314,18 +2312,6 @@
         "contentHash": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
         "dependencies": {
           "Castle.Core": "5.1.1"
-        }
-      },
-      "Ocelot.Testing": {
-        "type": "Direct",
-        "requested": "[25.0.0-beta.2, )",
-        "resolved": "25.0.0-beta.2",
-        "contentHash": "GgWK1BpCqLFUetP0gXi637KZPb9QjXNSC+JmASnu40nKvFUs+SyiKU2Ur4FAUxSIgT9+Jka9VmyeZVpASf406Q==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.13",
-          "Microsoft.AspNetCore.TestHost": "9.0.13",
-          "Shouldly": "4.3.0",
-          "System.Text.Json": "10.0.3"
         }
       },
       "Serilog": {
@@ -3218,6 +3204,17 @@
         "dependencies": {
           "Ocelot": "[0.0.0-dev, )",
           "Polly": "[8.6.5, )"
+        }
+      },
+      "ocelot.testing": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[9.0.13, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.13, )",
+          "Microsoft.AspNetCore.TestHost": "[9.0.13, )",
+          "Ocelot": "[0.0.0-dev, )",
+          "Shouldly": "[4.3.0, )",
+          "System.Text.Json": "[10.0.3, )"
         }
       }
     },

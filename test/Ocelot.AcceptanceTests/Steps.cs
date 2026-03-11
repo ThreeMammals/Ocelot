@@ -59,7 +59,7 @@ public class Steps : AcceptanceSteps
     }
 
     protected override FileHostAndPort Localhost(int port) => base.Localhost(port) as FileHostAndPort;
-    protected override FileConfiguration GivenConfiguration(params object[] routes) => base.GivenConfiguration(routes) as FileConfiguration;
+    protected override FileConfiguration GivenConfiguration(params FileRoute[] routes) => base.GivenConfiguration(routes) as FileConfiguration;
     protected override FileRoute GivenDefaultRoute(int port) => base.GivenDefaultRoute(port) as FileRoute;
     protected override FileRoute GivenCatchAllRoute(int port) => base.GivenCatchAllRoute(port) as FileRoute;
     protected override FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;

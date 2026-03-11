@@ -11,6 +11,7 @@ global using System.Threading.Tasks;
 global using Moq;
 global using Ocelot;
 global using Ocelot.Testing;
+global using Ocelot.Testing.Boxing;
 global using Shouldly;
 global using System.Net;
 global using Xunit;

@@ -15,7 +15,7 @@ namespace Ocelot.Benchmarks;
 internal class BenchmarkSteps : AcceptanceSteps
 {
     public new FileHostAndPort Localhost(int port) => base.Localhost(port) as FileHostAndPort;
-    public new FileConfiguration GivenConfiguration(params object[] routes) => base.GivenConfiguration(routes) as FileConfiguration;
+    public new FileConfiguration GivenConfiguration(params FileRoute[] routes) => base.GivenConfiguration(routes) as FileConfiguration;
     public new FileRoute GivenDefaultRoute(int port) => base.GivenDefaultRoute(port) as FileRoute;
     public new FileRoute GivenCatchAllRoute(int port) => base.GivenCatchAllRoute(port) as FileRoute;
     public new FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
