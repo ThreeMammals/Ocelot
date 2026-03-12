@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!--Package properties-->
+    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <PackageId>Ocelot.Testing</PackageId>
+    <PackageDescription>A shared library for testing the Ocelot core library and its extension packages, including both acceptance and unit tests</PackageDescription>
+    <PackageReleaseNotes>https://github.com/ThreeMammals/Ocelot/blob/main/ReleaseNotes.md</PackageReleaseNotes>
+    <PackageIcon>ocelot_icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageTags>dotnet;ocelot;testing</PackageTags>
+    <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
+    <Company>Three Mammals</Company>
+    <Product>Ocelot Gateway</Product>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
+    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="\" Link=".package\LICENSE.md" />
+    <None Include="README.md" Pack="true" PackagePath="\" Link=".package\README.md" />
+    <None Include="..\ocelot_icon.png" Pack="true" PackagePath="\" Link=".package\ocelot_icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Ocelot\Ocelot.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <!-- Conditionally obtain references for the .NET 8.0 target -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.24" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.24" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.24" />
+  </ItemGroup>
+  <!-- Conditionally obtain references for the .NET 9.0 target -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.13" />
+  </ItemGroup>
+  <!-- Conditionally obtain references for the .NET 10.0 target -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.3" />
+  </ItemGroup>
+
+</Project>
