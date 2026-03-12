@@ -4,9 +4,9 @@
   <Project Path="src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj" />
   <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
   <Project Path="src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj" />
-  <Project Path="src/Ocelot.Testing/Ocelot.Testing.csproj" />
   <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
   <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />
   <Project Path="test/Ocelot.ManualTest/Ocelot.ManualTest.csproj" />
   <Project Path="test/Ocelot.UnitTests/Ocelot.UnitTests.csproj" />
+  <Project Path="testing/Ocelot.Testing.csproj" />
 </Solution>
