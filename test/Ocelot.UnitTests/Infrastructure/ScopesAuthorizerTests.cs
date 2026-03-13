@@ -25,7 +25,7 @@ public class ScopesAuthorizerTests : UnitTest
         var allowedScopes = new List<string>();
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -39,7 +39,7 @@ public class ScopesAuthorizerTests : UnitTest
         var allowedScopes = (List<string>)null;
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -55,7 +55,7 @@ public class ScopesAuthorizerTests : UnitTest
         var allowedScopes = new List<string> { "doesntmatter" };
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
@@ -70,7 +70,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(allowedScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -87,7 +87,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
@@ -106,7 +106,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -124,7 +124,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -143,7 +143,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new ErrorResponse<bool>(fakeError));
@@ -161,7 +161,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -179,7 +179,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));
@@ -197,7 +197,7 @@ public class ScopesAuthorizerTests : UnitTest
         GivenTheParserReturns(new OkResponse<List<string>>(userScopes));
 
         // Act
-        var result = _authorizer.Authorize(principal, allowedScopes);
+        var result = _authorizer.Authorize(principal, allowedScopes, null);
 
         // Assert
         ThenTheFollowingIsReturned(result, new OkResponse<bool>(true));

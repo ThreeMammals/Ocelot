@@ -21,14 +21,15 @@ public class ScopesAuthorizer : IScopesAuthorizer
     public string ScopeClaim => Scope;
 
     /// <inheritdoc/>
-    public Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes)
+    public Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes, string scopeKey)
     {
         if (routeAllowedScopes == null || routeAllowedScopes.Count == 0)
         {
             return new OkResponse<bool>(true);
         }
 
-        var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, ScopeClaim);
+        scopeKey ??= ScopeClaim ?? "scope";
+        var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, scopeKey);
         if (values.IsError)
         {
             return new ErrorResponse<bool>(values.Errors);

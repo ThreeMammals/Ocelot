@@ -87,6 +87,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
         Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
         Services.TryAddSingleton<IScopesAuthorizer, ScopesAuthorizer>();
+        Services.TryAddSingleton<IRolesAuthorizer, RolesAuthorizer>();
         Services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
         Services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
         Services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();

@@ -528,7 +528,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'Test',AuthenticationProviderKeys:['Test #1','Test #2'],RequiredRole:[],ScopeKey:[],RoleKey:[],PolicyName:[] is unsupported authentication provider");
     }
 
     [Fact]
@@ -1037,7 +1037,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         GivenConfigurationWithAuthenticationKey(key);
         await WhenIValidateTheConfiguration();
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'JwtLads',AuthenticationProviderKeys:[],RequiredRole:[],ScopeKey:[],RoleKey:[],PolicyName:[] is unsupported authentication provider");
     }
 
     [Fact]
@@ -1061,7 +1061,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         GivenConfigurationWithAuthenticationKeys(keys);
         await WhenIValidateTheConfiguration();
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads','other'] is unsupported authentication provider");
+        ThenTheErrorMessageAtPositionIs(0, "AuthenticationOptions: AllowAnonymous:False,AllowedScopes:[],AuthenticationProviderKey:'',AuthenticationProviderKeys:['JwtLads','other'],RequiredRole:[],ScopeKey:[],RoleKey:[],PolicyName:[] is unsupported authentication provider");
     }
 
     [Fact]
