@@ -760,8 +760,8 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 	reportSettings.Append($"-reports:" + coverageSummaryFile);
 	reportSettings.Append($"-filefilters:-*.g.cs"); // silence warnings for source-generated files (e.g. RegexGenerator.g.cs) that are deleted after build
 
-	Information($"GenerateReport: Resolving net9.0/ReportGenerator.dll ...");
-	var toolpath = Context.Tools.Resolve("net9.0/ReportGenerator.dll");
+	Information($"GenerateReport: Resolving net10.0/ReportGenerator.dll ...");
+	var toolpath = Context.Tools.Resolve("net10.0/ReportGenerator.dll");
 	Information($"GenerateReport: Tool Path: {toolpath.ToString()}" + NL);
 
 	DotNetExecute(toolpath, reportSettings);
