@@ -42,9 +42,9 @@ jobs:
 #     - name: Build
 #       run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #     - name: Unit Tests
-#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #     - name: Acceptance Tests
-#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-macos:
 #     runs-on: macos-latest
@@ -78,9 +78,9 @@ jobs:
 #       - name: Build
 #         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #       - name: Unit Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #       - name: Acceptance Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-windows:
 #     runs-on: windows-latest
@@ -110,9 +110,9 @@ jobs:
 #       - name: Build
 #         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #       - name: Unit Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #       - name: Acceptance Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-success:
 #     needs: [build-linux, build-macos, build-windows]

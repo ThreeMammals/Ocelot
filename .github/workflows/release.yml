@@ -35,9 +35,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-macos:
     needs: build-windows
@@ -74,9 +74,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-linux:
     needs: build-macos
@@ -117,9 +117,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore ./Ocelot.Release.sln --framework net${{ matrix.dotnet-version }}.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.dotnet-version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   release-cake:
     needs: build-linux

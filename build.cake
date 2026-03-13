@@ -521,6 +521,7 @@ Task("UnitTests")
 					.Append("--no-restore")
 					.Append("--no-build")
 					.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+					.Append("--settings coverlet.runsettings") // exclude Ocelot.Testing assembly from coverage
 					.Append("--verbosity:" + verbosity)
 					.Append("--consoleLoggerParameters:ErrorsOnly"),
 				Framework = tfm,
@@ -757,9 +758,10 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 	var reportSettings = new ProcessArgumentBuilder();
 	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
 	reportSettings.Append($"-reports:" + coverageSummaryFile);
+	reportSettings.Append($"-filefilters:-*.g.cs"); // silence warnings for source-generated files (e.g. RegexGenerator.g.cs) that are deleted after build
 
-	Information($"GenerateReport: Resolving net9.0/ReportGenerator.dll ...");
-	var toolpath = Context.Tools.Resolve("net9.0/ReportGenerator.dll");
+	Information($"GenerateReport: Resolving net10.0/ReportGenerator.dll ...");
+	var toolpath = Context.Tools.Resolve("net10.0/ReportGenerator.dll");
 	Information($"GenerateReport: Tool Path: {toolpath.ToString()}" + NL);
 
 	DotNetExecute(toolpath, reportSettings);
