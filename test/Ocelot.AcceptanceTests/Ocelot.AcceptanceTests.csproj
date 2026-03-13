@@ -45,17 +45,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <PackageReference Include="coverlet.collector" Version="8.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!--<PackageReference Include="Butterfly.Client.AspNetCore" Version="0.0.8" />-->
     <PackageReference Include="Consul" Version="1.7.14.10" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <!-- <PackageReference Include="OpenTracing" Version="0.12.1" /> -->
     <PackageReference Include="Serilog" Version="4.3.1-dev-02404" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
     <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
     <!-- Microsoft -->

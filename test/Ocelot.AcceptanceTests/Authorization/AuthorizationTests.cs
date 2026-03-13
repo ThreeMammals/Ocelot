@@ -1,5 +1,5 @@
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.Configuration.File;
+using Ocelot.Testing.Authentication;
 using System.Security.Claims;
 
 namespace Ocelot.AcceptanceTests.Authorization;

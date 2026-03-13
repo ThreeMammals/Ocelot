@@ -139,10 +139,10 @@ public class OcelotConfigurationMonitorTests : UnitTest
         GivenATestConfigurationIsSet();
         GivenTheMonitorIsCreated();
         var callbackInvoked = false;
-        Action<IInternalConfiguration, string> listener = (config, name) =>
+        void listener(IInternalConfiguration config, string name)
         {
             callbackInvoked = true;
-        };
+        }
 
         // Act
         var disposable = _monitor.OnChange(listener);
@@ -153,6 +153,7 @@ public class OcelotConfigurationMonitorTests : UnitTest
             x => x.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>()),
             Times.Once
         );
+        Assert.False(callbackInvoked);
     }
 
     [Fact]
@@ -182,11 +183,11 @@ public class OcelotConfigurationMonitorTests : UnitTest
         GivenTheMonitorIsCreated();
         IInternalConfiguration capturedConfig = null;
         string capturedName = null;
-        Action<IInternalConfiguration, string> listener = (config, name) =>
+        void listener(IInternalConfiguration config, string name)
         {
             capturedConfig = config;
             capturedName = name;
-        };
+        }
 
         Action<object> capturedCallback = null;
         _mChangeToken
@@ -270,6 +271,8 @@ public class OcelotConfigurationMonitorTests : UnitTest
         _mChangeToken.Verify(
             x => x.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>()),
             Times.Exactly(2));
+        Assert.False(listener1Called);
+        Assert.False(listener2Called);
     }
 
     // Helper methods

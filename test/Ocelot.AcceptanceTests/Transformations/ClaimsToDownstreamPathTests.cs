@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Authorization;
+using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
@@ -29,7 +29,7 @@ public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
         this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))
+            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))
             .And(x => GivenIUpdateSubClaim())
             .And(x => GivenIHaveAToken(testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())

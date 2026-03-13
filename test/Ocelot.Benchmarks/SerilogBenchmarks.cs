@@ -7,6 +7,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Serilog;
 using Serilog.Core;
+using System.Net;
 
 namespace Ocelot.Benchmarks;
 
@@ -133,7 +134,7 @@ public sealed class SerilogBenchmarks : ManualConfig, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = steps.GivenDefaultRoute(port);
         var configuration = steps.GivenConfiguration(route);
-        steps.GivenThereIsAServiceRunningOn(port, "/", 201, nameof(SerilogBenchmarks));
+        steps.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, nameof(SerilogBenchmarks));
         steps.GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(minLogLevel);
     }

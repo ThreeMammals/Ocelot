@@ -217,8 +217,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         else
             retryAfter.ShouldStartWith("0.2"); // 0.2xx
 
-        var seconds = double.Parse(retryAfter);
-        int theRestOfMilliseconds = (int)(1000 * seconds);
+        //var seconds = double.Parse(retryAfter);
+        //int theRestOfMilliseconds = (int)(1000 * seconds);
         /* theRestOfMilliseconds.ShouldBeInRange(200, halfOfWaitWindow); */
         GivenIWait(halfOfWaitWindow); // the end of wait period
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
@@ -353,7 +353,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         return route;
     }
 
-    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    public override FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
         var config = base.GivenConfiguration(routes);
         config.GlobalConfiguration.RateLimitOptions = new()

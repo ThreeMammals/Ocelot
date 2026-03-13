@@ -15,6 +15,7 @@ using Ocelot.Provider.Polly;
 using Ocelot.Requester;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.Authentication;
 using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
@@ -340,7 +341,7 @@ public class DynamicRoutingTests : ConcurrentSteps
         {
             { serviceName, serviceUrls },
         });
-        configuration.GlobalConfiguration.AuthenticationOptions = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []));
+        configuration.GlobalConfiguration.AuthenticationOptions = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], [JwtBearerDefaults.AuthenticationScheme]));
 
         GivenMultipleServiceInstancesAreRunning(serviceUrls, Enumerable.Repeat(serviceName, ports.Length).ToArray());
         steps.GivenThereIsAConfiguration(configuration);
@@ -382,12 +383,12 @@ public class DynamicRoutingTests : ConcurrentSteps
         var ports3 = PortFinder.GetPorts(2);
         var route3 = GivenLbRoute("noAuthorization", loadBalancer: nameof(NoLoadBalancer), key: null);
         var route3Opts = route3.AuthenticationOptions =
-            AuthenticationSteps.GivenOptions(false, ["invalid-scope"], JwtBearerDefaults.AuthenticationScheme);
+            AuthenticationSteps.GivenOptions(false, ["invalid-scope"], [JwtBearerDefaults.AuthenticationScheme]);
         GivenDiscoveryMetadata(route3, ports3);
 
         var configuration = GivenDynamicRouting(new(), route1, route2, route3);
         var globalOptions = configuration.GlobalConfiguration.AuthenticationOptions
-            = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], JwtBearerDefaults.AuthenticationScheme, []))
+            = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], [JwtBearerDefaults.AuthenticationScheme]))
             {
                 RouteKeys = ["R2"],
             };

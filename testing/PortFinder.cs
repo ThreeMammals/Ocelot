@@ -22,8 +22,8 @@ public static class PortFinder
         lock (SyncRoot)
         {
             ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
-            while (!TryUsePort(CurrentPort++));
-            return CurrentPort - 1;
+            while (!TryUsePort(++CurrentPort));
+            return CurrentPort;
         }
     }
 

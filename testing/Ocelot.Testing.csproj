@@ -8,6 +8,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <!--Package properties-->
+    <!--<Version>25.0-beta.4</Version>-->
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <PackageId>Ocelot.Testing</PackageId>
     <PackageDescription>A shared library for testing the Ocelot core library and its extension packages, including both acceptance and unit tests</PackageDescription>
@@ -35,6 +36,7 @@
     <ProjectReference Include="..\src\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>

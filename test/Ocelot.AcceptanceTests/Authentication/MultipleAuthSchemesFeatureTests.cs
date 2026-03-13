@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Ocelot.DependencyInjection;
+using Ocelot.Testing.Authentication;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 

@@ -675,8 +675,8 @@ public sealed class AggregateTests : Steps
         var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
 
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, (IFormCollection reqForm) => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
+        this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
@@ -781,10 +781,10 @@ public sealed class AggregateTests : Steps
         Key = key,
     };
 
-    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    public override FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
-        var obj = base.GivenConfiguration(routes);
-        obj.Aggregates.Add(
+        var conf = base.GivenConfiguration(routes);
+        conf.Aggregates.Add(
             new()
             {
                 UpstreamPathTemplate = "/",
@@ -792,7 +792,7 @@ public sealed class AggregateTests : Steps
                 RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
             }
         );
-        return obj;
+        return conf;
     }
 }
 

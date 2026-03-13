@@ -6,6 +6,7 @@ using Ocelot.AcceptanceTests.Authentication;
 //x using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Testing.Authentication;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;

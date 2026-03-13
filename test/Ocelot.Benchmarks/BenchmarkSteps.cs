@@ -2,32 +2,12 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Ocelot.Configuration.File;
-using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.Benchmarks;
 
 internal class BenchmarkSteps : AcceptanceSteps
 {
-    public new FileHostAndPort Localhost(int port) => base.Localhost(port) as FileHostAndPort;
-    public new FileConfiguration GivenConfiguration(params FileRoute[] routes) => base.GivenConfiguration(routes) as FileConfiguration;
-    public new FileRoute GivenDefaultRoute(int port) => base.GivenDefaultRoute(port) as FileRoute;
-    public new FileRoute GivenCatchAllRoute(int port) => base.GivenCatchAllRoute(port) as FileRoute;
-    public new FileRoute GivenRoute(int port, string upstream = null, string downstream = null) => base.GivenRoute(port, upstream, downstream) as FileRoute;
-
-    public void GivenThereIsAServiceRunningOn(int port, string basePath, int statusCode,
-        [CallerMemberName] string responseBody = null)
-        => handler.GivenThereIsAServiceRunningOn(port, basePath,
-            context =>
-            {
-                context.Response.StatusCode = statusCode;
-                return context.Response.WriteAsync(responseBody);
-            });
     public void GivenThereIsAServiceRunningOnKestrel(int port, string basePath, int statusCode,
         Action<KestrelServerOptions> configureKestrel,
         [CallerMemberName] string responseBody = null)

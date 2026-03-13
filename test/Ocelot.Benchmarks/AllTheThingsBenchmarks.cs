@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Ocelot.Benchmarks;
 
@@ -23,7 +24,7 @@ public sealed class AllTheThingsBenchmarks : ManualConfig, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = steps.GivenDefaultRoute(port);
         var configuration = steps.GivenConfiguration(route);
-        steps.GivenThereIsAServiceRunningOn(port, "/", 201, string.Empty);
+        steps.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, nameof(AllTheThingsBenchmarks));
         steps.GivenThereIsAConfiguration(configuration);
         steps.GivenOcelotIsRunning(
             host => host.ConfigureLogging(

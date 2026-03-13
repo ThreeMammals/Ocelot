@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Authorization;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 

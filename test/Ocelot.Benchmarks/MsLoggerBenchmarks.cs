@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net;
 
 namespace Ocelot.Benchmarks;
 
@@ -104,7 +105,7 @@ public sealed class MsLoggerBenchmarks : ManualConfig, IDisposable
         var port = PortFinder.GetRandomPort();
         var route = steps.GivenDefaultRoute(port);
         var configuration = steps.GivenConfiguration(route);
-        steps.GivenThereIsAServiceRunningOn(port, "/", 201, string.Empty);
+        steps.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, nameof(MsLoggerBenchmarks));
         steps.GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(minLogLevel);
     }

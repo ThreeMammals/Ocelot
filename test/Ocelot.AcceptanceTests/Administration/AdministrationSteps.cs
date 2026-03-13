@@ -1,4 +1,5 @@
 ﻿using Ocelot.AcceptanceTests.Authentication;
+using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Administration;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -9,12 +8,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using Shouldly;
-using System.Collections;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -53,62 +51,34 @@ public class AcceptanceSteps : IDisposable
     protected List<string> Files { get; }
     protected List<string> Folders { get; }
     protected virtual string TestID { get => _testId.ToString("N"); }
+    public virtual string Body([CallerMemberName] string? responseBody = null) => responseBody ?? GetType().Name;
     public virtual string TestName([CallerMemberName] string? testName = null) => testName ?? GetType().Name; // but it could be TestID also
 
     public HttpClient? OcelotClient => ocelotClient;
 
-    protected virtual FileHostAndPort /*object?*/ Localhost(int port)
-    {
-        // return Ocelot.CreateFileHostAndPort("localhost", port, out _);
-        return new("localhost", port);
-    }
+    protected virtual FileHostAndPort Localhost(int port) => new("localhost", port);
 
     protected static string DownstreamUrl(int port) => DownstreamUrl(port, Uri.UriSchemeHttp);
     protected static string DownstreamUrl(int port, string scheme) => $"{scheme ?? Uri.UriSchemeHttp}://localhost:{port}";
     protected static string LoopbackLocalhostUrl(int port, int loopbackIndex = 0) => $"{Uri.UriSchemeHttp}://127.0.0.{++loopbackIndex}:{port}";
 
-    protected virtual FileConfiguration /*object?*/ GivenConfiguration(params FileRoute[] /*object[]*/ routes)
+    public virtual FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
-        //object? c = Ocelot.CreateFileConfiguration(out Type type);
-        //PropertyInfo? property = type.GetProperty("Routes");
-        //if (property?.GetValue(c) is IList list)
-        //    foreach (var route in routes)
-        //        list.Add(route);
-        //return c;
         var c = new FileConfiguration();
         c.Routes.AddRange(routes);
         return c;
     }
 
-    protected virtual FileRoute GivenDefaultRoute(int port) => GivenRoute(port);
-    protected virtual FileRoute GivenCatchAllRoute(int port) => GivenRoute(port, "/{everything}", "/{everything}");
-    protected virtual FileRoute GivenRoute(int port, string? upstream = null, string? downstream = null)
+    public virtual FileRoute GivenDefaultRoute(int port) => GivenRoute(port);
+    public virtual FileRoute GivenCatchAllRoute(int port) => GivenRoute(port, "/{everything}", "/{everything}");
+    public virtual FileRoute GivenRoute(int port, string? upstream = null, string? downstream = null)
     {
-        // object? r = Ocelot.CreateFileRoute(out Type type);
         var r = new FileRoute();
-
         r.DownstreamHostAndPorts.Add(Localhost(port));
-        //PropertyInfo? property = type.GetProperty("DownstreamHostAndPorts");
-        //if (property?.GetValue(r) is IList downstreamHostAndPorts)
-        //    downstreamHostAndPorts.Add(Localhost(port));
-
         r.DownstreamPathTemplate = downstream ?? "/";
-        //property = type.GetProperty("DownstreamPathTemplate");
-        //property?.SetValue(r, downstream ?? "/");
-
         r.DownstreamScheme = Uri.UriSchemeHttp;
-        //property = type.GetProperty("DownstreamScheme");
-        //property?.SetValue(r, Uri.UriSchemeHttp);
-
-        r.UpstreamPathTemplate = upstream ?? "/";
-        //property = type.GetProperty("UpstreamPathTemplate");
-        //property?.SetValue(r, upstream ?? "/");
-
         r.UpstreamHttpMethod.Add(HttpMethods.Get);
-        //property = type.GetProperty("UpstreamHttpMethod");
-        //if (property?.GetValue(r) is IList upstreamHttpMethod)
-        //    upstreamHttpMethod.Add(HttpMethods.Get);
-
+        r.UpstreamPathTemplate = upstream ?? "/";
         return r;
     }
 
@@ -144,18 +114,16 @@ public class AcceptanceSteps : IDisposable
     {
         config.SetBasePath(hosting.HostingEnvironment.ContentRootPath);
         config.AddOcelot(ocelotConfigFileName, false, false);
-        //config.AddJsonFile(ocelotConfigFileName, false, false);
     }
     public void WithBasicConfiguration(WebHostBuilderContext hosting, IConfigurationBuilder config)
     {
         config.SetBasePath(hosting.HostingEnvironment.ContentRootPath);
         config.AddOcelot(ocelotConfigFileName, false, false);
-        //config.AddJsonFile(ocelotConfigFileName, false, false);
     }
 
-    public static void WithAddOcelot(IServiceCollection services) => Ocelot.AddOcelot(services); // services.AddOcelot();
+    public static void WithAddOcelot(IServiceCollection services) => services.AddOcelot();
     public static void WithUseOcelot(IApplicationBuilder app) => WithUseOcelotAsync(app).GetAwaiter().GetResult();
-    public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => Ocelot.UseOcelot(app); // app.UseOcelot();
+    public static Task<IApplicationBuilder> WithUseOcelotAsync(IApplicationBuilder app) => app.UseOcelot();
 
     public int GivenOcelotIsRunning()
         => GivenOcelotIsRunning(null, null, null, null, null, null, null);
@@ -252,10 +220,6 @@ public class AcceptanceSteps : IDisposable
     private static void SetBaseUrl(FileConfiguration configuration, string baseUrl)
     {
         configuration.GlobalConfiguration.BaseUrl = baseUrl;
-        //var p1 = configuration?.GetType().GetProperty("GlobalConfiguration");
-        //var globalConfiguration = p1?.GetValue(configuration);
-        //var p2 = p1?.PropertyType.GetProperty("BaseUrl");
-        //p2?.SetValue(globalConfiguration, baseUrl);
     }
 
     protected async Task<int> GivenOcelotHostIsRunning(
@@ -296,7 +260,43 @@ public class AcceptanceSteps : IDisposable
     protected IServiceProvider OcelotServices { get => ocelotServer?.Services ?? ocelotHost!.Services; }
     #endregion
 
+    #region GivenThereIsAServiceRunningOn
+
+    public virtual void GivenThereIsAServiceRunningOn(int port, [CallerMemberName] string responseBody = "")
+        => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, responseBody);
+
+    protected virtual HttpStatusCode MapStatus_StatusCode { get; set; } = HttpStatusCode.OK;
+    protected virtual Func<HttpContext, string>? MapStatus_ResponseBody { get; set; }
+    protected virtual Task MapStatus(HttpContext context)
+    {
+        context.Response.StatusCode = (int)MapStatus_StatusCode;
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty);
+    }
+    public virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
+    {
+        MapStatus_StatusCode = statusCode;
+        MapStatus_ResponseBody ??= (ctx) => responseBody;
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
+    }
+
+    protected virtual Task MapOK(HttpContext context)
+    {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty);
+    }
+    public virtual void GivenThereIsAServiceRunningOnPath(int port, string basePath, [CallerMemberName] string responseBody = "")
+    {
+        MapStatus_ResponseBody ??= (ctx) => responseBody;
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
+    }
+    public virtual void GivenThereIsAServiceRunningOn(int port, string basePath, RequestDelegate requestDelegate)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, basePath, requestDelegate);
+    }
+    #endregion
+
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
+    public static Task GivenIWaitAsync(int wait) => Task.Delay(wait);
 
     #region Cookies
 
@@ -469,6 +469,13 @@ public class AcceptanceSteps : IDisposable
         => response.ShouldNotBeNull()
         .Content.ReadAsStringAsync()
         .ContinueWith(t => t.Result.ShouldBe(expectedBody, customMessage));
+
+    public Task ThenTheResponseShouldBeAsync(HttpStatusCode expected, [CallerMemberName] string? expectedBody = null)
+    {
+        ThenTheStatusCodeShouldBe(expected);
+        return ThenTheResponseBodyShouldBeAsync(expectedBody ?? Body(expectedBody));
+    }
+    public Task ThenTheResponseBodyShouldBeEmpty() => ThenTheResponseBodyShouldBeAsync(string.Empty);
 
     public void ThenTheContentLengthIs(int expected)
         => response.ShouldNotBeNull().Content.Headers.ContentLength.ShouldBe(expected);
