@@ -521,6 +521,7 @@ Task("UnitTests")
 					.Append("--no-restore")
 					.Append("--no-build")
 					.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
+					.Append("--settings coverlet.runsettings") // exclude Ocelot.Testing assembly from coverage
 					.Append("--verbosity:" + verbosity)
 					.Append("--consoleLoggerParameters:ErrorsOnly"),
 				Framework = tfm,
