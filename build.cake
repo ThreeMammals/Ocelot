@@ -758,6 +758,7 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 	var reportSettings = new ProcessArgumentBuilder();
 	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
 	reportSettings.Append($"-reports:" + coverageSummaryFile);
+	reportSettings.Append($"-filefilters:-*.g.cs"); // silence warnings for source-generated files (e.g. RegexGenerator.g.cs) that are deleted after build
 
 	Information($"GenerateReport: Resolving net9.0/ReportGenerator.dll ...");
 	var toolpath = Context.Tools.Resolve("net9.0/ReportGenerator.dll");
