@@ -39,7 +39,7 @@
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Polly" Version="8.6.5" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103" />
+    <PackageReference Include="Polly" Version="8.6.6" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.201" />
   </ItemGroup>
 </Project>
