@@ -42,7 +42,7 @@ public class DownstreamRoute
         int? timeout)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
-        AddHeadersToDownstream = addHeadersToDownstream;
+        AddHeadersToDownstream = addHeadersToDownstream ?? new List<AddHeader>();
         DelegatingHandlers = delegatingHandlers;
         Key = key;
         UpstreamPathTemplate = upstreamPathTemplate;
@@ -66,7 +66,7 @@ public class DownstreamRoute
         AuthenticationOptions = authenticationOptions;
         DownstreamPathTemplate = downstreamPathTemplate;
         LoadBalancerKey = loadBalancerKey;
-        AddHeadersToUpstream = addHeadersToUpstream;
+        AddHeadersToUpstream = addHeadersToUpstream ?? new List<AddHeader>();
         SecurityOptions = securityOptions;
         DownstreamHttpMethod = downstreamHttpMethod;
         DownstreamHttpVersion = downstreamHttpVersion;

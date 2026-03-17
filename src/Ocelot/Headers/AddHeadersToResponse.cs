@@ -18,7 +18,7 @@ public class AddHeadersToResponse : IAddHeadersToResponse
 
     public void Add(List<AddHeader> addHeaders, DownstreamResponse response)
     {
-        foreach (var add in addHeaders)
+        foreach (var add in addHeaders ?? Enumerable.Empty<AddHeader>())
         {
             if (add.Value.StartsWith('{') && add.Value.EndsWith('}'))
             {

@@ -82,6 +82,16 @@ public class AddHeadersToResponseTests : UnitTest
     }
 
     [Fact]
+    public void Should_not_throw_when_add_headers_is_null()
+    {
+        // Arrange, Act
+        _adder.Add(null, _response);
+
+        // Assert
+        _response.Headers.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Should_do_nothing_and_log_error()
     {
         // Arrange
