@@ -12,7 +12,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
     private readonly IFileConfigurationRepository _repo;
     private string _previousAsJson;
     private Timer _timer;
-    private bool _polling;
+    private volatile bool _polling;
     private readonly IFileConfigurationPollerOptions _options;
     private readonly IInternalConfigurationRepository _internalConfigRepo;
     private readonly IInternalConfigurationCreator _internalConfigCreator;
@@ -32,61 +32,58 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         _previousAsJson = string.Empty;
     }
 
+    private void OnTimer(object state)
+    {
+        if (_polling)
+            return;
+
+        _polling = true;
+        PollAsync().GetAwaiter().GetResult(); // TODO This is not good, TimerCallback must be synchronous
+        _polling = false;
+    }
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"{nameof(FileConfigurationPoller)} is starting.");
+        if (_timer is not null)
+            return Task.CompletedTask;
 
-        _timer = new Timer(async x =>
-        {
-            if (_polling)
-            {
-                return;
-            }
-
-            _polling = true;
-            await Poll();
-            _polling = false;
-        }, null, _options.Delay, _options.Delay);
-
+        _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is starting.");
+        _timer = new(OnTimer, null, _options.Delay, _options.Delay); // TODO state could be CancellationToken?
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"{nameof(FileConfigurationPoller)} is stopping.");
+        if (_timer is null)
+            return Task.CompletedTask;
 
-        _timer?.Change(Timeout.Infinite, 0);
-
+        _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
+        _timer.Change(Timeout.Infinite, 0);
         return Task.CompletedTask;
     }
 
-    private async Task Poll()
+    private async Task PollAsync()
     {
-        _logger.LogInformation("Started polling");
+        _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
 
         var fileConfig = await _repo.Get();
-
         if (fileConfig.IsError)
         {
-            _logger.LogWarning(() => $"error geting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+            _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
             return;
         }
 
         var asJson = ToJson(fileConfig.Data);
-
-        if (!fileConfig.IsError && asJson != _previousAsJson)
+        if (asJson != _previousAsJson)
         {
             var config = await _internalConfigCreator.Create(fileConfig.Data);
-
             if (!config.IsError)
-            {
                 _internalConfigRepo.AddOrReplace(config.Data);
-            }
 
             _previousAsJson = asJson;
         }
 
-        _logger.LogInformation("Finished polling");
+        _logger.LogInformation(() => $"{nameof(PollAsync)}: Finished polling");
     }
 
     /// <summary>
@@ -103,5 +100,6 @@ public class FileConfigurationPoller : IHostedService, IDisposable
     {
         _timer?.Dispose();
         _timer = null;
+        GC.SuppressFinalize(this);
     }
 }

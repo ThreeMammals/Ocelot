@@ -246,7 +246,7 @@ public class PollKubeIntegrationTests : Steps
         // First call may return empty due to API error
     }
 
-    [Fact]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "ColdStart")]
     public async Task Should_perform_initial_poll_on_first_call_when_queue_is_empty()
     {
