@@ -10,10 +10,13 @@ namespace Ocelot.UnitTests.Configuration.Repository;
 
 public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 {
+    private const int PollingDelayInMs = 100;
+    private const int LongRunningPollDelayInMs = PollingDelayInMs + 50;
+
     private readonly FileConfigurationPoller _poller;
     private readonly Mock<IOcelotLoggerFactory> _factory;
     private readonly Mock<IFileConfigurationRepository> _repo;
-    private readonly FileConfiguration _fileConfig;
+    private readonly FileConfiguration _initialFileConfig;
     private readonly Mock<IFileConfigurationPollerOptions> _config;
     private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo;
     private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator;
@@ -25,10 +28,10 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _factory = new Mock<IOcelotLoggerFactory>();
         _factory.Setup(x => x.CreateLogger<FileConfigurationPoller>()).Returns(logger.Object);
         _repo = new Mock<IFileConfigurationRepository>();
-        _fileConfig = new FileConfiguration();
+        _initialFileConfig = new FileConfiguration();
         _config = new Mock<IFileConfigurationPollerOptions>();
-        _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_fileConfig));
-        _config.Setup(x => x.Delay).Returns(100);
+        _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(_initialFileConfig));
+        _config.Setup(x => x.Delay).Returns(PollingDelayInMs);
         _internalConfig = new Mock<IInternalConfiguration>();
         _internalConfigRepo = new Mock<IInternalConfigurationRepository>();
         _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
@@ -37,13 +40,40 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     }
 
     [Fact]
-    public void Should_start()
+    public void Should_start_and_poll_initial_configuration()
     {
         // Arrange, Act
         _poller.StartAsync(CancellationToken.None);
 
         // Assert
-        ThenTheSetterIsCalled(_fileConfig, 1);
+        ThenTheSetterIsCalled(_initialFileConfig, 1);
+    }
+
+    [Fact]
+    public async Task Should_not_replace_timer_when_start_called_twice()
+    {
+        // Arrange
+        await _poller.StartAsync(TestContext.Current.CancellationToken);
+        var timerAfterFirstStart = CurrentTimer();
+
+        // Act
+        await _poller.StartAsync(TestContext.Current.CancellationToken);
+        var timerAfterSecondStart = CurrentTimer();
+
+        // Assert
+        timerAfterFirstStart.ShouldNotBeNull();
+        timerAfterSecondStart.ShouldBeSameAs(timerAfterFirstStart);
+    }
+
+    [Fact]
+    public async Task Should_do_nothing_when_stop_called_before_start()
+    {
+        // Arrange, Act
+        await _poller.StopAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(PollingDelayInMs * 2, TestContext.Current.CancellationToken);
+
+        // Assert
+        NumberOfGetInvocations().ShouldBe(0);
     }
 
     [Fact]
@@ -57,7 +87,18 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Assert
         WhenTheConfigIsChanged(newConfig, 0);
-        ThenTheSetterIsCalledAtLeast(newConfig, 1);
+        ThenTheSetterIsCalled(newConfig, 1);
+    }
+
+    [Fact]
+    public void Should_call_setter_only_once_when_configuration_does_not_change_across_multiple_poll_cycles()
+    {
+        // Arrange, Act
+        _poller.StartAsync(CancellationToken.None);
+
+        // Assert
+        ThenTheSetterIsCalled(_initialFileConfig, 1);
+        ThenTheConfigIsNotAddedMoreThan(1);
     }
 
     [Fact]
@@ -70,22 +111,79 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _poller.StartAsync(CancellationToken.None);
 
         // Assert
-        WhenTheConfigIsChanged(newConfig, 10);
+        WhenTheConfigIsChanged(newConfig, LongRunningPollDelayInMs);
         ThenTheSetterIsCalled(newConfig, 1);
+    }
+
+    [Fact]
+    public async Task Should_return_early_on_timer_tick_when_polling_is_already_in_progress()
+    {
+        // Arrange
+        var getTaskSource = new TaskCompletionSource<Response<FileConfiguration>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var getCallCount = 0;
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            Interlocked.Increment(ref getCallCount);
+            return getTaskSource.Task;
+        });
+
+        // Act
+        await _poller.StartAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(PollingDelayInMs * 3, TestContext.Current.CancellationToken);
+
+        // Assert
+        getCallCount.ShouldBe(1);
+
+        // Cleanup
+        getTaskSource.SetResult(new OkResponse<FileConfiguration>(_initialFileConfig));
+        await _poller.StopAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
     public void Should_do_nothing_if_call_to_provider_fails()
     {
+        // Arrange, Act
+        WhenProviderErrors();
+        _poller.StartAsync(CancellationToken.None);
+
+        // Assert
+        ThenTheProviderIsPolled();
+        ThenTheSetterIsNotCalled();
+    }
+
+    [Fact]
+    public void Should_not_add_to_internal_repo_if_internal_configuration_creation_fails()
+    {
         // Arrange
         var newConfig = GivenConfiguration();
 
+        _internalConfigCreator
+            .Setup(x => x.Create(It.IsAny<FileConfiguration>()))
+            .ReturnsAsync(new ErrorResponse<IInternalConfiguration>(new AnyError()));
+        _repo.Setup(x => x.Get()).ReturnsAsync(new OkResponse<FileConfiguration>(newConfig));
+
         // Act
         _poller.StartAsync(CancellationToken.None);
-        WhenProviderErrors();
 
         // Assert
-        ThenTheSetterIsCalled(newConfig, 0);
+        ThenTheCreatorIsCalled(newConfig, 1);
+        ThenTheConfigIsNotAdded();
+    }
+
+    [Fact]
+    public async Task Should_stop_polling_when_stopped()
+    {
+        // Arrange, Act
+        await _poller.StartAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(PollingDelayInMs * 2, TestContext.Current.CancellationToken);
+        await _poller.StopAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(PollingDelayInMs, TestContext.Current.CancellationToken);
+        var afterStopSettled = NumberOfGetInvocations();
+        await Task.Delay(PollingDelayInMs * 2, TestContext.Current.CancellationToken);
+
+        // Assert
+        ThenTheSetterIsCalled(_initialFileConfig, 1);
+        NumberOfGetInvocations().ShouldBe(afterStopSettled);
     }
 
     [Fact]
@@ -94,38 +192,6 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         // Arrange, Act, Assert
         _poller.Dispose(); // when poller is disposed
     }
-
-    [Fact]
-    public async Task StopAsync()
-    {
-        // Arrange
-        await _poller.StartAsync(CancellationToken.None);
-
-        // Act
-        await _poller.StopAsync(CancellationToken.None);
-
-        // Assert: no exception is thrown and the poller stops cleanly
-    }
-
-    /*[Fact]
-    public async Task Should_not_update_internal_config_if_internal_config_creator_errors()
-    {
-        // Arrange
-        _internalConfigCreator
-            .Setup(x => x.Create(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync(new ErrorResponse<IInternalConfiguration>(new AnyError()));
-
-        // Act
-        await _poller.StartAsync(CancellationToken.None);
-
-        // Assert: Create is called but AddOrReplace is never called when the creator returns an error
-        var result = AssertWhile(() => 
-        {
-            _internalConfigCreator.Verify(x => x.Create(_fileConfig), Times.AtLeastOnce);
-            _internalConfigRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Never);
-        });
-        Assert.True(result);
-    }*/
 
     private static FileConfiguration GivenConfiguration() => new()
     {
@@ -180,12 +246,63 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         Assert.True(result);
     }
 
-    private void ThenTheSetterIsCalledAtLeast(FileConfiguration fileConfig, int times)
+    private void ThenTheSetterIsNotCalled()
+    {
+        _internalConfigRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Never);
+        _internalConfigCreator.Verify(x => x.Create(It.IsAny<FileConfiguration>()), Times.Never);
+    }
+
+    private void ThenTheCreatorIsCalled(FileConfiguration fileConfig, int times)
     {
         var result = AssertWhile(() =>
         {
-            _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig.Object), Times.AtLeast(times));
-            _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.AtLeast(times));
+            _internalConfigCreator.Verify(x => x.Create(fileConfig), Times.Exactly(times));
+        });
+        Assert.True(result);
+    }
+
+    private void ThenTheCreatorIsCalled(int times)
+    {
+        var result = AssertWhile(() =>
+        {
+            _internalConfigCreator.Verify(x => x.Create(It.IsAny<FileConfiguration>()), Times.Exactly(times));
+        });
+        Assert.True(result);
+    }
+
+    private void ThenTheConfigIsNotAdded()
+    {
+        _internalConfigRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Never);
+    }
+
+    private void ThenTheConfigIsNotAddedMoreThan(int times)
+    {
+        var result = AssertWhile(() =>
+        {
+            _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig.Object), Times.Exactly(times));
+        });
+        Assert.True(result);
+    }
+
+    private int NumberOfGetInvocations()
+    {
+        return _repo.Invocations.Count(x => x.Method.Name == nameof(IFileConfigurationRepository.Get));
+    }
+
+    private Timer CurrentTimer()
+    {
+        var timerField = typeof(FileConfigurationPoller)
+            .GetField("_timer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        timerField.ShouldNotBeNull();
+        return timerField.GetValue(_poller) as Timer;
+    }
+
+    private void ThenTheProviderIsPolled()
+    {
+        var result = AssertWhile(() =>
+        {
+            _repo.Verify(x => x.Get(), Times.AtLeastOnce());
         });
         Assert.True(result);
     }

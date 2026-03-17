@@ -47,7 +47,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         if (_timer is not null)
             return Task.CompletedTask;
 
-        _logger.LogInformation($"{nameof(FileConfigurationPoller)} is starting.");
+        _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is starting.");
         _timer = new(OnTimer, null, _options.Delay, _options.Delay); // TODO state could be CancellationToken?
         return Task.CompletedTask;
     }
@@ -57,7 +57,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         if (_timer is null)
             return Task.CompletedTask;
 
-        _logger.LogInformation($"{nameof(FileConfigurationPoller)} is stopping.");
+        _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         _timer.Change(Timeout.Infinite, 0);
         return Task.CompletedTask;
     }
