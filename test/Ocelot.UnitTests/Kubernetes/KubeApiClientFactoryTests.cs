@@ -47,11 +47,11 @@ public class KubeApiClientFactorySequentialTests : KubeApiClientFactoryTestsBase
         }
 
         var path = Path.Combine(serviceAccountPath, "namespace");
-        await File.WriteAllTextAsync(path, nameof(Get_UsePodServiceAccount_ShouldCreateFromPodServiceAccount));
+        await File.WriteAllTextAsync(path, nameof(Get_UsePodServiceAccount_ShouldCreateFromPodServiceAccount), TestContext.Current.CancellationToken);
         files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "token");
-        await File.WriteAllTextAsync(path, TestID);
+        await File.WriteAllTextAsync(path, TestID, TestContext.Current.CancellationToken);
         files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "ca.crt");

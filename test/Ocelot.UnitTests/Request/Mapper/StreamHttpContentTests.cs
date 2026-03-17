@@ -25,7 +25,7 @@ public class StreamHttpContentTests
         using var stream = new MemoryStream();
 
         // Act
-        await sut.CopyToAsync(stream);
+        await sut.CopyToAsync(stream, TestContext.Current.CancellationToken);
 
         // Assert
         stream.Position = 0;

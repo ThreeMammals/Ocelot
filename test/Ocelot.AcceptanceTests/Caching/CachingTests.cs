@@ -1,12 +1,5 @@
-using CacheManager.Core;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -72,57 +65,6 @@ public sealed class CachingTests : Steps
     }
 
     [Fact]
-    public void Should_return_cached_response_when_using_jsonserialized_cache()
-    {
-        var port = PortFinder.GetRandomPort();
-        var options = new FileCacheOptions
-        {
-            TtlSeconds = 100,
-        };
-        var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningUsingJsonSerializedCache())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .BDDfy();
-    }
-
-    private void GivenOcelotIsRunningUsingJsonSerializedCache()
-    {
-        var builder = TestHostBuilder.Create()
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                var env = hostingContext.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", true, false)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, false);
-                config.AddJsonFile(ocelotConfigFileName, false, false);
-                config.AddEnvironmentVariables();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddOcelot()
-                    .AddCacheManager((x) =>
-                    {
-                        //x.WithMicrosoftLogging(_ => /*log.AddConsole(LogLevel.Debug);*/)
-                        x.WithJsonSerializer();
-                        x.WithHandle(typeof(InMemoryJsonHandle<>));
-                    });
-            })
-            .Configure(async app => await app.UseOcelot());
-
-        ocelotServer = new TestServer(builder);
-        ocelotClient = ocelotServer.CreateClient();
-    }
-
-    [Fact]
     public void Should_not_return_cached_response_as_ttl_expires()
     {
         var port = PortFinder.GetRandomPort();
@@ -160,7 +102,7 @@ public sealed class CachingTests : Steps
             EnableContentHashing = true,
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
+        var configuration = GivenFileConfiguration(port, options, asGlobalConfig, HttpMethods.Post);
 
         this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -194,7 +136,7 @@ public sealed class CachingTests : Steps
             TtlSeconds = 100,
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
-        var configuration = GivenFileConfiguration(port, options, asGlobalConfig);
+        var configuration = GivenFileConfiguration(port, options, asGlobalConfig, HttpMethods.Post);
 
         this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -254,30 +196,21 @@ public sealed class CachingTests : Steps
             .BDDfy();
     }
 
-    private static FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions, bool asGlobalConfig = false) => new()
+    private FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions,
+        bool asGlobalConfig = false, params string[] methods)
     {
-        Routes = new()
-        {
-            new FileRoute()
-            {
-                DownstreamPathTemplate = "/",
-                DownstreamHostAndPorts = new()
-                {
-                    new FileHostAndPort("localhost", port),
-                },
-                DownstreamHttpMethod = "Post",
-                DownstreamScheme = Uri.UriSchemeHttp,
-                UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = [ HttpMethods.Get, HttpMethods.Post ],
-                FileCacheOptions = asGlobalConfig ? new FileCacheOptions { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions,
-            },
-        },
-        GlobalConfiguration = !asGlobalConfig ? null :
+        var route = GivenRoute(port);
+        route.CacheOptions = asGlobalConfig ? new() { TtlSeconds = cacheOptions.TtlSeconds } : cacheOptions;
+        foreach (var m in methods)
+            route.UpstreamHttpMethod.Add(m);
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration = !asGlobalConfig ? null :
             new()
             {
                 CacheOptions = new(cacheOptions),
-            },
-    };
+            };
+        return configuration;
+    }
 
     private static void GivenTheCacheExpires()
     {

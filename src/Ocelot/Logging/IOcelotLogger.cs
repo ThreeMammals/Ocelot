@@ -6,7 +6,7 @@ namespace Ocelot.Logging;
 /// <summary>
 /// Thin wrapper around the .NET Core logging framework, used to allow the <see cref="IRequestScopedDataRepository"/> object to be injected giving access to the Ocelot <see cref="IInternalConfiguration.RequestId"/>.
 /// </summary>
-public interface IOcelotLogger
+public interface IOcelotLogger : IDisposable
 {
     void LogTrace(string message);
     void LogTrace(Func<string> messageFactory);

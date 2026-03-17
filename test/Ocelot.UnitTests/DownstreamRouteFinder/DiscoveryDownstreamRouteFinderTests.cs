@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
@@ -20,7 +21,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private string _upstreamHost;
     private string _upstreamUrlPath;
     private string _upstreamHttpMethod;
-    private Dictionary<string, string> _upstreamHeaders;
+    private IHeaderDictionary _upstreamHeaders;
     private IInternalConfiguration _configuration;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
@@ -386,12 +387,12 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _upstreamHost = "doesnt matter";
         _upstreamUrlPath = "/auth/test";
         _upstreamHttpMethod = "GET";
-        _upstreamHeaders = new()
+        _upstreamHeaders = new HeaderDictionary()
         {
             { "testHeader", "testHeaderValue" },
         };
         var kv = _upstreamHeaders.First();
-        _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+        _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IHeaderDictionary>(), It.IsAny<bool>()))
             .Returns(new Dictionary<string, UpstreamHeaderTemplate>()
             {
                 { kv.Key, new(kv.Value, kv.Value) },

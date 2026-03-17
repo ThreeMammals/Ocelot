@@ -2,11 +2,13 @@
 
 [![Release Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
 [![Development Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
-[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
+[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop)
+[![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
+[![codecov](https://codecov.io/gh/ThreeMammals/Ocelot/branch/develop/graph/badge.svg)](https://codecov.io/gh/ThreeMammals/Ocelot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
 [![NuGet](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=NuGet&color=blue)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
+<!-- [![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop) -->
 
 [~docspassing]: https://img.shields.io/badge/Docs-passing-44CC11?style=flat-square
 [~docsfailing]: https://img.shields.io/badge/Docs-failing-red?style=flat-square
@@ -30,7 +32,7 @@ There is a piece of middleware that maps the `HttpResponseMessage` onto the `Htt
 That is basically it, with a bunch of other features!
 
 ## Install
-Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net8.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^1]
+Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net8.0`, `net10.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^1]
 
 Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using NuGet package manager:
 ```powershell
@@ -107,10 +109,11 @@ If you want to contribute for the first time, we suggest looking at a [![label: 
 [~goodfirstissue]: https://img.shields.io/badge/-good%20first%20issue-ffc4d8.svg
 
 ### Notes
-[^1]: Starting with version [21](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0) and higher, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to migrate to the currently supported [.NET 8 and 9](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) frameworks. Also, new features will be available for all .NET SDKs that we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
+[^1]: Starting with version [21](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0) and higher, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to migrate to the currently supported [.NET 8, 9 and 10](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) frameworks. Also, new features will be available for all .NET SDKs that we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
 [^2]: [Ocelot Guru](https://gurubase.io/g/ocelot) is an unofficial tool to get answers regarding Ocelot: please consider it an advanced search tool. Thus, we have an official [Questions & Answers](https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a) category in the [Discussions](https://github.com/ThreeMammals/Ocelot/discussions) space.
 [^3]: Retry policies only via [Polly](https://github.com//App-vNext/Polly) library referenced within the [Ocelot.Provider.Polly](https://www.nuget.org/packages/Ocelot.Provider.Polly) extension package.
 [^4]: Previously, the [Aggregation](https://ocelot.readthedocs.io/en/latest/features/aggregation.html) feature was called [Request Aggregation](https://ocelot.readthedocs.io/en/23.4.3/features/requestaggregation.html) in versions [23.4.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3) and earlier. Internally, within the Ocelot team, this feature is referred to as [Multiplexer](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Multiplexer).
 [^5]: Ocelot supports the following service discovery providers: (**1**) [Consul](https://www.consul.io) through the [Ocelot.Provider.Consul](https://www.nuget.org/packages/Ocelot.Provider.Consul) extension package, (**2**) [Kubernetes](https://kubernetes.io) via the [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) extension package, and (**3**) [Netflix Eureka](https://spring.io/projects/spring-cloud-netflix), which utilizes the [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka) package referenced within the [Ocelot.Provider.Eureka](https://www.nuget.org/packages/Ocelot.Provider.Eureka) extension package. Additionally, Ocelot supports (**4**) Azure [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) for service discovery, along with special modes such as [Dynamic Routing](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#dynamic-routing) and [Custom Providers](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#custom-providers).
 [^6]: Ocelot does not directly support [GraphQL](https://graphql.org/). Developers can easily integrate the [GraphQL for .NET](https://github.com/graphql-dotnet/graphql-dotnet) library. 
 [^7]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) for the repository, which are useful for searching and filtering.
+

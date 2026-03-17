@@ -29,6 +29,6 @@ public class TracingHandlerFactoryTests
         var handler = _factory.Get();
 
         // Assert
-        handler.ShouldBeOfType<OcelotHttpTracingHandler>();
+        Assert.IsType<OcelotHttpTracingHandler>(handler);
     }
 }

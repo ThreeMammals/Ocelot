@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.Middleware;
 using System.Net.Sockets;
 using System.Text;
 
@@ -13,15 +14,15 @@ namespace Ocelot.AcceptanceTests.Transformations;
 public sealed class HeaderTests : Steps
 {
     private static FileHttpHandlerOptions DoNotAllowAutoRedirect => new() { AllowAutoRedirect = false };
-    private static FileHttpHandlerOptions UseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = true };
-    private static FileHttpHandlerOptions DoNotUseCookieContainer => new FileHttpHandlerOptions { UseCookieContainer = false };
+    private static FileHttpHandlerOptions UseCookieContainer => new() { UseCookieContainer = true };
+    private static FileHttpHandlerOptions DoNotUseCookieContainer => new() { UseCookieContainer = false };
 
     [Fact]
     public void Should_transform_upstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .UpstreamHeaderTransform("Laz", "D, GP").Out();
+        var route = GivenDefaultRoute(port);
+        route.UpstreamHeaderTransform.Add("Laz", "D, GP");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, "Laz"))
@@ -38,8 +39,8 @@ public sealed class HeaderTests : Steps
     public void Should_transform_downstream_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .DownstreamHeaderTransform("Location", "http://www.bbc.co.uk/, http://ocelot.net/").Out();
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "http://www.bbc.co.uk/, http://ocelot.net/");
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.OK, "Location", "http://www.bbc.co.uk/"))
@@ -56,16 +57,19 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_190()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .DownstreamHeaderTransform("Location", $"{DownstreamUrl(port)}, {{BaseUrl}}")
-            .HandlerOptions(DoNotAllowAutoRedirect)
-            .Unbox();
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", $"{DownstreamUrl(port)}, {{BaseUrl}}");
+        route.HttpHandlerOptions = DoNotAllowAutoRedirect;
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
             .BDDfy();
@@ -76,16 +80,19 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_205()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .DownstreamHeaderTransform("Location", "{DownstreamBaseUrl}, {BaseUrl}")
-            .HandlerOptions(DoNotAllowAutoRedirect)
-            .Unbox();
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
+        route.HttpHandlerOptions = DoNotAllowAutoRedirect;
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://localhost:5000/pay/Receive"))
             .BDDfy();
@@ -96,17 +103,20 @@ public sealed class HeaderTests : Steps
     public void Should_fix_issue_417()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .DownstreamHeaderTransform("Location", "{DownstreamBaseUrl}, {BaseUrl}")
-            .HandlerOptions(DoNotAllowAutoRedirect)
-            .Unbox();
+        var route = GivenDefaultRoute(port);
+        route.DownstreamHeaderTransform.Add("Location", "{DownstreamBaseUrl}, {BaseUrl}");
+        route.HttpHandlerOptions = DoNotAllowAutoRedirect;
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.BaseUrl = "http://anotherapp.azurewebsites.net";
 
         this.Given(x => x.GivenThereIsAServiceReturningAHeaderBack(port, HttpStatusCode.Found, "Location", $"{DownstreamUrl(port)}/pay/Receive"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
+#if NET10_0_OR_GREATER
+            .When(x => WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect("/", DoNotAllowAutoRedirect.AllowAutoRedirect.Value))
+#else
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
+#endif
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Redirect))
             .And(x => ThenTheResponseHeaderIs("Location", "http://anotherapp.azurewebsites.net/pay/Receive"))
             .BDDfy();
@@ -117,10 +127,9 @@ public sealed class HeaderTests : Steps
     public void Request_should_reuse_cookies_with_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenRoute(port, "/sso/{everything}", "/sso/{everything}"))
-            .Methods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Options)
-            .HandlerOptions(UseCookieContainer)
-            .Unbox();
+        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
+        route.UpstreamHttpMethod = [HttpMethods.Get, HttpMethods.Post, HttpMethods.Options];
+        route.HttpHandlerOptions = UseCookieContainer;
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
@@ -140,10 +149,9 @@ public sealed class HeaderTests : Steps
     public void Request_should_have_own_cookies_no_cookie_container()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenRoute(port, "/sso/{everything}", "/sso/{everything}"))
-            .Methods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Options)
-            .HandlerOptions(DoNotUseCookieContainer)
-            .Unbox(); // !
+        var route = GivenRoute(port, "/sso/{everything}", "/sso/{everything}");
+        route.UpstreamHttpMethod = [HttpMethods.Get, HttpMethods.Post, HttpMethods.Options];
+        route.HttpHandlerOptions = DoNotUseCookieContainer;
         var configuration = GivenConfiguration(route);
 
         this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/sso/test", HttpStatusCode.OK))
@@ -204,23 +212,28 @@ public sealed class HeaderTests : Steps
     public async Task Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
     {
         var port = PortFinder.GetRandomPort();
-        var route = Box(GivenDefaultRoute(port))
-            .UpstreamHeaderTransform(X_Forwarded_For, "{RemoteIpAddress}")
-            .HandlerOptions(DoNotAllowAutoRedirect)
-            .Unbox();
+        var route = GivenDefaultRoute(port);
+        route.UpstreamHeaderTransform.Add(X_Forwarded_For, "{RemoteIpAddress}");
+        route.HttpHandlerOptions = DoNotAllowAutoRedirect;
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
         GivenThereIsAServiceEchoingAHeader(port, HttpStatusCode.OK, X_Forwarded_For);
+        var ocelotIP = string.Empty;
+        var pipeline = new OcelotPipelineConfiguration
+        {
+            PreErrorResponderMiddleware = async (ctx, next) =>
+            {
+                ocelotIP = GetRemoteIpAddress(ctx);
+                await next.Invoke();
+            },
+        };
+        await GivenOcelotIsRunningAsync(pipeline);
 
         //var remoteIpAddress = Dns.GetHostAddresses("dns.google").First(a => a.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6).ToString();
         //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        var expectedIP = Dns.GetHostAddresses(string.Empty)
-            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
-            .ToString();
-        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/expectedIP);
+        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/ocelotIP);
     }
 
     public const string X_Forwarded_For = "X-Forwarded-For";
@@ -233,15 +246,12 @@ public sealed class HeaderTests : Steps
     public async Task ShouldApplyGlobalUpstreamHeaderTransformsForAllRoutes()
     {
         const string Ot_Route = "Ot-Route";
-        var ocelotIP = Dns.GetHostAddresses(string.Empty)
-            .FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6)
-            .ToString();
         var port1 = PortFinder.GetRandomPort();
-        var route1 = Box(GivenRoute(port1, "/route1"))
-            .UpstreamHeaderTransform(Ot_Route, "Raman").Out();
+        var route1 = GivenRoute(port1, "/route1");
+        route1.UpstreamHeaderTransform.Add(Ot_Route, "Raman");
         var port2 = PortFinder.GetRandomPort();
-        var route2 = Box(GivenRoute(port2, "/route2"))
-            .UpstreamHeaderTransform(Ot_Route, "Mark").Out();
+        var route2 = GivenRoute(port2, "/route2");
+        route2.UpstreamHeaderTransform.Add(Ot_Route, "Mark");
         var port3 = PortFinder.GetRandomPort();
         var route3 = GivenRoute(port3, "/route3");
         var configuration = GivenConfiguration(route1, route2, route3);
@@ -260,7 +270,17 @@ public sealed class HeaderTests : Steps
         GivenThereIsAServiceEchoingAHeader(port2, HttpStatusCode.OK, allHeaders);
         GivenThereIsAServiceEchoingAHeader(port3, HttpStatusCode.OK, allHeaders);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+
+        var ocelotIP = string.Empty;
+        var pipeline = new OcelotPipelineConfiguration
+        {
+            PreErrorResponderMiddleware = async (ctx, next) =>
+            {
+                ocelotIP = GetRemoteIpAddress(ctx);
+                await next.Invoke();
+            },
+        };
+        await GivenOcelotIsRunningAsync(pipeline);
 
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
@@ -288,11 +308,11 @@ Ot-Route: ?");
     {
         const string Who = "Who", X_Forwarded_By = "X-Forwarded-By";
         var port1 = PortFinder.GetRandomPort();
-        var route1 = Box(GivenRoute(port1, "/route1"))
-            .DownstreamHeaderTransform(Who, "Raman, Mark").Out();
+        var route1 = GivenRoute(port1, "/route1");
+        route1.DownstreamHeaderTransform.Add(Who, "Raman, Mark");
         var port2 = PortFinder.GetRandomPort();
-        var route2 = Box(GivenRoute(port2, "/route2"))
-            .DownstreamHeaderTransform(Who, "Mark, Raman").Out();
+        var route2 = GivenRoute(port2, "/route2");
+        route2.DownstreamHeaderTransform.Add(Who, "Mark, Raman");
         var port3 = PortFinder.GetRandomPort();
         var route3 = GivenRoute(port3, "/route3");
         var configuration = GivenConfiguration(route1 ,route2, route3);
@@ -319,6 +339,13 @@ Ot-Route: ?");
         await WhenIGetUrlOnTheApiGateway("/route3");
         ThenTheResponseHeaderIs(Who, "? Mark");
         ThenTheResponseHeaderIs(X_Forwarded_By, configuration.GlobalConfiguration.BaseUrl);
+    }
+
+    private static string GetRemoteIpAddress(HttpContext context)
+    {
+        var ip = context.Connection.RemoteIpAddress
+                ?? Dns.GetHostAddresses(string.Empty).FirstOrDefault(a => a.AddressFamily != AddressFamily.InterNetworkV6);
+        return ip.ToString();
     }
 
     private int _count;
@@ -387,5 +414,22 @@ Ot-Route: ?");
             return context.Response.WriteAsync(body.ToString());
         }
         handler.GivenThereIsAServiceRunningOn(port, MapHeaderIntoResponseBody);
+    }
+
+    /// <summary>
+    /// Using HttpClientHandler to configure auto-redirect behavior
+    /// </summary>
+    private async Task WhenIGetUrlOnTheApiGatewayWithAllowAutoRedirect(string url, bool allowAutoRedirect)
+    {
+        var handler = new HttpClientHandler()
+        {
+            AllowAutoRedirect = allowAutoRedirect,
+        };
+        var baseAddr = ocelotClient.BaseAddress;
+        ocelotClient = new(handler)
+        {
+            BaseAddress = baseAddr,
+        };
+        response = await ocelotClient.GetAsync(url);
     }
 }

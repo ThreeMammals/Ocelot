@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.MiddlewareAnalysis;
@@ -345,9 +347,32 @@ public class OcelotBuilderTests : UnitTest
         _serviceProvider.GetService<IControllerActivator>()
             .ShouldNotBeNull().ShouldBeOfType<ServiceBasedControllerActivator>();
 
-        // .AddAuthorization()
-        scope.ServiceProvider.GetService<IAuthenticationService>()
-            .ShouldNotBeNull().ShouldBeOfType<AuthenticationService>();
+        // .AddAuthorization() -> .AddAuthorizationCore()
+        //_serviceProvider.GetService<Microsoft.AspNetCore.Authorization.AuthorizationMetrics>()
+        //    .ShouldNotBeNull().ShouldBeOfType<AuthorizationMetrics>();
+        _serviceProvider.GetService<IAuthorizationService>().ShouldNotBeNull()
+#if NET10_0_OR_GREATER
+            .GetType().Name.ShouldBe("DefaultAuthorizationServiceImpl");
+#else
+            .ShouldBeOfType<DefaultAuthorizationService>();
+#endif
+        _serviceProvider.GetService<IAuthorizationPolicyProvider>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationPolicyProvider>();
+        _serviceProvider.GetService<IAuthorizationHandlerProvider>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationHandlerProvider>();
+        _serviceProvider.GetService<IAuthorizationEvaluator>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationEvaluator>();
+        _serviceProvider.GetService<IAuthorizationHandlerContextFactory>()
+            .ShouldNotBeNull().ShouldBeOfType<DefaultAuthorizationHandlerContextFactory>();
+        _serviceProvider.GetService<IAuthorizationHandler>()
+            .ShouldNotBeNull().ShouldBeOfType<PassThroughAuthorizationHandler>();
+
+        scope.ServiceProvider.GetService<IAuthenticationService>().ShouldNotBeNull()
+#if NET10_0_OR_GREATER
+            .GetType().Name.ShouldBe("AuthenticationServiceImpl");
+#else
+            .ShouldBeOfType<AuthenticationService>();
+#endif
         _serviceProvider.GetService<IApplicationModelProvider>()
             .ShouldNotBeNull()
             .GetType().Name.ShouldBe("AuthorizationApplicationModelProvider");

@@ -1,26 +1,21 @@
 ﻿using BenchmarkDotNet.Order;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net;
 
 namespace Ocelot.Benchmarks;
 
 [Config(typeof(MsLoggerBenchmarks))]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [MaxIterationCount(16)]
-public class MsLoggerBenchmarks : ManualConfig
+public sealed class MsLoggerBenchmarks : ManualConfig, IDisposable
 {
-    private IWebHost _service;
-    private IWebHost _webHost;
-    private HttpClient _httpClient;
+    private readonly BenchmarkSteps steps = new();
+    public void Dispose() => steps.Dispose();
 
     public MsLoggerBenchmarks()
     {
@@ -29,13 +24,9 @@ public class MsLoggerBenchmarks : ManualConfig
         AddValidator(BaselineValidator.FailOnError);
     }
 
-    private async Task SendRequest()
+    private Task SendRequest()
     {
-        _httpClient ??= new HttpClient();
-
-        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000");
-        var response = await _httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        return steps.WhenIGetUrlOnTheApiGateway("/");
     }
 
     [Benchmark(Baseline = true)]
@@ -75,37 +66,18 @@ public class MsLoggerBenchmarks : ManualConfig
     })]
     public void OcelotCleanup()
     {
-        _webHost?.Dispose();
-        _service?.Dispose();
+        steps.Dispose();
     }
 
     [GlobalCleanup]
     public void Cleanup()
     {
-        _httpClient?.Dispose();
+        Dispose();
     }
 
-    private void GivenOcelotIsRunning(string url, LogLevel minLogLevel)
-    {
-        _webHost = TestHostBuilder.Create()
-            .UseKestrel()
-            .UseUrls(url)
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config
-                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                    .AddJsonFile("ocelot.json", false, false)
-                    .AddEnvironmentVariables();
-            })
-            .ConfigureServices(s => { s.AddOcelot(); })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.SetMinimumLevel(minLogLevel);
-                logging.AddConsole();
-            })
-            .Configure(async app =>
+    private void GivenOcelotIsRunning(LogLevel minLogLevel)
+        => steps.GivenOcelotIsRunning(
+            async app =>
             {
                 app.Use(async (context, next) =>
                 {
@@ -123,73 +95,18 @@ public class MsLoggerBenchmarks : ManualConfig
                     await next.Invoke();
                 });
                 await app.UseOcelot();
-            })
-            .Build();
-
-        _webHost.Start();
-    }
+            }, // Action<IApplicationBuilder> configureApp
+            host => host.ConfigureLogging(
+                (c, l) => l.ClearProviders().SetMinimumLevel(minLogLevel).AddConsole()) // Action<IWebHostBuilder> postConfigureHost
+        );
 
     private void OcelotFactory(LogLevel minLogLevel)
     {
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = 51879,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                },
-            },
-        };
-
-        GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201, string.Empty);
-        GivenOcelotIsRunning("http://localhost:5000", minLogLevel);
-    }
-
-    public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
-    {
-        var configurationPath = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
-
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
-
-        if (File.Exists(configurationPath))
-        {
-            File.Delete(configurationPath);
-        }
-
-        File.WriteAllText(configurationPath, jsonConfiguration);
-    }
-
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode, string responseBody)
-    {
-        _service = TestHostBuilder.Create()
-            .UseUrls(baseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseIISIntegration()
-            .Configure(app =>
-            {
-                app.UsePathBase(basePath);
-                app.Run(async context =>
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(responseBody);
-                });
-            })
-            .Build();
-
-        _service.Start();
+        var port = PortFinder.GetRandomPort();
+        var route = steps.GivenDefaultRoute(port);
+        var configuration = steps.GivenConfiguration(route);
+        steps.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, nameof(MsLoggerBenchmarks));
+        steps.GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(minLogLevel);
     }
 }

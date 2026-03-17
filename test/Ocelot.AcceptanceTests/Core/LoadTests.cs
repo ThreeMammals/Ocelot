@@ -17,12 +17,12 @@ public sealed class LoadTests : ConcurrentSteps
     /// This test should be moved to a separate project. It should be run during release only as an extra check for quality gates.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [SkippableFact]
+    [Fact]
     [Trait("PR", "1348")] // https://github.com/ThreeMammals/Ocelot/pull/1348
     [Trait("Bug", "2246")] // https://github.com/ThreeMammals/Ocelot/issues/2246
     public async Task ShouldLoadRegexCachingHeavily_NoMemoryLeaks()
     {
-        Skip.If(IsCiCd(), "Skipped in CI/CD! It should be moved to a separate project. It should be run during release only as an extra check for quality gates.");
+        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! It should be moved to a separate project. It should be run during release only as an extra check for quality gates.");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/my-gateway/order/{orderNumber}", "/order/{orderNumber}");

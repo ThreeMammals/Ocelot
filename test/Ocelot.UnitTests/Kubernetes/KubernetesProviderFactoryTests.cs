@@ -143,11 +143,11 @@ public sealed class KubernetesProviderFactorySequentialTests : KubernetesProvide
         }
 
         var path = Path.Combine(serviceAccountPath, "namespace");
-        await File.WriteAllTextAsync(path, nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount));
+        await File.WriteAllTextAsync(path, nameof(CreateProvider_KubeApiClientFactory_ShouldCreateFromPodServiceAccount), TestContext.Current.CancellationToken);
         files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "token");
-        await File.WriteAllTextAsync(path, TestID);
+        await File.WriteAllTextAsync(path, TestID, TestContext.Current.CancellationToken);
         files.Add(path);
 
         path = Path.Combine(serviceAccountPath, "ca.crt");
@@ -223,14 +223,16 @@ public class KubernetesProviderFactoryTestsBase : FileUnitTest
             .Invoke(serviceProvider, config, route);
     }
 
-    protected static ServiceProviderConfiguration GivenServiceProvider(string type) => new(
-        type: type,
-        scheme: string.Empty,
-        host: string.Empty,
-        port: 1,
-        token: string.Empty,
-        configurationKey: string.Empty,
-        pollingInterval: 9_000);
+    protected static ServiceProviderConfiguration GivenServiceProvider(string type) => new()
+    {
+        Type = type,
+        Scheme = string.Empty,
+        Host = string.Empty,
+        Port = 1,
+        Token = string.Empty,
+        ConfigurationKey = string.Empty,
+        PollingInterval = 9_000,
+    };
 
     private static DownstreamRoute GivenRoute([CallerMemberName] string serviceName = nameof(KubernetesProviderFactoryTests))
         => new DownstreamRouteBuilder().WithServiceName(serviceName).Build();

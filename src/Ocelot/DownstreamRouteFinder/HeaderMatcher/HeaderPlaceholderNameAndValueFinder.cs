@@ -1,11 +1,12 @@
-﻿using Ocelot.DownstreamRouteFinder.UrlMatcher;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.HeaderMatcher;
 
 public class HeaderPlaceholderNameAndValueFinder : IHeaderPlaceholderNameAndValueFinder
 {
-    public IList<PlaceholderNameAndValue> Find(IDictionary<string, string> upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> templateHeaders)
+    public IList<PlaceholderNameAndValue> Find(IHeaderDictionary upstreamHeaders, IDictionary<string, UpstreamHeaderTemplate> templateHeaders)
     {
         var result = new List<PlaceholderNameAndValue>();
         foreach (var templateHeader in templateHeaders)

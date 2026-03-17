@@ -1,13 +1,7 @@
 ﻿using BenchmarkDotNet.Order;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -17,11 +11,10 @@ namespace Ocelot.Benchmarks;
 
 [Config(typeof(PayloadBenchmarks))]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class PayloadBenchmarks : ManualConfig
+public sealed class PayloadBenchmarks : ManualConfig, IDisposable
 {
-    private IWebHost _service;
-    private IWebHost _ocelot;
-    private HttpClient _httpClient;
+    private readonly BenchmarkSteps steps = new();
+    public void Dispose() => steps.Dispose();
 
     private const string BasePayload =
         "{\"_id\":\"65789c1611a3b1feb49f9e65\",\"index\":0,\"guid\":\"6622d724-c17d-4939-9c68-158bf2dc5c57\",\"isActive\":false,\"balance\":\"$1,398.26\",\"picture\":\"http://placehold.it/32x32\",\"age\":33,\"eyeColor\":\"blue\",\"name\":\"WilkersonPayne\",\"gender\":\"male\",\"company\":\"NEOCENT\",\"email\":\"wilkersonpayne@neocent.com\",\"phone\":\"+1(837)588-3248\",\"address\":\"932BatchelderStreet,Campo,Texas,1310\",\"about\":\"Dolorsuntminimnullatemporlaboretempornostrudnon.Irureconsectetursintenimestadduissunttemporquisnisi.Laboreoccaecatculpaaliquaipsumreprehenderitadofficia.Sunteuutinpariaturanimofficia.CommodosintLoremametincididuntvelitesse.Nonaliquasintdoeiusmodexercitation.Suntcommododolorcupidatatculpareprehenderitfugiatexquisamet.\\r\\n\",\"registered\":\"2021-09-06T11:54:41-02:00\",\"latitude\":-45.256336,\"longitude\":164.343713,\"tags\":[\"cillum\",\"cupidatat\",\"aliquip\",\"culpa\",\"non\",\"laboris\",\"non\"],\"friends\":[{\"id\":0,\"name\":\"MistyMorton\"},{\"id\":1,\"name\":\"AraceliAcosta\"},{\"id\":2,\"name\":\"WalterDelaney\"}],\"greeting\":\"Hello,WilkersonPayne!Youhave1unreadmessages.\",\"favoriteFruit\":\"strawberry\"}";
@@ -36,29 +29,16 @@ public class PayloadBenchmarks : ManualConfig
     [GlobalSetup]
     public void SetUp()
     {
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort("localhost", 51879),
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = [HttpMethods.Post],
-                },
-            },
-        };
-
-        GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 201);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning("http://localhost:5000");
-
-        _httpClient = new HttpClient();
+        var port = PortFinder.GetRandomPort();
+        var route = steps.GivenDefaultRoute(port);
+        var configuration = steps.GivenConfiguration(route);
+        steps.GivenThereIsAServiceRunningOnKestrel(port, "/", 201,
+            options => options.Limits.MaxRequestBodySize = 2684354561,
+            nameof(PayloadBenchmarks));
+        steps.GivenThereIsAConfiguration(configuration);
+        steps.GivenOcelotIsRunning(host => host
+            .ConfigureKestrel((_, options) => options.Limits.MaxRequestBodySize = 2684354561)
+            .ConfigureLogging((hosting, logging) => logging.AddConfiguration(hosting.Configuration.GetSection("Logging"))));
     }
 
     [Benchmark(Baseline = true)]
@@ -66,11 +46,8 @@ public class PayloadBenchmarks : ManualConfig
     public async Task Baseline(string payLoadPath, string payloadName, bool isJson)
     {
         using var content = new StreamContent(File.OpenRead(payLoadPath));
-        content.Headers.ContentType =
-            new MediaTypeHeaderValue(string.Concat("application/", isJson ? "json" : "octet-stream"));
-
-        var response = await _httpClient.PostAsync("http://localhost:5000/", content);
-        response.EnsureSuccessStatusCode();
+        content.Headers.ContentType = new MediaTypeHeaderValue(string.Concat("application/", isJson ? "json" : "octet-stream"));
+        await steps.WhenIPostUrlOnTheApiGateway("/", content);
     }
 
     /// <summary>
@@ -188,66 +165,5 @@ public class PayloadBenchmarks : ManualConfig
         newFile.Close();
 
         return payloadPath;
-    }
-
-    private void GivenOcelotIsRunning(string url)
-    {
-        _ocelot = TestHostBuilder.Create()
-            .UseKestrel()
-            .UseUrls(url)
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                config
-                    .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-                    .AddJsonFile("appsettings.json", true, true)
-                    .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-                    .AddJsonFile(ConfigurationBuilderExtensions.PrimaryConfigFile, false, false)
-                    .AddEnvironmentVariables();
-            })
-            .ConfigureKestrel((_, hostingOptions) => { hostingOptions.Limits.MaxRequestBodySize = 2684354561; })
-            .ConfigureServices(s => { s.AddOcelot(); })
-            .ConfigureLogging((hostingContext, logging) =>
-            {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-            })
-            .Configure(async app => { await app.UseOcelot(); })
-            .Build();
-
-        _ocelot.Start();
-    }
-
-    public static void GivenThereIsAConfiguration(FileConfiguration fileConfiguration)
-    {
-        var configurationPath = Path.Combine(AppContext.BaseDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration);
-
-        if (File.Exists(configurationPath))
-        {
-            File.Delete(configurationPath);
-        }
-
-        File.WriteAllText(configurationPath, jsonConfiguration);
-    }
-
-    private void GivenThereIsAServiceRunningOn(string baseUrl, string basePath, int statusCode)
-    {
-        _service = TestHostBuilder.Create()
-            .UseUrls(baseUrl)
-            .UseKestrel()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureKestrel((_, hostingOptions) => { hostingOptions.Limits.MaxRequestBodySize = 2684354561; })
-            .Configure(app =>
-            {
-                app.UsePathBase(basePath);
-                app.Run(async context =>
-                {
-                    context.Response.StatusCode = statusCode;
-                    await context.Response.WriteAsync(string.Empty);
-                });
-            })
-            .Build();
-
-        _service.Start();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Authorization;
 using Ocelot.Configuration.File;
+using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
@@ -38,7 +38,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
@@ -61,7 +61,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
@@ -94,7 +94,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         context.Request.Query.TryGetValue("LocationId", out var locationId);
         context.Request.Query.TryGetValue("UserType", out var userType);
         context.Request.Query.TryGetValue("UserId", out var userId);
-        MapStatus_ResponseBody = () => $"CustomerId:{customerId} LocationId:{locationId} UserType:{userType} UserId:{userId}";
+        MapStatus_ResponseBody = _ => $"CustomerId:{customerId} LocationId:{locationId} UserType:{userType} UserId:{userId}";
         return base.MapStatus(context);
     }
 }

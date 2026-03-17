@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -22,28 +22,21 @@
     <NoWarn>1591</NoWarn>
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
   <ItemGroup>
-    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
-    <None Include="..\ocelot_icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" Link=".package\LICENSE.md" />
+    <None Include="..\..\ocelot_icon.png" Pack="true" PackagePath="\" Link=".package\ocelot_icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" />
-    <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.3.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
+    <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.3.0" /><!-- TODO Requires upgrade to v4.0 after package upgraded -->
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.103" />
   </ItemGroup>
 </Project>

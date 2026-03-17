@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
@@ -27,15 +26,10 @@ public sealed class ThreadSafeHeadersTests : Steps
         ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
 
-    protected override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
+    public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
     {
-        Task MapGet(HttpContext context)
-        {
-            var header = context.Request.Headers[headerKey];
-            context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(header[0]);
-        }
-        handler.GivenThereIsAServiceRunningOn(port, MapGet);
+        MapStatus_ResponseBody = ctx => ctx.Request.Headers[headerKey].ToString();
+        base.GivenThereIsAServiceRunningOn(port, statusCode, headerKey);
     }
 
     private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))

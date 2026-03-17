@@ -15,6 +15,7 @@ using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
@@ -55,7 +56,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var consulPort = PortFinder.GetRandomPort();
         var ports = PortFinder.GetPorts(2);
         var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
-        var route = GivenRoute(serviceName: serviceName, loadBalancerType: nameof(LeastConnection));
+        var route = GivenDiscoveryRoute(serviceName: serviceName, loadBalancerType: nameof(LeastConnection));
         var configuration = GivenServiceDiscovery(consulPort, route);
         var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
@@ -81,7 +82,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
         var serviceEntryOne = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
+        var route = GivenDiscoveryRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
         var configuration = GivenServiceDiscovery(consulPort, route);
         this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Laura"))
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
@@ -159,7 +160,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
         var serviceEntry = GivenServiceEntry(servicePort, "localhost", "web_90_0_2_224_8080", VersionV1Tags, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
+        var route = GivenDiscoveryRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
 
         var configuration = GivenServiceDiscovery(consulPort, route);
         configuration.GlobalConfiguration.ServiceDiscoveryProvider.Token = token;
@@ -184,7 +185,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var consulPort = PortFinder.GetRandomPort();
         var ports = PortFinder.GetPorts(2);
         var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
-        var route = GivenRoute(serviceName: serviceName);
+        var route = GivenDiscoveryRoute(serviceName: serviceName);
         var configuration = GivenServiceDiscovery(consulPort, route);
         var urls = ports.Select(DownstreamUrl).ToArray();
         this.Given(_ => GivenMultipleServiceInstancesAreRunning(urls, serviceName))
@@ -215,7 +216,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var consulPort = PortFinder.GetRandomPort();
         var servicePort = PortFinder.GetRandomPort();
         var serviceEntry = GivenServiceEntry(servicePort, "localhost", $"web_90_0_2_224_{servicePort}", VersionV1Tags, serviceName);
-        var route = GivenRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
+        var route = GivenDiscoveryRoute("/api/home", "/home", serviceName, httpMethods: GetVsOptionsMethods);
         var configuration = GivenServiceDiscovery(consulPort, route);
 
         var sd = configuration.GlobalConfiguration.ServiceDiscoveryProvider;
@@ -273,14 +274,12 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var servicePortEU = PortFinder.GetRandomPort();
         const string upstreamHostUS = "us-shop";
         const string upstreamHostEU = "eu-shop";
-        var publicUrlUS = $"http://{upstreamHostUS}";
-        var publicUrlEU = $"http://{upstreamHostEU}";
         const string responseBodyUS = "Phone chargers with US plug";
         const string responseBodyEU = "Phone chargers with EU plug";
         var serviceEntryUS = GivenServiceEntry(servicePortUS, serviceName: serviceNameUS, tags: tagsUS);
         var serviceEntryEU = GivenServiceEntry(servicePortEU, serviceName: serviceNameEU, tags: tagsEU);
-        var routeUS = GivenRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS);
-        var routeEU = GivenRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU);
+        var routeUS = GivenDiscoveryRoute("/products", "/", serviceNameUS, loadBalancerType, upstreamHostUS);
+        var routeEU = GivenDiscoveryRoute("/products", "/", serviceNameEU, loadBalancerType, upstreamHostEU);
         var configuration = GivenServiceDiscovery(consulPort, routeUS, routeEU);
         bool isStickySession = loadBalancerType == nameof(CookieStickySessions);
         var sessionCookieUS = isStickySession ? new CookieHeaderValue(routeUS.LoadBalancerOptions.Key, Guid.NewGuid().ToString()) : null;
@@ -294,19 +293,23 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             .And(x => x.GivenTheServicesAreRegisteredWithConsul(serviceEntryUS, serviceEntryEU))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithConsul))
-            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop for the first time")
+            .When(x => x.WhenIGetUrlOfRequestComingFromHost(routeUS.UpstreamPathTemplate, upstreamHostUS, sessionCookieUS),
+                    "When I get US shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(1))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop for the first time")
+            .When(x => x.WhenIGetUrlOfRequestComingFromHost(routeEU.UpstreamPathTemplate, upstreamHostEU, sessionCookieEU),
+                    "When I get EU shop for the first time")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(2))
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
-            .When(x => x.WhenIGetUrl(publicUrlUS, sessionCookieUS), "When I get US shop again")
+            .When(x => x.WhenIGetUrlOfRequestComingFromHost(routeUS.UpstreamPathTemplate, upstreamHostUS, sessionCookieUS),
+                    "When I get US shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 3)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyUS))
-            .When(x => x.WhenIGetUrl(publicUrlEU, sessionCookieEU), "When I get EU shop again")
+            .When(x => x.WhenIGetUrlOfRequestComingFromHost(routeEU.UpstreamPathTemplate, upstreamHostEU, sessionCookieEU),
+                    "When I get EU shop again")
             .Then(x => x.ThenConsulShouldHaveBeenCalledTimes(isStickySession ? 2 : 4)) // sticky sessions use cache, so Consul shouldn't be called
             .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(responseBodyEU))
@@ -327,7 +330,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             tags: new[] { serviceName });
         var serviceNode = new Node() { Name = "n1" }; // cornerstone of the bug
         serviceEntry.Node = serviceNode;
-        var route = GivenRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: methods);
+        var route = GivenDiscoveryRoute("/api/{url}", "/open/{url}", serviceName, httpMethods: methods);
         var configuration = GivenServiceDiscovery(consulPort, route);
 
         this.Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(servicePort), "/api/home", "Hello from Raman"))
@@ -381,8 +384,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var ports = PortFinder.GetPorts(Bug2119ServiceNames.Length);
         var service1 = GivenServiceEntry(ports[0], serviceName: Bug2119ServiceNames[0]);
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
+        var route1 = GivenDiscoveryRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
+        var route2 = GivenDiscoveryRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
@@ -424,8 +427,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var ports = PortFinder.GetPorts(Bug2119ServiceNames.Length);
         var service1 = GivenServiceEntry(ports[0], serviceName: Bug2119ServiceNames[0]);
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
+        var route1 = GivenDiscoveryRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
+        var route2 = GivenDiscoveryRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
@@ -474,8 +477,8 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         var ports = PortFinder.GetPorts(Bug2119ServiceNames.Length);
         var service1 = GivenServiceEntry(ports[0], serviceName: Bug2119ServiceNames[0]);
         var service2 = GivenServiceEntry(ports[1], serviceName: Bug2119ServiceNames[1]);
-        var route1 = GivenRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
-        var route2 = GivenRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
+        var route1 = GivenDiscoveryRoute("/{all}", "/projects/{all}", serviceName: Bug2119ServiceNames[0], loadBalancerType: loadBalancer);
+        var route2 = GivenDiscoveryRoute("/{all}", "/customers/{all}", serviceName: Bug2119ServiceNames[1], loadBalancerType: loadBalancer);
         route1.UpstreamHttpMethod = route2.UpstreamHttpMethod = new() { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         var configuration = GivenServiceDiscovery(consulPort, route1, route2);
         var urls = ports.Select(DownstreamUrl).ToArray();
@@ -583,7 +586,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         },
     };
 
-    private FileRoute GivenRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
+    private FileRoute GivenDiscoveryRoute(string downstream = null, string upstream = null, [CallerMemberName] string serviceName = null, string loadBalancerType = null, string upstreamHost = null, string[] httpMethods = null) => new()
     {
         DownstreamPathTemplate = downstream ?? "/",
         DownstreamScheme = Uri.UriSchemeHttp,
@@ -612,12 +615,13 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
         return config;
     }
 
-    private async Task WhenIGetUrl(string url, CookieHeaderValue cookie)
+    private async Task WhenIGetUrlOfRequestComingFromHost(string url, string requestHost, CookieHeaderValue cookie)
     {
-        var t = cookie != null
-            ? WhenIGetUrlOnTheApiGateway(url, cookie)
-            : WhenIGetUrl(url);
-        response = await t;
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add(nameof(HttpRequestHeaders.Host), requestHost); // !
+        if (cookie != null)
+            request.Headers.Add("Cookie", cookie.ToString());
+        response = await ocelotClient.ShouldNotBeNull().SendAsync(request);
     }
 
     private void ThenTheTokenIs(string token)

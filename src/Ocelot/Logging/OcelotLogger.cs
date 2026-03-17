@@ -7,10 +7,11 @@ namespace Ocelot.Logging;
 /// <summary>
 /// Default implementation of the <see cref="IOcelotLogger"/> interface.
 /// </summary>
-public class OcelotLogger : IOcelotLogger
+public class OcelotLogger : IOcelotLogger, IDisposable
 {
     private readonly ILogger _logger;
     private readonly IRequestScopedDataRepository _scopedDataRepository;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OcelotLogger"/> class.
@@ -71,25 +72,49 @@ public class OcelotLogger : IOcelotLogger
 
     private void WriteLog(LogLevel logLevel, Func<string> messageFactory, string message, Exception exception = null)
     {
-        if (!_logger.IsEnabled(logLevel))
-        {
+        if (_disposed || !_logger.IsEnabled(logLevel))
             return;
-        }
 
         var requestId = GetOcelotRequestId();
         var previousRequestId = GetOcelotPreviousRequestId();
-
         if (messageFactory != null)
         {
             message = messageFactory.Invoke();
         }
 
-        _logger.Log(logLevel, default,
-            $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{Environment.NewLine + message}",
-            exception, NoFormatter);
+        try
+        {
+            _logger.Log(logLevel, default,
+                $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{Environment.NewLine + message}",
+                exception, NoFormatter);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Logger factory or its providers have been disposed.
+            // This can happen when errors occur in background operations.
+            // Silently ignore to prevent cascading failures during shutdown.
+        }
     }
 
     public static string NoFormatter(string state, Exception e) => state;
     public static string ExceptionFormatter(string state, Exception e)
         => e == null ? state : $"{state}, {Environment.NewLine + nameof(Exception)}: {e}";
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+        }
+
+        _disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

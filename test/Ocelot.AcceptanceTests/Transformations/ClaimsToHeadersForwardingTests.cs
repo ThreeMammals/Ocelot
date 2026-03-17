@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Authorization;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Transformations;
 
@@ -32,7 +32,7 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             { "LocationId", "222" },
         };
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))

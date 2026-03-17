@@ -1,18 +1,12 @@
 //using Ocelot.Administration;
-using CacheManager.Core;
-using Microsoft.AspNetCore.Hosting;
+//x using CacheManager.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Ocelot.AcceptanceTests.Authentication;
-using Ocelot.Cache.CacheManager;
+//x using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
-using System.Net;
-using System.Net.Http.Headers;
+using Ocelot.Testing.Authentication;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;
@@ -27,8 +21,8 @@ public sealed class CacheManagerTests : AuthenticationSteps
         Skip = "TODO: Requires redevelopment after deprecation of Ocelot.Administration.IdentityServer4 package.")]
     public async Task ShouldClearCacheRegionViaAdministrationAPI()
     {
-        int port = PortFinder.GetRandomPort();
-        var ocelotUrl = DownstreamUrl(port);
+        //int port = PortFinder.GetRandomPort();
+        //var ocelotUrl = DownstreamUrl(port);
         var configuration = new FileConfiguration
         {
             Routes = [
@@ -37,25 +31,20 @@ public sealed class CacheManagerTests : AuthenticationSteps
             ],
             GlobalConfiguration = new()
             {
-                BaseUrl = ocelotUrl,
+                //BaseUrl = ocelotUrl,
             },
         };
-        GivenThereIsAConfiguration(configuration);
+        //GivenThereIsAConfiguration(configuration);
         const string AdminPath = "/administration";
 
         //GivenOcelotIsRunning(s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath));
-        using var ocelot = await GivenOcelotHostIsRunning(
+        var port = await GivenOcelotHostIsRunning(
             WithBasicConfiguration, // Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate,
             s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath), // Action<IServiceCollection> configureServices,
             WithUseOcelot, // Action<IApplicationBuilder> configureApp,
-            (host) => host.UseUrls(ocelotUrl) // Action<IWebHostBuilder> configureHost
-        );
-        ocelotClient = new()
-        {
-            BaseAddress = new(ocelotUrl),
-        };
+            null, null, null, null);
         bool isExternal = true;
-        await GivenThereIsExternalJwtSigningService(OcelotScopes.OcAdmin);
+        await GivenThereIsExternalJwtSigningService([OcelotScopes.OcAdmin], Xunit.TestContext.Current.CancellationToken);
         var token = await GivenIHaveATokenWithUrlPath(
             path: !isExternal ? AdminPath : string.Empty,
             scope: OcelotScopes.OcAdmin);
@@ -63,7 +52,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
 
         //await WhenIGetUrlOnTheApiGateway("/");
         //ThenTheStatusCodeShouldBeOK(); // currently HttpStatusCode.BadGateway
-        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}");
+        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}", Xunit.TestContext.Current.CancellationToken);
         ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent); // currently HttpStatusCode.Unauthorized
     }
 
@@ -86,13 +75,13 @@ public sealed class CacheManagerTests : AuthenticationSteps
         string adminPath,
         [CallerMemberName] string testName = nameof(CacheManagerTests))
     {
-        static void WithSettings(ConfigurationBuilderCachePart settings)
-        {
-            settings.WithDictionaryHandle();
-        }
+        //x static void WithSettings(ConfigurationBuilderCachePart settings)
+        //x {
+        //x    settings.WithDictionaryHandle();
+        //x }
         services.AddMvc(option => option.EnableEndpointRouting = false);
         services.AddOcelot()
-            .AddCacheManager(WithSettings)
+            //x.AddCacheManager(WithSettings)
 
             //.AddAdministration(adminPath, "secret") // this is for internal server
             .AddAdministration(adminPath, testName,

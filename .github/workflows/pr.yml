@@ -18,14 +18,14 @@ jobs:
 #       run: |
 #         chmod +x .github/steps/*.sh
 #         ls -l .github/steps/*.sh
-#     - name: Check .NET 9
-#       id: check-dotnet9
-#       run: ./.github/steps/check-dotnet.sh 9
-#     - name: Setup .NET 9
-#       # if: env.DOTNET9_installed == 'false'
+#     - name: Check .NET 10
+#       id: check-dotnet10
+#       run: ./.github/steps/check-dotnet.sh 10
+#     - name: Setup .NET 10
+#       # if: env.DOTNET10_installed == 'false'
 #       uses: actions/setup-dotnet@v5
 #       with:
-#         dotnet-version: 9.x
+#         dotnet-version: 10.x
 #         cache: true
 #         cache-dependency-path: |
 #           samples/**/packages.lock.json
@@ -38,13 +38,13 @@ jobs:
 #     - name: Install certificate
 #       run: ./.github/steps/ubuntu.install-certificate.sh
 #     - name: Restore
-#       run: dotnet restore --locked-mode ./Ocelot.sln
+#       run: dotnet restore --locked-mode ./Ocelot.slnx
 #     - name: Build
-#       run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
+#       run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #     - name: Unit Tests
-#       run: dotnet test --no-restore --no-build --verbosity normal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #     - name: Acceptance Tests
-#       run: dotnet test --no-restore --no-build --verbosity normal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#       run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-macos:
 #     runs-on: macos-latest
@@ -58,10 +58,10 @@ jobs:
 #         run: |
 #           chmod +x .github/steps/*.sh
 #           ls -l .github/steps/*.sh
-#       - name: Setup .NET 9
+#       - name: Setup .NET 10
 #         uses: actions/setup-dotnet@v5
 #         with:
-#           dotnet-version: 9.x
+#           dotnet-version: 10.x
 #           cache: true
 #           cache-dependency-path: |
 #             samples/**/packages.lock.json
@@ -74,13 +74,13 @@ jobs:
 #       - name: Install certificate
 #         run: ./.github/steps/macos.install-certificate.sh
 #       - name: Restore
-#         run: dotnet restore --locked-mode ./Ocelot.sln
+#         run: dotnet restore --locked-mode ./Ocelot.slnx
 #       - name: Build
-#         run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
+#         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #       - name: Unit Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #       - name: Acceptance Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-windows:
 #     runs-on: windows-latest
@@ -90,10 +90,10 @@ jobs:
 #     steps:
 #       - name: Checkout
 #         uses: actions/checkout@v5
-#       - name: Setup .NET 9
+#       - name: Setup .NET 10
 #         uses: actions/setup-dotnet@v5
 #         with:
-#           dotnet-version: 9.x
+#           dotnet-version: 10.x
 #           cache: true
 #           cache-dependency-path: |
 #             samples/**/packages.lock.json
@@ -106,13 +106,13 @@ jobs:
 #       - name: Install certificate
 #         run: ./.github/steps/windows.install-certificate.ps1
 #       - name: Restore
-#         run: dotnet restore --locked-mode ./Ocelot.sln
+#         run: dotnet restore --locked-mode ./Ocelot.slnx
 #       - name: Build
-#         run: dotnet build --no-restore ./Ocelot.sln --framework net9.0
+#         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
 #       - name: Unit Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
 #       - name: Acceptance Tests
-#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net9.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+#         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
 #   build-success:
 #     needs: [build-linux, build-macos, build-windows]
@@ -146,14 +146,14 @@ jobs:
         run: |
           chmod +x .github/steps/*.sh
           ls -l .github/steps/*.sh
-      - name: Check .NET 9
-        id: check-dotnet9
-        run: ./.github/steps/check-dotnet.sh 9
-      - name: Setup .NET 9
-        # if: env.DOTNET9_installed == 'false'
+      - name: Check .NET 10
+        id: check-dotnet10
+        run: ./.github/steps/check-dotnet.sh 10
+      - name: Setup .NET 10
+        # if: env.DOTNET10_installed == 'false'
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9.x
+          dotnet-version: 10.x
           cache: true
           cache-dependency-path: |
             samples/**/packages.lock.json
@@ -169,10 +169,22 @@ jobs:
         uses: cake-build/cake-action@v3
         with:
           target: LatestFramework
-      - name: Prepare Coveralls
+      - name: Coverage files
         run: ./.github/steps/prepare-coveralls.sh
       - name: Coveralls
         if: env.COVERALLS_coverage_file_exists == 'true'
         uses: coverallsapp/github-action@v2
         with:
+          # fail-on-error: false
           file: ${{ env.COVERALLS_coverage_file }}
+        continue-on-error: true
+      - name: Codecov
+        if: env.COVERALLS_coverage_file_exists == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: ThreeMammals/Ocelot
+          fail_ci_if_error: true
+          files: ${{ env.COVERALLS_coverage_file }}
+          flags: unittests
+        continue-on-error: true
