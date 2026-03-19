@@ -15,8 +15,10 @@ using System.Text.RegularExpressions;
 
 bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net8.0;net9.0;net10.0";
-const string LatestFramework = "net10.0";
+const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
+const string LatestFramework = "LatestFramework"; // task name, target, and LatestFramework config name
+const string AllTFMs = "net8.0;net9.0;net10.0";
+const string LatestTFM = "net10.0";
 string NL = Environment.NewLine;
 
 // Create a CultureInfo object for UK English
@@ -68,6 +70,7 @@ GitVersion versioning = null;
 
 var target = Argument("target", "Default");
 var slnFile = "./Ocelot.slnx";
+
 Information($"{NL}Target: {target}");
 Information($"Build: {compileConfig}");
 Information($"Solution: {slnFile}");
@@ -81,6 +84,8 @@ Task("Default")
 Task("Build")
 	.IsDependentOn("Tests");
 Task("LatestFramework")
+	.IsDependentOn("Tests");
+Task("PullRequest")
 	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
@@ -124,11 +129,11 @@ Task("Compile")
 			Configuration = compileConfig,
 			NoRestore = true,
 		};
-		if (target == "LatestFramework")
+		if (target == LatestFramework || target == PullRequest)
 		{
-			settings.Framework = LatestFramework; // build using .NET 10 SDK only
+			settings.Framework = LatestTFM; // build using .NET 10 SDK only
 		}
-		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllTFMs : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
 		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
@@ -497,11 +502,11 @@ private void WriteReleaseNotes()
 
 private List<string> GetTFMs()
 {
-	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework" || target == "UnitTests" || target == "Release")
+	var tfms = AllTFMs.Split(';').ToList();
+	if (target == LatestFramework || target == "UnitTests" || target == Release || target == PullRequest)
     {
         tfms.Clear();
-        tfms.Add(LatestFramework);
+        tfms.Add(LatestTFM);
     }
 	return tfms;
 }

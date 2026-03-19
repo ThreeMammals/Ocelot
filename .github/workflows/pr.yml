@@ -168,7 +168,10 @@ jobs:
       - name: Cake Build
         uses: cake-build/cake-action@v3
         with:
-          target: LatestFramework
+          target: PullRequest
+          verbosity: Verbose
+          arguments: |
+            configuration: Debug          
       - name: Coverage files
         run: ./.github/steps/prepare-coveralls.sh
       - name: Coveralls
