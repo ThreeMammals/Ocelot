@@ -170,6 +170,8 @@ jobs:
         with:
           target: PullRequest
           verbosity: Verbose
+          arguments: |
+            configuration: Debug          
       - name: Coverage files
         run: ./.github/steps/prepare-coveralls.sh
       - name: Coveralls
