@@ -2,15 +2,12 @@
 Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
-## Pre-release for .NET 10 SDK (version [25.0](https://www.nuget.org/packages/Ocelot/#versions-body-tab) Beta 1)
+## Pre-release 2 for [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
 > Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
 
-### :information_source: About
-This is a pre-release for the [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK 10.0.103.
-Most features function as usual, with a minor warning for developers and teams who utilize [service discovery](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/servicediscovery.rst) via [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst).
+This is **Pre-release 2** for the [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK.
 
-### :warning: Warning
-1. The [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) extension package is under development. Specifically, the [PollKube](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#pollkube-provider-3) provider is unstable since it is still in development.
-Do not upgrade to the current beta version or use it at your own risk. Other [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst) providers, such as [Kube](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#kube-provider) and [WatchKube](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#watchkube-provider-4), should function correctly.
+Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions and [NuGet packages](https://www.nuget.org/profiles/ThreeMammals) based on .NET SDK [10.0.201](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on March 12, 2026.
+For more details about SDK [10.0.201](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), see the [Release notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.5/10.0.5.md).
 
-2. The [Ocelot.Provider.Eureka](https://www.nuget.org/packages/Ocelot.Provider.Eureka) extension package is under development. The integrated [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka) package requires an upgrade to version 4.1.0.
+Development teams can start migrating their Ocelot-based projects using this [Beta 2](https://www.nuget.org/packages/Ocelot/{0}) release to upgrade to the .NET 10 SDK with Long-Term Support (LTS).

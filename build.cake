@@ -1,8 +1,8 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.5.1
-#tool nuget:?package=ReportGenerator&version=5.5.1
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.6.2
+#tool nuget:?package=ReportGenerator&version=5.5.4
 
 #addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
-#addin nuget:?package=System.Text.Encodings.Web&version=10.0.2
+#addin nuget:?package=System.Text.Encodings.Web&version=10.0.5
 
 #r "Spectre.Console"
 using Spectre.Console;
