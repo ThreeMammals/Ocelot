@@ -8,8 +8,8 @@
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <!--Package properties-->
-    <!--<Version>25.0-beta.4</Version>-->
-    <VersionPrefix>0.0.0-dev</VersionPrefix>
+    <Version>25.0.0-beta.4</Version>
+    <!-- <VersionPrefix>0.0.0-dev</VersionPrefix> -->
     <PackageId>Ocelot.Testing</PackageId>
     <PackageDescription>A shared library for testing the Ocelot core library and its extension packages, including both acceptance and unit tests</PackageDescription>
     <PackageReleaseNotes>https://github.com/ThreeMammals/Ocelot/blob/main/ReleaseNotes.md</PackageReleaseNotes>

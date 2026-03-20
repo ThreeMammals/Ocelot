@@ -1,8 +1,9 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.5.1
-#tool nuget:?package=ReportGenerator&version=5.5.1
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.6.2
+#tool nuget:?package=ReportGenerator&version=5.5.4
 
+#addin nuget:?package=Cake.Http
 #addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
-#addin nuget:?package=System.Text.Encodings.Web&version=10.0.2
+#addin nuget:?package=System.Text.Encodings.Web&version=10.0.5
 
 #r "Spectre.Console"
 using Spectre.Console;
@@ -12,11 +13,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using _File_ = System.IO.File;
+using _Directory_ = System.IO.Directory;
 
 bool IsTechnicalRelease = false;
 const string Release = "Release"; // task name, target, and Release config name
-const string AllFrameworks = "net8.0;net9.0;net10.0";
-const string LatestFramework = "net10.0";
+const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
+const string LatestFramework = "LatestFramework"; // task name, target, and LatestFramework config name
+const string AllTFMs = "net8.0;net9.0;net10.0";
+const string LatestTFM = "net10.0";
 string NL = Environment.NewLine;
 
 // Create a CultureInfo object for UK English
@@ -68,6 +73,7 @@ GitVersion versioning = null;
 
 var target = Argument("target", "Default");
 var slnFile = "./Ocelot.slnx";
+
 Information($"{NL}Target: {target}");
 Information($"Build: {compileConfig}");
 Information($"Solution: {slnFile}");
@@ -81,6 +87,8 @@ Task("Default")
 Task("Build")
 	.IsDependentOn("Tests");
 Task("LatestFramework")
+	.IsDependentOn("Tests");
+Task("PullRequest")
 	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
@@ -124,11 +132,11 @@ Task("Compile")
 			Configuration = compileConfig,
 			NoRestore = true,
 		};
-		if (target == "LatestFramework")
+		if (target == LatestFramework || target == PullRequest)
 		{
-			settings.Framework = LatestFramework; // build using .NET 10 SDK only
+			settings.Framework = LatestTFM; // build using .NET 10 SDK only
 		}
-		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllFrameworks : settings.Framework;
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllTFMs : settings.Framework;
 		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
 		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
@@ -203,7 +211,7 @@ Task("CreateReleaseNotes")
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
         Information("{1} Last release tag is " + lastRelease);
-        var body = System.IO.File.ReadAllText("./ReleaseNotes.md", System.Text.Encoding.UTF8);
+        var body = _File_.ReadAllText("./ReleaseNotes.md", System.Text.Encoding.UTF8);
         var releaseHeader = string.Format(body, releaseVersion, lastRelease);
         releaseNotes = new List<string> { releaseHeader };
         if (IsTechnicalRelease)
@@ -486,22 +494,22 @@ private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
 	EnsureDirectoryExists(packagesDir);
-	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
-	var content = System.IO.File.ReadAllText(releaseNotesFile, Encoding.UTF8);
+	_File_.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
+	var content = _File_.ReadAllText(releaseNotesFile, Encoding.UTF8);
 	if (string.IsNullOrEmpty(content))
 	{
-		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release", System.Text.Encoding.UTF8);
+		_File_.WriteAllText(releaseNotesFile, "No commits since last release", System.Text.Encoding.UTF8);
 	}
 	Information("Release notes are >>>{0}<<<", NL + content);
 }
 
 private List<string> GetTFMs()
 {
-	var tfms = AllFrameworks.Split(';').ToList();
-	if (target == "LatestFramework" || target == "UnitTests" || target == "Release")
+	var tfms = AllTFMs.Split(';').ToList();
+	if (target == LatestFramework || target == "UnitTests" || target == Release || target == PullRequest)
     {
         tfms.Clear();
-        tfms.Add(LatestFramework);
+        tfms.Add(LatestTFM);
     }
 	return tfms;
 }
@@ -595,22 +603,22 @@ Task("CreateArtifacts")
 	.Does(() =>
 	{
 		WriteReleaseNotes();
-		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
+		_File_.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
 
 		if (!IsTechnicalRelease)
 		{
-			CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
-			var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+			CopyFiles("./**/Release/Ocelot.*.{nupkg,snupkg}", packagesDir);
+			var projectFiles = GetFiles("./**/Release/Ocelot.*.{nupkg,snupkg}")
+				.OrderBy(f => f.GetFilenameWithoutExtension().ToString())
+				.ThenBy(f => f.GetExtension().ToString()) // .nupkg first
+				.ToList();
 			foreach(var projectFile in projectFiles)
 			{
-				System.IO.File.AppendAllLines(
-					artifactsFile,
-					new[] { projectFile.GetFilename().FullPath }
-				);
+				_File_.AppendAllLines(artifactsFile, new[] { projectFile.GetFilename().FullPath });
 			}
 		}
 
-		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
+		var artifacts = _File_.ReadAllLines(artifactsFile)
 			.Distinct();
 
 		Information($"Listing all {nameof(artifacts)}...");
@@ -718,7 +726,7 @@ private void PreprocessReadMe()
 	const string RTD_Version_Latest  = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)";
 	const string RTD_Version_Develop = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)";
 	Information($"Processing {READMEmd} ...");
-    var body = System.IO.File.ReadAllText(READMEmd, System.Text.Encoding.UTF8);
+    var body = _File_.ReadAllText(READMEmd, System.Text.Encoding.UTF8);
 	var RTD_IsReplaced = false;
 	if (body.Contains(RTD_Version_Latest))
 	{
@@ -746,13 +754,13 @@ private void PreprocessReadMe()
 		Information($"  {READMEmd}: Octocat HTML IMG-tag has been replaced with -> " + IMG_NuGet_Valid_MD);
 	}
 	Information($"  {READMEmd}: Writing the body of the {READMEmd}...");
-	System.IO.File.WriteAllText(READMEmd, body, System.Text.Encoding.UTF8);
+	_File_.WriteAllText(READMEmd, body, System.Text.Encoding.UTF8);
 	Information($"DONE Processing {READMEmd}{NL}");
 }
 
 private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 {
-	var dir = System.IO.Directory.GetCurrentDirectory();
+	var dir = _Directory_.GetCurrentDirectory();
 	Information("GenerateReport: Current directory: " + dir);
 
 	var reportSettings = new ProcessArgumentBuilder();
@@ -790,10 +798,10 @@ private void PersistVersion(string committedVersion, string newVersion)
 		var file = projectFile.ToString();
 		Information(string.Format("Updating {0}...", file));
 
-		var updatedProjectFile = System.IO.File.ReadAllText(file, System.Text.Encoding.UTF8)
+		var updatedProjectFile = _File_.ReadAllText(file, System.Text.Encoding.UTF8)
 			.Replace(committedVersion, newVersion);
 
-		System.IO.File.WriteAllText(file, updatedProjectFile, System.Text.Encoding.UTF8);
+		_File_.WriteAllText(file, updatedProjectFile, System.Text.Encoding.UTF8);
 	}
 }
 
@@ -801,9 +809,10 @@ private void PersistVersion(string committedVersion, string newVersion)
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
 	Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
-	var artifacts = System.IO.File
-		.ReadAllLines(artifactsFile)
-		.Distinct();
+	var artifacts = _File_.ReadAllLines(artifactsFile)
+		.Distinct()
+		.Where(a => a.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+		.ToList();
 	var skippable = new List<string>
 	{
 		"ReleaseNotes.md", // skip always
@@ -822,17 +831,37 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 	};
 	foreach (var artifact in artifacts)
 	{
-		if (skippable.Exists(x => artifact.StartsWith(x)))
+		if (skippable.Exists(x => artifact.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
 			continue;
-		//if (!includedInTheRelease.Exists(x => artifact.StartsWith(x)))
-		//continue;
+		// if (!includedInTheRelease.Exists(x => artifact.StartsWith(x))) continue;
 
-		var codePackage = packagesDir + File(artifact);
-		Information($"{nameof(PublishPackages)}: Pushing package " + codePackage + "...");
+		var package = packagesDir + File(artifact);
+		Information($"{nameof(PublishPackages)}: Pushing package " + package + "...");
 		try
 		{
-			DotNetNuGetPush(codePackage,
+			DotNetNuGetPush(package,
 				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
+
+			var symbolArtifact = artifact.Replace(".nupkg", ".snupkg");
+			var symbolPackage = packagesDir + File(symbolArtifact);
+			if (FileExists(symbolPackage))
+			{
+				Information($"  Pushing symbol package {symbolPackage}...");
+				System.Threading.Thread.Sleep(1000);
+				try
+				{
+					DotNetNuGetPush(symbolPackage,
+						new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });						
+				}
+				catch (Exception symEx)
+				{
+					Warning($"  Symbol push failed: {symEx.Message}");
+				}
+			}
+			else
+			{
+				Information($"  No symbol package found for {artifact}");
+			}
 		}
 		catch (Exception ex)
 		{
@@ -840,7 +869,55 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 			Warning(ex.ToString());
 			throw; // exit task with non-zero result -> failed step -> failed job in Actions
 		}
+			// catch (Exception ex)
+			// {
+			// 	Warning(ex.ToString());
+			// 	// bool isConflict = ex.ToString().Contains("409") || ex.ToString().Contains("Conflict");
+			// 	if (!isBeta /*|| !isConflict*/) throw;
+
+			// 	var match = Regex.Match(theArtifact, @"-beta\.(\d+)(?=\.nupkg$)");
+			// 	if (!match.Success)
+			// 	{
+			// 		Warning("  No beta version found in the artifact name, but it should be there. Artifact: " + theArtifact);
+			// 		break;
+			// 	}
+    		// 	var betaNumber = match.Groups[1].Value;
+    		// 	Information($"  Detected Beta number: {betaNumber}");
+			// 	int newBetaVer = int.Parse(betaNumber) + 1; // increase beta version by 1 trying to find the next free beta number
+			// 	var newArtifact = Regex.Replace(theArtifact, @"-beta\.\d+(?=\.nupkg$)", "-beta." + newBetaVer);
+			// 	var newPackage = packagesDir + File(newArtifact);
+			// 	if (FileExists(newPackage)) DeleteFile(newPackage);
+			// 	MoveFile(package, newPackage);
+			// 	Warning($"  Package renamed: {package} -> {newPackage} (Attempt #{attempts})");
+			// 	var oldSymbol = packagesDir + File(theArtifact.Replace(".nupkg", ".snupkg"));
+			// 	var newSymbol = packagesDir + File(newArtifact.Replace(".nupkg", ".snupkg"));
+			// 	if (FileExists(oldSymbol))
+			// 	{
+			// 		if (FileExists(newSymbol)) DeleteFile(newSymbol);
+			// 		MoveFile(oldSymbol, newSymbol);
+			// 	}
+			// 	package = newPackage;
+			// 	theArtifact = newArtifact;				
+			// 	System.Threading.Thread.Sleep(1000);
+			// }
 	}
+}
+
+private bool PackageExists(string packageId, string version)
+{
+	var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
+	try
+	{
+		var response = HttpGet(url);
+		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} exists");
+		return true;
+	}
+	catch (Exception ex)
+	{
+		Warning(ex.ToString());
+		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} does NOT exist");
+	}
+	return false;
 }
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)
@@ -877,13 +954,13 @@ private dynamic CreateGitHubRelease()
 
 private string ReleaseNotesAsJson()
 {
-	var body = System.IO.File.ReadAllText(releaseNotesFile, System.Text.Encoding.UTF8);
+	var body = _File_.ReadAllText(releaseNotesFile, System.Text.Encoding.UTF8);
 	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(body);
 }
 
 private void UploadFileToGitHubRelease(dynamic release, FilePath file)
 {
-	var data = System.IO.File.ReadAllBytes(file.FullPath);
+	var data = _File_.ReadAllBytes(file.FullPath);
 	var content = new System.Net.Http.ByteArrayContent(data);
 	content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
