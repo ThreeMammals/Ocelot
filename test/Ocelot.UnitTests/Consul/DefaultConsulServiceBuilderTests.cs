@@ -114,23 +114,51 @@ public sealed class DefaultConsulServiceBuilderTests
     private static MethodInfo GetDownstreamHost { get; } = Me.GetMethod("GetDownstreamHost", BindingFlags.NonPublic | BindingFlags.Instance);
 
     [Fact]
-    public void GetDownstreamHost_BothBranches_NameOrAddress()
+    public void GetDownstreamHost_ServiceAddressPresent_ReturnsServiceAddress()
     {
+        // Issue #2325: service instance address should take priority over Consul node address
         Arrange();
 
-        // Arrange, Act, Assert: node branch
+        // Arrange, Act, Assert: service address is returned even when node is present
         ServiceEntry entry = new()
         {
-            Service = new() { Address = nameof(GetDownstreamHost_BothBranches_NameOrAddress) },
+            Service = new() { Address = "10.0.0.5" },
         };
-        var node = new Node { Name = "test1" };
+        var node = new Node { Name = "consul-node-1", Address = "192.168.1.1" };
         var actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
-        actual.ShouldNotBeNull().ShouldBe("test1");
+        actual.ShouldNotBeNull().ShouldBe("10.0.0.5");
 
-        // Arrange, Act, Assert: entry branch
+        // Arrange, Act, Assert: service address is returned when node is null
         node = null;
         actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
-        actual.ShouldNotBeNull().ShouldBe(nameof(GetDownstreamHost_BothBranches_NameOrAddress));
+        actual.ShouldNotBeNull().ShouldBe("10.0.0.5");
+    }
+
+    [Fact]
+    public void GetDownstreamHost_ServiceAddressEmpty_FallsBackToNodeAddressThenName()
+    {
+        // Issue #2325: fall back to node.Address, then node.Name when service address is unavailable
+        Arrange();
+
+        // Arrange, Act, Assert: empty service address falls back to node.Address
+        ServiceEntry entry = new()
+        {
+            Service = new() { Address = string.Empty },
+        };
+        var node = new Node { Name = "consul-node-1", Address = "192.168.1.1" };
+        var actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
+        actual.ShouldNotBeNull().ShouldBe("192.168.1.1");
+
+        // Arrange, Act, Assert: empty service address with no node.Address falls back to node.Name
+        node = new Node { Name = "consul-node-1", Address = null };
+        actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
+        actual.ShouldNotBeNull().ShouldBe("consul-node-1");
+
+        // Arrange, Act, Assert: null service address falls back to node.Address
+        entry.Service.Address = null;
+        node = new Node { Name = "consul-node-1", Address = "192.168.1.1" };
+        actual = GetDownstreamHost.Invoke(sut, new object[] { entry, node }) as string;
+        actual.ShouldNotBeNull().ShouldBe("192.168.1.1");
     }
 
     private static MethodInfo GetServiceVersion { get; } = Me.GetMethod("GetServiceVersion", BindingFlags.NonPublic | BindingFlags.Instance);
