@@ -2,6 +2,27 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
+      "Ocelot.Provider.Eureka": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "0Ps5A0pbgGNZ+5Va1vkFQqYjcY9FX7ELcnbtToMZwqU3zAsHmNEdkNLK0SaZ3jUlSIN9mCV7A5bjZ62KnXIy4w==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Steeltoe.Discovery.ClientCore": "3.3.0",
+          "Steeltoe.Discovery.Eureka": "3.3.0"
+        }
+      },
+      "Ocelot.Provider.Polly": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "R1AGtfOXPBSZsC0HFX62l0eZzAx/mDfc3/s2yQGf7RJq6pYPfKe6hFJFwcAIMoXQqA14OXufZly4+5gKd/uUtg==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Polly": "8.6.6"
+        }
+      },
       "FluentValidation": {
         "type": "Transitive",
         "resolved": "12.1.1",
@@ -53,6 +74,18 @@
           "Newtonsoft.Json": "12.0.1"
         }
       },
+      "Ocelot": {
+        "type": "Transitive",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "PAxk5ncrINDIQhZ0lOIrWnXGoo8MXyKWRlYzt69rcbZvvtDHON6vgAl82u3IcRT8uZhgXu9gButxq8LYEM8New==",
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "IPAddressRange": "6.3.0",
+          "Microsoft.AspNetCore.MiddlewareAnalysis": "10.0.5",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "10.0.5",
+          "Microsoft.Extensions.DiagnosticAdapter": "3.1.32"
+        }
+      },
       "Polly": {
         "type": "Transitive",
         "resolved": "8.6.6",
@@ -156,36 +189,32 @@
         "resolved": "4.6.0",
         "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
       },
-      "ocelot": {
-        "type": "Project",
-        "dependencies": {
-          "FluentValidation": "[12.1.1, )",
-          "IPAddressRange": "[6.3.0, )",
-          "Microsoft.AspNetCore.MiddlewareAnalysis": "[10.0.5, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.5, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
-        }
-      },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
-      "ocelot.provider.polly": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Polly": "[8.6.6, )"
-        }
-      },
       "ocelot.samples.web": {
         "type": "Project"
       }
     },
     "net8.0": {
+      "Ocelot.Provider.Eureka": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "0Ps5A0pbgGNZ+5Va1vkFQqYjcY9FX7ELcnbtToMZwqU3zAsHmNEdkNLK0SaZ3jUlSIN9mCV7A5bjZ62KnXIy4w==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Steeltoe.Discovery.ClientCore": "3.3.0",
+          "Steeltoe.Discovery.Eureka": "3.3.0"
+        }
+      },
+      "Ocelot.Provider.Polly": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "R1AGtfOXPBSZsC0HFX62l0eZzAx/mDfc3/s2yQGf7RJq6pYPfKe6hFJFwcAIMoXQqA14OXufZly4+5gKd/uUtg==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Polly": "8.6.6"
+        }
+      },
       "FluentValidation": {
         "type": "Transitive",
         "resolved": "12.1.1",
@@ -237,6 +266,18 @@
           "Newtonsoft.Json": "12.0.1"
         }
       },
+      "Ocelot": {
+        "type": "Transitive",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "PAxk5ncrINDIQhZ0lOIrWnXGoo8MXyKWRlYzt69rcbZvvtDHON6vgAl82u3IcRT8uZhgXu9gButxq8LYEM8New==",
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "IPAddressRange": "6.3.0",
+          "Microsoft.AspNetCore.MiddlewareAnalysis": "8.0.25",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "8.0.25",
+          "Microsoft.Extensions.DiagnosticAdapter": "3.1.32"
+        }
+      },
       "Polly": {
         "type": "Transitive",
         "resolved": "8.6.6",
@@ -340,36 +381,32 @@
         "resolved": "4.6.0",
         "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
       },
-      "ocelot": {
-        "type": "Project",
-        "dependencies": {
-          "FluentValidation": "[12.1.1, )",
-          "IPAddressRange": "[6.3.0, )",
-          "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.25, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.25, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
-        }
-      },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
-      "ocelot.provider.polly": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Polly": "[8.6.6, )"
-        }
-      },
       "ocelot.samples.web": {
         "type": "Project"
       }
     },
     "net9.0": {
+      "Ocelot.Provider.Eureka": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "0Ps5A0pbgGNZ+5Va1vkFQqYjcY9FX7ELcnbtToMZwqU3zAsHmNEdkNLK0SaZ3jUlSIN9mCV7A5bjZ62KnXIy4w==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Steeltoe.Discovery.ClientCore": "3.3.0",
+          "Steeltoe.Discovery.Eureka": "3.3.0"
+        }
+      },
+      "Ocelot.Provider.Polly": {
+        "type": "Direct",
+        "requested": "[25.0.0-beta.2, )",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "R1AGtfOXPBSZsC0HFX62l0eZzAx/mDfc3/s2yQGf7RJq6pYPfKe6hFJFwcAIMoXQqA14OXufZly4+5gKd/uUtg==",
+        "dependencies": {
+          "Ocelot": "25.0.0-beta.2",
+          "Polly": "8.6.6"
+        }
+      },
       "FluentValidation": {
         "type": "Transitive",
         "resolved": "12.1.1",
@@ -421,6 +458,18 @@
           "Newtonsoft.Json": "12.0.1"
         }
       },
+      "Ocelot": {
+        "type": "Transitive",
+        "resolved": "25.0.0-beta.2",
+        "contentHash": "PAxk5ncrINDIQhZ0lOIrWnXGoo8MXyKWRlYzt69rcbZvvtDHON6vgAl82u3IcRT8uZhgXu9gButxq8LYEM8New==",
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "IPAddressRange": "6.3.0",
+          "Microsoft.AspNetCore.MiddlewareAnalysis": "9.0.14",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "9.0.14",
+          "Microsoft.Extensions.DiagnosticAdapter": "3.1.32"
+        }
+      },
       "Polly": {
         "type": "Transitive",
         "resolved": "8.6.6",
@@ -523,31 +572,6 @@
         "type": "Transitive",
         "resolved": "4.6.0",
         "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
-      },
-      "ocelot": {
-        "type": "Project",
-        "dependencies": {
-          "FluentValidation": "[12.1.1, )",
-          "IPAddressRange": "[6.3.0, )",
-          "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.14, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.14, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
-        }
-      },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
-      "ocelot.provider.polly": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Polly": "[8.6.6, )"
-        }
       },
       "ocelot.samples.web": {
         "type": "Project"

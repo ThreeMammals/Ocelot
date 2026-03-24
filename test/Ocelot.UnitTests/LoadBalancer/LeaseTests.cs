@@ -1,6 +1,5 @@
 ﻿using Ocelot.LoadBalancer;
 using Ocelot.Values;
-using Steeltoe.Connector;
 
 namespace Ocelot.UnitTests.LoadBalancer;
 

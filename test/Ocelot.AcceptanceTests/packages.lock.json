@@ -159,15 +159,6 @@
           "Serilog.Sinks.File": "7.0.0"
         }
       },
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
       "System.IdentityModel.Tokens.Jwt": {
         "type": "Direct",
         "requested": "[8.16.0, )",
@@ -370,26 +361,6 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         }
       },
-      "Microsoft.Extensions.Configuration.CommandLine": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "NZuZMz3Q8Z780nKX3ifV1fE7lS+6pynDHK71OfU4OZ1ItgvDOhyOC7E6z+JMZrAj63zRpwbdldYFk499t3+1dQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Configuration.UserSecrets": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ihDHu2dJYQird9pl2CbdwuNDfvCZdOS0S7SPlNfhPt0B81UTT+yyZKz2pimFZGUp3AfuBRnqUCxB2SjsZKHVUw==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
         "resolved": "10.0.5",
@@ -455,35 +426,6 @@
         "resolved": "10.0.5",
         "contentHash": "mOE3ARusNQR0a5x8YOcnUbfyyXGqoAWQtEc7qFOfNJgruDWQLo39Re+3/Lzj5pLPFuFYj8hN4dgKzaSQDKiOCw=="
       },
-      "Microsoft.Extensions.Hosting": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ItYHpdqVp5/oFLT5QqbopnkKlyFG9EW/9nhM6/yfObeKt6Su0wkBio6AizgRHGNwhJuAtlE5VIjow5JOTrip6w==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.Configuration.FileExtensions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.Configuration.UserSecrets": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Diagnostics": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0",
-          "Microsoft.Extensions.Hosting.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Configuration": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Logging.Debug": "8.0.0",
-          "Microsoft.Extensions.Logging.EventLog": "8.0.0",
-          "Microsoft.Extensions.Logging.EventSource": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.Hosting.Abstractions": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -530,30 +472,6 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
           "Microsoft.Extensions.Options": "10.0.5",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventLog": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "3X9D3sl7EmOu7vQp5MJrmIJBl5XSdOhZPYXUeFfYa6Nnm9+tok8x3t3IVPLhm7UJtPOU61ohFchw8rNm9tIYOQ==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "System.Diagnostics.EventLog": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventSource": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "oKcPMrw+luz2DUAKhwFXrmFikZWnyc8l2RKoQwqU3KIZZjcfoJE0zRHAnqATfhRZhtcbjl/QkiY2Xjxp0xu+6w==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "Microsoft.Extensions.Primitives": "8.0.0"
         }
       },
       "Microsoft.Extensions.Options": {
@@ -772,101 +690,6 @@
           "EmptyFiles": "4.4.0"
         }
       },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0"
-        }
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Http": "3.1.0",
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Eureka": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "P16nX9nlK+CDJRJz9room/JZrR0UvkprOz185d1NTsnlfd6BrBIrhpJIqjwZXUveT6bWf8hcNI5Y+sR8sE/vjA==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0",
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
       "System.CodeDom": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -874,8 +697,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -889,11 +712,6 @@
         "type": "Transitive",
         "resolved": "6.0.1",
         "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
       },
       "xunit.analyzers": {
         "type": "Transitive",
@@ -984,14 +802,6 @@
           "Ocelot": "[0.0.0-dev, )"
         }
       },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
       "ocelot.provider.kubernetes": {
         "type": "Project",
         "dependencies": {
@@ -1027,8 +837,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -1047,8 +857,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -1220,15 +1030,6 @@
           "Serilog.Sinks.Console": "6.1.1",
           "Serilog.Sinks.Debug": "3.0.0",
           "Serilog.Sinks.File": "7.0.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
         }
       },
       "System.IdentityModel.Tokens.Jwt": {
@@ -1433,26 +1234,6 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         }
       },
-      "Microsoft.Extensions.Configuration.CommandLine": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "NZuZMz3Q8Z780nKX3ifV1fE7lS+6pynDHK71OfU4OZ1ItgvDOhyOC7E6z+JMZrAj63zRpwbdldYFk499t3+1dQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Configuration.UserSecrets": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ihDHu2dJYQird9pl2CbdwuNDfvCZdOS0S7SPlNfhPt0B81UTT+yyZKz2pimFZGUp3AfuBRnqUCxB2SjsZKHVUw==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
         "resolved": "10.0.5",
@@ -1523,35 +1304,6 @@
         "resolved": "10.0.5",
         "contentHash": "mOE3ARusNQR0a5x8YOcnUbfyyXGqoAWQtEc7qFOfNJgruDWQLo39Re+3/Lzj5pLPFuFYj8hN4dgKzaSQDKiOCw=="
       },
-      "Microsoft.Extensions.Hosting": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ItYHpdqVp5/oFLT5QqbopnkKlyFG9EW/9nhM6/yfObeKt6Su0wkBio6AizgRHGNwhJuAtlE5VIjow5JOTrip6w==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.Configuration.FileExtensions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.Configuration.UserSecrets": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Diagnostics": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0",
-          "Microsoft.Extensions.Hosting.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Configuration": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Logging.Debug": "8.0.0",
-          "Microsoft.Extensions.Logging.EventLog": "8.0.0",
-          "Microsoft.Extensions.Logging.EventSource": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.Hosting.Abstractions": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -1599,30 +1351,6 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
           "Microsoft.Extensions.Options": "10.0.5",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventLog": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "3X9D3sl7EmOu7vQp5MJrmIJBl5XSdOhZPYXUeFfYa6Nnm9+tok8x3t3IVPLhm7UJtPOU61ohFchw8rNm9tIYOQ==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "System.Diagnostics.EventLog": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventSource": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "oKcPMrw+luz2DUAKhwFXrmFikZWnyc8l2RKoQwqU3KIZZjcfoJE0zRHAnqATfhRZhtcbjl/QkiY2Xjxp0xu+6w==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "Microsoft.Extensions.Primitives": "8.0.0"
         }
       },
       "Microsoft.Extensions.Options": {
@@ -1842,101 +1570,6 @@
           "EmptyFiles": "4.4.0"
         }
       },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0"
-        }
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Http": "3.1.0",
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Eureka": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "P16nX9nlK+CDJRJz9room/JZrR0UvkprOz185d1NTsnlfd6BrBIrhpJIqjwZXUveT6bWf8hcNI5Y+sR8sE/vjA==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0",
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
       "System.CodeDom": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -1949,8 +1582,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
@@ -1969,11 +1602,6 @@
         "type": "Transitive",
         "resolved": "6.0.1",
         "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
@@ -2078,14 +1706,6 @@
           "Ocelot": "[0.0.0-dev, )"
         }
       },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
       "ocelot.provider.kubernetes": {
         "type": "Project",
         "dependencies": {
@@ -2122,8 +1742,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -2147,8 +1767,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -2322,15 +1942,6 @@
           "Serilog.Sinks.Console": "6.1.1",
           "Serilog.Sinks.Debug": "3.0.0",
           "Serilog.Sinks.File": "7.0.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
         }
       },
       "System.IdentityModel.Tokens.Jwt": {
@@ -2535,26 +2146,6 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         }
       },
-      "Microsoft.Extensions.Configuration.CommandLine": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "NZuZMz3Q8Z780nKX3ifV1fE7lS+6pynDHK71OfU4OZ1ItgvDOhyOC7E6z+JMZrAj63zRpwbdldYFk499t3+1dQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Configuration.UserSecrets": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ihDHu2dJYQird9pl2CbdwuNDfvCZdOS0S7SPlNfhPt0B81UTT+yyZKz2pimFZGUp3AfuBRnqUCxB2SjsZKHVUw==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
         "resolved": "10.0.5",
@@ -2625,35 +2216,6 @@
         "resolved": "10.0.5",
         "contentHash": "mOE3ARusNQR0a5x8YOcnUbfyyXGqoAWQtEc7qFOfNJgruDWQLo39Re+3/Lzj5pLPFuFYj8hN4dgKzaSQDKiOCw=="
       },
-      "Microsoft.Extensions.Hosting": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ItYHpdqVp5/oFLT5QqbopnkKlyFG9EW/9nhM6/yfObeKt6Su0wkBio6AizgRHGNwhJuAtlE5VIjow5JOTrip6w==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.Configuration.FileExtensions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Json": "8.0.0",
-          "Microsoft.Extensions.Configuration.UserSecrets": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Diagnostics": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Abstractions": "8.0.0",
-          "Microsoft.Extensions.FileProviders.Physical": "8.0.0",
-          "Microsoft.Extensions.Hosting.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Configuration": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Logging.Debug": "8.0.0",
-          "Microsoft.Extensions.Logging.EventLog": "8.0.0",
-          "Microsoft.Extensions.Logging.EventSource": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0"
-        }
-      },
       "Microsoft.Extensions.Hosting.Abstractions": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -2701,30 +2263,6 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
           "Microsoft.Extensions.Options": "10.0.5",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.5"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventLog": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "3X9D3sl7EmOu7vQp5MJrmIJBl5XSdOhZPYXUeFfYa6Nnm9+tok8x3t3IVPLhm7UJtPOU61ohFchw8rNm9tIYOQ==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "System.Diagnostics.EventLog": "8.0.0"
-        }
-      },
-      "Microsoft.Extensions.Logging.EventSource": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "oKcPMrw+luz2DUAKhwFXrmFikZWnyc8l2RKoQwqU3KIZZjcfoJE0zRHAnqATfhRZhtcbjl/QkiY2Xjxp0xu+6w==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "Microsoft.Extensions.Primitives": "8.0.0"
         }
       },
       "Microsoft.Extensions.Options": {
@@ -2943,101 +2481,6 @@
           "EmptyFiles": "4.4.0"
         }
       },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.Configuration.CommandLine": "8.0.0",
-          "Microsoft.Extensions.Configuration.EnvironmentVariables": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Logging.Console": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0"
-        }
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Http": "3.1.0",
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Eureka": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "P16nX9nlK+CDJRJz9room/JZrR0UvkprOz185d1NTsnlfd6BrBIrhpJIqjwZXUveT6bWf8hcNI5Y+sR8sE/vjA==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0",
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
       "System.CodeDom": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -3050,8 +2493,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
@@ -3070,11 +2513,6 @@
         "type": "Transitive",
         "resolved": "6.0.1",
         "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
@@ -3179,14 +2617,6 @@
           "Ocelot": "[0.0.0-dev, )"
         }
       },
-      "ocelot.provider.eureka": {
-        "type": "Project",
-        "dependencies": {
-          "Ocelot": "[0.0.0-dev, )",
-          "Steeltoe.Discovery.ClientCore": "[3.3.0, )",
-          "Steeltoe.Discovery.Eureka": "[3.3.0, )"
-        }
-      },
       "ocelot.provider.kubernetes": {
         "type": "Project",
         "dependencies": {
@@ -3223,8 +2653,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
@@ -3248,8 +2678,8 @@
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Management": {
         "type": "Transitive",
