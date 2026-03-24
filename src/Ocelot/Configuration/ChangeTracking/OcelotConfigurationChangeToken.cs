@@ -6,12 +6,13 @@ public class OcelotConfigurationChangeToken : IChangeToken
 {
     public const double PollingIntervalSeconds = 1;
 
-    private readonly ICollection<CallbackWrapper> _callbacks = new List<CallbackWrapper>();
+    private readonly List<CallbackWrapper> _callbacks = new();
     private readonly object _lock = new();
     private DateTime? _timeChanged;
 
     public IDisposable RegisterChangeCallback(Action<object> callback, object state)
     {
+        ArgumentNullException.ThrowIfNull(callback);
         lock (_lock)
         {
             var wrapper = new CallbackWrapper(callback, state, _callbacks, _lock);
@@ -36,7 +37,7 @@ public class OcelotConfigurationChangeToken : IChangeToken
     // Taking suggestions for better ways to reset HasChanged back to false.
     public bool HasChanged => _timeChanged.HasValue && (DateTime.UtcNow - _timeChanged.Value).TotalSeconds < PollingIntervalSeconds;
 
-    public bool ActiveChangeCallbacks => true;
+    public bool ActiveChangeCallbacks => _callbacks.Count > 0;
 
     private class CallbackWrapper : IDisposable
     {
