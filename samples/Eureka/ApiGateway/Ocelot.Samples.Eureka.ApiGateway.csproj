@@ -21,9 +21,10 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Eureka\Ocelot.Provider.Eureka.csproj" />
-    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
-    <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />
+    <PackageReference Include="Ocelot.Provider.Eureka" Version="25.0.0-beta.2" />
+    <PackageReference Include="Ocelot.Provider.Polly" Version="25.0.0-beta.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
 </Project>
