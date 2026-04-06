@@ -20,7 +20,7 @@ public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
     {
         RuleFor(qos => qos)
             .Must(HaveQosHandlerRegistered)
-            .WithMessage($"Unable to start Ocelot because either a {nameof(Route)} or {nameof(FileConfiguration.GlobalConfiguration)} are using {nameof(FileRoute.QoSOptions)} but no {nameof(QosDelegatingHandlerDelegate)} has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+            .WithMessage($"Unable to start Ocelot because either a {nameof(Route)} or {nameof(FileConfiguration.GlobalConfiguration)} are using {nameof(FileRoute.QoSOptions)} but no {nameof(QosDelegatingHandlerDelegate)} has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?");
     }
 
     private bool HaveQosHandlerRegistered(FileQoSOptions arg)

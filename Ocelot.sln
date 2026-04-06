@@ -33,8 +33,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Consul", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Kubernetes", "src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj", "{1FD9E0B6-EC08-54E4-82F2-A215A388968D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ocelot.Provider.Polly", "src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj", "{1424441E-1143-0F05-1346-E90195CDE10E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,18 +139,6 @@ Global
 		{1FD9E0B6-EC08-54E4-82F2-A215A388968D}.Release|x64.Build.0 = Release|Any CPU
 		{1FD9E0B6-EC08-54E4-82F2-A215A388968D}.Release|x86.ActiveCfg = Release|Any CPU
 		{1FD9E0B6-EC08-54E4-82F2-A215A388968D}.Release|x86.Build.0 = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|x64.Build.0 = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Debug|x86.Build.0 = Debug|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|x64.ActiveCfg = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|x64.Build.0 = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|x86.ActiveCfg = Release|Any CPU
-		{1424441E-1143-0F05-1346-E90195CDE10E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
