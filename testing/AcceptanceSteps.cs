@@ -48,6 +48,10 @@ public class AcceptanceSteps : IDisposable
         handler = new();
     }
 
+    protected virtual bool IsCiCd() => IsRunningInGitHubActions();
+    protected static bool IsRunningInGitHubActions()
+        => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
     protected List<string> Files { get; }
     protected List<string> Folders { get; }
     protected virtual string TestID { get => _testId.ToString("N"); }
