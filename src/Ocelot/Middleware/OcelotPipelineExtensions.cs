@@ -24,7 +24,10 @@ namespace Ocelot.Middleware;
 
 public static class OcelotPipelineExtensions
 {
-    public static RequestDelegate BuildOcelotPipeline(this IApplicationBuilder app, OcelotPipelineConfiguration configuration)
+    public static RequestDelegate BuildOcelotPipeline(
+        this IApplicationBuilder app,
+        OcelotPipelineConfiguration configuration
+    )
     {
         // this sets up the downstream context and gets the config
         app.UseMiddleware<ConfigurationMiddleware>();
@@ -34,7 +37,8 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
         // If the request is for websockets upgrade we fork into a different pipeline
-        app.MapWhen(httpContext => httpContext.WebSockets.IsWebSocketRequest,
+        app.MapWhen(
+            httpContext => httpContext.WebSockets.IsWebSocketRequest,
             ws =>
             {
                 ws.UseMiddleware<DownstreamRouteFinderMiddleware>();
@@ -43,7 +47,8 @@ public static class OcelotPipelineExtensions
                 ws.UseMiddleware<LoadBalancingMiddleware>();
                 ws.UseMiddleware<DownstreamUrlCreatorMiddleware>();
                 ws.UseMiddleware<WebSocketsProxyMiddleware>();
-            });
+            }
+        );
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
@@ -128,11 +133,15 @@ public static class OcelotPipelineExtensions
         return app.Build();
     }
 
-    private static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
-        => middleware != null ? builder.Use(middleware) : builder;
+    private static IApplicationBuilder UseIfNotNull(
+        this IApplicationBuilder builder,
+        Func<HttpContext, Func<Task>, Task> middleware
+    ) => middleware != null ? builder.Use(middleware) : builder;
 
-    private static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
-        where TMiddleware : OcelotMiddleware => middleware != null
-            ? builder.Use(middleware)
-            : builder.UseMiddleware<TMiddleware>();
+    private static IApplicationBuilder UseIfNotNull<TMiddleware>(
+        this IApplicationBuilder builder,
+        Func<HttpContext, Func<Task>, Task> middleware
+    )
+        where TMiddleware : OcelotMiddleware =>
+        middleware != null ? builder.Use(middleware) : builder.UseMiddleware<TMiddleware>();
 }

@@ -47,6 +47,14 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
                 return new PayloadTooLargeError(exception);
             }
 
+            // Late Catch: Map the HttpRequestException to a 400 Bad Request.
+            // If the header format is invalid, HttpClient throws this exception locally.
+            // By catching it here, we ensure Ocelot returns a clean 4xx client error instead of a generic 502 Bad Gateway.
+            if (exception is HttpRequestException && exception.Message.Contains("only ASCII characters"))
+            {
+                return new BadRequestError(exception.Message);
+            }
+
             return new ConnectionToDownstreamServiceError(exception);
         }
 

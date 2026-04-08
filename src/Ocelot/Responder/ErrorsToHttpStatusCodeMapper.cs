@@ -61,6 +61,11 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
             return 413;
         }
 
+        if (errors.Any(e => e.Code == OcelotErrorCode.BadRequestError))
+        {
+            return 400;
+        }
+
         return 404;
     }
 }

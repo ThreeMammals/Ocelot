@@ -44,4 +44,5 @@ public enum OcelotErrorCode
     CouldNotFindLoadBalancerCreator = 39,
     ErrorInvokingLoadBalancerCreator = 40,
     PayloadTooLargeError = 41,
+    BadRequestError = 42,
 }
