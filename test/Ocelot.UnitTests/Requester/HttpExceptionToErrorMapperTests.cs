@@ -52,6 +52,21 @@ public class HttpExceptionToErrorMapperTests
         error.ShouldBeOfType<ConnectionToDownstreamServiceError>();
     }
 
+    [Fact]
+    public void Map_HttpRequestException_With_NonASCII_To_BadRequestError()
+    {
+        // Arrange
+        var ex = new HttpRequestException("Some header contains only ASCII characters but it doesn't.");
+
+        // Act
+        var error = _mapper.Map(ex);
+
+        // Assert
+        Assert.IsType<BadRequestError>(error);
+        Assert.Equal(42, (int)error.Code);
+        Assert.Equal(400, error.HttpStatusCode);
+    }
+
     private class SomeException : OperationCanceledException { }
 
     [Fact]
