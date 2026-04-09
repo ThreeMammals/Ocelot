@@ -1,4 +1,4 @@
-using System;
+using Microsoft.AspNetCore.Http;
 using Ocelot.Errors;
 
 namespace Ocelot.Requester;
@@ -6,7 +6,7 @@ namespace Ocelot.Requester;
 public class BadRequestError : Error
 {
     public BadRequestError(string message) 
-        : base(message, OcelotErrorCode.BadRequestError, 400)
+        : base(message, OcelotErrorCode.BadRequestError, StatusCodes.Status400BadRequest)
     {
     }
 }
