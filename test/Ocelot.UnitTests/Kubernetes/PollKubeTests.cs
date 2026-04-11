@@ -132,4 +132,127 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         Assert.Same(latestVersion, actual);
         _discoveryProvider.Verify(x => x.GetAsync(), Times.Never);
     }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task GetAsync_WhenDisposed_ReturnsEmpty()
+    {
+        // Arrange
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        _provider.Dispose();
+
+        // Act
+        var actual = await _provider.GetAsync();
+
+        // Assert
+        Assert.Same(PollKube.Empty, actual);
+    }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task PollAsync_WhenQueueCountGreaterThan3_ReturnsEmpty()
+    {
+        // Arrange
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = _provider.GetType().GetMethod("PollAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var queueField = _provider.GetType().GetField("_queue", BindingFlags.Instance | BindingFlags.NonPublic);
+        var queue = (ConcurrentQueue<List<Service>>)queueField.GetValue(_provider);
+        for (int i = 0; i < 4; i++)
+        {
+            queue.Enqueue(new List<Service>());
+        }
+
+        // Act
+        var task = (Task<List<Service>>)method.Invoke(_provider, [CancellationToken.None]);
+        var actual = await task;
+
+        // Assert
+        Assert.Same(PollKube.Empty, actual);
+        _discoveryProvider.Verify(x => x.GetAsync(), Times.Never);
+    }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task PollAsync_WhenObjectDisposedExceptionThrown_ReturnsEmpty()
+    {
+        // Arrange
+        _discoveryProvider.Setup(x => x.GetAsync()).ThrowsAsync(new ObjectDisposedException("provider"));
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = _provider.GetType().GetMethod("PollAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        // Act
+        var task = (Task<List<Service>>)method.Invoke(_provider, [CancellationToken.None]);
+        var actual = await task;
+
+        // Assert
+        Assert.Same(PollKube.Empty, actual);
+    }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task PollAsync_WhenCancelled_ReturnsEmpty()
+    {
+        // Arrange
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = _provider.GetType().GetMethod("PollAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act
+        var task = (Task<List<Service>>)method.Invoke(_provider, [cts.Token]);
+        var actual = await task;
+
+        // Assert
+        Assert.Same(PollKube.Empty, actual);
+        _discoveryProvider.Verify(x => x.GetAsync(), Times.Never);
+    }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task PollAsync_WhenCancelledDuringWait_ReturnsEmpty()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource<List<Service>>();
+        _discoveryProvider.Setup(x => x.GetAsync()).Returns(tcs.Task);
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = _provider.GetType().GetMethod("PollAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var innerCts = new CancellationTokenSource();
+
+        // Act
+        var task = (Task<List<Service>>)method.Invoke(_provider, [innerCts.Token]);
+        innerCts.Cancel();
+        tcs.SetResult(new List<Service>());
+        var actual = await task;
+
+        // Assert
+        Assert.Same(PollKube.Empty, actual);
+    }
+
+    [Fact]
+    public void Finalizer_DoesNotThrow()
+    {
+        var instance = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = instance.GetType().GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic);
+        method.Invoke(instance, [false]);
+    }
+
+    [Fact]
+    [Trait("Bug", "2304")]
+    public async Task StartAsync_WhenProviderDisposed_CatchesOperationCanceledException()
+    {
+        // Arrange
+        _discoveryProvider.Setup(x => x.GetAsync()).ReturnsAsync(new List<Service>());
+        _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        var method = _provider.GetType().GetMethod("StartAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        var ctsField = _provider.GetType().GetField("_cts", BindingFlags.Instance | BindingFlags.NonPublic);
+        var cts = (CancellationTokenSource)ctsField.GetValue(_provider);
+
+        // Act
+        var task = (Task)method.Invoke(_provider, null);
+        cts.Cancel(); // This will trigger OperationCanceledException in StartAsync loop
+        await task; // Should not throw
+
+        // Assert
+        Assert.True(task.IsCompletedSuccessfully); // Task ended without bubbling up the exception
+    }
 }
