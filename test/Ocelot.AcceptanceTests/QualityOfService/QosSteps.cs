@@ -1,23 +1,38 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Ocelot.Provider.Polly;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.QualityOfService;
 
-public class QosSteps : Steps, IQosSteps
+public class QosSteps : AcceptanceSteps, IQosSteps
 {
-    private readonly Steps self;
-    public QosSteps(Steps self) => this.self = self;
+    private readonly AcceptanceSteps self;
+    public QosSteps(AcceptanceSteps self) => this.self = self;
+
+    /// <summary>
+    /// Copied from Polly project aka the PollyQoSResiliencePipelineProvider class.
+    /// </summary>
+    public static readonly IReadOnlySet<HttpStatusCode> DefaultServerErrorCodes = new HashSet<HttpStatusCode>()
+    {
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.NotImplemented,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.HttpVersionNotSupported,
+        HttpStatusCode.VariantAlsoNegotiates,
+        HttpStatusCode.InsufficientStorage,
+        HttpStatusCode.LoopDetected,
+    };
 
     public async Task TestRouteCircuitBreaker(int[] ports, string upstreamPath, FileQoSOptions qos, int index = 0, bool isDiscovery = false)
     {
         qos ??= new();
         await handler.ReleasePortAsync(ports)
             .ContinueWith(t => self.ReleasePortAsync(ports));
-        int count = PollyQoSResiliencePipelineProvider.DefaultServerErrorCodes.Count;
-        HttpStatusCode[] codes = PollyQoSResiliencePipelineProvider.DefaultServerErrorCodes.ToArray();
+        int count = DefaultServerErrorCodes.Count;
+        HttpStatusCode[] codes = DefaultServerErrorCodes.ToArray();
         HttpStatusCode nextBadStatus = codes[DateTime.Now.Millisecond % count];
         for (int i = 0; i < ports.Length; i++)
         {
