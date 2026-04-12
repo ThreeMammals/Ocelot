@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Caching;
@@ -11,11 +12,12 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Metadata;
-using Ocelot.Provider.Polly;
+using Ocelot.QualityOfService;
 using Ocelot.Requester;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Testing.Authentication;
+using Ocelot.Testing.Steps;
 using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
@@ -23,7 +25,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 /// <summary>
 /// These tests are based on the custom service discovery provider, abstracting from currently implemented discovery providers and focusing on the dynamic routing features.
 /// </summary>
-public class DynamicRoutingTests : ConcurrentSteps
+public class DynamicRoutingTests : DiscoverySteps
 {
     [Fact]
     [Trait("Feat", "351")]
@@ -144,7 +146,7 @@ public class DynamicRoutingTests : ConcurrentSteps
 
     private void AssertCachedRoute(int ttl, string serviceName, int[] ports, string[] expectedBody, bool cached = true, bool balanced = true, int shift = 0)
     {
-        Array.Clear(_counters);
+        Array.Clear(Counters);
         var url = $"/{serviceName}/";
         WhenIGetUrlOnTheApiGatewayConcurrently(url, 2);
         ThenAllServicesShouldHaveBeenCalledTimes(2);
@@ -213,22 +215,22 @@ public class DynamicRoutingTests : ConcurrentSteps
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, responses: [testBody1, testBody2, testBody1, testBody2, testBody1, testBody2]);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithDiscovery);
-        int length = _counters.Length;
+        int length = Counters.Length;
         AssertCachedRoute(TTL, route1.ServiceName, ports1, [testBody1, testBody2], cached: false, shift: 0);
         int[] counters1 = new int[length];
-        Array.Copy(_counters, counters1, length);
+        Array.Copy(Counters, counters1, length);
 
         AssertCachedRoute(TTL, route2.ServiceName, ports2, [testBody1, testBody2], cached: true, shift: 2);
         int[] counters2 = new int[length];
-        Array.Copy(_counters, counters2, length);
+        Array.Copy(Counters, counters2, length);
 
         AssertCachedRoute(TTL, route3.ServiceName, ports3, [testBody1, testBody2], cached: false, balanced: false, shift: 4);
         int[] counters3 = new int[length];
-        Array.Copy(_counters, counters3, length);
+        Array.Copy(Counters, counters3, length);
 
         for (int i = 0; i < length; i++)
         {
-            _counters[i] = counters1[i] + counters2[i] + counters3[i];
+            Counters[i] = counters1[i] + counters2[i] + counters3[i];
         }
         ThenServicesShouldHaveBeenCalledTimes(3, 3, 2, 2, 6, 0); // main assertion, explanation is below
         ThenServiceShouldHaveBeenCalledTimes(0, 3); // RoundRobin for 6, not cached
@@ -435,19 +437,19 @@ public class DynamicRoutingTests : ConcurrentSteps
         });
         FileQoSOptions globalOptions = configuration.GlobalConfiguration.QoSOptions = new()
         {
-            BreakDuration = CircuitBreakerStrategy.LowBreakDuration + 1, // 501
+            BreakDuration = 501, // CircuitBreakerStrategy.LowBreakDuration + 1
             MinimumThroughput = 2, // exceptions-errors
             Timeout = 500, // ms
         };
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndPolly);
+        GivenOcelotIsRunning(WithDiscoveryAndQualityOfService);
 
         using var steps = new QosSteps(this);
-        _counters = new int[serviceUrls.Length];
+        Counters = new int[serviceUrls.Length];
         steps.CounterStrategy = (port) =>
         {
             int index = Array.FindIndex(serviceUrls, url => new Uri(url).Port == port);
-            int count = Interlocked.Increment(ref _counters[index]);
+            int count = Interlocked.Increment(ref Counters[index]);
         };
         await steps.TestRouteCircuitBreaker(ports, $"/{serviceName}/", globalOptions, isDiscovery: true); // test global scenario
         await steps.TestRouteTimeout(ports, $"/{serviceName}/", globalOptions);
@@ -492,7 +494,7 @@ public class DynamicRoutingTests : ConcurrentSteps
                 RouteKeys = ["R2"],
             };
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndPolly);
+        GivenOcelotIsRunning(WithDiscoveryAndQualityOfService);
 
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
         GivenMultipleServiceInstancesAreRunning(downstreamUrls,
@@ -510,33 +512,12 @@ public class DynamicRoutingTests : ConcurrentSteps
         steps.CounterStrategy = (port) =>
         {
             int index = Array.FindIndex(downstreamUrls, url => new Uri(url).Port == port);
-            int count = Interlocked.Increment(ref _counters[index]);
+            int count = Interlocked.Increment(ref Counters[index]);
         };
         await steps.TestRouteCircuitBreaker(ports2, $"/{route2.ServiceName}/", globalOptions, isDiscovery: true); // test global scenario
         await steps.TestRouteTimeout(ports3, $"/{route3.ServiceName}/", route3.QoSOptions);
 
         ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 1, 2, 0);
-    }
-
-    private FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes)
-    {
-        var config = new FileConfiguration()
-        {
-            DynamicRoutes = new(routes),
-            GlobalConfiguration = new()
-            {
-                DownstreamScheme = Uri.UriSchemeHttp,
-                ServiceDiscoveryProvider = new()
-                {
-                    Type = nameof(DynamicRoutingDiscoveryProvider),
-                    Host = "doesn't matter for this provider", // it should not be empty due to DownstreamRouteProviderFactory.Get
-                    Port = 1, // see DownstreamRouteProviderFactory.IsServiceDiscovery
-                },
-                LoadBalancerOptions = new(nameof(RoundRobin)),
-            },
-        };
-        config.GlobalConfiguration.Metadata = services.ToDictionary(x => x.Key, x => x.Value.Csv());
-        return config;
     }
 
     private FileDynamicRoute GivenLbRoute(string serviceName, string serviceNamespace = null,
@@ -548,20 +529,21 @@ public class DynamicRoutingTests : ConcurrentSteps
             Key = key,
         };
 
-    private static void GivenDiscoveryMetadata(FileDynamicRoute route, int[] ports)
-        => route.Metadata = new Dictionary<string, string>()
-        {
-            { route.ServiceName, ports.Select(DownstreamUrl).Csv() },
-        };
+    private static void WithDiscoveryAndQualityOfService(IServiceCollection services)
+    {
+        services
+            .AddSingleton(DynamicRoutingDiscoveryFinder)
+            .AddOcelot();
+        AddQualityOfService(services);
+    }
+    public static IServiceCollection AddQualityOfService(IServiceCollection services)
+    {
+        QosDelegatingHandlerDelegate handler = GetDelegatingHandler;
+        return services.AddSingleton(handler);
+    }
+    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
+        => new FakeQualityOfServiceDelegatingHandler(route, contextAccessor, loggerFactory);
 
-    private static readonly ServiceDiscoveryFinderDelegate DynamicRoutingDiscoveryFinder = (provider, config, route)
-        => new DynamicRoutingDiscoveryProvider(provider, config, route);
-    private static void WithDiscovery(IServiceCollection services) => services
-        .AddSingleton(DynamicRoutingDiscoveryFinder)
-        .AddOcelot();
-    private static void WithDiscoveryAndPolly(IServiceCollection services) => services
-        .AddSingleton(DynamicRoutingDiscoveryFinder)
-        .AddOcelot().AddPolly();
     private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
     {
         WithDiscovery(services);
@@ -602,39 +584,4 @@ public class DynamicRoutingTests : ConcurrentSteps
     }
 
     protected override string ServiceNamespace() => nameof(DynamicRoutingTests);
-}
-
-public class DynamicRoutingDiscoveryProvider : IServiceDiscoveryProvider
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ServiceProviderConfiguration _config;
-    private readonly DownstreamRoute _downstreamRoute;
-
-    public DynamicRoutingDiscoveryProvider(IServiceProvider serviceProvider, ServiceProviderConfiguration config, DownstreamRoute downstreamRoute)
-    {
-        _serviceProvider = serviceProvider;
-        _config = config;
-        _downstreamRoute = downstreamRoute;
-    }
-
-    public Task<List<Service>> GetAsync()
-    {
-        if (!_downstreamRoute.MetadataOptions.Metadata.TryGetValue(_downstreamRoute.ServiceName, out var data)
-            || data.IsEmpty()) 
-            return Task.FromResult<List<Service>>(new());
-
-        var urls = _downstreamRoute
-            .GetMetadata<string[]>(_downstreamRoute.ServiceName)
-            .Select(x => new Uri(x))
-            .ToList();
-        var services = urls
-            .Select(url => new Service(
-                name: _downstreamRoute.ServiceName,
-                hostAndPort: new(url.Host, url.Port, url.Scheme.IfEmpty(_downstreamRoute.DownstreamScheme)),
-                id: $"{_downstreamRoute.ServiceNamespace}.{_downstreamRoute.ServiceName}",
-                version: DateTime.UtcNow.ToString("O"),
-                tags: Enumerable.Empty<string>()))
-            .ToList();
-        return Task.FromResult(services);
-    }
 }

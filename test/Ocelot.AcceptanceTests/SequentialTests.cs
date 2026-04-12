@@ -1,4 +1,4 @@
-﻿[assembly: CollectionBehavior(DisableTestParallelization = true)]
+﻿[assembly: CollectionBehavior(DisableTestParallelization = true)] // WTF?
 
 namespace Ocelot.AcceptanceTests;
 
