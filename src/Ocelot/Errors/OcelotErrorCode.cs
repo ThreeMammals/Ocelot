@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Errors;
+namespace Ocelot.Errors;
 
 public enum OcelotErrorCode
 {
@@ -44,4 +44,5 @@ public enum OcelotErrorCode
     CouldNotFindLoadBalancerCreator = 39,
     ErrorInvokingLoadBalancerCreator = 40,
     PayloadTooLargeError = 41,
+    InvalidRequestError = 42,
 }

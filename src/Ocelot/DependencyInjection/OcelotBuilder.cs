@@ -121,6 +121,10 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         Services.TryAddSingleton<IQoSFactory, QoSFactory>();
+        Services.AddSingleton<IExceptionMapper, TimeoutExceptionMapper>();
+        Services.AddSingleton<IExceptionMapper, OperationCanceledExceptionMapper>();
+        Services.AddSingleton<IExceptionMapper, BadHttpRequestExceptionMapper>();
+        Services.AddSingleton<IExceptionMapper, HttpRequestExceptionMapper>();
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
         Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
         Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();

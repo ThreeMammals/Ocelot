@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Request.Mapper;
@@ -17,8 +17,13 @@ public class HttpExceptionToErrorMapperTests
     public HttpExceptionToErrorMapperTests()
     {
         _services = new ServiceCollection();
+        _services.AddSingleton<IExceptionMapper, TimeoutExceptionMapper>();
+        _services.AddSingleton<IExceptionMapper, OperationCanceledExceptionMapper>();
+        _services.AddSingleton<IExceptionMapper, BadHttpRequestExceptionMapper>();
+        _services.AddSingleton<IExceptionMapper, HttpRequestExceptionMapper>();
         var provider = _services.BuildServiceProvider(true);
-        _mapper = new HttpExceptionToErrorMapper(provider);
+        var handlers = provider.GetServices<IExceptionMapper>();
+        _mapper = new HttpExceptionToErrorMapper(provider, handlers);
     }
 
     [Fact]
@@ -76,8 +81,9 @@ public class HttpExceptionToErrorMapperTests
         _services.AddSingleton(errorMapping);
 
         var provider = _services.BuildServiceProvider(true);
+        var handlers = provider.GetServices<IExceptionMapper>();
 
-        _mapper = new HttpExceptionToErrorMapper(provider);
+        _mapper = new HttpExceptionToErrorMapper(provider, handlers);
 
         // Act
         var error = _mapper.Map(new TaskCanceledException());
@@ -119,6 +125,56 @@ public class HttpExceptionToErrorMapperTests
         Assert.IsType<PayloadTooLargeError>(error);
         Assert.Equal(41, (int)error.Code);
         Assert.Equal(413, error.HttpStatusCode);
+        Assert.Equal("test", error.Message);
+    }
+
+    [Fact]
+    [Trait("Issue", "2376")] // https://github.com/ThreeMammals/Ocelot/issues/2376
+    public void Map_HttpRequestException_With_ASCII_Error_To_InvalidRequestError()
+    {
+        // Arrange
+        var ex = new HttpRequestException("Request headers must contain only ASCII characters");
+
+        // Act
+        var error = _mapper.Map(ex);
+
+        // Assert
+        Assert.IsType<InvalidRequestError>(error);
+        Assert.Equal(42, (int)error.Code);
+        Assert.Equal(400, error.HttpStatusCode);
+        Assert.Equal("Request headers must contain only ASCII characters", error.Message);
+    }
+
+    [Fact]
+    public void Map_BadHttpRequestException_To_InvalidRequestError()
+    {
+        // Arrange
+        var inner = new BadHttpRequestException("test-inner", 400);
+        var ex = new HttpRequestException("test", inner);
+
+        // Act
+        var error = _mapper.Map(ex);
+
+        // Assert
+        Assert.IsType<InvalidRequestError>(error);
+        Assert.Equal(42, (int)error.Code);
+        Assert.Equal(400, error.HttpStatusCode);
+        Assert.Equal("test", error.Message);
+    }
+
+    [Fact]
+    public void Map_Direct_BadHttpRequestException_To_InvalidRequestError()
+    {
+        // Arrange
+        var ex = new BadHttpRequestException("test", 400);
+
+        // Act
+        var error = _mapper.Map(ex);
+
+        // Assert
+        Assert.IsType<InvalidRequestError>(error);
+        Assert.Equal(42, (int)error.Code);
+        Assert.Equal(400, error.HttpStatusCode);
         Assert.Equal("test", error.Message);
     }
 }

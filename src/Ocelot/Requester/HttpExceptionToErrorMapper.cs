@@ -7,12 +7,13 @@ namespace Ocelot.Requester;
 
 public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
 {
-    /// <summary>This is a dictionary of custom mappers for exceptions.</summary>
     private readonly IDictionary<Type, Func<Exception, Error>> _mappers;
+    private readonly IEnumerable<IExceptionMapper> _handlers;
 
-    public HttpExceptionToErrorMapper(IServiceProvider serviceProvider)
+    public HttpExceptionToErrorMapper(IServiceProvider serviceProvider, IEnumerable<IExceptionMapper> handlers)
     {
         _mappers = serviceProvider.GetService<IDictionary<Type, Func<Exception, Error>>>();
+        _handlers = handlers;
     }
 
     public Error Map(Exception exception)
@@ -28,26 +29,12 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
         }
 
         // here are mapped the exceptions thrown from Ocelot core application
-        if (type == typeof(TimeoutException))
+        foreach (var handler in _handlers)
         {
-            return new RequestTimedOutError(exception);
-        }
-
-        if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
-        {
-            return new RequestCanceledError(exception.Message);
-        }
-
-        if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
-        {
-            // Inner exception is a BadHttpRequestException, and only this exception exposes the StatusCode property.
-            // We check if the inner exception is a BadHttpRequestException and if the StatusCode is 413, we return a PayloadTooLargeError
-            if (exception.InnerException is BadHttpRequestException { StatusCode: StatusCodes.Status413RequestEntityTooLarge })
+            if (handler.CanHandle(exception))
             {
-                return new PayloadTooLargeError(exception);
+                return handler.Map(exception);
             }
-
-            return new ConnectionToDownstreamServiceError(exception);
         }
 
         return new UnableToCompleteRequestError(exception);
