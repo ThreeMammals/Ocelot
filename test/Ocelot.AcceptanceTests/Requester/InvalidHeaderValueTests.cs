@@ -30,24 +30,14 @@ public sealed class InvalidHeaderValueTests : Steps
     [InlineData("漢")]
     public async Task Should_return_400_bad_request_when_request_contains_non_ascii_header_value(string headerValue)
     {
-        var basePort = BasePortSeed + (Environment.ProcessId % 10000) * PortStride;
-        var downstreamPort = basePort;
-        var gatewayPort = basePort + 1;
+        var downstreamPort = PortFinder.GetRandomPort();
+        var gatewayPort = PortFinder.GetRandomPort();
         var route = GivenRoute(downstreamPort, "/ocelot/posts/{id}", "/todos/{id}");
         var configuration = GivenConfiguration(route);
 
         GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOn(downstreamPort, DownstreamRequestPath, context =>
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            return context.Response.WriteAsync(DownstreamResponseBody);
-        });
-        await GivenOcelotHostIsRunning(null, null, null, builder => builder
-            .UseKestrel()
-            .ConfigureAppConfiguration(WithBasicConfiguration)
-            .ConfigureServices(WithAddOcelot)
-            .Configure(WithUseOcelot)
-            .UseUrls(DownstreamUrl(gatewayPort)), null, null, null);
+        GivenThereIsAServiceRunningOnPath(downstreamPort, DownstreamRequestPath, DownstreamResponseBody);
+        int gatewayPort = GivenOcelotIsRunning();
 
         var response = await SendRawRequestAsync(gatewayPort, headerValue);
 
