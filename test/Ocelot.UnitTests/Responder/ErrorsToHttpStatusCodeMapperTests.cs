@@ -1,4 +1,4 @@
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 using Ocelot.Responder;
 namespace Ocelot.UnitTests.Responder;
 
@@ -46,7 +46,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.BadGateway);
     }
-
+    
     [Theory]
     [InlineData(OcelotErrorCode.BadRequestError)]
     public void Should_return_bad_request(OcelotErrorCode errorCode)
@@ -80,6 +80,14 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     public void Should_return_not_found(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    [Trait("Bug", "749")] // https://github.com/ThreeMammals/Ocelot/issues/749
+    [Trait("PR", "1769")] // https://github.com/ThreeMammals/Ocelot/pull/1769
+    public void Should_return_request_entity_too_large()
+    {
+        ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);
     }
 
     [Fact]
