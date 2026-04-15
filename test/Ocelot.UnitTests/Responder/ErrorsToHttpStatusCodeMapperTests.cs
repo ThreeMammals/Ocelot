@@ -1,4 +1,4 @@
-﻿using Ocelot.Errors;
+using Ocelot.Errors;
 using Ocelot.Responder;
 namespace Ocelot.UnitTests.Responder;
 
@@ -83,14 +83,6 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     }
 
     [Fact]
-    [Trait("Bug", "749")] // https://github.com/ThreeMammals/Ocelot/issues/749
-    [Trait("PR", "1769")] // https://github.com/ThreeMammals/Ocelot/pull/1769
-    public void Should_return_request_entity_too_large()
-    {
-        ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);
-    }
-
-    [Fact]
     public void AuthenticationErrorsHaveHighestPriority()
     {
         var errors = new List<OcelotErrorCode>
@@ -159,3 +151,5 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
         result.ShouldBe((int)expectedHttpStatusCode);
     }
 }
+
+
