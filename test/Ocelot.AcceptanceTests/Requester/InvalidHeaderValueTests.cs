@@ -1,32 +1,29 @@
 
 namespace Ocelot.AcceptanceTests.Requester;
 
-[Trait("Bug", "2376")]
-[Trait("PR", "2381")]
+[Trait("Bug", "2376")] // https://github.com/ThreeMammals/Ocelot/issues/2376
+[Trait("PR", "2379")] // https://github.com/ThreeMammals/Ocelot/pull/2379
 public sealed class InvalidHeaderValueTests : Steps
 {
-    private const string GatewayRequestPath = "/ocelot/posts/askdj";
-    private const string DownstreamRequestPath = "/todos/askdj";
-    private const string DownstreamResponseBody = "Hello from Laura";
-    private const string TestHeaderName = "skull";
-
     [Theory]
-    [InlineData("💀", HttpStatusCode.BadRequest)]
-    [InlineData("é", HttpStatusCode.BadRequest)]
-    [InlineData("漢", HttpStatusCode.BadRequest)]
-    [InlineData("valid-ascii", HttpStatusCode.OK)]
-    public void Should_return_expected_status_code_when_request_contains_header_value(string headerValue, HttpStatusCode expectedStatusCode)
+    [InlineData("skull", "-=💀=-", HttpStatusCode.BadRequest)] // original bug 2374
+    [InlineData("utf8char", "-=é=-", HttpStatusCode.BadRequest)]
+    [InlineData("utf16char", "-=漢=-", HttpStatusCode.BadRequest)]
+    [InlineData("ascii", "valid-ascii", HttpStatusCode.OK)]
+    public void Should_return_400_BadRequest_having_non_ascii_header_value_otherwise_200_OK(
+        string headerName, string headerValue, HttpStatusCode expectedStatus)
     {
-        var downstreamPort = PortFinder.GetRandomPort();
-        var route = GivenRoute(downstreamPort, "/ocelot/posts/{id}", "/todos/{id}");
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, "/ocelot/posts/{id}", "/todos/{id}");
         var configuration = GivenConfiguration(route);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(downstreamPort, DownstreamRequestPath, DownstreamResponseBody))
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy"))
             .And(x => x.GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunning())
-            .And(x => x.GivenIAddAHeader(TestHeaderName, headerValue))
-            .When(x => x.WhenIGetUrlOnTheApiGatewaySafely(GatewayRequestPath))
-            .Then(x => x.ThenTheStatusCodeShouldBe(expectedStatusCode))
+            .And(x => x.GivenIAddAHeader(headerName, headerValue))
+            .When(x => x.WhenIGetUrlOnTheApiGatewaySafely("/ocelot/posts/askdj"))
+            .Then(x => x.ThenTheStatusCodeShouldBe(expectedStatus))
+            .And(x => ThenTheResponseBodyShouldBe(expectedStatus == HttpStatusCode.OK ? "Hello from Laura Demkowicz-Duffy" : string.Empty))
             .BDDfy();
     }
 

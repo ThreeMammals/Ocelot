@@ -134,7 +134,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task GetAsync_WhenDisposed_ReturnsEmpty()
     {
         // Arrange
@@ -149,7 +149,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task PollAsync_WhenQueueCountGreaterThan3_ReturnsEmpty()
     {
         // Arrange
@@ -172,7 +172,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task PollAsync_WhenObjectDisposedExceptionThrown_ReturnsEmpty()
     {
         // Arrange
@@ -189,7 +189,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task PollAsync_WhenCancelled_ReturnsEmpty()
     {
         // Arrange
@@ -208,7 +208,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task PollAsync_WhenCancelledDuringWait_ReturnsEmpty()
     {
         // Arrange
@@ -237,7 +237,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     }
 
     [Fact]
-    [Trait("Bug", "2304")]
+    [Trait("Bug", "2304")] // https://github.com/ThreeMammals/Ocelot/issues/2304
     public async Task StartAsync_WhenProviderDisposed_CatchesOperationCanceledException()
     {
         // Arrange

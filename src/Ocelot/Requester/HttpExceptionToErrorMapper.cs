@@ -30,7 +30,7 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
         // here are mapped the exceptions thrown from Ocelot core application
         if (type == typeof(TimeoutException))
         {
-            return new RequestTimedOutError(exception);
+            return new RequestTimedOutError(exception); // -> 503 Service Unavailable; TODO but it should actually be 504 Gateway Timeout
         }
 
         if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
@@ -38,26 +38,27 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
             return new RequestCanceledError(exception.Message);
         }
 
+        // Late Catch: Map the HttpRequestException to a 400 Bad Request.
+        // If the header format is invalid, HttpClient throws this exception locally.
+        // By catching it here, we ensure Ocelot returns a clean 4xx client error instead of a generic 502 Bad Gateway.
+        if (exception is HttpRequestException && exception.Message.Contains("only ASCII characters"))
+        {
+            return new BadRequestError(exception.Message); // -> 400 Bad Request
+        }
+
+        // Map to a 413 Content Too Large (prior Request Entity Too Large) or 502 Bad Gateway
         if (type == typeof(HttpRequestException) || type == typeof(TimeoutException))
         {
             // Inner exception is a BadHttpRequestException, and only this exception exposes the StatusCode property.
             // We check if the inner exception is a BadHttpRequestException and if the StatusCode is 413, we return a PayloadTooLargeError
             if (exception.InnerException is BadHttpRequestException { StatusCode: StatusCodes.Status413RequestEntityTooLarge })
             {
-                return new PayloadTooLargeError(exception);
+                return new PayloadTooLargeError(exception); // -> 413 Content Too Large
             }
 
-            // Late Catch: Map the HttpRequestException to a 400 Bad Request.
-            // If the header format is invalid, HttpClient throws this exception locally.
-            // By catching it here, we ensure Ocelot returns a clean 4xx client error instead of a generic 502 Bad Gateway.
-            if (exception is HttpRequestException && exception.Message.Contains("only ASCII characters"))
-            {
-                return new BadRequestError(exception.Message);
-            }
-
-            return new ConnectionToDownstreamServiceError(exception);
+            return new ConnectionToDownstreamServiceError(exception); // -> 502 Bad Gateway
         }
 
-        return new UnableToCompleteRequestError(exception);
+        return new UnableToCompleteRequestError(exception); // -> 500 Internal Server Error
     }
 }

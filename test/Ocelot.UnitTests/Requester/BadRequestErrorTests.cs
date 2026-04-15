@@ -7,7 +7,9 @@ namespace Ocelot.UnitTests.Requester;
 public class BadRequestErrorTests
 {
     [Fact]
-    public void Should_create_bad_request_error()
+    [Trait("Bug", "2376")] // https://github.com/ThreeMammals/Ocelot/issues/2376
+    [Trait("PR", "2379")] // https://github.com/ThreeMammals/Ocelot/pull/2379
+    public void Ctor_String()
     {
         // Arrange
         var message = "This is a bad request message.";

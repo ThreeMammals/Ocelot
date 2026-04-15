@@ -9,7 +9,7 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
     {
         if (errors.Any(e => e.Code == OcelotErrorCode.UnauthenticatedError))
         {
-            return 401;
+            return StatusCodes.Status401Unauthorized;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.UnauthorizedError
@@ -18,7 +18,7 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
             || e.Code == OcelotErrorCode.UserDoesNotHaveClaimError
             || e.Code == OcelotErrorCode.CannotFindClaimError))
         {
-            return 403;
+            return StatusCodes.Status403Forbidden;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
@@ -41,24 +41,24 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
 
         if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))
         {
-            return 404;
+            return StatusCodes.Status404NotFound;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.ConnectionToDownstreamServiceError))
         {
-            return 502;
+            return StatusCodes.Status502BadGateway;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError
             || e.Code == OcelotErrorCode.CouldNotFindLoadBalancerCreator
             || e.Code == OcelotErrorCode.ErrorInvokingLoadBalancerCreator))
         {
-            return 500;
+            return StatusCodes.Status500InternalServerError;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.PayloadTooLargeError))
         {
-            return 413;
+            return StatusCodes.Status413PayloadTooLarge;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.BadRequestError))
@@ -66,6 +66,6 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
             return StatusCodes.Status400BadRequest;
         }
 
-        return 404;
+        return StatusCodes.Status404NotFound;
     }
 }
