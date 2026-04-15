@@ -151,5 +151,3 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
         result.ShouldBe((int)expectedHttpStatusCode);
     }
 }
-
-

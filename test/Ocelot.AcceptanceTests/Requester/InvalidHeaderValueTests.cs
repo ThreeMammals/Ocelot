@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
-using System.Net;
-using System.Net.Http;
-using TestStack.BDDfy;
 
 namespace Ocelot.AcceptanceTests.Requester;
 
