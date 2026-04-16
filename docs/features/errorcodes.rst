@@ -31,11 +31,18 @@ Ocelot returns HTTP status codes based on internal logic in specific cases of :r
 
 Client Error Responses
 ----------------------
+.. _RFC 7230: https://www.rfc-editor.org/rfc/rfc7230
+.. _400 Bad Request: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400
 .. _401 Unauthorized: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401
 .. _403 Forbidden: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403
 .. _404 Not Found: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404
 .. _RequestCanceledError: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+RequestCanceledError&type=code
 .. _OcelotErrorCode.RequestCanceled: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20OcelotErrorCode.RequestCanceled&type=code
+
+- `400 Bad Request`_: If something is wrong with the incoming request, Ocelot generates an ``HttpRequestException``, for example: [#f1]_
+
+  * An upstream request header contains non-ASCII characters.
+    `RFC 7230`_ specifies that when a server encounters invalid or unparsable request data, it should respond with a `400 Bad Request`_ status code.
 
 - `401 Unauthorized`_: If the authentication middleware runs and the user is not authenticated.
 - `403 Forbidden`_: If the authorization middleware runs and the user is unauthorized, if the claim value is not authorized, if the scope is not authorized, if the user does not have the required claim, or if the claim cannot be found.
@@ -94,3 +101,16 @@ We expect you to share your use case with us in the `Discussions <https://github
   :alt: octocat
   :height: 25
   :class: img-valign-middle
+
+""""
+
+.. [#f1] `RFC 7230`_ ("Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing"), Section 3.2 (`"Header Fields"`_), and especially Section 3.2.4 (`"Field Parsing"`_),
+  describe cases that may arise with request data (where a `400 Bad Request`_ status is preferred) and response data (where a `502 Bad Gateway`_ status is preferred).
+  Ocelot does not perform any special validation of header data for upstream requests or downstream responses; it proxies headers as-is, with the exception of the ":doc:`../features/headerstransformation`" feature.
+  This enhancement was requested in bug `2374`_, fixed in pull request `2379`_, and the patch was rolled out as part of the `25.0`_ release.
+
+.. _"Header Fields": https://www.rfc-editor.org/rfc/rfc7230#section-3.2
+.. _"Field Parsing": https://www.rfc-editor.org/rfc/rfc7230#section-3.2.4
+.. _2374: https://github.com/ThreeMammals/Ocelot/issues/2374
+.. _2379: https://github.com/ThreeMammals/Ocelot/pull/2379
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

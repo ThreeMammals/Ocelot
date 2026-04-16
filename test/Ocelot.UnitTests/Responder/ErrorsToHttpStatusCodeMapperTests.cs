@@ -83,6 +83,15 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
         ShouldMapErrorsToStatusCode(new() { OcelotErrorCode.PayloadTooLargeError }, HttpStatusCode.RequestEntityTooLarge);
     }
 
+    [Theory]
+    [Trait("Bug", "2376")] // https://github.com/ThreeMammals/Ocelot/issues/2376
+    [Trait("PR", "2379")] // https://github.com/ThreeMammals/Ocelot/pull/2379
+    [InlineData(OcelotErrorCode.BadRequestError)]
+    public void Should_return_400_BadRequest(OcelotErrorCode errorCode)
+    {
+        ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.BadRequest);
+    }
+
     [Fact]
     public void AuthenticationErrorsHaveHighestPriority()
     {
@@ -128,7 +137,8 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
         // If this test fails then it's because the number of error codes has changed.
         // You should make the appropriate changes to the test cases here to ensure
         // they cover all the error codes, and then modify this assertion.
-        Enum.GetNames<OcelotErrorCode>().Length.ShouldBe(42, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
+        Enum.GetNames<OcelotErrorCode>().Length.ShouldBe(43,
+            "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
     }
 
     private void ShouldMapErrorToStatusCode(OcelotErrorCode errorCode, HttpStatusCode expectedHttpStatusCode)
