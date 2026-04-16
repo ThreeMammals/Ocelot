@@ -9,6 +9,7 @@ public class HttpDataRepository : IRequestScopedDataRepository
 
     public HttpDataRepository(IHttpContextAccessor contextAccessor)
     {
+        ArgumentNullException.ThrowIfNull(contextAccessor);
         _contextAccessor = contextAccessor;
     }
 
@@ -21,7 +22,7 @@ public class HttpDataRepository : IRequestScopedDataRepository
         }
         catch (Exception exception)
         {
-            return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to add data for key: {key}, exception: {exception.Message}")));
+            return new ErrorResponse(new CannotAddDataError(exception));
         }
     }
 
@@ -34,13 +35,13 @@ public class HttpDataRepository : IRequestScopedDataRepository
         }
         catch (Exception exception)
         {
-            return new ErrorResponse(new CannotAddDataError(string.Format($"Unable to update data for key: {key}, exception: {exception.Message}")));
+            return new ErrorResponse(new CannotAddDataError(exception));
         }
     }
 
     public Response<T> Get<T>(string key)
     {
-        if (_contextAccessor?.HttpContext?.Items == null)
+        if (_contextAccessor.HttpContext?.Items == null)
         {
             return new ErrorResponse<T>(new CannotFindDataError($"Unable to find data for key: {key} because HttpContext or HttpContext.Items is null"));
         }
