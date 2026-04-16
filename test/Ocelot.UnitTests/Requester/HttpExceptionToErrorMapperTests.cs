@@ -128,12 +128,13 @@ public class HttpExceptionToErrorMapperTests
     public void Map_HttpRequestException_With_NonASCII_To_BadRequestError()
     {
         // Arrange
-        var ex = new HttpRequestException("Some header contains only ASCII characters but it doesn't.");
+        var ex = new HttpRequestException("Request headers must contain only ASCII characters.");
 
         // Act
         var error = _mapper.Map(ex);
 
         // Assert
+        Assert.Same(ex, error.Exception);
         Assert.IsType<BadRequestError>(error);
         Assert.Equal(42, (int)error.Code);
         Assert.Equal(400, error.HttpStatusCode);

@@ -38,12 +38,13 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
             return new RequestCanceledError(exception.Message);
         }
 
+        // Bug #2376 -> https://github.com/ThreeMammals/Ocelot/issues/2376
         // Late Catch: Map the HttpRequestException to a 400 Bad Request.
         // If the header format is invalid, HttpClient throws this exception locally.
         // By catching it here, we ensure Ocelot returns a clean 4xx client error instead of a generic 502 Bad Gateway.
-        if (exception is HttpRequestException && exception.Message.Contains("only ASCII characters"))
+        if (exception is HttpRequestException && exception.Message.Contains("Request headers must contain only ASCII characters."))
         {
-            return new BadRequestError(exception.Message); // -> 400 Bad Request
+            return new BadRequestError(exception); // -> 400 Bad Request
         }
 
         // Map to a 413 Content Too Large (prior Request Entity Too Large) or 502 Bad Gateway
