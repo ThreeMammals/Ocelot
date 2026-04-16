@@ -121,4 +121,22 @@ public class HttpExceptionToErrorMapperTests
         Assert.Equal(413, error.HttpStatusCode);
         Assert.Equal("test", error.Message);
     }
+
+    [Fact]
+    [Trait("Bug", "2376")] // https://github.com/ThreeMammals/Ocelot/issues/2376
+    [Trait("PR", "2379")] // https://github.com/ThreeMammals/Ocelot/pull/2379
+    public void Map_HttpRequestException_With_NonASCII_To_BadRequestError()
+    {
+        // Arrange
+        var ex = new HttpRequestException("Request headers must contain only ASCII characters.");
+
+        // Act
+        var error = _mapper.Map(ex);
+
+        // Assert
+        Assert.Same(ex, error.Exception);
+        Assert.IsType<BadRequestError>(error);
+        Assert.Equal(42, (int)error.Code);
+        Assert.Equal(400, error.HttpStatusCode);
+    }
 }

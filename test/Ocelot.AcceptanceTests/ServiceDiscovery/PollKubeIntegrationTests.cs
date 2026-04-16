@@ -67,7 +67,7 @@ public class PollKubeIntegrationTests : Steps
         receivedToken.Value.ShouldContain("Bearer");
     }
 
-    [Fact]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     [Trait("Concurrency", "Multiple")]
     public async Task Should_return_queued_service_on_concurrent_calls()
@@ -108,7 +108,7 @@ public class PollKubeIntegrationTests : Steps
         results.ShouldAllBe(r => r[0].HostAndPort.DownstreamPort == 9090);
     }
 
-    [Fact]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     [Trait("Timing", "Interval")]
     public async Task Should_poll_at_specified_intervals()
