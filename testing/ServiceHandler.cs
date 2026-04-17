@@ -204,6 +204,12 @@ public class ServiceHandler : IDisposable
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder.UseUrls(baseUrl).UseKestrel();
+            //if (OperatingSystem.IsLinux())
+            //{
+            //    var port = new Uri(baseUrl).Port;
+            //    builder.ConfigureKestrel(opts =>
+            //        opts.Listen(IPAddress.Loopback, port));
+            //}
             if (configureDelegate != null) builder.ConfigureAppConfiguration(configureDelegate);
             if (configureLogging != null) builder.ConfigureLogging(configureLogging);
             if (configureServices != null) builder.ConfigureServices(configureServices);
@@ -244,6 +250,12 @@ public class ServiceHandler : IDisposable
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder.UseUrls(baseUrl).UseKestrel();
+            //if (OperatingSystem.IsLinux())
+            //{
+            //    var port = new Uri(baseUrl).Port;
+            //    builder.ConfigureKestrel(opts =>
+            //        opts.Listen(IPAddress.Loopback, port));
+            //}
             if (configureDelegate != null) builder.ConfigureAppConfiguration(configureDelegate);
             if (configureLogging != null) builder.ConfigureLogging(configureLogging);
             if (configureServices != null) builder.ConfigureServices(configureServices);

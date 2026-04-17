@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -198,12 +199,21 @@ public class AcceptanceSteps : IDisposable
         int port = PortFinder.GetRandomPort();
         var baseUrl = DownstreamUrl(port);
         var builder = TestHostBuilder.Create();
+
+        //// https://github.com/ThreeMammals/Ocelot/pull/2382
+        //void OptionsOnLinux(KestrelServerOptions opts)
+        //{
+        //    if (OperatingSystem.IsLinux())
+        //        opts.Listen(IPAddress.Loopback, port);
+        //}
+
         if (сonfigureWebHost is not null)
             сonfigureWebHost(builder);
         else builder
             .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
             .ConfigureServices(configureServices ?? WithAddOcelot)
             .Configure(configureApp ?? WithUseOcelot)
+            // .ConfigureKestrel(OptionsOnLinux)
             .UseUrls(baseUrl); // run Ocelot on specific port, rather than on std 80 port of TestServer
         postConfigureHost?.Invoke(builder);
 
@@ -232,6 +242,13 @@ public class AcceptanceSteps : IDisposable
     {
         int port = PortFinder.GetRandomPort();
         var baseUrl = DownstreamUrl(port);
+
+        //// https://github.com/ThreeMammals/Ocelot/pull/2382
+        //void OptionsOnLinux(KestrelServerOptions opts)
+        //{
+        //    if (OperatingSystem.IsLinux())
+        //        opts.Listen(IPAddress.Loopback, port);
+        //}
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder
@@ -239,6 +256,7 @@ public class AcceptanceSteps : IDisposable
                 .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
                 .ConfigureServices(configureServices ?? WithAddOcelot)
                 .Configure(configureApp ?? WithUseOcelot)
+                // .ConfigureKestrel(OptionsOnLinux)
                 .UseUrls(baseUrl);
                 //.UseTestServer(o => o.BaseAddress = new(baseUrl));
             postConfigureHost?.Invoke(builder);
