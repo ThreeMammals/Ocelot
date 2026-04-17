@@ -117,7 +117,7 @@ jobs:
   # Matrix build job having 2 dimensions (os, ver)
   build:
     strategy:
-      max-parallel: 3
+      max-parallel: 2
       matrix:
         os: [ubuntu, windows, macos]
         version: [ 8, 9, 10 ]
@@ -158,9 +158,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework net${{ matrix.version }}.0
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   # build-success:
   #   needs: [build-linux, build-macos, build-windows]
