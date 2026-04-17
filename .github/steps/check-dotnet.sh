@@ -14,7 +14,7 @@ echo "$DOTNET_INFO" | grep -E "^\s*${DOTNET_VERSION}\.0\.[0-9]+\s+\[/usr/share/d
 
 # Set environment variable based on match
 if echo "$DOTNET_INFO" | grep -qE "^\s*${DOTNET_VERSION}\.0\.[0-9]+\s+\[/usr/share/dotnet/sdk\]"; then
-  echo "DOTNET${DOTNET_VERSION}_installed=true" >> "$GITHUB_ENV"
+  echo "checkdotnet_installed=true" >> $GITHUB_OUTPUT
 else
-  echo "DOTNET${DOTNET_VERSION}_installed=false" >> "$GITHUB_ENV"
+  echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
 fi
