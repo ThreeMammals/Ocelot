@@ -6,7 +6,7 @@ on: pull_request
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    # continue-on-error: true
     env:
       # https://github.com/actions/setup-dotnet/blob/main/README.md#environment-variables
       DOTNET_INSTALL_DIR: "/usr/share/dotnet" # don't override by /usr/lib/dotnet 
@@ -48,7 +48,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    continue-on-error: true
+    # continue-on-error: true
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
@@ -84,7 +84,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    continue-on-error: true
+    # continue-on-error: true
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
