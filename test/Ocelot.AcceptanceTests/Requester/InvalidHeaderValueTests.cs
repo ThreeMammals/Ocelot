@@ -1,9 +1,4 @@
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
@@ -32,21 +27,8 @@ public sealed class InvalidHeaderValueTests : Steps
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy");
+        var gatewayPort = GivenOcelotIsRunning();
 
-        //var gatewayPort = GivenOcelotIsRunning();
-        // FIX: Pass a delegate to explicitly bind Ocelot to 127.0.0.1
-        //var gatewayPort = GivenOcelotIsRunning(
-        //    configureWebHost: webHost => webHost
-        //        .ConfigureKestrel(opts => opts.Listen(IPAddress.Loopback, 0)) // Let Kestrel pick port
-        //);
-        var gatewayPort = await GivenOcelotHostIsRunning(
-                                null, // Action<WebHostBuilderContext, IConfigurationBuilder> ? configureDelegate,
-                                null, // Action<IServiceCollection> ? configureServices,
-                                null, // Action<IApplicationBuilder> ? configureApp,
-                                null, // Action<IWebHostBuilder> ? сonfigureWebHost,
-                                null, // Action<IWebHostBuilder> ? postConfigureHost,
-                                null, // Action<TestServer> ? configureServer,
-                                null); // Action<HttpClient> ? configureClient
         HeadersCollection headers = [ new(headerName, headerValue) ];
         var response = await GetRawAsync(gatewayPort, "/ocelot/posts/askdj", headers, Xunit.TestContext.Current.CancellationToken);
 
@@ -55,7 +37,7 @@ public sealed class InvalidHeaderValueTests : Steps
         response.ShouldStartWith($"HTTP/1.1 {(int)status} {reason}");
     }
 
-    private Task<string> GetRawAsync(int port, string path, HeadersCollection headers, CancellationToken cancellation)
+    private static Task<string> GetRawAsync(int port, string path, HeadersCollection headers, CancellationToken cancellation)
     {
         headers.Insert(0, new(HeaderNames.Connection, "close"));
         headers.Insert(0, new(HeaderNames.Accept, "*/*"));
@@ -63,15 +45,12 @@ public sealed class InvalidHeaderValueTests : Steps
         return SendRawRequestAsync(IPAddress.Loopback, port, HttpMethod.Get, path, new(headers), cancellation);
     }
 
-    private async Task<string> SendRawRequestAsync(IPAddress address, int port,
+    private static async Task<string> SendRawRequestAsync(IPAddress address, int port,
         HttpMethod method, string path, Dictionary<string, string> headers, CancellationToken cancellation)
     {
-        //var ocelot = OcelotClient.BaseAddress;
         using var client = new TcpClient();
-        //using var client = new TcpClient(ocelot.Host, ocelot.Port);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(RequestTimeoutSeconds));
         await client.ConnectAsync(address, port, timeout.Token);
-        //await client.ConnectAsync(ocelot.Host, ocelot.Port, timeout.Token);
 
         using var stream = client.GetStream();
         var builder = BuildRawHttp11Request(method, path, headers);
