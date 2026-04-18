@@ -10,10 +10,10 @@ echo Checking for .NET $DOTNET_VERSION SDK in dotnet info output...
 echo -------------------------------------------------------------
 
 # Print matching lines
-echo "$DOTNET_INFO" | grep -E "^\s*${DOTNET_VERSION}\.0\.[0-9]+\s+\[.*[\/\\]sdk\]"
+echo "$DOTNET_INFO" | grep -E "^\s*${DOTNET_VERSION}\.[0-9]+\.[0-9]+\s+\[.*[\/\\]sdk\]"
 
 # Set environment variable based on match
-if echo "$DOTNET_INFO" | grep -qE "^\s*${DOTNET_VERSION}\.0\.[0-9]+\s+\[.*[\/\\]sdk\]"; then
+if echo "$DOTNET_INFO" | grep -qE "^\s*${DOTNET_VERSION}\.[0-9]+\.[0-9]+\s+\[.*[\/\\]sdk\]"; then
   echo "checkdotnet_installed=true" >> $GITHUB_OUTPUT
 else
   echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
