@@ -30,7 +30,7 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
         var result = _validator.Validate(qosOptions);
 
         // Assert
-        result.IsValid.ShouldBeTrue();
+        Assert.True(result.IsValid);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
         // Arrange
         var qosOptions = new FileQoSOptions
         {
-            TimeoutValue = 1,
-            ExceptionsAllowedBeforeBreaking = 1,
+            Timeout = 1,
+            MinimumThroughput = 1,
         };
         GivenAQosDelegate();
 
@@ -48,7 +48,7 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
         var result = _validator.Validate(qosOptions);
 
         // Assert
-        result.IsValid.ShouldBeTrue();
+        Assert.True(result.IsValid);
     }
 
     [Fact]
@@ -57,16 +57,17 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
         // Arrange
         var qosOptions = new FileQoSOptions
         {
-            TimeoutValue = 1,
-            ExceptionsAllowedBeforeBreaking = 1,
+            Timeout = 1,
+            MinimumThroughput = 1,
         };
 
         // Act
         var result = _validator.Validate(qosOptions);
 
         // Assert
-        result.IsValid.ShouldBeFalse();
-        result.Errors[0].ErrorMessage.ShouldBe("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+        Assert.False(result.IsValid);
+        Assert.Equal("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?",
+            result.Errors[0].ErrorMessage);
     }
 
     private void GivenAQosDelegate()
