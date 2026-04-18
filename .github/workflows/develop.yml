@@ -10,7 +10,7 @@ jobs:
       max-parallel: 2
       matrix:
         os: [ubuntu, macos, windows]
-        version: [10]
+        framework: [net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -20,18 +20,22 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6
-    - name: SH-scripts executable
+    - name: SH-scripts
+      id: scripts
       run: |
         chmod +x .github/steps/*.sh
         ls -l .github/steps/*.sh
-    - name: Check .NET ${{ matrix.version }}
+        frm="${{ matrix.framework }}"
+        clean="${frm#net}"
+        echo "version=$clean" >> $GITHUB_OUTPUT
+    - name: Check .NET ${{ steps.scripts.outputs.version }}
       id: checkdotnet
-      run: ./.github/steps/check-dotnet.sh ${{ matrix.version }}
-    - name: Setup .NET ${{ matrix.version }}
-      # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
+      run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
+    - name: Setup .NET ${{ steps.scripts.outputs.version }}
+      # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: ${{ matrix.version }}.x
+        dotnet-version: ${{ steps.scripts.outputs.version }}.x
         cache: true
         cache-dependency-path: |
           samples/**/packages.lock.json
@@ -46,11 +50,11 @@ jobs:
     - name: Restore
       run: dotnet restore --locked-mode ./Ocelot.slnx
     - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework net${{ matrix.version }}.0          
+      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-cake:
     needs: build
