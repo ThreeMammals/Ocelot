@@ -2,45 +2,19 @@
 
 # First argument: target .NET major version (digit)
 # Default to 8 if no argument is provided
+# Target major version (e.g. 10, 9, 8...)
 DOTNET_VERSION="${1:-8}"
 
-# # Check .NET $DOTNET_VERSION
-# DOTNET_INFO=$(dotnet --info)
-# echo Checking for .NET $DOTNET_VERSION SDK in dotnet info output...
-# echo -------------------------------------------------------------
+echo "Checking for .NET ${DOTNET_VERSION} SDK..."
 
-# # Print matching lines
-# echo "$DOTNET_INFO" | grep -E "^\s*${DOTNET_VERSION}\.[0-9]+\.[0-9]+\s+\[.*[\/\\]sdk\]\s*$"
-
-# # Set environment variable based on match
-# if echo "$DOTNET_INFO" | grep -qE "^\s*${DOTNET_VERSION}\.[0-9]+\.[0-9]+\s+\[.*[\/\\]sdk\]\s*$"; then
-#   echo "checkdotnet_installed=true" >> $GITHUB_OUTPUT
-# else
-#   echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
-# fi
-
-DOTNET_INFO=$(dotnet --info)
-
-echo "Checking for .NET $DOTNET_VERSION SDK..."
-echo "-------------------------------------------------------------"
-
-found=false
-
-# Iterate line by line from the variable (works on Ubuntu)
-while IFS= read -r line || [[ -n "$line" ]]; do
-    # Match lines like: "  10.0.202 [C:\Program Files\dotnet\sdk]"
-    if [[ $line =~ ^[[:space:]]*${DOTNET_VERSION}\.[0-9]+\.[0-9]+[[:space:]]+\[.*[\/\\]sdk\] ]]; then
-        echo "$line"
-        found=true
-    fi
-done <<< "$DOTNET_INFO"
-
-echo "-------------------------------------------------------------"
-
-if [[ $found == false ]]; then
-    echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
-    echo "❌ No .NET ${DOTNET_VERSION} SDK found!"
-else
+# Use dotnet --list-sdks and check if any SDK starts with the major version
+if dotnet --list-sdks | grep -q -E "^\s*${DOTNET_VERSION}\."; then
     echo "checkdotnet_installed=true" >> $GITHUB_OUTPUT
-    echo "✅ Found .NET ${DOTNET_VERSION} SDK(s) above."
+    echo "✅ .NET ${DOTNET_VERSION} SDK is installed."    
+    # Optional: Show the actual installed versions
+    echo "Installed ${DOTNET_VERSION}.x SDKs:"
+    dotnet --list-sdks | grep -E "^\s*${DOTNET_VERSION}\."
+else
+    echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
+    echo "❌ .NET ${DOTNET_VERSION} SDK is NOT installed."
 fi
