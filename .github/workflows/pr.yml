@@ -149,7 +149,7 @@ jobs:
       matrix:
         # os: [ubuntu, macos, windows]
         os: [windows]
-        version: [10]
+        framework: [net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -163,14 +163,14 @@ jobs:
       run: |
         chmod +x .github/steps/*.sh
         ls -l .github/steps/*.sh
-    - name: Check .NET ${{ matrix.version }}
+    - name: Check .NET ${{ replace(matrix.framework, 'net', '') }}
       id: checkdotnet
-      run: ./.github/steps/check-dotnet.sh ${{ matrix.version }}
-    - name: Setup .NET ${{ matrix.version }}
+      run: ./.github/steps/check-dotnet.sh ${{ replace(matrix.framework, 'net', '') }}
+    - name: Setup .NET ${{ replace(matrix.framework, 'net', '') }}
       # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: ${{ matrix.version }}.x
+        dotnet-version: ${{ replace(matrix.framework, 'net', '') }}.x
         cache: true
         cache-dependency-path: |
           samples/**/packages.lock.json
@@ -185,11 +185,11 @@ jobs:
     - name: Restore
       run: dotnet restore --locked-mode ./Ocelot.slnx
     - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework net${{ matrix.version }}.0          
+      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   # build-cake:
   #   # needs: build-windows
