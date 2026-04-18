@@ -24,25 +24,22 @@ DOTNET_INFO=$(dotnet --info)
 echo "Checking for .NET $DOTNET_VERSION SDK..."
 echo "-------------------------------------------------------------"
 
-# Split DOTNET_INFO into lines and iterate
-mapfile -t lines <<< "$DOTNET_INFO"
-
 found=false
 
-for line in "${lines[@]}"; do
-    # Skip empty lines and non-SDK lines
+# Iterate line by line from the variable (works on Ubuntu)
+while IFS= read -r line || [[ -n "$line" ]]; do
+    # Match lines like: "  10.0.202 [C:\Program Files\dotnet\sdk]"
     if [[ $line =~ ^[[:space:]]*${DOTNET_VERSION}\.[0-9]+\.[0-9]+[[:space:]]+\[.*[\/\\]sdk\] ]]; then
         echo "$line"
         found=true
     fi
-done
+done <<< "$DOTNET_INFO"
 
 echo "-------------------------------------------------------------"
 
 if [[ $found == false ]]; then
     echo "checkdotnet_installed=false" >> $GITHUB_OUTPUT
     echo "❌ No .NET ${DOTNET_VERSION} SDK found!"
-    exit 1
 else
     echo "checkdotnet_installed=true" >> $GITHUB_OUTPUT
     echo "✅ Found .NET ${DOTNET_VERSION} SDK(s) above."
