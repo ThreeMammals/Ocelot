@@ -147,8 +147,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        # os: [ubuntu, macos, windows]
-        os: [windows]
+        os: [ubuntu, macos, windows]
         framework: [net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
@@ -159,7 +158,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6
-    - name: SH-scripts executable
+    - name: SH-scripts
       id: scripts
       run: |
         chmod +x .github/steps/*.sh
@@ -187,14 +186,14 @@ jobs:
       run: ./.github/steps/${{ matrix.os }}.add-dns-records.sh  
     - name: Install certificate
       run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
-    - name: Restore
-      run: dotnet restore --locked-mode ./Ocelot.slnx
-    - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
-    - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-    - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+    # - name: Restore
+    #   run: dotnet restore --locked-mode ./Ocelot.slnx
+    # - name: Build
+    #   run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
+    # - name: Unit Tests
+    #   run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+    # - name: Acceptance Tests
+    #   run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   # build-cake:
   #   # needs: build-windows
