@@ -27,8 +27,14 @@ public sealed class InvalidHeaderValueTests : Steps
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
         GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy");
-        var gatewayPort = GivenOcelotIsRunning();
-
+        var gatewayPort = await GivenOcelotHostIsRunning(
+                                null, // Action<WebHostBuilderContext, IConfigurationBuilder> ? configureDelegate,
+                                null, // Action<IServiceCollection> ? configureServices,
+                                null, // Action<IApplicationBuilder> ? configureApp,
+                                null, // Action<IWebHostBuilder> ? сonfigureWebHost,
+                                null, // Action<IWebHostBuilder> ? postConfigureHost,
+                                null, // Action<TestServer> ? configureServer,
+                                null); // Action<HttpClient> ? configureClient
         HeadersCollection headers = [ new(headerName, headerValue) ];
         var response = await GetRawAsync(gatewayPort, "/ocelot/posts/askdj", headers, Xunit.TestContext.Current.CancellationToken);
 
