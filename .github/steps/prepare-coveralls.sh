@@ -11,9 +11,9 @@ coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
 echo "Detecting file $coverage_file ..."
 if [ -f "$coverage_file" ]; then
   echo "Coverage file exists."
-  echo "COVERALLS_coverage_file_exists=true" >> $GITHUB_ENV
-  echo "COVERALLS_coverage_file=$coverage_file" >> $GITHUB_ENV
+  echo "COVERAGE_file_exists=true" >> $GITHUB_OUTPUT
+  echo "COVERAGE_file=$coverage_file" >> $GITHUB_OUTPUT
 else
   echo "Coverage file DOES NOT exist!"
-  echo "COVERALLS_coverage_file_exists=false" >> $GITHUB_ENV
+  echo "COVERAGE_file_exists=false" >> $GITHUB_OUTPUT
 fi
