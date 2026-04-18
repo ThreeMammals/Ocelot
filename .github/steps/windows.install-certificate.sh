@@ -17,7 +17,7 @@ certutil -addstore -f "Root" "$CRT_FILE"
 
 echo "------------------------"
 echo "Verification:"
-certutil -store Root | findstr /i "threemammals\|Subject"
+certutil -store Root | grep -i  "threemammals"
 
 echo "Installation is DONE"
 echo "You can also open certlm.msc and check Trusted Root Certification Authorities."

@@ -143,112 +143,113 @@ jobs:
   #         fi
   #-----------------------------------------------------------------------------------------------------------------
   # # Matrix build job having 2 dimensions (os, ver)
-  # build:
-  #   strategy:
-  #     max-parallel: 3
-  #     matrix:
-  #       os: [ubuntu, macos, windows]
-  #       version: [8, 9, 10]
-  #   runs-on: ${{ matrix.os }}-latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #   env:
-  #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v6
-  #   - name: SH-scripts executable
-  #     run: |
-  #       chmod +x .github/steps/*.sh
-  #       ls -l .github/steps/*.sh
-  #   - name: Check .NET ${{ matrix.version }}
-  #     id: checkdotnet
-  #     run: ./.github/steps/check-dotnet.sh ${{ matrix.version }}
-  #   - name: Setup .NET ${{ matrix.version }}
-  #     # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
-  #     uses: actions/setup-dotnet@v5
-  #     with:
-  #       dotnet-version: ${{ matrix.version }}.x
-  #       cache: true
-  #       cache-dependency-path: |
-  #         samples/**/packages.lock.json
-  #         src/**/packages.lock.json
-  #         test/**/packages.lock.json
-  #   - name: .NET Info
-  #     run: dotnet --info
-  #   - name: Add DNS-records
-  #     run: ./.github/steps/${{ matrix.os }}.add-dns-records.sh  
-  #   - name: Install certificate
-  #     run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
-  #   - name: Restore
-  #     run: dotnet restore --locked-mode ./Ocelot.slnx
-  #   - name: Build
-  #     run: dotnet build --no-restore ./Ocelot.slnx --framework net${{ matrix.version }}.0          
-  #   - name: Unit Tests
-  #     run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-  #   - name: Acceptance Tests
-  #     run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
-
-  build-cake:
-    # needs: build-windows
-    # needs: [build-linux, build-macos, build-windows]
-    # needs: build
-    runs-on: ubuntu-latest
-    # environment: Pull-Request
+  build:
+    strategy:
+      max-parallel: 3
+      matrix:
+        # os: [ubuntu, macos, windows]
+        os: [windows]
+        version: [10]
+    runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash
     env:
-      # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: SH-scripts executable
-        run: |
-          chmod +x .github/steps/*.sh
-          ls -l .github/steps/*.sh
-      - name: Check .NET 10
-        id: checkdotnet
-        run: ./.github/steps/check-dotnet.sh 10
-      - name: Setup .NET 10
-        # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.x
-          cache: true
-          cache-dependency-path: |
-            samples/**/packages.lock.json
-            src/**/packages.lock.json
-            test/**/packages.lock.json
-      - name: .NET Info
-        run: dotnet --info
-      - name: Add DNS-records
-        run: ./.github/steps/ubuntu.add-dns-records.sh  
-      - name: Install certificate
-        run: ./.github/steps/ubuntu.install-certificate.sh
-      - name: Cake Build
-        uses: cake-build/cake-action@v3
-        with:
-          target: PullRequest
-          verbosity: Verbose
-      - name: Coverage files
-        id: coverage
-        run: ./.github/steps/prepare-coveralls.sh
-      - name: Coveralls
-        if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: coverallsapp/github-action@v2
-        with:
-          # fail-on-error: false
-          file: ${{ steps.coverage.outputs.COVERAGE_file }}
-        continue-on-error: true
-      - name: Codecov
-        if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v6
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ThreeMammals/Ocelot
-          fail_ci_if_error: true
-          files: ${{ steps.coverage.outputs.COVERAGE_file }}
-          flags: unit
-        continue-on-error: true
+    - name: Checkout
+      uses: actions/checkout@v6
+    - name: SH-scripts executable
+      run: |
+        chmod +x .github/steps/*.sh
+        ls -l .github/steps/*.sh
+    - name: Check .NET ${{ matrix.version }}
+      id: checkdotnet
+      run: ./.github/steps/check-dotnet.sh ${{ matrix.version }}
+    - name: Setup .NET ${{ matrix.version }}
+      # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ matrix.version }}.x
+        cache: true
+        cache-dependency-path: |
+          samples/**/packages.lock.json
+          src/**/packages.lock.json
+          test/**/packages.lock.json
+    - name: .NET Info
+      run: dotnet --info
+    - name: Add DNS-records
+      run: ./.github/steps/${{ matrix.os }}.add-dns-records.sh  
+    - name: Install certificate
+      run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
+    - name: Restore
+      run: dotnet restore --locked-mode ./Ocelot.slnx
+    - name: Build
+      run: dotnet build --no-restore ./Ocelot.slnx --framework net${{ matrix.version }}.0          
+    - name: Unit Tests
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+    - name: Acceptance Tests
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework net${{ matrix.version }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+
+  # build-cake:
+  #   # needs: build-windows
+  #   # needs: [build-linux, build-macos, build-windows]
+  #   # needs: build
+  #   runs-on: ubuntu-latest
+  #   # environment: Pull-Request
+  #   env:
+  #     # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0
+  #     - name: SH-scripts executable
+  #       run: |
+  #         chmod +x .github/steps/*.sh
+  #         ls -l .github/steps/*.sh
+  #     - name: Check .NET 10
+  #       id: checkdotnet
+  #       run: ./.github/steps/check-dotnet.sh 10
+  #     - name: Setup .NET 10
+  #       # if: steps.checkdotnet.outputs.checkdotnet_installed == 'false'
+  #       uses: actions/setup-dotnet@v5
+  #       with:
+  #         dotnet-version: 10.x
+  #         cache: true
+  #         cache-dependency-path: |
+  #           samples/**/packages.lock.json
+  #           src/**/packages.lock.json
+  #           test/**/packages.lock.json
+  #     - name: .NET Info
+  #       run: dotnet --info
+  #     - name: Add DNS-records
+  #       run: ./.github/steps/ubuntu.add-dns-records.sh  
+  #     - name: Install certificate
+  #       run: ./.github/steps/ubuntu.install-certificate.sh
+  #     - name: Cake Build
+  #       uses: cake-build/cake-action@v3
+  #       with:
+  #         target: PullRequest
+  #         verbosity: Verbose
+  #     - name: Coverage files
+  #       id: coverage
+  #       run: ./.github/steps/prepare-coveralls.sh
+  #     - name: Coveralls
+  #       if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
+  #       uses: coverallsapp/github-action@v2
+  #       with:
+  #         # fail-on-error: false
+  #         file: ${{ steps.coverage.outputs.COVERAGE_file }}
+  #       continue-on-error: true
+  #     - name: Codecov
+  #       if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
+  #       uses: codecov/codecov-action@v6
+  #       with:
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         slug: ThreeMammals/Ocelot
+  #         fail_ci_if_error: true
+  #         files: ${{ steps.coverage.outputs.COVERAGE_file }}
+  #         flags: unit
+  #       continue-on-error: true
