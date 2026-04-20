@@ -121,6 +121,8 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         Services.TryAddSingleton<IQoSFactory, QoSFactory>();
+        Services.TryAddSingleton<QosDelegatingHandlerDelegate>(provider =>
+            (route, contextAccessor, loggerFactory) => new CircuitBreakerDelegatingHandler(route, loggerFactory));
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
         Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
         Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();

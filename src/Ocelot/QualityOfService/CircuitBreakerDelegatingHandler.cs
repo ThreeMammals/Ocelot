@@ -1,0 +1,135 @@
+using Ocelot.Configuration;
+using Ocelot.Infrastructure.DesignPatterns;
+using Ocelot.Logging;
+
+namespace Ocelot.QualityOfService;
+
+/// <summary>
+/// A <see cref="DelegatingHandler"/> that implements the <seealso href="https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern">Circuit Breaker</seealso> design pattern
+/// and optional per-request timeout for a downstream route.
+/// </summary>
+/// <remarks>
+/// This handler is Ocelot's built-in quality-of-service handler. It wraps every outgoing request and:
+/// <list type="bullet">
+///   <item>Returns <see cref="System.Net.HttpStatusCode.ServiceUnavailable"/> immediately when the circuit is <see cref="CircuitState.Open"/>.</item>
+///   <item>Counts server-error responses (5xx) and exceptions as failures.</item>
+///   <item>Opens the circuit after <see cref="QoSOptions.MinimumThroughput"/> consecutive failures.</item>
+///   <item>Transitions the circuit to <see cref="CircuitState.HalfOpen"/> after <see cref="QoSOptions.BreakDuration"/> milliseconds.</item>
+///   <item>Closes the circuit after a successful probe request in <see cref="CircuitState.HalfOpen"/>.</item>
+///   <item>Enforces a per-request timeout when <see cref="QoSOptions.Timeout"/> is configured.</item>
+/// </list>
+/// </remarks>
+public class CircuitBreakerDelegatingHandler : DelegatingHandler
+{
+    /// <summary>
+    /// The set of HTTP status codes that are considered server errors and will be counted as circuit-breaker failures.
+    /// </summary>
+    /// <remarks>Mirrors the default server-error codes used by Polly's <c>PollyQoSResiliencePipelineProvider</c>.</remarks>
+    public static readonly IReadOnlySet<HttpStatusCode> ServerErrorCodes = new HashSet<HttpStatusCode>
+    {
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.NotImplemented,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout,
+        HttpStatusCode.HttpVersionNotSupported,
+        HttpStatusCode.VariantAlsoNegotiates,
+        HttpStatusCode.InsufficientStorage,
+        HttpStatusCode.LoopDetected,
+    };
+
+    private readonly CircuitBreaker _circuitBreaker;
+    private readonly QoSOptions _options;
+    private readonly IOcelotLogger _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitBreakerDelegatingHandler"/> class for the specified route.
+    /// </summary>
+    /// <param name="route">The downstream route whose <see cref="QoSOptions"/> drive circuit-breaker behavior.</param>
+    /// <param name="loggerFactory">Factory used to create the handler's logger.</param>
+    public CircuitBreakerDelegatingHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+    {
+        _options = route.QosOptions;
+        var breakDuration = TimeSpan.FromMilliseconds(_options.BreakDuration ?? 0);
+        var minimumThroughput = _options.MinimumThroughput ?? 0;
+        _circuitBreaker = new CircuitBreaker(minimumThroughput, breakDuration);
+        _logger = loggerFactory.CreateLogger<CircuitBreakerDelegatingHandler>();
+    }
+
+    /// <summary>Gets the underlying <see cref="CircuitBreaker"/> instance (exposed for testing purposes).</summary>
+    internal CircuitBreaker CircuitBreaker => _circuitBreaker;
+
+    /// <inheritdoc/>
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (!_circuitBreaker.CanExecute())
+        {
+            _logger.LogWarning(() => $"Circuit breaker is open for '{request.RequestUri}'. Returning {HttpStatusCode.ServiceUnavailable}.");
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("Circuit breaker is open"),
+                ReasonPhrase = "Circuit breaker is open",
+            };
+        }
+
+        if (_options.Timeout.HasValue && _options.Timeout > 0)
+        {
+            return await SendWithTimeoutAsync(request, cancellationToken);
+        }
+
+        return await SendAndTrackAsync(request, cancellationToken);
+    }
+
+    private async Task<HttpResponseMessage> SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromMilliseconds(_options.Timeout!.Value));
+
+        try
+        {
+            return await SendAndTrackAsync(request, cts.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Our per-request timeout fired (not the outer cancellation token)
+            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_options.Timeout}ms. Returning {HttpStatusCode.ServiceUnavailable}.");
+            _circuitBreaker.RecordFailure();
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("Request timeout"),
+                ReasonPhrase = "Request timeout",
+            };
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendAndTrackAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response;
+        try
+        {
+            response = await base.SendAsync(request, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw; // Let timeout/cancellation handling deal with this at the call site
+        }
+        catch (Exception)
+        {
+            _circuitBreaker.RecordFailure();
+            throw;
+        }
+
+        if (ServerErrorCodes.Contains(response.StatusCode))
+        {
+            _circuitBreaker.RecordFailure();
+            _logger.LogDebug(() => $"Circuit breaker recorded failure for '{request.RequestUri}' (status {(int)response.StatusCode}). Failure count: {_circuitBreaker.FailureCount}.");
+        }
+        else
+        {
+            _circuitBreaker.RecordSuccess();
+            _logger.LogDebug(() => $"Circuit breaker recorded success for '{request.RequestUri}'.");
+        }
+
+        return response;
+    }
+}
