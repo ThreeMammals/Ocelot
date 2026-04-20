@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration;
+﻿using Ocelot.Configuration;
 using Ocelot.Configuration.File;
+using Ocelot.Testing.Steps;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
 [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
-public class TimeoutTests : TimeoutTestsBase
+public class TimeoutTests : TimeoutSteps
 {
     [Fact]
     [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
@@ -79,7 +78,7 @@ public class TimeoutTests : TimeoutTestsBase
     }
 
     [Collection(nameof(SequentialTests))]
-    public class Sequential : TimeoutTestsBase
+    public class Sequential : TimeoutSteps
     {
         [Fact]
         [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
@@ -107,46 +106,5 @@ public class TimeoutTests : TimeoutTestsBase
                 DownstreamRoute.DefaultTimeoutSeconds = DownstreamRoute.DefTimeout;
             }
         }
-    }
-}
-
-public class TimeoutTestsBase : Steps
-{
-    protected static int Ms(int seconds) => 1000 * seconds;
-
-    protected FileConfiguration GivenConfiguration(int port, int? routeTimeout = null, int? globalTimeout = null)
-    {
-        var route = GivenDefaultRoute(port);
-        route.Timeout = routeTimeout;
-        var configuration = GivenConfiguration(route);
-        configuration.GlobalConfiguration.Timeout = globalTimeout;
-        return configuration;
-    }
-
-    protected virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(TimeoutTests))
-    {
-        async Task MapBodyWithTimeout(HttpContext context)
-        {
-            await Task.Delay(timeout);
-            context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(response);
-        }
-        handler.GivenThereIsAServiceRunningOn(port, MapBodyWithTimeout);
-    }
-
-    protected async Task<Stopwatch> WatchWhenIGetUrlOnTheApiGateway(string upstream = null)
-    {
-        var watcher = Stopwatch.StartNew();
-        await WhenIGetUrlOnTheApiGateway(upstream ?? "/");
-        watcher.Stop();
-        return watcher;
-    }
-
-    protected static void ThenTimeoutIsInRange(Stopwatch watcher, int lowDurationMs, int highDurationMs)
-    {
-        var expectedLowDuration = TimeSpan.FromMilliseconds(lowDurationMs);
-        var expectedHighDuration = TimeSpan.FromMilliseconds(highDurationMs);
-        watcher.Elapsed.ShouldBeGreaterThan(expectedLowDuration);
-        watcher.Elapsed.ShouldBeLessThan(expectedHighDuration);
     }
 }

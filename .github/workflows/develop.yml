@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     strategy:
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         os: [ubuntu, macos, windows]
         framework: [net10]
@@ -96,8 +96,6 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ThreeMammals/Ocelot
-          fail_ci_if_error: true
           files: ${{ steps.coverage.outputs.COVERAGE_file }}
           flags: unit
         continue-on-error: true

@@ -14,15 +14,15 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
-using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.Steps;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
-public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
+public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
 {
     private readonly string _kubernetesUrl;
     private string _receivedToken;
@@ -355,8 +355,8 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
         _k8sServiceGeneration.ShouldBe(k8sGenerationNo);
 #if NET10_0_OR_GREATER
         if (discoveryType == nameof(PollKube))
-            _responses.Count(x => x.Value.StatusCode == HttpStatusCode.OK)
-                .ShouldBeGreaterThan(_responses.Count(x => x.Value.StatusCode != HttpStatusCode.OK));
+            Responses.Count(x => x.Value.StatusCode == HttpStatusCode.OK)
+                .ShouldBeGreaterThan(Responses.Count(x => x.Value.StatusCode != HttpStatusCode.OK));
         else
             ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
 #else
@@ -365,7 +365,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
 
 #if NET10_0_OR_GREATER
         if (discoveryType == nameof(PollKube))
-            _counters.Sum().ShouldBeLessThanOrEqualTo(totalRequests, CalledTimesMessage());
+            Counters.Sum().ShouldBeLessThanOrEqualTo(totalRequests, CalledTimesMessage());
         else
             ThenAllServicesShouldHaveBeenCalledTimes(totalRequests);
 #else

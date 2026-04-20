@@ -7,6 +7,7 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.Steps;
 using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.LoadBalancer;
@@ -46,7 +47,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
 #endif
                 ))
             // .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion, this is ideal case when load is not high
-            .And(x => _counters.ShouldAllBe(c =>
+            .And(x => Counters.ShouldAllBe(c =>
 #if NET10_0_OR_GREATER
                 c <= 53 && c >= 46,
 #else

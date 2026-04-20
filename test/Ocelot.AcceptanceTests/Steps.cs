@@ -10,9 +10,6 @@ public class Steps : AcceptanceSteps
     {
         BddfyConfig.Configure();
     }
-    public static bool IsCiCd() => IsRunningInGitHubActions();
-    public static bool IsRunningInGitHubActions()
-        => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler

@@ -2,7 +2,6 @@
   <Project Path="src/Ocelot/Ocelot.csproj" />
   <Project Path="src/Ocelot.Provider.Consul/Ocelot.Provider.Consul.csproj" />
   <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
-  <Project Path="src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj" />
   <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
   <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />
   <Project Path="test/Ocelot.ManualTest/Ocelot.ManualTest.csproj" />

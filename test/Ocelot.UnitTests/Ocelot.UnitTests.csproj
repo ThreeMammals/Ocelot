@@ -26,7 +26,6 @@
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Polly\Ocelot.Provider.Polly.csproj" />
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -49,8 +48,6 @@
     </PackageReference>
     <PackageReference Include="Consul" Version="1.7.14.10" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" /><!--See MockWebSocket-->
-    <PackageReference Include="Polly" Version="8.6.6" />
-    <PackageReference Include="Polly.Testing" Version="8.6.6" />
     <!-- Microsoft -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />

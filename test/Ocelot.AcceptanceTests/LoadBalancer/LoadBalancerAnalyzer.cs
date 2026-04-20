@@ -3,6 +3,7 @@ using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
+using Ocelot.Testing.LoadBalancer;
 using Ocelot.Values;
 using System.Collections.Concurrent;
 

@@ -37,27 +37,27 @@ public class QoSOptions
     }
 
     /// <summary>Gets the duration, in milliseconds, that the circuit remains open before resetting.</summary>
-    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <remarks>Note: Read the appropriate documentation in the <see href="https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly">Ocelot.QualityOfService.Polly</see> project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? BreakDuration { get; init; }
 
     /// <summary>Gets the minimum number of failures required before the circuit is set to open.</summary>
-    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <remarks>Note: Read the appropriate documentation in the <see href="https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly">Ocelot.QualityOfService.Polly</see> project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (exceptions number).</value>
     public int? MinimumThroughput { get; init; }
 
     /// <summary>Gets or sets the failure-to-success ratio at which the circuit will break.</summary>
-    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
+    /// <remarks>Note: Read the appropriate documentation in the <see href="https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly">Ocelot.QualityOfService.Polly</see> project, which is the sole consumer of this property. See the CircuitBreakerStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="double"/>) value.</value>
     public double? FailureRatio { get; init; }
 
     /// <summary>Gets or sets the milliseconds duration of the sampling over which <see cref="FailureRatio"/> is assessed.</summary>
-    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
+    /// <remarks>Note: Read the appropriate documentation in the <see href="https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly">Ocelot.QualityOfService.Polly</see> project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? SamplingDuration { get; init; }
 
     /// <summary>Gets the timeout in milliseconds.</summary>
-    /// <remarks>Note: Read the appropriate documentation in the Ocelot.Provider.Polly project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
+    /// <remarks>Note: Read the appropriate documentation in the <see href="https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly">Ocelot.QualityOfService.Polly</see> project, which is the sole consumer of this property. See the TimeoutStrategy class.</remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value (milliseconds).</value>
     public int? Timeout { get; init; }
 

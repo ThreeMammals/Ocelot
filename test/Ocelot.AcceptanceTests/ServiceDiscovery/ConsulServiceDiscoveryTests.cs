@@ -15,6 +15,8 @@ using Ocelot.Logging;
 using Ocelot.Provider.Consul;
 using Ocelot.Provider.Consul.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.LoadBalancer;
+using Ocelot.Testing.Steps;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -24,7 +26,7 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 /// <summary>
 /// Tests for the <see cref="Provider.Consul.Consul"/> provider.
 /// </summary>
-public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisposable
+public sealed partial class ConsulServiceDiscoveryTests : DiscoverySteps, IDisposable
 {
     private readonly ServiceHandler _consulHandler;
     private readonly List<ServiceEntry> _consulServices;
@@ -440,14 +442,14 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(0, count);
             ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[0]}", $"i is {i}");
-            _responses[2 * i] = response;
+            Responses[2 * i] = response;
 
             // Step 2
             await WhenIGetUrlOnTheApiGateway("/customers/api/customers");
             ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
             ThenServiceShouldHaveBeenCalledTimes(1, count);
             ThenTheResponseBodyShouldBe($"{count}^:^{Bug2119ServiceNames[1]}", $"i is {i}");
-            _responses[(2 * i) + 1] = response;
+            Responses[(2 * i) + 1] = response;
         };
         this.Given(x => GivenMultipleServiceInstancesAreRunning(urls, Bug2119ServiceNames)) // service names as responses
             .And(x => x.GivenThereIsAFakeConsulServiceDiscoveryProvider(DownstreamUrl(consulPort)))
@@ -505,7 +507,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
     public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes()
     {
         var ports = PortFinder.GetPorts(5);
-        var serviceName = ServiceName();
+        var serviceName = TestName(); // ServiceName();
         var serviceEntries = ports.Select(port => GivenServiceEntry(port, serviceName: serviceName)).ToArray();
         var consulPort = PortFinder.GetRandomPort();
         var configuration = GivenServiceDiscovery(consulPort);
@@ -538,7 +540,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void ThenResponsesShouldHaveBodyFromDifferentServices(int[] ports, string[] serviceNames)
     {
-        foreach (var response in _responses)
+        foreach (var response in Responses)
         {
             var headers = response.Value.Headers;
             headers.TryGetValues(HeaderNames.ServiceIndex, out var indexValues).ShouldBeTrue();
@@ -641,7 +643,7 @@ public sealed partial class ConsulServiceDiscoveryTests : ConcurrentSteps, IDisp
 
     private void GivenIResetCounters()
     {
-        _counters[0] = _counters[1] = 0;
+        Counters[0] = Counters[1] = 0;
         _counterConsul = 0;
     }
 

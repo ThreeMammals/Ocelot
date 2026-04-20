@@ -2,7 +2,7 @@
 using Ocelot.Values;
 using System.Collections.Concurrent;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Testing.LoadBalancer;
 
 public interface ILoadBalancerAnalyzer
 {

@@ -1,36 +1,38 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.AcceptanceTests.LoadBalancer;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer;
+using Ocelot.Testing.LoadBalancer;
+using Shouldly;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Testing.Steps;
 
-public class ConcurrentSteps : Steps
+public class ConcurrentSteps : AcceptanceSteps
 {
-    protected Task[] _tasks;
-    protected ConcurrentDictionary<int, HttpResponseMessage> _responses;
-    protected volatile int[] _counters;
+    protected Task[] Tasks;
+    protected ConcurrentDictionary<int, HttpResponseMessage?> Responses;
+    protected volatile int[] Counters;
 
     public ConcurrentSteps()
     {
-        _tasks = Array.Empty<Task>();
-        _responses = new();
-        _counters = Array.Empty<int>();
+        Tasks = [];
+        Responses = [];
+        Counters = [];
     }
 
     public override void Dispose()
     {
-        foreach (var response in _responses.Values)
+        foreach (var response in Responses.Values)
         {
             response?.Dispose();
         }
 
-        foreach (var task in _tasks)
+        foreach (var task in Tasks)
         {
             task?.Dispose();
         }
@@ -44,9 +46,9 @@ public class ConcurrentSteps : Steps
 
     protected void GivenServiceInstanceIsRunning(string url, string response, HttpStatusCode statusCode)
     {
-        _counters = new int[1]; // single counter
+        Counters = new int[1]; // single counter
         GivenServiceIsRunning(url, response, 0, statusCode);
-        _counters[0] = 0;
+        Counters[0] = 0;
     }
 
     protected void GivenThereIsAServiceRunningOn(string url, string basePath, string responseBody)
@@ -54,7 +56,7 @@ public class ConcurrentSteps : Steps
         handler.GivenThereIsAServiceRunningOn(url, basePath, MapGet(basePath, responseBody));
     }
 
-    protected void GivenMultipleServiceInstancesAreRunning(string[] urls, [CallerMemberName] string serviceName = null)
+    protected void GivenMultipleServiceInstancesAreRunning(string[] urls, [CallerMemberName] string? serviceName = null)
     {
         serviceName ??= new Uri(urls[0]).Host;
         string[] responses = urls.Select(u => $"{serviceName}|url({u})").ToArray();
@@ -67,11 +69,11 @@ public class ConcurrentSteps : Steps
     protected void GivenMultipleServiceInstancesAreRunning(string[] urls, string[] responses, HttpStatusCode statusCode)
     {
         Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
-        _counters = new int[urls.Length]; // multiple counters
+        Counters = new int[urls.Length]; // multiple counters
         for (int i = 0; i < urls.Length; i++)
         {
             GivenServiceIsRunning(urls[i], responses[i], i, statusCode);
-            _counters[i] = 0;
+            Counters[i] = 0;
         }
     }
     protected void GivenMultipleServiceInstancesAreRunning(string[] urls, string[] responses, HttpStatusCode[] codes)
@@ -79,11 +81,11 @@ public class ConcurrentSteps : Steps
         Debug.Assert(urls.Length == responses.Length, "Length mismatch!");
         Debug.Assert(urls.Length == codes.Length, "Length mismatch!");
         Debug.Assert(responses.Length == codes.Length, "Length mismatch!");
-        _counters = new int[urls.Length]; // multiple counters
+        Counters = new int[urls.Length]; // multiple counters
         for (int i = 0; i < urls.Length; i++)
         {
             GivenServiceIsRunning(urls[i], responses[i], i, codes[i]);
-            _counters[i] = 0;
+            Counters[i] = 0;
         }
     }
 
@@ -122,7 +124,7 @@ public class ConcurrentSteps : Steps
     protected RequestDelegate MapGet(int index, string body, HttpStatusCode successCode) => async context =>
     {
         // Don't delay during the first service call
-        if (Volatile.Read(ref _counters[index]) > 0)
+        if (Volatile.Read(ref Counters[index]) > 0)
         {
             await Task.Delay(Random.Shared.Next(5, 15)); // emulate integration delay up to 15 milliseconds
         }
@@ -132,7 +134,7 @@ public class ConcurrentSteps : Steps
         var response = context.Response;
         try
         {
-            int count = Interlocked.Increment(ref _counters[index]);
+            int count = Interlocked.Increment(ref Counters[index]);
             responseBody = string.Concat(count, CounterSeparator, body);
 
             response.StatusCode = (int)successCode;
@@ -159,40 +161,40 @@ public class ConcurrentSteps : Steps
 
     protected Task[] RunParallelRequests(int times, Func<int, string> urlFunc)
     {
-        _tasks = new Task[times];
-        _responses = new(times, times);
+        Tasks = new Task[times];
+        Responses = new(times, times);
         for (var i = 0; i < times; i++)
         {
             var url = urlFunc(i);
-            _tasks[i] = GetParallelResponse(url, i);
-            _responses[i] = null;
+            Tasks[i] = GetParallelResponse(url, i);
+            Responses[i] = null;
         }
 
-        Task.WaitAll(_tasks);
-        return _tasks;
+        Task.WaitAll(Tasks);
+        return Tasks;
     }
 
     protected const string CounterSeparator = "^:^";
     private async Task GetParallelResponse(string url, int threadIndex)
     {
-        var response = await ocelotClient.GetAsync(url);
+        var response = await ocelotClient!.GetAsync(url);
         var content = await response.Content.ReadAsStringAsync();
         var counterString = content.Contains(CounterSeparator)
             ? content.Split(CounterSeparator)[0] // let the first fragment is counter value
             : "0";
         int count = int.Parse(counterString);
         if (content.IsNotEmpty()) count.ShouldBeGreaterThan(0);
-        _responses[threadIndex] = response;
+        Responses[threadIndex] = response;
     }
 
     public void ThenAllStatusCodesShouldBe(HttpStatusCode expected)
-        => _responses.ShouldAllBe(response => response.Value.StatusCode == expected);
+        => Responses.ShouldAllBe(response => response.Value!.StatusCode == expected);
 
     public void ThenAllResponseBodiesShouldBe(string expectedBody)
     {
-        foreach (var r in _responses)
+        foreach (var r in Responses)
         {
-            var content = r.Value.Content.ReadAsStringAsync().Result;
+            var content = r.Value?.Content.ReadAsStringAsync().Result;
             content = content?.Contains(CounterSeparator) == true
                 ? content.Split(CounterSeparator)[1] // remove counter for body comparison
                 : "0";
@@ -202,10 +204,10 @@ public class ConcurrentSteps : Steps
     }
     public void ThenAllResponseBodiesShouldBe(int[] ports, string[] expected)
     {
-        foreach (var r in _responses)
+        foreach (var r in Responses)
         {
-            var response = r.Value;
-            var portHeader = response.Headers.GetValues("Port").Csv();
+            var response = r.Value.ShouldNotBeNull();
+            var portHeader = response.Headers.GetValues("Port").Csv() ?? string.Empty;
             int port = int.Parse(portHeader);
             int i = Array.IndexOf(ports, port);
             var expectedBody = expected[i];
@@ -218,19 +220,19 @@ public class ConcurrentSteps : Steps
     }
 
     protected string CalledTimesMessage()
-        => $"All values are [{_counters.Csv()}]";
+        => $"All values are [{Counters.Csv()}]";
 
     public void ThenAllServicesShouldHaveBeenCalledTimes(int expected)
-        => _counters.Sum().ShouldBe(expected, CalledTimesMessage());
+        => Counters.Sum().ShouldBe(expected, CalledTimesMessage());
 
     public void ThenServiceShouldHaveBeenCalledTimes(int index, int expected)
-        => _counters[index].ShouldBe(expected, CalledTimesMessage());
+        => Counters[index].ShouldBe(expected, CalledTimesMessage());
 
     public void ThenServicesShouldHaveBeenCalledTimes(params int[] expected)
     {
         for (int i = 0; i < expected.Length; i++)
         {
-            _counters[i].ShouldBe(expected[i], CalledTimesMessage());
+            Counters[i].ShouldBe(expected[i], CalledTimesMessage());
         }
     }
 
@@ -247,14 +249,14 @@ public class ConcurrentSteps : Steps
         var customMessage = new StringBuilder()
             .AppendLine($"{nameof(bottom)}: {bottom}")
             .AppendLine($"    {nameof(top)}: {top}")
-            .AppendLine($"    All values are [{_counters.Csv()}]")
+            .AppendLine($"    All values are [{Counters.Csv()}]")
             .ToString();
-        int sum = 0, totalSum = _counters.Sum();
+        int sum = 0, totalSum = Counters.Sum();
 
         // Last offline services cannot be called at all, thus don't assert zero counters
-        for (int i = 0; i < _counters.Length && sum < totalSum; i++)
+        for (int i = 0; i < Counters.Length && sum < totalSum; i++)
         {
-            int actual = _counters[i];
+            int actual = Counters[i];
             actual.ShouldBeInRange(bottom, top, customMessage);
             sum += actual;
         }
@@ -265,7 +267,7 @@ public class ConcurrentSteps : Steps
         if (analyzer == null) return;
         int bottom = analyzer.BottomOfConnections(),
             top = analyzer.TopOfConnections();
-        bottom = Math.Min(bottom, _counters.Min());
+        bottom = Math.Min(bottom, Counters.Min());
         ThenAllServicesCalledRealisticAmountOfTimes(bottom, top); // with unstable checkings
     }
 
@@ -277,7 +279,7 @@ public class ConcurrentSteps : Steps
         analyzer.ShouldNotBeNull().Analyze();
         analyzer.Events.Count.ShouldBe(totalRequests, $"{nameof(ILoadBalancerAnalyzer.ServiceName)}: {analyzer.ServiceName}");
 
-        var leasingCounters = analyzer?.GetHostCounters() ?? new();
+        var leasingCounters = analyzer.GetHostCounters() ?? [];
         var sortedLeasingCountersByPort = ports.Select(port => leasingCounters.FirstOrDefault(kv => kv.Key.DownstreamPort == port).Value).ToArray();
         for (int i = 0; i < ports.Length; i++)
         {
@@ -290,10 +292,10 @@ public class ConcurrentSteps : Steps
                     .AppendLine($"{nameof(ILoadBalancerAnalyzer.ServiceName)}: {analyzer.ServiceName}")
                     .AppendLine($"    Port: {ports[i]}")
                     .AppendLine($"    Host: {host}")
-                    .AppendLine($"    Service counters: [{_counters.Csv()}]")
+                    .AppendLine($"    Service counters: [{Counters.Csv()}]")
                     .AppendLine($"    Leasing counters: [{sortedLeasingCountersByPort.Csv()}]") // should have order of _counters
                     .ToString();
-                int counter1 = _counters[i];
+                int counter1 = Counters[i];
                 int counter2 = leasingCounters[host];
                 counter1.ShouldBe(counter2, customMessage);
             }
@@ -302,7 +304,7 @@ public class ConcurrentSteps : Steps
 
     protected IEnumerable<string> ThenAllResponsesHeaderExists(string key)
     {
-        foreach (var kv in _responses)
+        foreach (var kv in Responses)
         {
             var response = kv.Value.ShouldNotBeNull();
             response.Headers.Contains(key).ShouldBeTrue();
@@ -310,7 +312,4 @@ public class ConcurrentSteps : Steps
             yield return string.Join(';', header);
         }
     }
-
-    protected virtual string ServiceName([CallerMemberName] string serviceName = null) => serviceName ?? GetType().Name;
-    protected virtual string ServiceNamespace() => GetType().Namespace;
 }

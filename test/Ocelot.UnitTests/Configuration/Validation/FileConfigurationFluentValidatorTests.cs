@@ -198,8 +198,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var route = GivenDefaultRoute("/laura", "/", key: "Laura");
         route.QoSOptions = new FileQoSOptions
         {
-            TimeoutValue = 1,
-            ExceptionsAllowedBeforeBreaking = 1,
+            Timeout = 1,
+            MinimumThroughput = 1,
         };
         GivenAConfiguration(route);
 
@@ -209,7 +209,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Assert
         ThenTheResultIsNotValid();
         ThenTheErrorIs<FileValidationFailedError>();
-        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?");
     }
 
     [Fact]
@@ -220,8 +220,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         var configuration = GivenAConfiguration(route);
         configuration.GlobalConfiguration.QoSOptions = new()
         {
-            TimeoutValue = 1,
-            ExceptionsAllowedBeforeBreaking = 1,
+            Timeout = 1,
+            MinimumThroughput = 1,
         };
         GivenAConfiguration(configuration);
 
@@ -231,7 +231,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Assert
         ThenTheResultIsNotValid();
         ThenTheErrorIs<FileValidationFailedError>();
-        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?");
+        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?");
     }
 
     [Fact]

@@ -14,7 +14,8 @@
 Quality of Service
 ==================
 
-  Repository Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
+  | Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
+  | Repository: `Ocelot.QualityOfService.Polly <https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly>`__
 
 Ocelot currently supports a single *Quality of Service* (QoS) capability.
 It allows you to configure, on a per-route basis, the application of a circuit breaker when making requests to downstream services.
@@ -27,12 +28,14 @@ For more details, visit the `Polly`_ library's official `repository <https://git
 
 Installation
 ------------
+.. _Ocelot.Provider.Polly: https://www.nuget.org/packages/Ocelot.Provider.Polly
+.. _Ocelot.QualityOfService.Polly: https://www.nuget.org/packages/Ocelot.QualityOfService.Polly
 
-To utilize the *Quality of Service* via `Polly`_ library, begin by importing the appropriate `Ocelot.Provider.Polly <https://www.nuget.org/packages/Ocelot.Provider.Polly>`_ extension package:
+To utilize the *Quality of Service* via `Polly`_ library, begin by importing the appropriate `Ocelot.QualityOfService.Polly`_ extension package:
 
 .. code-block:: powershell
 
-    Install-Package Ocelot.Provider.Polly
+    Install-Package Ocelot.QualityOfService.Polly
 
 Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPolly()`` extension on the ``OcelotBuilder``, as shown below [#f1]_:
 
@@ -44,6 +47,12 @@ Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPol
   builder.Services
       .AddOcelot(builder.Configuration)
       .AddPolly();
+
+.. note::
+
+  Prior to version `25.0`_, the package was named `Ocelot.Provider.Polly`_.
+  If you are using version `24.1`_ or earlier, install the `Ocelot.Provider.Polly`_ package.
+  For version `25.0`_ and later, the package ID is `Ocelot.QualityOfService.Polly`_.
 
 .. _qos-schema:
 
@@ -287,9 +296,9 @@ For example, a route timeout may be shorter, while the global timeout can be lon
 
 Notes
 -----
-.. _DefTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22const+int+DefTimeout%22&type=code
+.. _DefTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot.QualityOfService.Polly+%22const+int+DefTimeout%22&type=code
 .. _DefaultTimeoutSeconds: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22static+int+DefaultTimeoutSeconds%22&type=code
-.. _DefaultTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+DefaultTimeout+path%3A%2F%5Esrc%5C%2FOcelot.Provider.Polly%5C%2F%2F&type=code
+.. _DefaultTimeout: https://github.com/search?q=repo%3AThreeMammals%2FOcelot.QualityOfService.Polly+%22static+int+DefaultTimeout%22&type=code
 
 
 .. _qos-notes-absolute-timeout:
@@ -347,7 +356,7 @@ Global and default QoS timeouts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a route-level *QoS* timeout is undefined, the global ``Timeout`` takes precedence over the default timeout (30 seconds, see the `Timeout`_ docs).
-This means the global *QoS* timeout can override Polly's default of `30 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22const+int+DefTimeout%22+path%3A%2F%5Esrc%5C%2FOcelot%5C.Provider%5C.Polly%5C%2F%2F&type=code>`_ via the :ref:`config-global-configuration-schema`.
+This means the global *QoS* timeout can override Polly's default of `30 seconds <https://github.com/search?q=repo%3AThreeMammals%2FOcelot.QualityOfService.Polly+%22const+int+DefTimeout%22&type=code>`_ via the :ref:`config-global-configuration-schema`.
 
 .. _qos-extensibility:
 
