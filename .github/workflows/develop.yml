@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     strategy:
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         os: [ubuntu, macos, windows]
         framework: [net10]

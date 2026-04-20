@@ -84,7 +84,7 @@ public class CannotStartOcelotTests : Steps
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?{NL}");
+        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?{NL}");
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class CannotStartOcelotTests : Steps
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Polly and services.AddPolly()?{NL}");
+        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?{NL}");
     }
 
     [Fact]
