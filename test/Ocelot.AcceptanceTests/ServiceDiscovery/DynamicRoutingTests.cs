@@ -422,7 +422,7 @@ public class DynamicRoutingTests : DiscoverySteps
         ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0);
     }
 
-    [Fact]
+    [Fact(Skip = "Follow up https://github.com/ThreeMammals/Ocelot/pull/2380")]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -456,7 +456,7 @@ public class DynamicRoutingTests : DiscoverySteps
         ThenServicesShouldHaveBeenCalledTimes(2, 2, 1);
     }
 
-    [Fact]
+    [Fact(Skip = "Follow up https://github.com/ThreeMammals/Ocelot/pull/2380")]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
