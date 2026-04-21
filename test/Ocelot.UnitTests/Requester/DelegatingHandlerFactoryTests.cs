@@ -16,7 +16,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     private DelegatingHandlerFactory _factory;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private readonly Mock<IQoSFactory> _qosFactory;
+    private readonly Mock<IQualityOfServiceFactory> _qosFactory;
     private readonly Mock<ITracingHandlerFactory> _tracingFactory;
     private readonly Mock<IOptionsMonitor<FileConfiguration>> _optionsMonitor;
     private IServiceProvider _serviceProvider;
@@ -27,7 +27,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     {
         _qosDelegate = (a, b, c) => new FakeQoSHandler();
         _tracingFactory = new Mock<ITracingHandlerFactory>();
-        _qosFactory = new Mock<IQoSFactory>();
+        _qosFactory = new Mock<IQualityOfServiceFactory>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<DelegatingHandlerFactory>()).Returns(_logger.Object);

@@ -6,7 +6,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.QualityOfService;
 
-public class QoSFactory : IQoSFactory
+public class QoSFactory : IQualityOfServiceFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IOcelotLoggerFactory _ocelotLoggerFactory;

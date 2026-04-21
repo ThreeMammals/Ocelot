@@ -3,7 +3,7 @@ using Ocelot.Responses;
 
 namespace Ocelot.QualityOfService;
 
-public interface IQoSFactory
+public interface IQualityOfServiceFactory
 {
     Response<DelegatingHandler> Get(DownstreamRoute request);
 }

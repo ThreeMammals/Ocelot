@@ -8,13 +8,13 @@ namespace Ocelot.Requester;
 public class DelegatingHandlerFactory : IDelegatingHandlerFactory
 {
     private readonly ITracingHandlerFactory _tracingFactory;
-    private readonly IQoSFactory _qoSFactory;
+    private readonly IQualityOfServiceFactory _qoSFactory;
     private readonly IServiceProvider _serviceProvider;
     private readonly IOcelotLogger _logger;
 
     public DelegatingHandlerFactory(
         ITracingHandlerFactory tracingFactory,
-        IQoSFactory qoSFactory,
+        IQualityOfServiceFactory qoSFactory,
         IServiceProvider serviceProvider,
         IOcelotLoggerFactory loggerFactory)
     {
