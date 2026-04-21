@@ -120,7 +120,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
-        Services.TryAddSingleton<IQualityOfServiceFactory, QoSFactory>();
+        Services.TryAddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
         Services.TryAddSingleton<QosDelegatingHandlerDelegate>(provider =>
             (route, contextAccessor, loggerFactory) => new CircuitBreakerDelegatingHandler(route, loggerFactory));
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();

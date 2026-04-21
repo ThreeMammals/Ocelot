@@ -6,13 +6,13 @@ using Ocelot.Responses;
 
 namespace Ocelot.QualityOfService;
 
-public class QoSFactory : IQualityOfServiceFactory
+public class QualityOfServiceFactory : IQualityOfServiceFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IOcelotLoggerFactory _ocelotLoggerFactory;
     private readonly IHttpContextAccessor _contextAccessor;
 
-    public QoSFactory(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory ocelotLoggerFactory)
+    public QualityOfServiceFactory(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory ocelotLoggerFactory)
     {
         _serviceProvider = serviceProvider;
         _ocelotLoggerFactory = ocelotLoggerFactory;

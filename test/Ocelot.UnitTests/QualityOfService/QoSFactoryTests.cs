@@ -9,7 +9,7 @@ namespace Ocelot.UnitTests.QualityOfService;
 
 public class QoSFactoryTests
 {
-    private QoSFactory _factory;
+    private QualityOfServiceFactory _factory;
     private ServiceCollection _services;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IHttpContextAccessor> _contextAccessor;
@@ -20,7 +20,7 @@ public class QoSFactoryTests
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _contextAccessor = new Mock<IHttpContextAccessor>();
         var provider = _services.BuildServiceProvider(true);
-        _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+        _factory = new QualityOfServiceFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class QoSFactoryTests
         static DelegatingHandler QosDelegatingHandlerDelegate(DownstreamRoute a, IHttpContextAccessor b, IOcelotLoggerFactory c) => new FakeDelegatingHandler();
         _services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandlerDelegate);
         var provider = _services.BuildServiceProvider(true);
-        _factory = new QoSFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+        _factory = new QualityOfServiceFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
         var downstreamRoute = new DownstreamRouteBuilder().Build();
 
         // Act
