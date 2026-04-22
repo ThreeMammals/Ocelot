@@ -33,23 +33,25 @@ public class QualityOfServiceFactory : IQualityOfServiceFactory, IDisposable
         {
             // This duplicates FileQoSOptionsFluentValidator but added for consistency
             var err = new UnableToFindQoSProviderError($"Could not find {nameof(QosDelegatingHandlerDelegate)}! Either a {nameof(Route)} or {nameof(FileConfiguration.GlobalConfiguration)} are using {nameof(FileRoute.QoSOptions)} but no {nameof(QosDelegatingHandlerDelegate)} has been registered in dependency injection container.");
-            _contextAccessor.HttpContext.Items.SetError(err);
+            _contextAccessor.HttpContext?.Items.SetError(err);
             _logger.LogCritical(err.ToString, null);
             return new NoQosDelegatingHandler();
         }
 
-        _logger.LogInformation(() => $"Ocelot identified that an external Quality of Service lib aka {finder.GetType().Namespace} registered. Going to invoke {finder.GetType().Name} for route -> {route.Name()} ...");
+#if DEBUG
+        _logger.LogDebug(() => $"Ocelot identified that an external Quality of Service lib aka {finder.GetType().Namespace} registered. Going to invoke {finder.GetType().Name} for route -> {route.Name()} ...");
+#endif
         var handler = finder.Invoke(route, _contextAccessor, _loggerFactory);
         if (handler is null)
         {
             var error = new UnableToFindQoSProviderError($"Fatal error when creating delegating handler instance by {finder.GetType().Name} for route -> {route.Name()}");
-            _contextAccessor.HttpContext.Items.SetError(error); // TODO Better exception to be caught by MessageInvokerHttpRequester?
+            _contextAccessor.HttpContext?.Items.SetError(error); // TODO Better exception to be caught by MessageInvokerHttpRequester?
             _logger.LogCritical(error.ToString, null);
             return new NoQosDelegatingHandler();
         }
 
         if (handler is not QosDelegatingHandler)
-            return handler; // this is external lib like Polly
+            return handler; // this is an external QoS implementation
 
         // Built-in Quality of Service feature was enabled by AddOcelot().AddQualityOfService()
         if (opts.MinimumThroughput.HasValue || opts.BreakDuration.HasValue)

@@ -2,14 +2,10 @@ using Ocelot.Infrastructure.DesignPatterns;
 
 namespace Ocelot.UnitTests.Infrastructure.DesignPatterns;
 
+[Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+[Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
 public class CircuitBreakerTests : UnitTest
 {
-    private static void WaitForState(CircuitBreaker cb, CircuitState expectedState, int timeoutMs = 1000)
-    {
-        var reachedState = System.Threading.SpinWait.SpinUntil(() => cb.State == expectedState, timeoutMs);
-        Assert.True(reachedState, $"Expected circuit to transition to {expectedState} within {timeoutMs}ms, but was {cb.State}.");
-    }
-
     [Fact]
     public void Constructor_SetsMinimumThroughputAndBreakDuration()
     {
@@ -219,5 +215,11 @@ public class CircuitBreakerTests : UnitTest
         Assert.Equal(CircuitState.Closed, cb.State);
         Assert.Equal(0, cb.FailureCount);
         Assert.True(cb.CanExecute());
+    }
+
+    private static void WaitForState(CircuitBreaker cb, CircuitState expectedState, int timeoutMs = 1000)
+    {
+        var reachedState = SpinWait.SpinUntil(() => cb.State == expectedState, timeoutMs);
+        Assert.True(reachedState, $"Expected circuit to transition to {expectedState} within {timeoutMs}ms, but was {cb.State}.");
     }
 }

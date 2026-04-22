@@ -12,7 +12,7 @@ namespace Ocelot.QualityOfService;
 /// This handler is Ocelot's built-in quality-of-service handler. It wraps every outgoing request and:
 /// <list type="bullet">
 ///   <item>Returns <see cref="System.Net.HttpStatusCode.ServiceUnavailable"/> immediately when the circuit is <see cref="CircuitState.Open"/>.</item>
-///   <item>Counts server-error responses (5xx) and exceptions as failures.</item>
+///   <item>Counts responses whose status code is in <see cref="ServerErrorCodes"/> and exceptions as failures.</item>
 ///   <item>Opens the circuit after <see cref="QoSOptions.MinimumThroughput"/> consecutive failures.</item>
 ///   <item>Transitions the circuit to <see cref="CircuitState.HalfOpen"/> after <see cref="QoSOptions.BreakDuration"/> milliseconds.</item>
 ///   <item>Closes the circuit after a successful probe request in <see cref="CircuitState.HalfOpen"/>.</item>
@@ -21,10 +21,16 @@ namespace Ocelot.QualityOfService;
 /// </remarks>
 public class CircuitBreakerDelegatingHandler : DelegatingHandler
 {
+    public const int LowBreakDuration = 500;
+    public const int DefaultBreakDuration = 5_000;
+
+    public const int LowMinimumThroughput = 2;
+    public const int DefaultMinimumThroughput = 100;
+
     /// <summary>
     /// The set of HTTP status codes that are considered server errors and will be counted as circuit-breaker failures.
     /// </summary>
-    /// <remarks>Mirrors the default server-error codes used by Polly's <c>PollyQoSResiliencePipelineProvider</c>.</remarks>
+    /// <remarks>Used by Ocelot's built-in QoS handler to treat downstream 5xx responses as circuit-breaker failures.</remarks>
     public static readonly IReadOnlySet<HttpStatusCode> ServerErrorCodes = new HashSet<HttpStatusCode>
     {
         HttpStatusCode.InternalServerError,
@@ -50,8 +56,8 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     public CircuitBreakerDelegatingHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
     {
         _options = route.QosOptions;
-        var breakDuration = TimeSpan.FromMilliseconds(_options.BreakDuration ?? 0);
-        var minimumThroughput = _options.MinimumThroughput ?? 0;
+        var breakDuration = GetBreakDuration(_options.BreakDuration ?? DefaultBreakDuration);
+        var minimumThroughput = GetMinimumThroughput(_options.MinimumThroughput ?? DefaultMinimumThroughput);
         _circuitBreaker = new CircuitBreaker(minimumThroughput, breakDuration);
         _logger = loggerFactory.CreateLogger<CircuitBreakerDelegatingHandler>();
     }
@@ -83,7 +89,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     private async Task<HttpResponseMessage> SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromMilliseconds(_options.Timeout!.Value));
+        cts.CancelAfter(TimeSpan.FromMilliseconds(_options.Timeout.Value));
 
         try
         {
@@ -131,5 +137,19 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         }
 
         return response;
+    }
+
+    private static TimeSpan GetBreakDuration(int? milliseconds)
+    {
+        var ms = milliseconds.HasValue && milliseconds.Value >= LowBreakDuration
+            ? milliseconds.Value : DefaultBreakDuration;
+        return TimeSpan.FromMilliseconds(ms);
+    }
+
+    private static int GetMinimumThroughput(int? minimumThroughput)
+    {
+        var min = minimumThroughput.HasValue && minimumThroughput.Value >= LowMinimumThroughput
+            ? minimumThroughput.Value : DefaultMinimumThroughput;
+        return min;
     }
 }
