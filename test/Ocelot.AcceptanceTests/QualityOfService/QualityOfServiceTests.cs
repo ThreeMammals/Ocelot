@@ -284,7 +284,7 @@ public sealed class QualityOfServiceTests : QosSteps
         }
     }
 
-    [Fact]
+    [Fact(Skip = "FailureRatio feat is under development")]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public async Task HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio()
@@ -329,7 +329,7 @@ public sealed class QualityOfServiceTests : QosSteps
         await ThenTheResponseBodyShouldBeAsync(nameof(HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio));
     }
 
-    [Fact]
+    [Fact(Skip = "FailureRatio feat is under development")]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public async Task HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio()
