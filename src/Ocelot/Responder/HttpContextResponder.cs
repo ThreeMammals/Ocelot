@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
@@ -77,6 +77,13 @@ public class HttpContextResponder : IHttpResponder
 
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
+        var isSse = downstream.Content?.Headers?.ContentType?.MediaType?.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase) == true;
+        if (isSse)
+        {
+            var httpResponseBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            httpResponseBodyFeature?.DisableBuffering();
+        }
+
         await using var content = await downstream.Content.ReadAsStreamAsync();
         await content.CopyToAsync(context.Response.Body, context.RequestAborted);
     }
