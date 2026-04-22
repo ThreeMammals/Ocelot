@@ -8,20 +8,20 @@ namespace Ocelot.Requester;
 public class DelegatingHandlerFactory : IDelegatingHandlerFactory
 {
     private readonly ITracingHandlerFactory _tracingFactory;
-    private readonly IQualityOfServiceFactory _qoSFactory;
+    private readonly IQualityOfServiceFactory _qosFactory;
     private readonly IServiceProvider _serviceProvider;
     private readonly IOcelotLogger _logger;
 
     public DelegatingHandlerFactory(
         ITracingHandlerFactory tracingFactory,
-        IQualityOfServiceFactory qoSFactory,
+        IQualityOfServiceFactory qosFactory,
         IServiceProvider serviceProvider,
         IOcelotLoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<DelegatingHandlerFactory>();
         _serviceProvider = serviceProvider;
         _tracingFactory = tracingFactory;
-        _qoSFactory = qoSFactory;
+        _qosFactory = qosFactory;
     }
 
     public List<DelegatingHandler> Get(DownstreamRoute route)
@@ -52,21 +52,14 @@ public class DelegatingHandlerFactory : IDelegatingHandlerFactory
 
         if (route.HttpHandlerOptions.UseTracing)
         {
-            handlers.Add((DelegatingHandler)_tracingFactory.Get());
+            var tracing = (DelegatingHandler)_tracingFactory.Get();
+            handlers.Add(tracing);
         }
 
         if (route.QosOptions.UseQos)
         {
-            var handler = _qoSFactory.Get(route);
-            if (handler?.IsError == false)
-            {
-                handlers.Add(handler.Data);
-            }
-            else
-            {
-                _logger.LogWarning(() => $"Route '{route.Name()}' specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!");
-                handlers.Add(new NoQosDelegatingHandler());
-            }
+            var qos = _qosFactory.Get(route);
+            handlers.Add(qos);
         }
 
         return handlers;
