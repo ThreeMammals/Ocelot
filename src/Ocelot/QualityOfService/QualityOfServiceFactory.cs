@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
+using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -27,28 +28,37 @@ public class QualityOfServiceFactory : IQualityOfServiceFactory, IDisposable
         if (!opts.UseQos)
             return new NoQosDelegatingHandler();
 
-        var external = _serviceProvider.GetService<QosDelegatingHandlerDelegate>();
-        if (external != null)
+        var finder = _serviceProvider.GetService<QosDelegatingHandlerDelegate>();
+        if (finder is null)
         {
-            _logger.LogInformation(() => $"Ocelot identified that an external Quality of Service lib aka {external.GetType().Namespace} registered. Going to invoke {external.GetType().Name} for route -> {route.Name()} ...");
-            var handler = external.Invoke(route, _contextAccessor, _loggerFactory);
-            if (handler != null)
-                return handler;
+            // This duplicates FileQoSOptionsFluentValidator but added for consistency
+            var err = new UnableToFindQoSProviderError($"Could not find {nameof(QosDelegatingHandlerDelegate)}! Either a {nameof(Route)} or {nameof(FileConfiguration.GlobalConfiguration)} are using {nameof(FileRoute.QoSOptions)} but no {nameof(QosDelegatingHandlerDelegate)} has been registered in dependency injection container.");
+            _contextAccessor.HttpContext.Items.SetError(err);
+            _logger.LogCritical(err.ToString, null);
+            return new NoQosDelegatingHandler();
+        }
 
-            var error = new UnableToFindQoSProviderError($"Fatal error when creating delegating handler instance by {external.GetType().Name} for route -> {route.Name()}");
+        _logger.LogInformation(() => $"Ocelot identified that an external Quality of Service lib aka {finder.GetType().Namespace} registered. Going to invoke {finder.GetType().Name} for route -> {route.Name()} ...");
+        var handler = finder.Invoke(route, _contextAccessor, _loggerFactory);
+        if (handler is null)
+        {
+            var error = new UnableToFindQoSProviderError($"Fatal error when creating delegating handler instance by {finder.GetType().Name} for route -> {route.Name()}");
             _contextAccessor.HttpContext.Items.SetError(error); // TODO Better exception to be caught by MessageInvokerHttpRequester?
             _logger.LogCritical(error.ToString, null);
             return new NoQosDelegatingHandler();
         }
 
-        // Built-in Quality of Service feature
+        if (handler is not QosDelegatingHandler)
+            return handler; // this is external lib like Polly
+
+        // Built-in Quality of Service feature was enabled by AddOcelot().AddQualityOfService()
         if (opts.MinimumThroughput.HasValue || opts.BreakDuration.HasValue)
             return new CircuitBreakerDelegatingHandler(route, _loggerFactory);
 
         // TODO Timeout strategy, but it requires refactoring of MessageInvokerPool and TimeoutDelegatingHandler
         //if (opts.Timeout.HasValue)
         //    return new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(opts.Timeout.Value));
-        return new NoQosDelegatingHandler();
+        return handler; // empty
     }
 
     public void Dispose()

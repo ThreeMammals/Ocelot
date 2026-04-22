@@ -120,9 +120,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
-        Services.TryAddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
-        //Services.TryAddSingleton<QosDelegatingHandlerDelegate>(provider =>
-        //    (route, contextAccessor, loggerFactory) => new CircuitBreakerDelegatingHandler(route, loggerFactory));
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
         Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
         Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();
@@ -138,6 +135,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotLogging();
         Services.AddOcelotMessageInvokerPool();
         Services.AddOcelotMetadata();
+        Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
 
         // Add ASP.NET services
@@ -336,5 +334,11 @@ public class OcelotBuilder : IOcelotBuilder
         }
 
         return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
+    }
+
+    public IOcelotBuilder AddQualityOfService()
+    {
+        Services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandler.Create);
+        return this;
     }
 }

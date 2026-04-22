@@ -57,4 +57,6 @@ public interface IOcelotBuilder
         where T : ILoadBalancer;
 
     IOcelotBuilder AddConfigPlaceholders();
+
+    IOcelotBuilder AddQualityOfService();
 }

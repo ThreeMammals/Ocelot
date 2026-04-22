@@ -529,12 +529,9 @@ public class DynamicRoutingTests : DiscoverySteps
             Key = key,
         };
 
-    private static void WithDiscoveryAndQualityOfService(IServiceCollection services)
-    {
-        services
+    private static void WithDiscoveryAndQualityOfService(IServiceCollection services) => services
             .AddSingleton(DynamicRoutingDiscoveryFinder)
-            .AddOcelot(); // Built-in CircuitBreakerDelegatingHandler is registered by AddOcelot()
-    }
+            .AddOcelot().AddQualityOfService(); // Built-in feat, not Polly
 
     private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
     {

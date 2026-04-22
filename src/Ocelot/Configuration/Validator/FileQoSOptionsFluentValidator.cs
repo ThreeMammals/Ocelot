@@ -7,11 +7,11 @@ namespace Ocelot.Configuration.Validator;
 
 public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
 {
-    private readonly QosDelegatingHandlerDelegate _qosDelegatingHandlerDelegate;
+    private readonly IServiceProvider _provider;
 
     public FileQoSOptionsFluentValidator(IServiceProvider provider)
     {
-        _qosDelegatingHandlerDelegate = provider.GetService<QosDelegatingHandlerDelegate>();
+        _provider = provider;
         When(UseQos, CheckRules);
     }
 
@@ -25,6 +25,7 @@ public class FileQoSOptionsFluentValidator : AbstractValidator<FileQoSOptions>
 
     private bool HaveQosHandlerRegistered(FileQoSOptions arg)
     {
-        return _qosDelegatingHandlerDelegate != null;
+        var _qosDelegate = _provider.GetService<QosDelegatingHandlerDelegate>();
+        return _qosDelegate != null;
     }
 }
