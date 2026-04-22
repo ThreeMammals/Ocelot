@@ -1,0 +1,374 @@
+using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.DesignPatterns;
+using Ocelot.Logging;
+using Ocelot.QualityOfService;
+
+namespace Ocelot.UnitTests.QualityOfService;
+
+public class CircuitBreakerDelegatingHandlerTests : UnitTest
+{
+    private readonly Mock<IOcelotLogger> _logger;
+    private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
+
+    public CircuitBreakerDelegatingHandlerTests()
+    {
+        _logger = new Mock<IOcelotLogger>();
+        _loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _loggerFactory.Setup(x => x.CreateLogger<CircuitBreakerDelegatingHandler>())
+            .Returns(_logger.Object);
+    }
+
+    private CircuitBreakerDelegatingHandler CreateHandler(QoSOptions opts, HttpMessageHandler innerHandler)
+    {
+        var route = new DownstreamRouteBuilder().WithQosOptions(opts).Build();
+        var handler = new CircuitBreakerDelegatingHandler(route, _loggerFactory.Object)
+        {
+            InnerHandler = innerHandler,
+        };
+        return handler;
+    }
+
+    private static Task<HttpResponseMessage> SendAsync(DelegatingHandler handler, HttpRequestMessage request, CancellationToken ct = default)
+    {
+        using var invoker = new HttpMessageInvoker(handler, disposeHandler: false);
+        return invoker.SendAsync(request, ct);
+    }
+
+    // --------------------------------------------------------
+    //  Constants
+    // --------------------------------------------------------
+
+    [Fact]
+    public void LowBreakDuration_Is500()
+        => Assert.Equal(500, CircuitBreakerDelegatingHandler.LowBreakDuration);
+
+    [Fact]
+    public void DefaultBreakDuration_Is5000()
+        => Assert.Equal(5_000, CircuitBreakerDelegatingHandler.DefaultBreakDuration);
+
+    [Fact]
+    public void LowMinimumThroughput_Is2()
+        => Assert.Equal(2, CircuitBreakerDelegatingHandler.LowMinimumThroughput);
+
+    [Fact]
+    public void DefaultMinimumThroughput_Is100()
+        => Assert.Equal(100, CircuitBreakerDelegatingHandler.DefaultMinimumThroughput);
+
+    // --------------------------------------------------------
+    //  ServerErrorCodes
+    // --------------------------------------------------------
+
+    [Fact]
+    public void ServerErrorCodes_ContainsExpected9Codes()
+    {
+        var codes = CircuitBreakerDelegatingHandler.ServerErrorCodes;
+        Assert.Equal(9, codes.Count);
+        Assert.Contains(HttpStatusCode.InternalServerError, codes);
+        Assert.Contains(HttpStatusCode.NotImplemented, codes);
+        Assert.Contains(HttpStatusCode.BadGateway, codes);
+        Assert.Contains(HttpStatusCode.ServiceUnavailable, codes);
+        Assert.Contains(HttpStatusCode.GatewayTimeout, codes);
+        Assert.Contains(HttpStatusCode.HttpVersionNotSupported, codes);
+        Assert.Contains(HttpStatusCode.VariantAlsoNegotiates, codes);
+        Assert.Contains(HttpStatusCode.InsufficientStorage, codes);
+        Assert.Contains(HttpStatusCode.LoopDetected, codes);
+    }
+
+    [Fact]
+    public void ServerErrorCodes_DoesNotContainSuccessCodes()
+    {
+        var codes = CircuitBreakerDelegatingHandler.ServerErrorCodes;
+        Assert.DoesNotContain(HttpStatusCode.OK, codes);
+        Assert.DoesNotContain(HttpStatusCode.Created, codes);
+        Assert.DoesNotContain(HttpStatusCode.Accepted, codes);
+        Assert.DoesNotContain(HttpStatusCode.NotFound, codes);
+    }
+
+    // --------------------------------------------------------
+    //  GetBreakDuration (tested via the internal CircuitBreaker property)
+    // --------------------------------------------------------
+
+    [Fact]
+    public void GetBreakDuration_Null_UsesDefaultBreakDuration()
+    {
+        var opts = new QoSOptions(2, null); // BreakDuration is null
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(
+            TimeSpan.FromMilliseconds(CircuitBreakerDelegatingHandler.DefaultBreakDuration),
+            handler.CircuitBreaker.BreakDuration);
+    }
+
+    [Fact]
+    public void GetBreakDuration_ExactLowBreakDuration_UsesDefaultBreakDuration()
+    {
+        // 500 == LowBreakDuration is invalid; must be strictly greater than 500
+        var opts = new QoSOptions(2, CircuitBreakerDelegatingHandler.LowBreakDuration);
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(
+            TimeSpan.FromMilliseconds(CircuitBreakerDelegatingHandler.DefaultBreakDuration),
+            handler.CircuitBreaker.BreakDuration);
+    }
+
+    [Fact]
+    public void GetBreakDuration_BelowLowBreakDuration_UsesDefaultBreakDuration()
+    {
+        var opts = new QoSOptions(2, CircuitBreakerDelegatingHandler.LowBreakDuration - 1); // 499
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(
+            TimeSpan.FromMilliseconds(CircuitBreakerDelegatingHandler.DefaultBreakDuration),
+            handler.CircuitBreaker.BreakDuration);
+    }
+
+    [Fact]
+    public void GetBreakDuration_AboveLowBreakDuration_UsesConfiguredValue()
+    {
+        int customBreak = CircuitBreakerDelegatingHandler.LowBreakDuration + 1; // 501
+        var opts = new QoSOptions(2, customBreak);
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(TimeSpan.FromMilliseconds(customBreak), handler.CircuitBreaker.BreakDuration);
+    }
+
+    // --------------------------------------------------------
+    //  GetMinimumThroughput (tested via the internal CircuitBreaker property)
+    // --------------------------------------------------------
+
+    [Fact]
+    public void GetMinimumThroughput_Null_UsesDefaultMinimumThroughput()
+    {
+        var opts = new QoSOptions(null, 1000); // MinimumThroughput is null
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(CircuitBreakerDelegatingHandler.DefaultMinimumThroughput, handler.CircuitBreaker.MinimumThroughput);
+    }
+
+    [Fact]
+    public void GetMinimumThroughput_BelowLowMinimumThroughput_UsesDefaultMinimumThroughput()
+    {
+        // 1 < LowMinimumThroughput(2) is invalid
+        var opts = new QoSOptions(CircuitBreakerDelegatingHandler.LowMinimumThroughput - 1, 1000); // 1
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(CircuitBreakerDelegatingHandler.DefaultMinimumThroughput, handler.CircuitBreaker.MinimumThroughput);
+    }
+
+    [Fact]
+    public void GetMinimumThroughput_AtLowMinimumThroughput_UsesConfiguredValue()
+    {
+        int threshold = CircuitBreakerDelegatingHandler.LowMinimumThroughput; // 2
+        var opts = new QoSOptions(threshold, 1000);
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(threshold, handler.CircuitBreaker.MinimumThroughput);
+    }
+
+    [Fact]
+    public void GetMinimumThroughput_AboveLowMinimumThroughput_UsesConfiguredValue()
+    {
+        const int threshold = 5;
+        var opts = new QoSOptions(threshold, 1000);
+        var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        Assert.Equal(threshold, handler.CircuitBreaker.MinimumThroughput);
+    }
+
+    // --------------------------------------------------------
+    //  Circuit state transitions via SendAsync
+    // --------------------------------------------------------
+
+    [Fact]
+    public async Task SendAsync_SuccessResponse_RecordsSuccessAndReturnsResponse()
+    {
+        var opts = new QoSOptions(2, 1000);
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
+        Assert.Equal(0, handler.CircuitBreaker.FailureCount);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.BadGateway)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.GatewayTimeout)]
+    public async Task SendAsync_ServerErrorResponse_RecordsFailureAndReturnsResponse(HttpStatusCode statusCode)
+    {
+        var opts = new QoSOptions(10, 2000); // high threshold so circuit stays Closed after 1 failure
+        using var handler = CreateHandler(opts, new FakeInnerHandler(statusCode));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(statusCode, response.StatusCode);
+        Assert.Equal(1, handler.CircuitBreaker.FailureCount);
+        Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
+    }
+
+    [Fact]
+    public async Task SendAsync_ReachesMinimumThroughput_OpensCircuit()
+    {
+        const int threshold = 2;
+        var opts = new QoSOptions(threshold, 5000);
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.InternalServerError));
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://test/");
+
+        // Exhaust failure threshold
+        for (int i = 0; i < threshold; i++)
+        {
+            request = new HttpRequestMessage(HttpMethod.Get, "http://test/");
+            await SendAsync(handler, request);
+        }
+
+        Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
+    }
+
+    [Fact]
+    public async Task SendAsync_CircuitOpen_Returns503WithoutCallingInner()
+    {
+        const int threshold = 2;
+        var opts = new QoSOptions(threshold, 5000);
+        var innerHandler = new CountingInnerHandler(HttpStatusCode.InternalServerError);
+        using var handler = CreateHandler(opts, innerHandler);
+
+        // Open the circuit
+        for (int i = 0; i < threshold; i++)
+        {
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        }
+
+        int callCountAfterOpen = innerHandler.CallCount;
+        Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
+
+        // This call should be blocked
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(callCountAfterOpen, innerHandler.CallCount); // inner was not called
+    }
+
+    [Fact]
+    public async Task SendAsync_NonCanceledGeneralException_RecordsFailureAndRethrows()
+    {
+        var opts = new QoSOptions(2, 5000);
+        using var handler = CreateHandler(opts, new ThrowingInnerHandler(new InvalidOperationException("test error")));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/")));
+
+        Assert.Equal(1, handler.CircuitBreaker.FailureCount);
+    }
+
+    [Fact]
+    public async Task SendAsync_OperationCanceledException_DoesNotRecordFailureAndRethrows()
+    {
+        var opts = new QoSOptions(2, 5000);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        using var handler = CreateHandler(opts, new ThrowingInnerHandler(new OperationCanceledException(cts.Token)));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), cts.Token));
+
+        Assert.Equal(0, handler.CircuitBreaker.FailureCount);
+    }
+
+    // --------------------------------------------------------
+    //  Timeout enforcement
+    // --------------------------------------------------------
+
+    [Fact]
+    public async Task SendAsync_WithTimeout_CompletesBeforeTimeout_ReturnsResponse()
+    {
+        const int timeoutMs = 500, serviceDelayMs = 50;
+        var opts = new QoSOptions(100, 5000) { Timeout = timeoutMs };
+        using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, serviceDelayMs));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(0, handler.CircuitBreaker.FailureCount);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithTimeout_ExceedsTimeout_Returns503AndRecordsFailure()
+    {
+        const int timeoutMs = 100, serviceDelayMs = 500;
+        var opts = new QoSOptions(100, 5000) { Timeout = timeoutMs };
+        using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, serviceDelayMs));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(1, handler.CircuitBreaker.FailureCount);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithTimeout_OuterCancellationRequested_PropagatesCancellation()
+    {
+        const int timeoutMs = 5000, serviceDelayMs = 5000;
+        var opts = new QoSOptions(100, 10000) { Timeout = timeoutMs };
+        using var cts = new CancellationTokenSource(50); // outer cancel after 50ms
+        using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, serviceDelayMs));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), cts.Token));
+    }
+
+    [Fact]
+    public async Task SendAsync_NoTimeout_UsesNoTimeoutEnforcement()
+    {
+        // When Timeout is null, no per-request timeout is applied
+        var opts = new QoSOptions(100, 5000) { Timeout = null };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.Created));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendAsync_TimeoutZero_TreatedAsNoTimeout()
+    {
+        // Timeout = 0 means no QoS timeout enforcement (UseQos would be false unless MinimumThroughput is set)
+        var opts = new QoSOptions(2, 5000) { Timeout = 0 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.Accepted));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+    }
+
+    // --------------------------------------------------------
+    //  Helper inner handlers
+    // --------------------------------------------------------
+
+    private sealed class FakeInnerHandler(HttpStatusCode statusCode) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            => Task.FromResult(new HttpResponseMessage(statusCode));
+    }
+
+    private sealed class CountingInnerHandler(HttpStatusCode statusCode) : HttpMessageHandler
+    {
+        public int CallCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            CallCount++;
+            return Task.FromResult(new HttpResponseMessage(statusCode));
+        }
+    }
+
+    private sealed class DelayedInnerHandler(HttpStatusCode statusCode, int delayMs) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            await Task.Delay(delayMs, ct);
+            return new HttpResponseMessage(statusCode);
+        }
+    }
+
+    private sealed class ThrowingInnerHandler(Exception exception) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            => Task.FromException<HttpResponseMessage>(exception);
+    }
+}

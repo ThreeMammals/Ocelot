@@ -102,7 +102,6 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
             _circuitBreaker.RecordFailure();
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
-                Content = new StringContent("Request timeout"),
                 ReasonPhrase = "Request timeout",
             };
         }
@@ -141,7 +140,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
 
     private static TimeSpan GetBreakDuration(int? milliseconds)
     {
-        var ms = milliseconds.HasValue && milliseconds.Value >= LowBreakDuration
+        var ms = milliseconds.HasValue && milliseconds.Value > LowBreakDuration
             ? milliseconds.Value : DefaultBreakDuration;
         return TimeSpan.FromMilliseconds(ms);
     }

@@ -53,14 +53,8 @@ public class QualityOfServiceFactory : IQualityOfServiceFactory, IDisposable
         if (handler is not QosDelegatingHandler)
             return handler; // this is an external QoS implementation
 
-        // Built-in Quality of Service feature was enabled by AddOcelot().AddQualityOfService()
-        if (opts.MinimumThroughput.HasValue || opts.BreakDuration.HasValue)
-            return new CircuitBreakerDelegatingHandler(route, _loggerFactory);
-
-        // TODO Timeout strategy, but it requires refactoring of MessageInvokerPool and TimeoutDelegatingHandler
-        //if (opts.Timeout.HasValue)
-        //    return new TimeoutDelegatingHandler(TimeSpan.FromMilliseconds(opts.Timeout.Value));
-        return handler; // empty
+        // Built-in Quality of Service: return CircuitBreakerDelegatingHandler for any active QoS option
+        return new CircuitBreakerDelegatingHandler(route, _loggerFactory);
     }
 
     public void Dispose()
