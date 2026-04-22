@@ -4,6 +4,12 @@ namespace Ocelot.UnitTests.Infrastructure.DesignPatterns;
 
 public class CircuitBreakerTests : UnitTest
 {
+    private static void WaitForState(CircuitBreaker cb, CircuitState expectedState, int timeoutMs = 1000)
+    {
+        var reachedState = System.Threading.SpinWait.SpinUntil(() => cb.State == expectedState, timeoutMs);
+        Assert.True(reachedState, $"Expected circuit to transition to {expectedState} within {timeoutMs}ms, but was {cb.State}.");
+    }
+
     [Fact]
     public void Constructor_SetsMinimumThroughputAndBreakDuration()
     {
@@ -90,7 +96,7 @@ public class CircuitBreakerTests : UnitTest
         Assert.Equal(CircuitState.Open, cb.State);
 
         // Wait for break duration to elapse
-        Thread.Sleep(100);
+        WaitForState(cb, CircuitState.HalfOpen);
 
         // Assert: state transitions to HalfOpen when accessed
         Assert.Equal(CircuitState.HalfOpen, cb.State);
@@ -105,7 +111,7 @@ public class CircuitBreakerTests : UnitTest
 
         // Open the circuit
         cb.RecordFailure();
-        Thread.Sleep(100); // wait for BreakDuration
+        WaitForState(cb, CircuitState.HalfOpen);
 
         // Transition to HalfOpen
         Assert.Equal(CircuitState.HalfOpen, cb.State);
