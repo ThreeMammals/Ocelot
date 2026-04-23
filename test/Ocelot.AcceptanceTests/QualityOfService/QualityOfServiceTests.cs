@@ -251,7 +251,8 @@ public sealed class QualityOfServiceTests : QosSteps
 
         ThenTimeoutIsInRange(watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500); // (2.0, 2.5) s
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
-        await ThenTheResponseBodyShouldBeAsync(string.Empty);
+        response.ReasonPhrase.ShouldBe("Request timeout");
+        await ThenTheResponseBodyShouldBeAsync("Request timeout for route -> /");
     }
 
     [Fact]
@@ -280,7 +281,10 @@ public sealed class QualityOfServiceTests : QosSteps
             ThenTimeoutIsInRange(watcher, globalTimeoutMs, Ms(DownstreamRoute.DefaultTimeoutSeconds)); // (2.0, 90) so assert roughly
             ThenTimeoutIsInRange(watcher, globalTimeoutMs, globalTimeoutMs + 500); // (2.0, 2.5) so assert precisely
             ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
-            await ThenTheResponseBodyShouldBeAsync(string.Empty);
+            response.ReasonPhrase.ShouldBe("Request timeout");
+            // await ThenTheResponseBodyShouldBeAsync("Request timeout for route -> /route2");
+            var body = await response.Content.ReadAsStringAsync(Xunit.TestContext.Current.CancellationToken);
+            body.ShouldStartWith("Request timeout for route -> /route"); // route1 or route2 due to load balancing
         }
     }
 

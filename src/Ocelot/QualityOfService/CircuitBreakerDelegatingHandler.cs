@@ -45,6 +45,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     };
 
     private readonly CircuitBreaker _circuitBreaker;
+    private readonly DownstreamRoute _route;
     private readonly QoSOptions _options;
     private readonly IOcelotLogger _logger;
 
@@ -55,6 +56,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     /// <param name="loggerFactory">Factory used to create the handler's logger.</param>
     public CircuitBreakerDelegatingHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
     {
+        _route = route;
         _options = route.QosOptions;
         var breakDuration = GetBreakDuration(_options.BreakDuration ?? DefaultBreakDuration);
         var minimumThroughput = GetMinimumThroughput(_options.MinimumThroughput ?? DefaultMinimumThroughput);
@@ -70,10 +72,10 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     {
         if (!_circuitBreaker.CanExecute())
         {
-            _logger.LogWarning(() => $"Circuit breaker is open for '{request.RequestUri}'. Returning {HttpStatusCode.ServiceUnavailable}.");
+            _logger.LogWarning(() => $"Circuit breaker is open for '{request.RequestUri}'. Returning {HttpStatusCode.ServiceUnavailable} for route -> {_route.Name()}");
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
-                Content = new StringContent("Circuit breaker is open"),
+                Content = new StringContent($"Circuit breaker is open for route -> {_route.Name()}"),
                 ReasonPhrase = "Circuit breaker is open",
             };
         }
@@ -98,10 +100,11 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             // Our per-request timeout fired (not the outer cancellation token)
-            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_options.Timeout}ms. Returning {HttpStatusCode.ServiceUnavailable}.");
+            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_options.Timeout}ms. Returning {HttpStatusCode.ServiceUnavailable} for route -> {_route.Name()}");
             _circuitBreaker.RecordFailure();
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
+                Content = new StringContent($"Request timeout for route -> {_route.Name()}"),
                 ReasonPhrase = "Request timeout",
             };
         }
@@ -127,12 +130,12 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         if (ServerErrorCodes.Contains(response.StatusCode))
         {
             _circuitBreaker.RecordFailure();
-            _logger.LogDebug(() => $"Circuit breaker recorded failure for '{request.RequestUri}' (status {(int)response.StatusCode}). Failure count: {_circuitBreaker.FailureCount}.");
+            _logger.LogInformation(() => $"Circuit breaker recorded failure for '{request.RequestUri}' (status {(int)response.StatusCode}). Failure count is {_circuitBreaker.FailureCount} for route -> {_route.Name()}.");
         }
         else
         {
             _circuitBreaker.RecordSuccess();
-            _logger.LogDebug(() => $"Circuit breaker recorded success for '{request.RequestUri}'.");
+            _logger.LogInformation(() => $"Circuit breaker recorded success for '{request.RequestUri}' for route -> {_route.Name()}.");
         }
 
         return response;

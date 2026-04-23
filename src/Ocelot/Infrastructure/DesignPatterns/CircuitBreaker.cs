@@ -8,7 +8,7 @@ public enum CircuitState
     /// <summary>Normal operation: requests pass through and failures are counted.</summary>
     Closed,
 
-    /// <summary>Circuit is open: requests are blocked and a <see cref="System.Net.HttpStatusCode.ServiceUnavailable"/> is returned immediately.</summary>
+    /// <summary>Circuit is open: requests are blocked and a <see cref="HttpStatusCode.ServiceUnavailable"/> is returned immediately.</summary>
     Open,
 
     /// <summary>Circuit allows one probe request to determine if the downstream is healthy again.</summary>
