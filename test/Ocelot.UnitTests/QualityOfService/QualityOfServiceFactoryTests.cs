@@ -165,6 +165,51 @@ public class QualityOfServiceFactoryTests
     }
 
     [Fact]
+    public void Get_NoDelegateRegistered_NullHttpContext_ReturnsNoQosDelegatingHandlerWithoutError()
+    {
+        // Arrange: no QosDelegatingHandlerDelegate registered, HttpContext is null -> covers the null branch of ?.
+        _services = new ServiceCollection();
+        var provider = _services.BuildServiceProvider(true);
+        _factory = new QualityOfServiceFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+        _contextAccessor.Setup(a => a.HttpContext).Returns((HttpContext)null);
+
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(new(2, 1000)) // UseQos -> true
+            .Build();
+
+        // Act
+        var handler = _factory.Get(route);
+
+        // Assert
+        Assert.NotNull(handler);
+        Assert.IsType<NoQosDelegatingHandler>(handler);
+        _logger.Verify(l => l.LogCritical(It.IsAny<Func<string>>(), It.IsAny<Exception>()), Times.Once);
+    }
+
+    [Fact]
+    public void Get_FinderReturnsNull_NullHttpContext_ReturnsNoQosDelegatingHandlerWithoutError()
+    {
+        // Arrange: delegate returns null, HttpContext is null -> covers the null branch of ?. on line 48
+        _services = new ServiceCollection();
+        _services.AddSingleton<QosDelegatingHandlerDelegate>((route, accessor, loggerFactory) => null!);
+        var provider = _services.BuildServiceProvider(true);
+        _factory = new QualityOfServiceFactory(provider, _contextAccessor.Object, _loggerFactory.Object);
+        _contextAccessor.Setup(a => a.HttpContext).Returns((HttpContext)null);
+
+        var route = new DownstreamRouteBuilder()
+            .WithQosOptions(new(2, 1000))
+            .Build();
+
+        // Act
+        var handler = _factory.Get(route);
+
+        // Assert
+        Assert.NotNull(handler);
+        Assert.IsType<NoQosDelegatingHandler>(handler);
+        _logger.Verify(l => l.LogCritical(It.IsAny<Func<string>>(), It.IsAny<Exception>()), Times.Once);
+    }
+
+    [Fact]
     public void Dispose_CanBeCalledMultipleTimes_DoesNotThrow()
     {
         // Act & Assert: no exception thrown on double-dispose
