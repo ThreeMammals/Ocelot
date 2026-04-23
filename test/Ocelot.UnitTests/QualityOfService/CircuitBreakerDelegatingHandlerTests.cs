@@ -337,6 +337,209 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
     }
 
     // --------------------------------------------------------
+    //  Ratio mode — constants
+    // --------------------------------------------------------
+
+    [Fact]
+    public void LowFailureRatio_IsZero()
+        => Assert.Equal(0.0, CircuitBreakerDelegatingHandler.LowFailureRatio);
+
+    [Fact]
+    public void DefaultFailureRatio_IsHalf()
+        => Assert.Equal(0.5, CircuitBreakerDelegatingHandler.DefaultFailureRatio);
+
+    [Fact]
+    public void LowSamplingDuration_Is500()
+        => Assert.Equal(500, CircuitBreakerDelegatingHandler.LowSamplingDuration);
+
+    [Fact]
+    public void DefaultSamplingDuration_Is10000()
+        => Assert.Equal(10_000, CircuitBreakerDelegatingHandler.DefaultSamplingDuration);
+
+    // --------------------------------------------------------
+    //  Ratio mode — constructor selects correct CircuitBreaker mode
+    // --------------------------------------------------------
+
+    [Fact]
+    public void Constructor_WithFailureRatio_CreatesRatioModeCircuitBreaker()
+    {
+        // FailureRatio is set → ratio mode
+        var opts = new QoSOptions(5, 2000) { FailureRatio = 0.5, SamplingDuration = 10_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.NotNull(handler.CircuitBreaker.FailureRatio);
+        Assert.Equal(0.5, handler.CircuitBreaker.FailureRatio);
+        Assert.NotNull(handler.CircuitBreaker.SamplingDuration);
+        Assert.Equal(TimeSpan.FromMilliseconds(10_000), handler.CircuitBreaker.SamplingDuration);
+    }
+
+    [Fact]
+    public void Constructor_WithoutFailureRatio_CreatesCountModeCircuitBreaker()
+    {
+        // FailureRatio is not set → count mode
+        var opts = new QoSOptions(5, 2000);
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Null(handler.CircuitBreaker.FailureRatio);
+        Assert.Null(handler.CircuitBreaker.SamplingDuration);
+    }
+
+    [Fact]
+    public void Constructor_WithZeroFailureRatio_CreatesCountModeCircuitBreaker()
+    {
+        // FailureRatio = 0 is treated as "not configured" → count mode
+        var opts = new QoSOptions(5, 2000) { FailureRatio = 0.0 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Null(handler.CircuitBreaker.FailureRatio);
+    }
+
+    // --------------------------------------------------------
+    //  GetFailureRatio — clamps to DefaultFailureRatio when out of range
+    // --------------------------------------------------------
+
+    [Theory]
+    [InlineData(0.1)]
+    [InlineData(0.5)]
+    [InlineData(1.0)]
+    public void GetFailureRatio_ValidValue_UsesConfiguredValue(double ratio)
+    {
+        var opts = new QoSOptions(5, 2000) { FailureRatio = ratio, SamplingDuration = 10_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Equal(ratio, handler.CircuitBreaker.FailureRatio);
+    }
+
+    [Theory]
+    [InlineData(1.1)]   // above 1 → default (still uses ratio mode with clamped value)
+    [InlineData(2.0)]   // well above 1 → default
+    public void GetFailureRatio_AboveOne_UsesDefaultFailureRatio(double ratio)
+    {
+        var opts = new QoSOptions(5, 2000) { FailureRatio = ratio, SamplingDuration = 10_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Equal(CircuitBreakerDelegatingHandler.DefaultFailureRatio, handler.CircuitBreaker.FailureRatio);
+    }
+
+    [Theory]
+    [InlineData(-0.1)]  // negative → count mode (treated as not configured)
+    [InlineData(0.0)]   // zero → count mode (treated as not configured)
+    public void GetFailureRatio_NonPositiveValue_FallsBackToCountMode(double ratio)
+    {
+        var opts = new QoSOptions(5, 2000) { FailureRatio = ratio, SamplingDuration = 10_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        // Non-positive FailureRatio → count mode → FailureRatio is null
+        Assert.Null(handler.CircuitBreaker.FailureRatio);
+    }
+
+    // --------------------------------------------------------
+    //  GetSamplingDuration — clamps to DefaultSamplingDuration when too low
+    // --------------------------------------------------------
+
+    [Fact]
+    public void GetSamplingDuration_Null_UsesDefaultSamplingDuration()
+    {
+        var opts = new QoSOptions(5, 2000) { FailureRatio = 0.5, SamplingDuration = null };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Equal(
+            TimeSpan.FromMilliseconds(CircuitBreakerDelegatingHandler.DefaultSamplingDuration),
+            handler.CircuitBreaker.SamplingDuration);
+    }
+
+    [Fact]
+    public void GetSamplingDuration_ExactLowValue_UsesDefaultSamplingDuration()
+    {
+        // LowSamplingDuration is an exclusive lower bound
+        var opts = new QoSOptions(5, 2000)
+        {
+            FailureRatio = 0.5,
+            SamplingDuration = CircuitBreakerDelegatingHandler.LowSamplingDuration, // 500 — too low
+        };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Equal(
+            TimeSpan.FromMilliseconds(CircuitBreakerDelegatingHandler.DefaultSamplingDuration),
+            handler.CircuitBreaker.SamplingDuration);
+    }
+
+    [Fact]
+    public void GetSamplingDuration_AboveLowValue_UsesConfiguredValue()
+    {
+        int custom = CircuitBreakerDelegatingHandler.LowSamplingDuration + 1; // 501
+        var opts = new QoSOptions(5, 2000) { FailureRatio = 0.5, SamplingDuration = custom };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        Assert.Equal(TimeSpan.FromMilliseconds(custom), handler.CircuitBreaker.SamplingDuration);
+    }
+
+    // --------------------------------------------------------
+    //  Ratio mode — SendAsync integration
+    // --------------------------------------------------------
+
+    [Fact]
+    public async Task SendAsync_RatioMode_BelowMinimumThroughput_KeepsCircuitClosed()
+    {
+        // MinimumThroughput=4; only 3 requests → circuit stays closed regardless of ratio
+        var opts = new QoSOptions(4, 5000) { FailureRatio = 0.5, SamplingDuration = 30_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.InternalServerError));
+
+        for (int i = 0; i < 3; i++)
+        {
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        }
+
+        Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
+    }
+
+    [Fact]
+    public async Task SendAsync_RatioMode_AtMinimumThroughput_RatioExceeded_OpensCircuit()
+    {
+        // MinimumThroughput=4, FailureRatio=0.5; 4 failures / 4 total = 100% → opens
+        var opts = new QoSOptions(4, 5000) { FailureRatio = 0.5, SamplingDuration = 30_000 };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.InternalServerError));
+
+        for (int i = 0; i < 4; i++)
+        {
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        }
+
+        Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
+    }
+
+    [Fact]
+    public async Task SendAsync_RatioMode_MixedResults_RatioBelowThreshold_KeepsCircuitClosed()
+    {
+        // MinimumThroughput=4, FailureRatio=0.5; 1 failure / 4 total = 25% → stays closed
+        var opts = new QoSOptions(4, 5000) { FailureRatio = 0.5, SamplingDuration = 30_000 };
+        using var handlerOk = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+        using var handlerErr = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.InternalServerError));
+
+        // Use two separate handlers to control which responses are returned
+        // Simulate: 3 successes then 1 failure (ratio = 25%)
+        var route = new DownstreamRouteBuilder().WithQosOptions(opts).Build();
+        var innerHandler = new SequencedInnerHandler(
+        [
+            HttpStatusCode.OK,
+            HttpStatusCode.OK,
+            HttpStatusCode.OK,
+            HttpStatusCode.InternalServerError,
+        ]);
+        using var handler = new CircuitBreakerDelegatingHandler(route, _loggerFactory.Object)
+        {
+            InnerHandler = innerHandler,
+        };
+
+        for (int i = 0; i < 4; i++)
+        {
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        }
+
+        Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
+    }
+
+    // --------------------------------------------------------
     //  Helper inner handlers
     // --------------------------------------------------------
 
@@ -370,5 +573,16 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
             => Task.FromException<HttpResponseMessage>(exception);
+    }
+
+    private sealed class SequencedInnerHandler(IReadOnlyList<HttpStatusCode> sequence) : HttpMessageHandler
+    {
+        private int _index;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            var code = _index < sequence.Count ? sequence[_index++] : sequence[^1];
+            return Task.FromResult(new HttpResponseMessage(code));
+        }
     }
 }

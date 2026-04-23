@@ -20,6 +20,15 @@ public enum CircuitState
 /// </summary>
 /// <remarks>
 /// <para>
+/// Supports two operating modes:
+/// <list type="bullet">
+///   <item><b>Count mode</b> (default): opens the circuit after <see cref="MinimumThroughput"/> consecutive failures.</item>
+///   <item><b>Ratio mode</b>: opens the circuit when the failure ratio within a rolling <see cref="SamplingDuration"/> window
+///   reaches or exceeds <see cref="FailureRatio"/>, provided at least <see cref="MinimumThroughput"/> requests have been made
+///   in that window. Activated by passing <see cref="FailureRatio"/> and <see cref="SamplingDuration"/> to the constructor.</item>
+/// </list>
+/// </para>
+/// <para>
 /// Docs:
 /// <list type="bullet">
 ///   <item><see href="https://martinfowler.com/bliki/CircuitBreaker.html">Martin Fowler: Circuit Breaker</see></item>
@@ -34,18 +43,32 @@ public enum CircuitState
 public class CircuitBreaker
 {
     private volatile CircuitState _state = CircuitState.Closed;
-    private int _failureCount;
     private DateTime _openedAt;
     private readonly object _lock = new();
 
-    /// <summary>Gets the minimum number of failures required before the circuit opens.</summary>
+    // ── Count-mode state ────────────────────────────────────────────────
+    private int _failureCount;
+
+    // ── Ratio-mode state ────────────────────────────────────────────────
+    private readonly Queue<(DateTime timestamp, bool isFailure)> _window;
+    private int _windowFailureCount;
+    private int _windowTotalCount;
+
+    /// <summary>Gets the minimum number of requests (ratio mode) or failures (count mode) required before the circuit can open.</summary>
     public int MinimumThroughput { get; }
 
     /// <summary>Gets the duration the circuit remains open before transitioning to <see cref="CircuitState.HalfOpen"/>.</summary>
     public TimeSpan BreakDuration { get; }
 
+    /// <summary>Gets the failure-to-total ratio threshold at which the circuit opens (ratio mode only).</summary>
+    /// <value><see langword="null"/> when operating in count mode.</value>
+    public double? FailureRatio { get; }
+
+    /// <summary>Gets the duration of the rolling window used to evaluate <see cref="FailureRatio"/> (ratio mode only).</summary>
+    /// <value><see langword="null"/> when operating in count mode.</value>
+    public TimeSpan? SamplingDuration { get; }
     /// <summary>
-    /// Initializes a new instance of the <see cref="CircuitBreaker"/> class.
+    /// Initializes a new instance of the <see cref="CircuitBreaker"/> class in <b>count mode</b>.
     /// </summary>
     /// <param name="minimumThroughput">Number of failures before the circuit opens. Use <c>0</c> or negative to disable circuit-opening behavior.</param>
     /// <param name="breakDuration">Duration the circuit stays open before transitioning to <see cref="CircuitState.HalfOpen"/>.</param>
@@ -53,6 +76,22 @@ public class CircuitBreaker
     {
         MinimumThroughput = minimumThroughput;
         BreakDuration = breakDuration;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitBreaker"/> class in <b>ratio mode</b>.
+    /// </summary>
+    /// <param name="failureRatio">Failure-to-total ratio (in range (0.0, 1.0]) at which the circuit opens.</param>
+    /// <param name="minimumThroughput">Minimum number of requests within <paramref name="samplingDuration"/> before the ratio is evaluated.</param>
+    /// <param name="samplingDuration">Duration of the rolling window over which <paramref name="failureRatio"/> is assessed.</param>
+    /// <param name="breakDuration">Duration the circuit stays open before transitioning to <see cref="CircuitState.HalfOpen"/>.</param>
+    public CircuitBreaker(double failureRatio, int minimumThroughput, TimeSpan samplingDuration, TimeSpan breakDuration)
+    {
+        FailureRatio = failureRatio;
+        MinimumThroughput = minimumThroughput;
+        SamplingDuration = samplingDuration;
+        BreakDuration = breakDuration;
+        _window = new Queue<(DateTime, bool)>();
     }
 
     /// <summary>Gets the current state of the circuit breaker, transitioning from <see cref="CircuitState.Open"/> to <see cref="CircuitState.HalfOpen"/> when <see cref="BreakDuration"/> has elapsed.</summary>
@@ -78,18 +117,56 @@ public class CircuitBreaker
     /// <summary>Returns <see langword="true"/> if a request can proceed (circuit is <see cref="CircuitState.Closed"/> or <see cref="CircuitState.HalfOpen"/>).</summary>
     public bool CanExecute() => State != CircuitState.Open;
 
-    /// <summary>Records a successful request, resetting failure count and closing the circuit.</summary>
+    /// <summary>Records a successful request.</summary>
+    /// <remarks>
+    /// In count mode: resets the failure count and closes the circuit.
+    /// In ratio mode: adds the request to the rolling window. If the circuit is <see cref="CircuitState.HalfOpen"/>, closes it and resets the window.
+    /// </remarks>
     public void RecordSuccess()
     {
         lock (_lock)
         {
-            _failureCount = 0;
-            _state = CircuitState.Closed;
+            if (_window != null)
+            {
+                PurgeOldEntries();
+                _window.Enqueue((DateTime.UtcNow, false));
+                _windowTotalCount++;
+
+                if (_state == CircuitState.HalfOpen)
+                {
+                    _state = CircuitState.Closed;
+                    // Clear the window after a successful probe so ratio resets cleanly.
+                    _window.Clear();
+                    _windowFailureCount = 0;
+                    _windowTotalCount = 0;
+                }
+            }
+            else
+            {
+                _failureCount = 0;
+                _state = CircuitState.Closed;
+            }
         }
     }
 
-    /// <summary>Records a failed request. Opens the circuit when <see cref="MinimumThroughput"/> is exceeded or when the circuit is in <see cref="CircuitState.HalfOpen"/>.</summary>
+    /// <summary>Records a failed request.</summary>
+    /// <remarks>
+    /// In count mode: opens the circuit when <see cref="MinimumThroughput"/> is reached or when the circuit is in <see cref="CircuitState.HalfOpen"/>.
+    /// In ratio mode: opens the circuit when total requests in the rolling window reaches <see cref="MinimumThroughput"/> and the failure ratio reaches <see cref="FailureRatio"/>, or immediately when in <see cref="CircuitState.HalfOpen"/>.
+    /// </remarks>
     public void RecordFailure()
+    {
+        if (_window != null)
+        {
+            RecordFailureRatioMode();
+        }
+        else
+        {
+            RecordFailureCountMode();
+        }
+    }
+
+    private void RecordFailureCountMode()
     {
         if (MinimumThroughput <= 0)
         {
@@ -107,6 +184,51 @@ public class CircuitBreaker
         }
     }
 
-    /// <summary>Gets the current number of recorded failures (for diagnostic/testing purposes).</summary>
-    public int FailureCount => _failureCount;
+    private void RecordFailureRatioMode()
+    {
+        lock (_lock)
+        {
+            PurgeOldEntries();
+            _window!.Enqueue((DateTime.UtcNow, true));
+            _windowFailureCount++;
+            _windowTotalCount++;
+
+            if (_state == CircuitState.HalfOpen)
+            {
+                // Any failure during the probe request reopens the circuit immediately.
+                _state = CircuitState.Open;
+                _openedAt = DateTime.UtcNow;
+                return;
+            }
+
+            if (_state == CircuitState.Closed
+                && _windowTotalCount >= MinimumThroughput
+                && (double)_windowFailureCount / _windowTotalCount >= FailureRatio!.Value)
+            {
+                _state = CircuitState.Open;
+                _openedAt = DateTime.UtcNow;
+            }
+        }
+    }
+
+    /// <summary>Removes window entries older than <see cref="SamplingDuration"/>. Must be called within <c>_lock</c>.</summary>
+    private void PurgeOldEntries()
+    {
+        var cutoff = DateTime.UtcNow - SamplingDuration!.Value;
+        while (_window!.Count > 0 && _window.Peek().timestamp < cutoff)
+        {
+            var entry = _window.Dequeue();
+            _windowTotalCount--;
+            if (entry.isFailure)
+            {
+                _windowFailureCount--;
+            }
+        }
+    }
+
+    /// <summary>Gets the current number of recorded failures within the active window (for diagnostic/testing purposes).</summary>
+    public int FailureCount => _window != null ? _windowFailureCount : _failureCount;
+
+    /// <summary>Gets the total number of requests recorded in the rolling window (ratio mode only, for diagnostic/testing purposes).</summary>
+    public int TotalCount => _windowTotalCount;
 }

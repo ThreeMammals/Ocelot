@@ -27,6 +27,12 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     public const int LowMinimumThroughput = 2;
     public const int DefaultMinimumThroughput = 100;
 
+    public const double LowFailureRatio = 0.0;
+    public const double DefaultFailureRatio = 0.5;
+
+    public const int LowSamplingDuration = 500;
+    public const int DefaultSamplingDuration = 10_000;
+
     /// <summary>
     /// The set of HTTP status codes that are considered server errors and will be counted as circuit-breaker failures.
     /// </summary>
@@ -60,7 +66,18 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         _options = route.QosOptions;
         var breakDuration = GetBreakDuration(_options.BreakDuration ?? DefaultBreakDuration);
         var minimumThroughput = GetMinimumThroughput(_options.MinimumThroughput ?? DefaultMinimumThroughput);
-        _circuitBreaker = new CircuitBreaker(minimumThroughput, breakDuration);
+
+        if (_options.FailureRatio.HasValue && _options.FailureRatio.Value > LowFailureRatio)
+        {
+            var failureRatio = GetFailureRatio(_options.FailureRatio.Value);
+            var samplingDuration = GetSamplingDuration(_options.SamplingDuration ?? DefaultSamplingDuration);
+            _circuitBreaker = new CircuitBreaker(failureRatio, minimumThroughput, samplingDuration, breakDuration);
+        }
+        else
+        {
+            _circuitBreaker = new CircuitBreaker(minimumThroughput, breakDuration);
+        }
+
         _logger = loggerFactory.CreateLogger<CircuitBreakerDelegatingHandler>();
     }
 
@@ -153,5 +170,15 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         var min = minimumThroughput.HasValue && minimumThroughput.Value >= LowMinimumThroughput
             ? minimumThroughput.Value : DefaultMinimumThroughput;
         return min;
+    }
+
+    private static double GetFailureRatio(double failureRatio)
+        => failureRatio > LowFailureRatio && failureRatio <= 1.0 ? failureRatio : DefaultFailureRatio;
+
+    private static TimeSpan GetSamplingDuration(int? milliseconds)
+    {
+        var ms = milliseconds.HasValue && milliseconds.Value > LowSamplingDuration
+            ? milliseconds.Value : DefaultSamplingDuration;
+        return TimeSpan.FromMilliseconds(ms);
     }
 }

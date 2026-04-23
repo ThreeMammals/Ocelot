@@ -69,4 +69,18 @@ public class QoSOptionsTests
         // Act, Assert
         Assert.Equal(expected, opts.UseQos);
     }
+
+    [Theory]
+    [InlineData(null, false)] // should not use
+    [InlineData(0.0, false)] // should not use — zero ratio
+    [InlineData(0.5, true)] // should use — 50% ratio
+    [InlineData(1.0, true)] // should use — 100% ratio
+    public void UseQos_FailureRatio_ShouldUse(double? failureRatio, bool expected)
+    {
+        // Arrange
+        var opts = new QoSOptions { FailureRatio = failureRatio };
+
+        // Act, Assert
+        Assert.Equal(expected, opts.UseQos);
+    }
 }
