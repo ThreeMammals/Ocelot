@@ -23,6 +23,7 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.QualityOfService;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
@@ -566,5 +567,22 @@ public class OcelotBuilderTests : UnitTest
         public string Type => nameof(FakeCustomLoadBalancer);
         public Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => throw new NotImplementedException();
         public void Release(ServiceHostAndPort hostAndPort) => throw new NotImplementedException();
+    }
+
+    [Fact]
+    public void AddQualityOfService_RegistersQosDelegatingHandlerDelegate()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var result = _ocelotBuilder.AddQualityOfService();
+
+        // Assert
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var handler = _serviceProvider.GetService<QosDelegatingHandlerDelegate>();
+        Assert.NotNull(handler);
+        Assert.Equal(QosDelegatingHandler.Create, handler);
     }
 }
