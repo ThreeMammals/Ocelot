@@ -288,7 +288,7 @@ public sealed class QualityOfServiceTests : QosSteps
         }
     }
 
-    [Fact(Skip = "FailureRatio feat is under development")]
+    [Fact]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public async Task HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio()
@@ -333,7 +333,7 @@ public sealed class QualityOfServiceTests : QosSteps
         await ThenTheResponseBodyShouldBeAsync(nameof(HasRouteAndGlobalFailureRatios_RouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio));
     }
 
-    [Fact(Skip = "FailureRatio feat is under development")]
+    [Fact]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public async Task HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio()
@@ -385,6 +385,99 @@ public sealed class QualityOfServiceTests : QosSteps
         await WhenIGetUrlOnTheApiGateway("/"); // OK but circuit is closed
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit is closed
         await ThenTheResponseBodyShouldBeAsync(nameof(HasGlobalFailureRatioOnly_GlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio));
+    }
+
+    /// <summary>
+    /// Validates that <see cref="QoSOptions.MinimumThroughput"/> acts as a gate:
+    /// even with a 100% failure rate, the circuit stays <b>closed</b> while the total number
+    /// of calls within the <see cref="QoSOptions.SamplingDuration"/> window is below <see cref="QoSOptions.MinimumThroughput"/>.
+    /// </summary>
+    /// <remarks>
+    /// Scenario from <see href="https://github.com/ocelotgateway/Ocelot/issues/6#issuecomment-4304670722">issue #6</see>:
+    /// <c>FailureRatio = 0.5</c>, <c>MinimumThroughput = 8</c>, <c>SamplingDuration = 10 s</c> —
+    /// 7 calls, all failing → circuit <b>stays closed</b> (throughput too low).
+    /// </remarks>
+    [Fact]
+    [Trait("Feat", "6")] // https://github.com/ocelotgateway/Ocelot/issues/6
+    public async Task FailureRatio_BelowMinimumThroughput_CircuitStaysClosed()
+    {
+        const int minimumThroughput = 8;
+        var qos = new QoSOptions(minimumThroughput, CircuitBreakerDelegatingHandler.LowBreakDuration + 1)
+        {
+            FailureRatio = 0.5, // 50 %
+            SamplingDuration = 30_000, // 30 s – long enough that no entry expires during the test
+            Timeout = 100_000,
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, qos);
+        GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.InternalServerError);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await GivenOcelotIsRunningAsync(WithQualityOfService);
+
+        // Send (MinimumThroughput – 1) = 7 all-failing requests.
+        // The failure ratio (100 %) already exceeds FailureRatio (50 %), but
+        // MinimumThroughput is NOT yet reached → the ratio check is skipped entirely.
+        // Every response must come directly from the downstream service (500), NOT from
+        // the circuit breaker (503).
+        for (int i = 0; i < minimumThroughput - 1; i++)
+        {
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // 500 from service, circuit is still CLOSED
+        }
+    }
+
+    /// <summary>
+    /// Validates that the circuit <b>opens</b> once both conditions are simultaneously met:
+    /// the total calls in the sampling window reach <see cref="QoSOptions.MinimumThroughput"/>
+    /// <b>and</b> the observed failure ratio exceeds <see cref="QoSOptions.FailureRatio"/>.
+    /// </summary>
+    /// <remarks>
+    /// Scenario from <see href="https://github.com/ocelotgateway/Ocelot/issues/6#issuecomment-4304670722">issue #6</see>:
+    /// <c>FailureRatio = 0.5</c>, <c>MinimumThroughput = 8</c>, <c>SamplingDuration = 10 s</c> —
+    /// 8 calls, 5 failing (62.5 %) → circuit <b>opens</b>.
+    /// </remarks>
+    [Fact]
+    [Trait("Feat", "6")] // https://github.com/ocelotgateway/Ocelot/issues/6
+    public async Task FailureRatio_AtMinimumThroughputWithExceededRatio_CircuitOpens()
+    {
+        // 3 successes + 5 failures = 5/8 = 62.5 % ≥ 50 % (FailureRatio) AND 8 ≥ 8 (MinimumThroughput) → opens
+        const int minimumThroughput = 8;
+        const int successCalls = 3;   // calls 1-3 succeed
+        const int failureCalls = 5;   // calls 4-8 fail → 5/8 = 62.5 %
+        int callCount = 0;
+        var qos = new QoSOptions(minimumThroughput, CircuitBreakerDelegatingHandler.LowBreakDuration + 1)
+        {
+            FailureRatio = 0.5, // 50 %
+            SamplingDuration = 30_000, // 30 s – long enough that no entry expires during the test
+            Timeout = 100_000,
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, qos);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, () => 10, () => ++callCount > successCalls);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await GivenOcelotIsRunningAsync(WithQualityOfService);
+
+        // Calls 1-3: all succeed (0 failures / 3 total = 0 %, below MinimumThroughput)
+        for (int i = 0; i < successCalls; i++)
+        {
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // circuit closed, reached service
+        }
+
+        // Calls 4-7: four consecutive failures — ratio keeps rising but total < 8 (MinimumThroughput)
+        for (int i = 0; i < failureCalls - 1; i++)
+        {
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // circuit still closed (total < 8)
+        }
+
+        // Call 8: 5th failure — total = 8 ≥ MinimumThroughput AND ratio = 5/8 = 62.5 % ≥ 50 % → circuit OPENS
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError); // reached service; circuit opens after this call
+
+        // Call 9: circuit is now OPEN → blocked immediately with 503
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
     }
 
     [Fact]
