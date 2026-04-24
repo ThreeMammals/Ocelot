@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Headers;
 using Ocelot.Middleware;
@@ -112,5 +112,35 @@ public class HttpContextResponderTests
 
         // Act, Assert
         _responder.SetErrorResponseOnContext(httpContext, 500);
+    }
+
+    [Fact]
+    public async Task Should_disable_buffering_for_sse_content_type()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var bodyFeature = new MockHttpResponseBodyFeature();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
+
+        var content = new StringContent("data: test");
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        await _responder.SetResponseOnHttpContext(httpContext, response);
+
+        // Assert
+        bodyFeature.DisableBufferingCalled.ShouldBeTrue();
+    }
+
+    private class MockHttpResponseBodyFeature : IHttpResponseBodyFeature
+    {
+        public bool DisableBufferingCalled { get; private set; }
+        public Stream Stream { get; } = new MemoryStream();
+        public System.IO.Pipelines.PipeWriter Writer => throw new NotImplementedException();
+        public void DisableBuffering() => DisableBufferingCalled = true;
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task StartAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task CompleteAsync() => throw new NotImplementedException();
     }
 }
