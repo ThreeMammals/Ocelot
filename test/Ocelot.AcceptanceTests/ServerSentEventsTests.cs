@@ -28,7 +28,7 @@ public class ServerSentEventsTests : Steps
         this.Given(x => GivenThereIsAnSseServiceRunningOn(port, "/sse"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIConnectToTheApiGatewaySseEndpoint("/sse"))
+            .When(x => WhenIConnectToTheApiGatewaySseEndpointSync("/sse"))
             .Then(x => ThenTheEventsAreReceivedInRealTime())
             .BDDfy();
     }
@@ -37,23 +37,25 @@ public class ServerSentEventsTests : Steps
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
-            if (context.Request.Path.Value == basePath)
-            {
-                context.Response.StatusCode = 200;
-                context.Response.ContentType = "text/event-stream";
-                context.Response.Headers.Append("Cache-Control", "no-cache");
-                context.Response.Headers.Append("Connection", "keep-alive");
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "text/event-stream";
+            context.Response.Headers.Append("Cache-Control", "no-cache");
+            context.Response.Headers.Append("Connection", "keep-alive");
 
-                await context.Response.WriteAsync("data: event1\n\n");
-                await context.Response.Body.FlushAsync();
+            await context.Response.WriteAsync("data: event1\n\n");
+            await context.Response.Body.FlushAsync();
 
-                // Wait deliberately to ensure chunks are sent asynchronously
-                await Task.Delay(1000);
+            // Wait deliberately to ensure chunks are sent asynchronously
+            await Task.Delay(1000);
 
-                await context.Response.WriteAsync("data: event2\n\n");
-                await context.Response.Body.FlushAsync();
-            }
+            await context.Response.WriteAsync("data: event2\n\n");
+            await context.Response.Body.FlushAsync();
         });
+    }
+
+    private void WhenIConnectToTheApiGatewaySseEndpointSync(string url)
+    {
+        WhenIConnectToTheApiGatewaySseEndpoint(url).GetAwaiter().GetResult();
     }
 
     private async Task WhenIConnectToTheApiGatewaySseEndpoint(string url)
@@ -61,24 +63,27 @@ public class ServerSentEventsTests : Steps
         _stopwatch.Start();
 
         var request = new HttpRequestMessage(HttpMethod.Get, url);
-        // Important: use ResponseHeadersRead to avoid HttpClient buffering
         response = await ocelotClient.SendAsync(request, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+
+        System.IO.File.AppendAllText("test-debug.log", $"Response StatusCode: {response.StatusCode}\n");
+        System.IO.File.AppendAllText("test-debug.log", $"Response Content-Type: {response.Content.Headers.ContentType}\n");
 
         if (response.IsSuccessStatusCode)
         {
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new System.IO.StreamReader(stream);
 
-            while (!reader.EndOfStream)
+            while (true)
             {
                 var line = await reader.ReadLineAsync();
+                System.IO.File.AppendAllText("test-debug.log", $"Read line: '{line}'\n");
+                if (line == null) break;
                 if (!string.IsNullOrEmpty(line))
                 {
                     _receivedEvents.Add(line);
                     
                     if (_receivedEvents.Count == 1)
                     {
-                        // Stop timing as soon as the first event is received
                         _stopwatch.Stop();
                     }
                 }
@@ -110,7 +115,7 @@ public class ServerSentEventsTests : Steps
         this.Given(x => GivenThereIsASignalRSseServiceRunningOn(port, "/signalr"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIConnectToTheApiGatewaySseEndpoint("/signalr"))
+            .When(x => WhenIConnectToTheApiGatewaySseEndpointSync("/signalr"))
             .Then(x => ThenTheSignalREventsAreReceivedInRealTime())
             .BDDfy();
     }
@@ -119,23 +124,20 @@ public class ServerSentEventsTests : Steps
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
-            if (context.Request.Path.Value == basePath)
-            {
-                context.Response.StatusCode = 200;
-                context.Response.ContentType = "text/event-stream";
-                context.Response.Headers.Append("Cache-Control", "no-cache");
-                context.Response.Headers.Append("Connection", "keep-alive");
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "text/event-stream";
+            context.Response.Headers.Append("Cache-Control", "no-cache");
+            context.Response.Headers.Append("Connection", "keep-alive");
 
-                // SignalR handshake chunk
-                await context.Response.WriteAsync("data: {\"type\":0}\u001e\n\n");
-                await context.Response.Body.FlushAsync();
+            // SignalR handshake chunk
+            await context.Response.WriteAsync("data: {\"type\":0}\u001e\n\n");
+            await context.Response.Body.FlushAsync();
 
-                await Task.Delay(1000);
+            await Task.Delay(1000);
 
-                // SignalR message chunk
-                await context.Response.WriteAsync("data: {\"type\":1,\"target\":\"ReceiveMessage\",\"arguments\":[\"Hello\"]}\u001e\n\n");
-                await context.Response.Body.FlushAsync();
-            }
+            // SignalR message chunk
+            await context.Response.WriteAsync("data: {\"type\":1,\"target\":\"ReceiveMessage\",\"arguments\":[\"Hello\"]}\u001e\n\n");
+            await context.Response.Body.FlushAsync();
         });
     }
 
