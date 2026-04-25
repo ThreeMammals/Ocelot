@@ -99,18 +99,15 @@ public class CircuitBreaker
     {
         get
         {
-            if (_state == CircuitState.Open && DateTime.UtcNow - _openedAt >= BreakDuration)
+            lock (_lock)
             {
-                lock (_lock)
+                if (_state == CircuitState.Open && DateTime.UtcNow - _openedAt >= BreakDuration)
                 {
-                    if (_state == CircuitState.Open && DateTime.UtcNow - _openedAt >= BreakDuration)
-                    {
-                        _state = CircuitState.HalfOpen;
-                    }
+                    _state = CircuitState.HalfOpen;
                 }
-            }
 
-            return _state;
+                return _state;
+            }
         }
     }
 
@@ -178,8 +175,8 @@ public class CircuitBreaker
             _failureCount++;
             if (_state == CircuitState.HalfOpen || (_state == CircuitState.Closed && _failureCount >= MinimumThroughput))
             {
-                _state = CircuitState.Open;
                 _openedAt = DateTime.UtcNow;
+                _state = CircuitState.Open;
             }
         }
     }
@@ -189,15 +186,15 @@ public class CircuitBreaker
         lock (_lock)
         {
             PurgeOldEntries();
-            _window!.Enqueue((DateTime.UtcNow, true));
+            _window.Enqueue((DateTime.UtcNow, true));
             _windowFailureCount++;
             _windowTotalCount++;
 
             if (_state == CircuitState.HalfOpen)
             {
                 // Any failure during the probe request reopens the circuit immediately.
-                _state = CircuitState.Open;
                 _openedAt = DateTime.UtcNow;
+                _state = CircuitState.Open;
                 return;
             }
 
@@ -205,8 +202,8 @@ public class CircuitBreaker
                 && _windowTotalCount >= MinimumThroughput
                 && (double)_windowFailureCount / _windowTotalCount >= FailureRatio!.Value)
             {
-                _state = CircuitState.Open;
                 _openedAt = DateTime.UtcNow;
+                _state = CircuitState.Open;
             }
         }
     }
@@ -214,8 +211,8 @@ public class CircuitBreaker
     /// <summary>Removes window entries older than <see cref="SamplingDuration"/>. Must be called within <c>_lock</c>.</summary>
     private void PurgeOldEntries()
     {
-        var cutoff = DateTime.UtcNow - SamplingDuration!.Value;
-        while (_window!.Count > 0 && _window.Peek().timestamp < cutoff)
+        var cutoff = DateTime.UtcNow - SamplingDuration.Value;
+        while (_window.Count > 0 && _window.Peek().timestamp < cutoff)
         {
             var entry = _window.Dequeue();
             _windowTotalCount--;
