@@ -336,8 +336,13 @@ public class OcelotBuilder : IOcelotBuilder
         return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
     }
 
+    /// <summary>
+    /// Adds the built-in Quality of Service feature from the <c>Ocelot.QualityOfService</c> namespace via <see cref="QosDelegatingHandlerDelegate"/> after force-removing any other enabled external QoS implementations.
+    /// </summary>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddQualityOfService()
     {
+        Services.RemoveAll<QosDelegatingHandlerDelegate>();
         Services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandler.Create);
         return this;
     }
