@@ -100,6 +100,28 @@ public class CircuitBreakerTests : UnitTest
     }
 
     [Fact]
+    public void CanExecute_DirectlyFromOpen_LazilyTransitionsToHalfOpenAndAllowsOneProbe()
+    {
+        // Arrange: open the circuit with a short break duration
+        var cb = new CircuitBreaker(1, TimeSpan.FromMilliseconds(50));
+        cb.RecordFailure();
+        Assert.Equal(CircuitState.Open, cb.State);
+
+        // Wait for the break duration to elapse WITHOUT polling State, so that the
+        // Open → HalfOpen lazy transition happens inside CanExecute() (lines 149-150).
+        Thread.Sleep(100);
+
+        // Act: CanExecute() must perform the lazy transition and grant exactly one probe.
+        bool firstCall = cb.CanExecute();   // triggers Open→HalfOpen internally, claims probe slot
+        bool secondCall = cb.CanExecute();  // probe already in flight – must be blocked
+
+        // Assert
+        Assert.True(firstCall, "CanExecute() should lazily transition Open→HalfOpen and allow the first probe.");
+        Assert.False(secondCall, "Second CanExecute() call should be blocked while the probe is in flight.");
+        Assert.Equal(CircuitState.HalfOpen, cb.State);
+    }
+
+    [Fact]
     public void HalfOpen_AllowsExactlyOneProbe_SecondCallIsBlocked()
     {
         // Arrange: open the circuit then wait for HalfOpen
@@ -311,6 +333,40 @@ public class CircuitBreakerTests : UnitTest
     // ───────────────────────────────────────────────────────────────────────────────
     //  Ratio mode
     // ───────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void RatioMode_WithZeroMinimumThroughput_NeverOpensCircuit()
+    {
+        // Arrange: MinimumThroughput = 0 disables circuit-breaking in ratio mode too
+        var cb = new CircuitBreaker(0.5, 0, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30));
+
+        // Act: record many failures
+        for (int i = 0; i < 100; i++)
+        {
+            cb.RecordFailure();
+        }
+
+        // Assert: circuit stays closed — minimum throughput guard fires
+        Assert.Equal(CircuitState.Closed, cb.State);
+        Assert.True(cb.CanExecute());
+    }
+
+    [Fact]
+    public void RatioMode_WithNegativeMinimumThroughput_NeverOpensCircuit()
+    {
+        // Arrange: negative MinimumThroughput also disables circuit-breaking in ratio mode
+        var cb = new CircuitBreaker(0.5, -1, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30));
+
+        // Act: record many failures
+        for (int i = 0; i < 10; i++)
+        {
+            cb.RecordFailure();
+        }
+
+        // Assert: circuit stays closed
+        Assert.Equal(CircuitState.Closed, cb.State);
+        Assert.True(cb.CanExecute());
+    }
 
     [Fact]
     public void Constructor_RatioMode_SetsAllProperties()

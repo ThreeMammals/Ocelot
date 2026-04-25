@@ -42,7 +42,7 @@ public enum CircuitState
 /// </remarks>
 public class CircuitBreaker
 {
-    private volatile CircuitState _state = CircuitState.Closed;
+    private CircuitState _state = CircuitState.Closed;
     private DateTime _openedAt;
     private readonly object _lock = new();
 
@@ -174,18 +174,21 @@ public class CircuitBreaker
         {
             if (_window != null)
             {
-                PurgeOldEntries();
-                _window.Enqueue((DateTime.UtcNow, false));
-                _windowTotalCount++;
-
                 if (_state == CircuitState.HalfOpen)
                 {
+                    // Probe succeeded: close the circuit and reset the window cleanly.
                     _state = CircuitState.Closed;
                     _halfOpenProbeInFlight = false;
-                    // Clear the window after a successful probe so ratio resets cleanly.
                     _window.Clear();
                     _windowFailureCount = 0;
                     _windowTotalCount = 0;
+                }
+                else
+                {
+                    // Normal success while Closed: record it in the rolling window.
+                    PurgeOldEntries();
+                    _window.Enqueue((DateTime.UtcNow, false));
+                    _windowTotalCount++;
                 }
             }
             else
@@ -234,6 +237,11 @@ public class CircuitBreaker
 
     private void RecordFailureRatioMode()
     {
+        if (MinimumThroughput <= 0)
+        {
+            return; // Circuit-breaking is disabled when MinimumThroughput is not configured
+        }
+
         lock (_lock)
         {
             PurgeOldEntries();
