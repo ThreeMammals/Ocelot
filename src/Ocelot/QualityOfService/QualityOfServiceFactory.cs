@@ -39,7 +39,7 @@ public class QualityOfServiceFactory : IQualityOfServiceFactory, IDisposable
         }
 
 #if DEBUG
-        _logger.LogDebug(() => $"Ocelot identified that an external Quality of Service lib aka {finder.GetType().Namespace} registered. Going to invoke {finder.GetType().Name} for route -> {route.Name()} ...");
+        _logger.LogDebug(() => $"QoS delegating handler delegate registered from {finder.GetType().Namespace}. Going to invoke {finder.GetType().Name} for route -> {route.Name()} ...");
 #endif
         var handler = finder.Invoke(route, _contextAccessor, _loggerFactory);
         if (handler is null)
