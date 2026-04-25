@@ -100,6 +100,91 @@ public class CircuitBreakerTests : UnitTest
     }
 
     [Fact]
+    public void HalfOpen_AllowsExactlyOneProbe_SecondCallIsBlocked()
+    {
+        // Arrange: open the circuit then wait for HalfOpen
+        var cb = new CircuitBreaker(1, TimeSpan.FromMilliseconds(50));
+        cb.RecordFailure();
+        WaitForState(cb, CircuitState.HalfOpen);
+
+        // Act: two sequential CanExecute() calls in HalfOpen
+        bool firstCall = cb.CanExecute();  // should be allowed – claims the probe slot
+        bool secondCall = cb.CanExecute(); // should be blocked – slot already taken
+
+        // Assert: exactly one probe allowed
+        Assert.True(firstCall, "First caller should be allowed to probe.");
+        Assert.False(secondCall, "Second caller should be blocked while a probe is in flight.");
+    }
+
+    [Fact]
+    public void HalfOpen_ConcurrentProbes_ExactlyOneAllowed()
+    {
+        // Arrange: open the circuit then wait for HalfOpen
+        var cb = new CircuitBreaker(1, TimeSpan.FromMilliseconds(50));
+        cb.RecordFailure();
+        WaitForState(cb, CircuitState.HalfOpen);
+
+        // Act: N concurrent CanExecute() calls
+        const int Threads = 20;
+        int allowedCount = 0;
+        var barrier = new Barrier(Threads); // synchronise all threads to start simultaneously
+        var threads = Enumerable.Range(0, Threads).Select(_ => new Thread(() =>
+        {
+            barrier.SignalAndWait();
+            if (cb.CanExecute())
+                Interlocked.Increment(ref allowedCount);
+        })).ToList();
+
+        threads.ForEach(t => t.Start());
+        threads.ForEach(t => t.Join());
+
+        // Assert: exactly ONE probe is permitted across all concurrent callers
+        Assert.Equal(1, allowedCount);
+    }
+
+    [Fact]
+    public void HalfOpen_AfterProbeSuccess_CircuitClosesAndAllRequestsAllowed()
+    {
+        // Arrange
+        var cb = new CircuitBreaker(1, TimeSpan.FromMilliseconds(50));
+        cb.RecordFailure();
+        WaitForState(cb, CircuitState.HalfOpen);
+
+        // One caller gets the probe slot
+        Assert.True(cb.CanExecute());
+
+        // Act: probe succeeds
+        cb.RecordSuccess();
+
+        // Assert: circuit is now Closed; all subsequent callers are allowed
+        Assert.Equal(CircuitState.Closed, cb.State);
+        Assert.True(cb.CanExecute());
+        Assert.True(cb.CanExecute());
+    }
+
+    [Fact]
+    public void HalfOpen_AfterProbeFails_CircuitReopensAndNewProbeAllowedAfterBreakDuration()
+    {
+        // Arrange
+        var cb = new CircuitBreaker(1, TimeSpan.FromMilliseconds(50));
+        cb.RecordFailure();
+        WaitForState(cb, CircuitState.HalfOpen);
+
+        Assert.True(cb.CanExecute());  // probe slot claimed
+
+        // Act: probe fails – circuit reopens
+        cb.RecordFailure();
+
+        Assert.Equal(CircuitState.Open, cb.State);
+        Assert.False(cb.CanExecute());
+
+        // After the second break duration elapses, exactly ONE new probe should be allowed
+        WaitForState(cb, CircuitState.HalfOpen);
+        Assert.True(cb.CanExecute(),  "A new probe should be allowed after the second break duration.");
+        Assert.False(cb.CanExecute(), "Only one probe per HalfOpen window.");
+    }
+
+    [Fact]
     public void RecordSuccess_InHalfOpenState_ClosesCircuit()
     {
         // Arrange

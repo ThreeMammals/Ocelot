@@ -46,6 +46,13 @@ public class CircuitBreaker
     private DateTime _openedAt;
     private readonly object _lock = new();
 
+    // ── HalfOpen one-probe gate ─────────────────────────────────────────
+    // Ensures exactly one probe request is allowed when the circuit is HalfOpen.
+    // Reset to false whenever the circuit transitions into HalfOpen so that the
+    // first CanExecute() call can set it to true and proceed; all concurrent
+    // callers that also see HalfOpen are blocked until the probe completes.
+    private bool _halfOpenProbeInFlight;
+
     // ── Count-mode state ────────────────────────────────────────────────
     private int _failureCount;
 
@@ -95,6 +102,10 @@ public class CircuitBreaker
     }
 
     /// <summary>Gets the current state of the circuit breaker, transitioning from <see cref="CircuitState.Open"/> to <see cref="CircuitState.HalfOpen"/> when <see cref="BreakDuration"/> has elapsed.</summary>
+    /// <remarks>
+    /// When transitioning to <see cref="CircuitState.HalfOpen"/> the one-probe gate is reset so that
+    /// the next <see cref="CanExecute"/> call can claim the single probe slot.
+    /// </remarks>
     public CircuitState State
     {
         get
@@ -104,6 +115,7 @@ public class CircuitBreaker
                 if (_state == CircuitState.Open && DateTime.UtcNow - _openedAt >= BreakDuration)
                 {
                     _state = CircuitState.HalfOpen;
+                    _halfOpenProbeInFlight = false; // Reset probe gate for the new HalfOpen window
                 }
 
                 return _state;
@@ -111,8 +123,45 @@ public class CircuitBreaker
         }
     }
 
-    /// <summary>Returns <see langword="true"/> if a request can proceed (circuit is <see cref="CircuitState.Closed"/> or <see cref="CircuitState.HalfOpen"/>).</summary>
-    public bool CanExecute() => State != CircuitState.Open;
+    /// <summary>
+    /// Returns <see langword="true"/> if a request can proceed, and <see langword="false"/> if it should be rejected.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    ///   <item><b>Closed</b>: always returns <see langword="true"/>.</item>
+    ///   <item><b>Open</b>: returns <see langword="false"/>. Once <see cref="BreakDuration"/> elapses the circuit
+    ///   internally transitions to <see cref="CircuitState.HalfOpen"/> and the next rule applies.</item>
+    ///   <item><b>HalfOpen</b>: returns <see langword="true"/> for exactly <em>one</em> concurrent probe request
+    ///   (the first caller atomically claims the probe slot); all subsequent concurrent callers receive
+    ///   <see langword="false"/> until the probe either succeeds (circuit closes) or fails (circuit reopens).</item>
+    /// </list>
+    /// This single-probe semantic matches the behaviour of Netflix Hystrix
+    /// (<c>attemptExecution()</c> with <c>compareAndSet(OPEN, HALF_OPEN)</c>) and Polly's circuit-breaker
+    /// strategy, and prevents a "thundering-herd" of probes from flooding an already-struggling downstream.
+    /// </remarks>
+    public bool CanExecute()
+    {
+        lock (_lock)
+        {
+            // Lazy Open → HalfOpen transition (mirrors the State getter).
+            if (_state == CircuitState.Open && DateTime.UtcNow - _openedAt >= BreakDuration)
+            {
+                _state = CircuitState.HalfOpen;
+                _halfOpenProbeInFlight = false;
+            }
+
+            if (_state == CircuitState.Closed)
+                return true;
+
+            if (_state == CircuitState.HalfOpen && !_halfOpenProbeInFlight)
+            {
+                _halfOpenProbeInFlight = true; // Claim the single probe slot
+                return true;
+            }
+
+            return false; // Open, or HalfOpen with a probe already in flight
+        }
+    }
 
     /// <summary>Records a successful request.</summary>
     /// <remarks>
@@ -132,6 +181,7 @@ public class CircuitBreaker
                 if (_state == CircuitState.HalfOpen)
                 {
                     _state = CircuitState.Closed;
+                    _halfOpenProbeInFlight = false;
                     // Clear the window after a successful probe so ratio resets cleanly.
                     _window.Clear();
                     _windowFailureCount = 0;
@@ -141,6 +191,7 @@ public class CircuitBreaker
             else
             {
                 _failureCount = 0;
+                _halfOpenProbeInFlight = false;
                 _state = CircuitState.Closed;
             }
         }
