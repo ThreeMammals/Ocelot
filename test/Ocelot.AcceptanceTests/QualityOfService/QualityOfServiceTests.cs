@@ -12,8 +12,6 @@ namespace Ocelot.AcceptanceTests.QualityOfService;
 [Trait("Feat", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
 public sealed class QualityOfServiceTests : QosSteps
 {
-    public QualityOfServiceTests() : base(null) => self = this;
-
     [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
     [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
@@ -559,7 +557,7 @@ public sealed class QualityOfServiceTests : QosSteps
         await TestRouteTimeout([route3.DownstreamHostAndPorts[0].Port], route3.UpstreamPathTemplate, route3.QoSOptions);
     }
 
-    private FileRoute GivenRoute(int port, QoSOptions options, string? upstream = null, string? method = null)
+    private FileRoute GivenRoute(int port, QoSOptions options, string upstream = null, string method = null)
     {
         var route = GivenRoute(port, upstream, upstream);
         route.UpstreamHttpMethod = [method ?? HttpMethods.Get];

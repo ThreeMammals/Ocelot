@@ -6,9 +6,11 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.QualityOfService;
 
-public class QosSteps(AcceptanceSteps self) : TimeoutSteps
+public class QosSteps : TimeoutSteps
 {
-    protected AcceptanceSteps self = self;
+    protected AcceptanceSteps self;
+    public QosSteps() => this.self = this;
+    public QosSteps(AcceptanceSteps self) => this.self = self;
 
     /// <summary>
     /// Copied from Polly project aka the PollyQoSResiliencePipelineProvider class.
