@@ -115,6 +115,7 @@ public class HttpContextResponderTests
     }
 
     [Fact]
+    [Trait("Feat", "941")]
     public async Task Should_disable_buffering_for_sse_content_type()
     {
         // Arrange
@@ -131,6 +132,48 @@ public class HttpContextResponderTests
 
         // Assert
         bodyFeature.DisableBufferingCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    [Trait("Feat", "941")]
+    public async Task Should_disable_buffering_and_add_nginx_header_for_sse_with_charset()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var bodyFeature = new MockHttpResponseBodyFeature();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
+
+        var content = new StringContent("data: test");
+        // Ocelot might receive "text/event-stream; charset=utf-8"
+        content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("text/event-stream; charset=utf-8");
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        await _responder.SetResponseOnHttpContext(httpContext, response);
+
+        // Assert
+        bodyFeature.DisableBufferingCalled.ShouldBeTrue();
+        httpContext.Response.Headers["X-Accel-Buffering"].ToString().ShouldBe("no");
+    }
+
+    [Fact]
+    [Trait("Feat", "941")]
+    public async Task Should_NOT_disable_buffering_for_non_sse_content_type()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var bodyFeature = new MockHttpResponseBodyFeature();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
+
+        var content = new StringContent("not sse");
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        await _responder.SetResponseOnHttpContext(httpContext, response);
+
+        // Assert
+        bodyFeature.DisableBufferingCalled.ShouldBeFalse();
     }
 
     private class MockHttpResponseBodyFeature : IHttpResponseBodyFeature

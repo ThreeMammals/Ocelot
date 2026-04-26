@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
@@ -7,7 +7,8 @@ namespace Ocelot.Testing;
 public static class PortFinder
 {
     private const int EndPortRange = 45000;
-    private static volatile int CurrentPort = 20000;
+    // Adding process-specific offset to avoid port clashing during parallel multi-target test runs
+    private static volatile int CurrentPort = 20000 + (Environment.ProcessId % 500) * 20;
     private static readonly object SyncRoot = new();
 
     //private static readonly ConcurrentBag<int> UsedPorts = new();
@@ -22,7 +23,7 @@ public static class PortFinder
         lock (SyncRoot)
         {
             ExceedingPortRangeException.ThrowIf(CurrentPort > EndPortRange);
-            while (!TryUsePort(++CurrentPort));
+            while (!TryUsePort(++CurrentPort)) ;
             return CurrentPort;
         }
     }

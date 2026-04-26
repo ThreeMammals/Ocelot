@@ -77,11 +77,15 @@ public class HttpContextResponder : IHttpResponder
 
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
-        var isSse = downstream.Content?.Headers?.ContentType?.MediaType?.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase) == true;
+        var isSse = downstream.Content?.Headers?.ContentType?.MediaType?.StartsWith("text/event-stream", StringComparison.OrdinalIgnoreCase) == true;
         if (isSse)
         {
-            var httpResponseBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
-            httpResponseBodyFeature?.DisableBuffering();
+            context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
+
+            if (!context.Response.Headers.ContainsKey("X-Accel-Buffering"))
+            {
+                context.Response.Headers.Append("X-Accel-Buffering", "no");
+            }
         }
 
         await using var content = await downstream.Content.ReadAsStreamAsync();

@@ -9,6 +9,12 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.ResponseCompression;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using System.Collections.Generic;
+using Xunit;
+using TestStack.BDDfy;
 
 namespace Ocelot.AcceptanceTests.ServerSentEvents;
 
@@ -18,7 +24,7 @@ public class ServerSentEventsTests : Steps
     private readonly Stopwatch _stopwatch = new();
     
     [Fact]
-    [Trait("Feat", "SSE")]
+    [Trait("Feat", "941")]
     public void Should_proxy_server_sent_events_without_buffering()
     {
         var port = PortFinder.GetRandomPort();
@@ -27,11 +33,13 @@ public class ServerSentEventsTests : Steps
 
         this.Given(x => GivenThereIsAnSseServiceRunningOn(port, "/sse"))
             .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenOcelotIsRunningWithCompression())
             .When(x => WhenIConnectToTheApiGatewaySseEndpointSync("/sse"))
             .Then(x => ThenTheEventsAreReceivedInRealTime())
             .BDDfy();
     }
+
+
 
     private void GivenThereIsAnSseServiceRunningOn(int port, string basePath)
     {
@@ -100,12 +108,15 @@ public class ServerSentEventsTests : Steps
         _receivedEvents[1].ShouldBe("data: event2");
 
         // The first event should be received way before the 1000ms delay finishes.
-        // If it was buffered, it would take around 1000ms or more.
-        _stopwatch.ElapsedMilliseconds.ShouldBeLessThan(800); 
+        _stopwatch.ElapsedMilliseconds.ShouldBeLessThan(500); 
+    }
+    private void ThenResponseIsCompressed()
+    {
+        response.Content.Headers.ContentEncoding.ShouldNotBeEmpty();
     }
 
     [Fact]
-    [Trait("Feat", "SSE-SignalR")]
+    [Trait("Feat", "941")]
     public void Should_proxy_signalr_sse_without_buffering()
     {
         var port = PortFinder.GetRandomPort();
@@ -149,11 +160,11 @@ public class ServerSentEventsTests : Steps
         _receivedEvents[0].ShouldBe("data: {\"type\":0}\u001e");
         _receivedEvents[1].ShouldBe("data: {\"type\":1,\"target\":\"ReceiveMessage\",\"arguments\":[\"Hello\"]}\u001e");
 
-        _stopwatch.ElapsedMilliseconds.ShouldBeLessThan(800); 
+        _stopwatch.ElapsedMilliseconds.ShouldBeLessThan(500); 
     }
 
     [Fact]
-    [Trait("Feat", "SSE-SignalR")]
+    [Trait("Feat", "941")]
     public async Task Should_proxy_true_signalr_communication_without_buffering()
     {
         var downstreamPort = PortFinder.GetRandomPort();
@@ -244,6 +255,23 @@ public class ServerSentEventsTests : Steps
         await Task.Delay(1500);
 
         return connection;
+    }
+
+    private void GivenOcelotIsRunningWithCompression()
+    {
+        GivenOcelotIsRunning(
+            null,
+            services => {
+                services.AddOcelot();
+                services.AddResponseCompression(options => {
+                    options.EnableForHttps = true;
+                    options.MimeTypes = new[] { "text/event-stream" };
+                });
+            },
+            app => {
+                app.UseResponseCompression();
+                app.UseOcelot().Wait();
+            });
     }
 
     private void ThenTheRealSignalREventsAreReceivedInstantly()

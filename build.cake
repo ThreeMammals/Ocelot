@@ -1,4 +1,4 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.6.2
+#tool dotnet:?package=GitVersion.Tool&version=6.6.2
 #tool nuget:?package=ReportGenerator&version=5.5.4
 
 #addin nuget:?package=Cake.Http
@@ -61,6 +61,9 @@ var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.Acceptance
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
 var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
+// browser testing
+var artifactsForSSEBrowserTestsDir = artifactsDir + Directory("SSEBrowserTests");
+
 // packaging
 var packagesDir = artifactsDir + Directory("Packages");
 var artifactsFile = packagesDir + File("artifacts.txt");
@@ -96,7 +99,8 @@ Task("ReleaseNotes")
 
 Task("Tests")
 	.IsDependentOn("UnitTests")
-	.IsDependentOn("AcceptanceTests");
+	.IsDependentOn("AcceptanceTests")
+	.IsDependentOn("SSEBrowserTests");
 
 Task("Release")
 	.IsDependentOn("Build")
@@ -579,6 +583,20 @@ Task("AcceptanceTests")
 			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
 			return;
 		}
+        // Install Playwright browsers (only for the latest framework to save time)
+        var latestTfm = GetTFMs().Last();
+        var playwrightPath = $"./test/Ocelot.AcceptanceTests/bin/{compileConfig}/{latestTfm}/playwright.ps1";
+        
+        Information("Installing Playwright browsers...");
+        if (IsRunningOnWindows())
+        {
+            StartProcess("powershell", new ProcessSettings { Arguments = $"-File {playwrightPath} install chromium" });
+        }
+        else
+        {
+            Information("Skipping Playwright installation on non-Windows (TODO: support Linux/macOS in CI)");
+        }
+
         // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
@@ -596,6 +614,9 @@ Task("AcceptanceTests")
 			DotNetTest(acceptanceTestAssemblies, settings);
 		}
 	});
+
+Task("SSEBrowserTests")
+	.IsDependentOn("AcceptanceTests");
 
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
