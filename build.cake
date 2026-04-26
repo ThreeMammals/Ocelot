@@ -61,9 +61,6 @@ var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.Acceptance
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
 var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 
-// browser testing
-var artifactsForSSEBrowserTestsDir = artifactsDir + Directory("SSEBrowserTests");
-
 // packaging
 var packagesDir = artifactsDir + Directory("Packages");
 var artifactsFile = packagesDir + File("artifacts.txt");
@@ -99,8 +96,7 @@ Task("ReleaseNotes")
 
 Task("Tests")
 	.IsDependentOn("UnitTests")
-	.IsDependentOn("AcceptanceTests")
-	.IsDependentOn("SSEBrowserTests");
+	.IsDependentOn("AcceptanceTests");
 
 Task("Release")
 	.IsDependentOn("Build")
@@ -597,7 +593,6 @@ Task("AcceptanceTests")
             Information("Skipping Playwright installation on non-Windows (TODO: support Linux/macOS in CI)");
         }
 
-        // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
@@ -615,8 +610,6 @@ Task("AcceptanceTests")
 		}
 	});
 
-Task("SSEBrowserTests")
-	.IsDependentOn("AcceptanceTests");
 
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
