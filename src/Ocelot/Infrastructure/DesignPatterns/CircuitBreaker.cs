@@ -44,7 +44,11 @@ public class CircuitBreaker
 {
     private CircuitState _state = CircuitState.Closed;
     private DateTime _openedAt;
-    private readonly object _lock = new();
+#if NET9_0_OR_GREATER
+    private static readonly Lock _lock = new();
+#else
+    private static readonly object _lock = new();
+#endif
 
     // ── HalfOpen one-probe gate ─────────────────────────────────────────
     // Ensures exactly one probe request is allowed when the circuit is HalfOpen.
@@ -273,9 +277,9 @@ public class CircuitBreaker
         var cutoff = DateTime.UtcNow - SamplingDuration.Value;
         while (_window.Count > 0 && _window.Peek().timestamp < cutoff)
         {
-            var entry = _window.Dequeue();
+            var (_, isFailure) = _window.Dequeue();
             _windowTotalCount--;
-            if (entry.isFailure)
+            if (isFailure)
             {
                 _windowFailureCount--;
             }

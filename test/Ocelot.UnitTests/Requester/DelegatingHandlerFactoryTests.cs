@@ -306,8 +306,8 @@ public class DelegatingHandlerFactoryTests : UnitTest
     }
 
     [Fact]
-    [Trait("Feat", "6")]
-    [Trait("PR", "9")]
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void Should_not_return_qos_provider_delegate_when_no_qos_options()
     {
         // Arrange

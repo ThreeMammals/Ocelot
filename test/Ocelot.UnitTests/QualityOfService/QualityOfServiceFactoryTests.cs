@@ -7,6 +7,8 @@ using Ocelot.QualityOfService;
 
 namespace Ocelot.UnitTests.QualityOfService;
 
+[Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+[Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
 public class QualityOfServiceFactoryTests
 {
     private QualityOfServiceFactory _factory;

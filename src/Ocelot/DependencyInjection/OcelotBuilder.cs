@@ -359,7 +359,7 @@ public class OcelotBuilder : IOcelotBuilder
     {
         Services.RemoveAll<QosDelegatingHandlerDelegate>();
         Services.AddSingleton<QosDelegatingHandlerDelegate>(sp =>
-            (DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory) =>
+            (route, contextAccessor, loggerFactory) =>
                 ActivatorUtilities.CreateInstance<THandler>(sp, route, loggerFactory));
         return this;
     }

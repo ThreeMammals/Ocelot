@@ -572,6 +572,8 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void AddQualityOfService_RegistersQosDelegatingHandlerDelegate()
     {
         // Arrange
@@ -589,6 +591,8 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void AddQualityOfService_Generic_RegistersCustomHandlerDelegate()
     {
         // Arrange

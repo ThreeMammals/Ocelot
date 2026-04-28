@@ -75,6 +75,8 @@ public class QoSOptionsTests
     [InlineData(0.0, false)] // should not use — zero ratio
     [InlineData(0.5, true)] // should use — 50% ratio
     [InlineData(1.0, true)] // should use — 100% ratio
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void UseQos_FailureRatio_ShouldUse(double? failureRatio, bool expected)
     {
         // Arrange

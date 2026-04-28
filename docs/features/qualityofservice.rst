@@ -64,25 +64,32 @@ The table below summarises the key differences between the two QoS implementatio
     * - Invalid-value handling
       - Silent default substitution
       - Logged warning + default substitution
-    * - ``MinimumThroughput = 0``
-      - Uses default (100)
-      - Disables circuit breaking
+    * - ``MinimumThroughput = 0`` *
+      - Disables circuit breaking, but not timing out
+      - Disables circuit breaking, but not timeout strategy 
+    * - ``Timeout = 0`` *
+      - Disables timing out, but not circuit breaking
+      - Disables timing out, but not circuit breaker strategy 
+
+.. note::
+
+  \* Use with caution, since other ``QoSOptions`` values will be substituted at runtime if at least one other strategy option is defined while the others are null.
 
 .. _qos-builtin:
 
 Built-in QoS
 ------------
-.. _CircuitBreakerDelegatingHandler: https://github.com/ocelotgateway/Ocelot/blob/main/src/Ocelot/QualityOfService/CircuitBreakerDelegatingHandler.cs
+.. _CircuitBreakerDelegatingHandler: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/QualityOfService/CircuitBreakerDelegatingHandler.cs
 
   | Class: `CircuitBreakerDelegatingHandler`_
 
-Ocelot's built-in Quality of Service implementation is part of the core ``Ocelot`` package.
+Ocelot's built-in *Quality of Service* implementation is part of the core ``Ocelot`` package.
 It wraps every outgoing downstream request in a `CircuitBreakerDelegatingHandler`_, providing circuit-breaker protection and an optional per-request timeout with no external dependencies.
 
 To activate it, call ``AddQualityOfService()`` on the ``OcelotBuilder`` [#f1]_:
 
 .. code-block:: csharp
-  :emphasize-lines: 4
+  :emphasize-lines: 3
 
   builder.Services
       .AddOcelot(builder.Configuration)
@@ -168,15 +175,15 @@ An optional per-request timeout can be configured independently of or alongside 
 When a request exceeds ``Timeout`` milliseconds, it is cancelled.
 A ``503 Service Unavailable`` response is returned, and the event is recorded as a circuit-breaker failure.
 
+Setting ``Timeout`` to ``0`` or a negative value disables the timeout.
+To disable the per-request timeout entirely, omit the ``Timeout`` option or set it to ``0``.
+
 .. note::
 
   When ``Timeout`` is the only option configured, the built-in circuit breaker is still active with its default values:
   ``MinimumThroughput = 100`` and ``BreakDuration = 5000 ms``.
   The circuit opens after 100 consecutive timeout failures and stays open for 5 seconds.
   To control these defaults, configure ``MinimumThroughput`` and ``BreakDuration`` explicitly.
-
-Setting ``Timeout`` to ``0`` or a negative value disables the timeout.
-To disable the per-request timeout entirely, omit the ``Timeout`` option or set it to ``0``.
 
 .. _qos-builtin-server-errors:
 
@@ -263,7 +270,7 @@ The built-in handler silently substitutes a default when an option is unset or o
     * - ``MinimumThroughput``
       - ≥ 2
       - 100
-      - Invalid or unset values use the default; set to ``0`` or negative does **not** disable circuit-breaking — the default (100) is used instead.
+      - Set to ``0`` or negative to **disable** circuit-breaking entirely.
     * - ``FailureRatio``
       - (0.0, 1.0]
       - 0.5
@@ -275,7 +282,7 @@ The built-in handler silently substitutes a default when an option is unset or o
     * - ``Timeout``
       - > 10 ms, < 86 400 000 ms
       - 30 000 ms
-      - Null or ≤ 0 disables the timeout. Invalid positive values outside the range use the default (30 s).
+      - Set to ``0`` or negative to **disable** timing out. Invalid positive values outside the range use the default (30 s).
 
 .. _qos-polly-installation:
 
@@ -295,7 +302,7 @@ Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPol
 .. code-block:: csharp
   :emphasize-lines: 5
 
-  using Ocelot.Provider.Polly;
+  using Ocelot.QualityOfService.Polly;
 
   builder.Services
       .AddOcelot(builder.Configuration)

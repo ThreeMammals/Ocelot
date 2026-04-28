@@ -397,7 +397,8 @@ public sealed class QualityOfServiceTests : QosSteps
     /// 7 calls, all failing → circuit <b>stays closed</b> (throughput too low).
     /// </remarks>
     [Fact]
-    [Trait("Feat", "6")] // https://github.com/ocelotgateway/Ocelot/issues/6
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public async Task FailureRatio_BelowMinimumThroughput_CircuitStaysClosed()
     {
         const int minimumThroughput = 8;
@@ -436,7 +437,8 @@ public sealed class QualityOfServiceTests : QosSteps
     /// 8 calls, 5 failing (62.5 %) → circuit <b>opens</b>.
     /// </remarks>
     [Fact]
-    [Trait("Feat", "6")] // https://github.com/ocelotgateway/Ocelot/issues/6
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public async Task FailureRatio_AtMinimumThroughputWithExceededRatio_CircuitOpens()
     {
         // 3 successes + 5 failures = 5/8 = 62.5 % ≥ 50 % (FailureRatio) AND 8 ≥ 8 (MinimumThroughput) → opens
@@ -567,6 +569,8 @@ public sealed class QualityOfServiceTests : QosSteps
     /// built-in handler would never do, because 404 is not in <see cref="CircuitBreakerDelegatingHandler.DefaultServerErrorCodes"/>.
     /// </summary>
     [Fact]
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public async Task AddQualityOfService_Generic_CustomServerErrorCodes_OpensCircuitOn404()
     {
         const int minimumThroughput = 2;
@@ -647,4 +651,3 @@ public sealed class QualityOfServiceTests : QosSteps
     public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, int timeout, [CallerMemberName] string response = nameof(QualityOfServiceTests))
         => base.GivenThereIsAServiceRunningOn(port, statusCode, timeout, response);
 }
-

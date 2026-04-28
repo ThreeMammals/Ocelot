@@ -6,6 +6,8 @@ using Ocelot.QualityOfService;
 
 namespace Ocelot.UnitTests.QualityOfService;
 
+[Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+[Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
 public class CircuitBreakerDelegatingHandlerTests : UnitTest
 {
     private readonly Mock<IOcelotLogger> _logger;
@@ -18,6 +20,8 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<CircuitBreakerDelegatingHandler>())
             .Returns(_logger.Object);
     }
+
+    private static CancellationToken CancelMe { get => TestContext.Current.CancellationToken; } 
 
     private CircuitBreakerDelegatingHandler CreateHandler(QoSOptions opts, HttpMessageHandler innerHandler)
     {
@@ -190,7 +194,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(2, 1000);
         using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
@@ -207,7 +211,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(10, 2000); // high threshold so circuit stays Closed after 1 failure
         using var handler = CreateHandler(opts, new FakeInnerHandler(statusCode));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(statusCode, response.StatusCode);
         Assert.Equal(1, handler.CircuitBreaker.FailureCount);
@@ -226,7 +230,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         for (int i = 0; i < threshold; i++)
         {
             request = new HttpRequestMessage(HttpMethod.Get, "http://test/");
-            await SendAsync(handler, request);
+            await SendAsync(handler, request, CancelMe);
         }
 
         Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
@@ -243,14 +247,14 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         // Open the circuit
         for (int i = 0; i < threshold; i++)
         {
-            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
         }
 
         int callCountAfterOpen = innerHandler.CallCount;
         Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
 
         // This call should be blocked
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal(callCountAfterOpen, innerHandler.CallCount); // inner was not called
@@ -263,7 +267,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         using var handler = CreateHandler(opts, new ThrowingInnerHandler(new InvalidOperationException("test error")));
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/")));
+            () => SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe));
 
         Assert.Equal(1, handler.CircuitBreaker.FailureCount);
     }
@@ -293,7 +297,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(100, 5000) { Timeout = timeoutMs };
         using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, serviceDelayMs));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(0, handler.CircuitBreaker.FailureCount);
@@ -306,7 +310,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(100, 5000) { Timeout = timeoutMs };
         using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, serviceDelayMs));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal(1, handler.CircuitBreaker.FailureCount);
@@ -331,7 +335,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(100, 5000) { Timeout = null };
         using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.Created));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
@@ -343,7 +347,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(2, 5000) { Timeout = 0 };
         using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.Accepted));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
     }
@@ -499,7 +503,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
 
         for (int i = 0; i < 3; i++)
         {
-            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
         }
 
         Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
@@ -514,7 +518,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
 
         for (int i = 0; i < 4; i++)
         {
-            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
         }
 
         Assert.Equal(CircuitState.Open, handler.CircuitBreaker.State);
@@ -545,7 +549,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
 
         for (int i = 0; i < 4; i++)
         {
-            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+            await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
         }
 
         Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
@@ -565,7 +569,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         // Use a delay longer than any timeout value to confirm no timeout fires
         using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, 50));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -578,7 +582,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(100, 5000) { Timeout = CircuitBreakerDelegatingHandler.LowTimeout };
         using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -590,7 +594,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         var opts = new QoSOptions(100, 5000) { Timeout = CircuitBreakerDelegatingHandler.HighTimeout };
         using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
 
-        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -613,7 +617,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         };
 
         // One call records a "failure" (404 is in the custom set)
-        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(1, handler.CircuitBreaker.FailureCount);
     }
@@ -632,7 +636,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         };
 
         // 500 is NOT in the custom set, so it is counted as a success
-        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
         Assert.Equal(0, handler.CircuitBreaker.FailureCount);
     }
