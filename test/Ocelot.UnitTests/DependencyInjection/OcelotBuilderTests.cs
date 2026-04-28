@@ -24,6 +24,7 @@ using Ocelot.Multiplexer;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.QualityOfService;
+using Ocelot.Logging;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
@@ -584,5 +585,39 @@ public class OcelotBuilderTests : UnitTest
         var handler = _serviceProvider.GetService<QosDelegatingHandlerDelegate>();
         Assert.NotNull(handler);
         Assert.Equal(QosDelegatingHandler.Create, handler);
+    }
+
+    [Fact]
+    public void AddQualityOfService_Generic_RegistersCustomHandlerDelegate()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var result = _ocelotBuilder.AddQualityOfService<FakeCircuitBreakerHandler>();
+
+        // Assert — fluent API returns the same builder
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var @delegate = _serviceProvider.GetService<QosDelegatingHandlerDelegate>();
+        Assert.NotNull(@delegate);
+        Assert.NotEqual(QosDelegatingHandler.Create, @delegate);
+
+        // Invoke the delegate so that lines 362-363 are executed
+        var route = new DownstreamRouteBuilder().Build();
+        var loggerMock = new Mock<IOcelotLogger>();
+        var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
+        loggerFactoryMock.Setup(x => x.CreateLogger<CircuitBreakerDelegatingHandler>())
+            .Returns(loggerMock.Object);
+        var contextAccessor = _serviceProvider.GetService<IHttpContextAccessor>();
+        var handler = @delegate(route, contextAccessor, loggerFactoryMock.Object);
+        Assert.NotNull(handler);
+        Assert.IsType<FakeCircuitBreakerHandler>(handler);
+    }
+
+    private sealed class FakeCircuitBreakerHandler : CircuitBreakerDelegatingHandler
+    {
+        public FakeCircuitBreakerHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+            : base(route, loggerFactory) { }
     }
 }
