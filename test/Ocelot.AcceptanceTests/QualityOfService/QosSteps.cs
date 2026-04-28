@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.Testing.Steps;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.QualityOfService;
 
-public class QosSteps : AcceptanceSteps, IQosSteps
+public class QosSteps : TimeoutSteps
 {
-    private readonly AcceptanceSteps self;
+    protected AcceptanceSteps self;
+    public QosSteps() => this.self = this;
     public QosSteps(AcceptanceSteps self) => this.self = self;
 
     /// <summary>
@@ -123,14 +125,4 @@ public class QosSteps : AcceptanceSteps, IQosSteps
                 BrokenServiceStatusCode[kv.Key] = onlineStatusCode;
         }
     }
-}
-
-public interface IQosSteps
-{
-    Task TestRouteCircuitBreaker(int[] ports, string upstreamPath, FileQoSOptions qos, int index = 0, bool isDiscovery = false);
-    Task TestRouteTimeout(int[] ports, string upstreamPath, FileQoSOptions qos);
-    void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode,
-        Func<int> timeoutStrategy, Func<bool> failingStrategy, [CallerMemberName] string response = null);
-    void GivenThereIsABrokenServiceRunningOn(int port, HttpStatusCode brokenStatusCode, int index = 0);
-    void GivenThereIsABrokenServiceOnline(HttpStatusCode onlineStatusCode, int index = 0, int length = 1, bool isDiscovery = false);
 }

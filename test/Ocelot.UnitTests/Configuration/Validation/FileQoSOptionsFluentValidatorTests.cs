@@ -66,7 +66,7 @@ public class FileQoSOptionsFluentValidatorTests : UnitTest
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Equal("Unable to start Ocelot because either a Route or GlobalConfiguration are using QoSOptions but no QosDelegatingHandlerDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.QualityOfService.Polly and services.AddPolly()?",
+        Assert.Equal("Unable to start Ocelot because either a Route or GlobalConfiguration is using QoSOptions, but no QosDelegatingHandlerDelegate has been registered in the dependency injection container. Are you missing an external package like Ocelot.QualityOfService.Polly (and calling AddPolly()), or the built-in QoS support (via AddQualityOfService())?",
             result.Errors[0].ErrorMessage);
     }
 

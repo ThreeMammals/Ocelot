@@ -57,4 +57,15 @@ public interface IOcelotBuilder
         where T : ILoadBalancer;
 
     IOcelotBuilder AddConfigPlaceholders();
+
+    IOcelotBuilder AddQualityOfService();
+
+    /// <summary>
+    /// Adds a custom Quality of Service handler that inherits from <see cref="Ocelot.QualityOfService.CircuitBreakerDelegatingHandler"/>,
+    /// allowing overrides such as a custom <c>ServerErrorCodes</c> set.
+    /// </summary>
+    /// <typeparam name="THandler">A concrete subclass of <see cref="Ocelot.QualityOfService.CircuitBreakerDelegatingHandler"/>.</typeparam>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    IOcelotBuilder AddQualityOfService<THandler>()
+        where THandler : Ocelot.QualityOfService.CircuitBreakerDelegatingHandler;
 }

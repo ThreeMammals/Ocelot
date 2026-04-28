@@ -422,7 +422,7 @@ public class DynamicRoutingTests : DiscoverySteps
         ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0);
     }
 
-    [Fact(Skip = "Follow up https://github.com/ThreeMammals/Ocelot/pull/2380")]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -456,7 +456,7 @@ public class DynamicRoutingTests : DiscoverySteps
         ThenServicesShouldHaveBeenCalledTimes(2, 2, 1);
     }
 
-    [Fact(Skip = "Follow up https://github.com/ThreeMammals/Ocelot/pull/2380")]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -529,20 +529,9 @@ public class DynamicRoutingTests : DiscoverySteps
             Key = key,
         };
 
-    private static void WithDiscoveryAndQualityOfService(IServiceCollection services)
-    {
-        services
+    private static void WithDiscoveryAndQualityOfService(IServiceCollection services) => services
             .AddSingleton(DynamicRoutingDiscoveryFinder)
-            .AddOcelot();
-        AddQualityOfService(services);
-    }
-    public static IServiceCollection AddQualityOfService(IServiceCollection services)
-    {
-        QosDelegatingHandlerDelegate handler = GetDelegatingHandler;
-        return services.AddSingleton(handler);
-    }
-    private static DelegatingHandler GetDelegatingHandler(DownstreamRoute route, IHttpContextAccessor contextAccessor, IOcelotLoggerFactory loggerFactory)
-        => new FakeQualityOfServiceDelegatingHandler(route, contextAccessor, loggerFactory);
+            .AddOcelot().AddQualityOfService(); // Built-in feat, not Polly
 
     private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
     {
