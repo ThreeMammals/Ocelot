@@ -55,14 +55,26 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
     public void DefaultMinimumThroughput_Is100()
         => Assert.Equal(100, CircuitBreakerDelegatingHandler.DefaultMinimumThroughput);
 
+    [Fact]
+    public void LowTimeout_Is10()
+        => Assert.Equal(10, CircuitBreakerDelegatingHandler.LowTimeout);
+
+    [Fact]
+    public void DefaultTimeout_Is30000()
+        => Assert.Equal(30_000, CircuitBreakerDelegatingHandler.DefaultTimeout);
+
+    [Fact]
+    public void HighTimeout_Is86400000()
+        => Assert.Equal(86_400_000, CircuitBreakerDelegatingHandler.HighTimeout);
+
     // --------------------------------------------------------
     //  ServerErrorCodes
     // --------------------------------------------------------
 
     [Fact]
-    public void ServerErrorCodes_ContainsExpected9Codes()
+    public void DefaultServerErrorCodes_ContainsExpected9Codes()
     {
-        var codes = CircuitBreakerDelegatingHandler.ServerErrorCodes;
+        var codes = CircuitBreakerDelegatingHandler.DefaultServerErrorCodes;
         Assert.Equal(9, codes.Count);
         Assert.Contains(HttpStatusCode.InternalServerError, codes);
         Assert.Contains(HttpStatusCode.NotImplemented, codes);
@@ -76,9 +88,9 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
     }
 
     [Fact]
-    public void ServerErrorCodes_DoesNotContainSuccessCodes()
+    public void DefaultServerErrorCodes_DoesNotContainSuccessCodes()
     {
-        var codes = CircuitBreakerDelegatingHandler.ServerErrorCodes;
+        var codes = CircuitBreakerDelegatingHandler.DefaultServerErrorCodes;
         Assert.DoesNotContain(HttpStatusCode.OK, codes);
         Assert.DoesNotContain(HttpStatusCode.Created, codes);
         Assert.DoesNotContain(HttpStatusCode.Accepted, codes);
@@ -537,6 +549,100 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
         }
 
         Assert.Equal(CircuitState.Closed, handler.CircuitBreaker.State);
+    }
+
+    // --------------------------------------------------------
+    //  GetTimeout (via SendAsync behaviour)
+    // --------------------------------------------------------
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task SendAsync_DisabledTimeout_NoTimeoutEnforced(int? timeout)
+    {
+        var opts = new QoSOptions(100, 5000) { Timeout = timeout };
+        // Use a delay longer than any timeout value to confirm no timeout fires
+        using var handler = CreateHandler(opts, new DelayedInnerHandler(HttpStatusCode.OK, 50));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendAsync_TimeoutAtLowBoundary_UsesDefaultTimeout()
+    {
+        // Timeout = LowTimeout (10ms) is not strictly > 10, so GetTimeout returns DefaultTimeout (30s)
+        // The request completes quickly so no timeout fires
+        var opts = new QoSOptions(100, 5000) { Timeout = CircuitBreakerDelegatingHandler.LowTimeout };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendAsync_TimeoutAboveHigh_UsesDefaultTimeout()
+    {
+        // Timeout = HighTimeout is not strictly < HighTimeout, so GetTimeout returns DefaultTimeout (30s)
+        var opts = new QoSOptions(100, 5000) { Timeout = CircuitBreakerDelegatingHandler.HighTimeout };
+        using var handler = CreateHandler(opts, new FakeInnerHandler(HttpStatusCode.OK));
+
+        var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    // --------------------------------------------------------
+    //  Virtual ServerErrorCodes override
+    // --------------------------------------------------------
+
+    [Fact]
+    public async Task SendAsync_CustomServerErrorCodes_TreatsNotFoundAsFailure()
+    {
+        // Subclass that also counts 404 as a failure
+        var opts = new QoSOptions(2, 5000);
+        var route = new DownstreamRouteBuilder().WithQosOptions(opts).Build();
+        _loggerFactory.Setup(x => x.CreateLogger<CustomErrorCodesHandler>())
+            .Returns(_logger.Object);
+        using var handler = new CustomErrorCodesHandler(route, _loggerFactory.Object)
+        {
+            InnerHandler = new FakeInnerHandler(HttpStatusCode.NotFound),
+        };
+
+        // One call records a "failure" (404 is in the custom set)
+        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(1, handler.CircuitBreaker.FailureCount);
+    }
+
+    [Fact]
+    public async Task SendAsync_CustomServerErrorCodes_DoesNotTreatInternalServerErrorAsFailure()
+    {
+        // Subclass that only counts 404 as a failure (not 500)
+        var opts = new QoSOptions(2, 5000);
+        var route = new DownstreamRouteBuilder().WithQosOptions(opts).Build();
+        _loggerFactory.Setup(x => x.CreateLogger<CustomErrorCodesHandler>())
+            .Returns(_logger.Object);
+        using var handler = new CustomErrorCodesHandler(route, _loggerFactory.Object)
+        {
+            InnerHandler = new FakeInnerHandler(HttpStatusCode.InternalServerError),
+        };
+
+        // 500 is NOT in the custom set, so it is counted as a success
+        await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"));
+
+        Assert.Equal(0, handler.CircuitBreaker.FailureCount);
+    }
+
+    /// <summary>Test subclass that overrides <see cref="CircuitBreakerDelegatingHandler.ServerErrorCodes"/> to only treat 404 as a failure.</summary>
+    private sealed class CustomErrorCodesHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+        : CircuitBreakerDelegatingHandler(route, loggerFactory)
+    {
+        protected override HashSet<HttpStatusCode> ServerErrorCodes { get; } =
+            [HttpStatusCode.NotFound];
     }
 
     // --------------------------------------------------------

@@ -65,8 +65,8 @@ The table below summarises the key differences between the two QoS implementatio
       - Silent default substitution
       - Logged warning + default substitution
     * - ``MinimumThroughput = 0``
-      - Disables circuit breaking
       - Uses default (100)
+      - Disables circuit breaking
 
 .. _qos-builtin:
 
@@ -167,7 +167,16 @@ An optional per-request timeout can be configured independently of or alongside 
 
 When a request exceeds ``Timeout`` milliseconds, it is cancelled.
 A ``503 Service Unavailable`` response is returned, and the event is recorded as a circuit-breaker failure.
+
+.. note::
+
+  When ``Timeout`` is the only option configured, the built-in circuit breaker is still active with its default values:
+  ``MinimumThroughput = 100`` and ``BreakDuration = 5000 ms``.
+  The circuit opens after 100 consecutive timeout failures and stays open for 5 seconds.
+  To control these defaults, configure ``MinimumThroughput`` and ``BreakDuration`` explicitly.
+
 Setting ``Timeout`` to ``0`` or a negative value disables the timeout.
+To disable the per-request timeout entirely, omit the ``Timeout`` option or set it to ``0``.
 
 .. _qos-builtin-server-errors:
 
@@ -204,6 +213,34 @@ The following HTTP response status codes are treated as failures by the built-in
 Any other status code (including ``4xx`` client errors) is recorded as a success and does not contribute to the failure count.
 Unhandled exceptions (excluding ``OperationCanceledException``) are also counted as failures.
 
+.. _qos-builtin-server-errors-override:
+
+Overriding server error codes
+"""""""""""""""""""""""""""""
+
+The set of failure codes is exposed as the ``protected virtual`` property ``ServerErrorCodes`` on ``CircuitBreakerDelegatingHandler``.
+You can extend or replace this set by creating a subclass and overriding the property:
+
+.. code-block:: csharp
+
+  public class MyCircuitBreakerHandler : CircuitBreakerDelegatingHandler
+  {
+      public MyCircuitBreakerHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+          : base(route, loggerFactory) { }
+
+      // Treat all 5xx codes AND 429 Too Many Requests as failures
+      protected override HashSet<HttpStatusCode> ServerErrorCodes { get; } =
+          new(DefaultServerErrorCodes) { HttpStatusCode.TooManyRequests };
+  }
+
+Then register it with the ``AddQualityOfService<THandler>()`` overload on ``OcelotBuilder``:
+
+.. code-block:: csharp
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddQualityOfService<MyCircuitBreakerHandler>();
+
 .. _qos-builtin-value-constraints:
 
 Built-in Value Constraints
@@ -226,7 +263,7 @@ The built-in handler silently substitutes a default when an option is unset or o
     * - ``MinimumThroughput``
       - ≥ 2
       - 100
-      - Set to ``0`` or negative to **disable** circuit-breaking entirely.
+      - Invalid or unset values use the default; set to ``0`` or negative does **not** disable circuit-breaking — the default (100) is used instead.
     * - ``FailureRatio``
       - (0.0, 1.0]
       - 0.5
@@ -236,9 +273,9 @@ The built-in handler silently substitutes a default when an option is unset or o
       - 10 000 ms
       - Ratio mode only.
     * - ``Timeout``
-      - > 0 ms
-      - (disabled)
-      - Any value ≤ 0 disables the timeout.
+      - > 10 ms, < 86 400 000 ms
+      - 30 000 ms
+      - Null or ≤ 0 disables the timeout. Invalid positive values outside the range use the default (30 s).
 
 .. _qos-polly-installation:
 

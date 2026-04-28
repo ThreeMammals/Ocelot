@@ -33,11 +33,18 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     public const int LowSamplingDuration = 500;
     public const int DefaultSamplingDuration = 10_000;
 
+    public const int LowTimeout = 10;
+    public const int DefaultTimeout = 30_000;
+    public const int HighTimeout = 86_400_000;
+
     /// <summary>
-    /// The set of HTTP status codes that are considered server errors and will be counted as circuit-breaker failures.
+    /// The default set of HTTP status codes that are considered server errors and will be counted as circuit-breaker failures.
     /// </summary>
-    /// <remarks>Used by Ocelot's built-in QoS handler to treat downstream 5xx responses as circuit-breaker failures.</remarks>
-    public static readonly IReadOnlySet<HttpStatusCode> ServerErrorCodes = new HashSet<HttpStatusCode>
+    /// <remarks>
+    /// Used by Ocelot's built-in QoS handler to treat downstream 5xx responses as circuit-breaker failures.
+    /// Override <see cref="ServerErrorCodes"/> in a subclass to customise which codes are treated as failures.
+    /// </remarks>
+    public static readonly IReadOnlySet<HttpStatusCode> DefaultServerErrorCodes = new HashSet<HttpStatusCode>
     {
         HttpStatusCode.InternalServerError,
         HttpStatusCode.NotImplemented,
@@ -50,10 +57,19 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         HttpStatusCode.LoopDetected,
     };
 
+    /// <summary>
+    /// Gets the set of HTTP status codes treated as failures by this handler.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="DefaultServerErrorCodes"/>. Override in a subclass to customise the failure set.
+    /// </remarks>
+    protected virtual HashSet<HttpStatusCode> ServerErrorCodes { get; } = (HashSet<HttpStatusCode>)DefaultServerErrorCodes;
+
     private readonly CircuitBreaker _circuitBreaker;
     private readonly DownstreamRoute _route;
     private readonly QoSOptions _options;
     private readonly IOcelotLogger _logger;
+    private readonly int? _timeoutMs;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CircuitBreakerDelegatingHandler"/> class for the specified route.
@@ -79,6 +95,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         }
 
         _logger = loggerFactory.CreateLogger<CircuitBreakerDelegatingHandler>();
+        _timeoutMs = GetTimeout(_options.Timeout);
     }
 
     /// <summary>Gets the underlying <see cref="CircuitBreaker"/> instance (exposed for testing purposes).</summary>
@@ -97,7 +114,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
             };
         }
 
-        if (_options.Timeout.HasValue && _options.Timeout > 0)
+        if (_timeoutMs.HasValue)
         {
             return await SendWithTimeoutAsync(request, cancellationToken);
         }
@@ -108,7 +125,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
     private async Task<HttpResponseMessage> SendWithTimeoutAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromMilliseconds(_options.Timeout.Value));
+        cts.CancelAfter(TimeSpan.FromMilliseconds(_timeoutMs.Value));
 
         try
         {
@@ -117,7 +134,7 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             // Our per-request timeout fired (not the outer cancellation token)
-            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_options.Timeout}ms. Returning {HttpStatusCode.ServiceUnavailable} for route -> {_route.Name()}");
+            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_timeoutMs.Value}ms. Returning {HttpStatusCode.ServiceUnavailable} for route -> {_route.Name()}");
             _circuitBreaker.RecordFailure();
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
@@ -180,5 +197,13 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         var ms = milliseconds.HasValue && milliseconds.Value > LowSamplingDuration
             ? milliseconds.Value : DefaultSamplingDuration;
         return TimeSpan.FromMilliseconds(ms);
+    }
+
+    private static int? GetTimeout(int? milliseconds)
+    {
+        if (!milliseconds.HasValue || milliseconds.Value <= 0)
+            return null; // not configured or explicitly disabled
+        return milliseconds.Value > LowTimeout && milliseconds.Value < HighTimeout
+            ? milliseconds.Value : DefaultTimeout;
     }
 }
