@@ -579,20 +579,12 @@ Task("AcceptanceTests")
 			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
 			return;
 		}
-        // Install Playwright browsers (only for the latest framework to save time)
-        var latestTfm = GetTFMs().Last();
-        var playwrightPath = $"./test/Ocelot.AcceptanceTests/bin/{compileConfig}/{latestTfm}/playwright.ps1";
-        
         Information("Installing Playwright browsers...");
-        if (IsRunningOnWindows())
-        {
-            StartProcess("powershell", new ProcessSettings { Arguments = $"-File {playwrightPath} install chromium" });
-        }
-        else
-        {
-            Information("Skipping Playwright installation on non-Windows (TODO: support Linux/macOS in CI)");
-        }
-
+        var playwrightSettings = new ProcessSettings {
+            Arguments = "tool run playwright install chromium",
+            WorkingDirectory = "./test/Ocelot.AcceptanceTests"
+        };
+        StartProcess("dotnet", playwrightSettings);
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
@@ -609,7 +601,6 @@ Task("AcceptanceTests")
 			DotNetTest(acceptanceTestAssemblies, settings);
 		}
 	});
-
 
 Task("CreateArtifacts")
 	.IsDependentOn("CreateReleaseNotes")
