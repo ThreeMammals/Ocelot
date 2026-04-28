@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Logging;
 using Ocelot.QualityOfService;
 using System.Runtime.CompilerServices;
 
@@ -557,6 +558,38 @@ public sealed class QualityOfServiceTests : QosSteps
         await TestRouteTimeout([route3.DownstreamHostAndPorts[0].Port], route3.UpstreamPathTemplate, route3.QoSOptions);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="IOcelotBuilder.AddQualityOfService{THandler}()"/> registers a custom
+    /// <see cref="CircuitBreakerDelegatingHandler"/> subclass end-to-end: the custom handler's overridden
+    /// <see cref="CircuitBreakerDelegatingHandler.ServerErrorCodes"/> set (which adds
+    /// <see cref="HttpStatusCode.NotFound"/> as a failure code) causes the circuit to open after
+    /// <see cref="QoSOptions.MinimumThroughput"/> consecutive 404 responses — something the default
+    /// built-in handler would never do, because 404 is not in <see cref="CircuitBreakerDelegatingHandler.DefaultServerErrorCodes"/>.
+    /// </summary>
+    [Fact]
+    public async Task AddQualityOfService_Generic_CustomServerErrorCodes_OpensCircuitOn404()
+    {
+        const int minimumThroughput = 2;
+        var qos = new QoSOptions(minimumThroughput, 5000);
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, qos);
+        var configuration = GivenConfiguration(route);
+        GivenThereIsABrokenServiceRunningOn(port, HttpStatusCode.NotFound);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(WithQualityOfServiceCustomHandler);
+
+        // The first two 404 responses are recorded as failures by the custom handler.
+        for (int i = 0; i < minimumThroughput; i++)
+        {
+            await WhenIGetUrlOnTheApiGateway("/");
+            ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // reached service; failure recorded
+        }
+
+        // After MinimumThroughput failures the circuit is open: the next request is rejected immediately.
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // circuit open
+    }
+
     private FileRoute GivenRoute(int port, QoSOptions options, string upstream = null, string method = null)
     {
         var route = GivenRoute(port, upstream, upstream);
@@ -569,6 +602,22 @@ public sealed class QualityOfServiceTests : QosSteps
     //    => GivenOcelotIsRunningAsync(WithPolly);
     private static void WithQualityOfService(IServiceCollection services)
         => services.AddOcelot().AddQualityOfService();
+
+    private static void WithQualityOfServiceCustomHandler(IServiceCollection services)
+        => services.AddOcelot().AddQualityOfService<NotFoundCircuitBreakerHandler>();
+
+    /// <summary>
+    /// A <see cref="CircuitBreakerDelegatingHandler"/> subclass that adds <see cref="HttpStatusCode.NotFound"/>
+    /// to the set of status codes that are treated as circuit-breaker failures.
+    /// </summary>
+    private sealed class NotFoundCircuitBreakerHandler : CircuitBreakerDelegatingHandler
+    {
+        public NotFoundCircuitBreakerHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+            : base(route, loggerFactory) { }
+
+        protected override HashSet<HttpStatusCode> ServerErrorCodes { get; } =
+            new(DefaultServerErrorCodes) { HttpStatusCode.NotFound };
+    }
 
     private static Task GivenIWaitMilliseconds(int ms) => GivenIWaitAsync(ms);
 

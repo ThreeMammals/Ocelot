@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
@@ -604,7 +605,7 @@ public class OcelotBuilderTests : UnitTest
         Assert.NotEqual(QosDelegatingHandler.Create, @delegate);
 
         // Invoke the delegate so that lines 362-363 are executed
-        var route = new DownstreamRouteBuilder().Build();
+        var route = new DownstreamRouteBuilder().WithQosOptions(new QoSOptions(2, 1000)).Build();
         var loggerMock = new Mock<IOcelotLogger>();
         var loggerFactoryMock = new Mock<IOcelotLoggerFactory>();
         loggerFactoryMock.Setup(x => x.CreateLogger<CircuitBreakerDelegatingHandler>())
