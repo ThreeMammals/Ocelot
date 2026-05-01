@@ -9,7 +9,6 @@
     <AssemblyName>Ocelot.UnitTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -24,7 +23,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
