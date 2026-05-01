@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -120,7 +121,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
-        Services.TryAddSingleton<IQoSFactory, QoSFactory>();
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
         Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
         Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();
@@ -136,6 +136,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotLogging();
         Services.AddOcelotMessageInvokerPool();
         Services.AddOcelotMetadata();
+        Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
 
         // Add ASP.NET services
@@ -334,5 +335,32 @@ public class OcelotBuilder : IOcelotBuilder
         }
 
         return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
+    }
+
+    /// <summary>
+    /// Adds the built-in Quality of Service feature from the <c>Ocelot.QualityOfService</c> namespace via <see cref="QosDelegatingHandlerDelegate"/> after force-removing any other enabled external QoS implementations.
+    /// </summary>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    public IOcelotBuilder AddQualityOfService()
+    {
+        Services.RemoveAll<QosDelegatingHandlerDelegate>();
+        Services.AddSingleton<QosDelegatingHandlerDelegate>(QosDelegatingHandler.Create);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a custom Quality of Service handler of type <typeparamref name="THandler"/> that inherits from <see cref="CircuitBreakerDelegatingHandler"/>,
+    /// allowing overrides such as a custom <see cref="CircuitBreakerDelegatingHandler.ServerErrorCodes"/> set.
+    /// </summary>
+    /// <typeparam name="THandler">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    public IOcelotBuilder AddQualityOfService<THandler>()
+        where THandler : CircuitBreakerDelegatingHandler
+    {
+        Services.RemoveAll<QosDelegatingHandlerDelegate>();
+        Services.AddSingleton<QosDelegatingHandlerDelegate>(sp =>
+            (route, contextAccessor, loggerFactory) =>
+                ActivatorUtilities.CreateInstance<THandler>(sp, route, loggerFactory));
+        return this;
     }
 }

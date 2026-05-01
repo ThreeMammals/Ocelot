@@ -17,21 +17,281 @@ Quality of Service
   | Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
   | Repository: `Ocelot.QualityOfService.Polly <https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly>`__
 
-Ocelot currently supports a single *Quality of Service* (QoS) capability.
-It allows you to configure, on a per-route basis, the application of a circuit breaker when making requests to downstream services.
-This feature leverages a well-regarded .NET library known as `Polly`_.
-For more details, visit the `Polly`_ library's official `repository <https://github.com/App-vNext/Polly>`_.
+Ocelot supports *Quality of Service* (QoS) features that allow you to protect downstream services from overload and control request flow on a per-route basis.
+Two implementations are available and are **mutually exclusive** — exactly one may be active at a time:
+
+* :ref:`qos-builtin` — included in the Ocelot core package; no additional dependencies required.
+* :ref:`qos-polly-installation` via `Polly`_ — a full-featured resilience pipeline powered by the well-regarded `Polly`_ .NET library (`repository <https://github.com/App-vNext/Polly>`_).
+
+The last registration wins: calling ``AddQualityOfService()`` after ``AddPolly()`` replaces the Polly handler, and vice versa.
 
 .. note::
   
   `Polly`_ v7 syntax is no longer supported as of version `23.2`_, when the Ocelot team upgraded Polly `from v7 to v8 <https://www.pollydocs.org/migration-v8.html>`_.
 
-Installation
+.. _qos-implementations-overview:
+
+Implementations Overview
+------------------------
+
+The table below summarises the key differences between the two QoS implementations.
+
+.. list-table::
+    :widths: 30 35 35
+    :header-rows: 1
+
+    * - *Capability*
+      - *Built-in*
+      - *Polly*
+    * - Extra NuGet package
+      - None (Ocelot core)
+      - ``Ocelot.QualityOfService.Polly``
+    * - Activation
+      - ``.AddQualityOfService()``
+      - ``.AddPolly()``
+    * - Circuit Breaker
+      - ✔ Custom (count mode & ratio mode)
+      - ✔ Polly ``CircuitBreakerResilienceStrategy``
+    * - Per-request Timeout
+      - ✔ ``CancellationToken``-based
+      - ✔ Polly ``TimeoutResilienceStrategy``
+    * - Full Polly resilience pipeline
+      - ✘
+      - ✔
+    * - Extensibility API
+      - ✘
+      - ✔ (custom providers, handlers, error maps)
+    * - Invalid-value handling
+      - Silent default substitution
+      - Logged warning + default substitution
+    * - ``MinimumThroughput = 0`` *
+      - Disables circuit breaking, but not timing out
+      - Disables circuit breaking, but not timeout strategy 
+    * - ``Timeout = 0`` *
+      - Disables timing out, but not circuit breaking
+      - Disables timing out, but not circuit breaker strategy 
+
+.. note::
+
+  \* Use with caution, since other ``QoSOptions`` values will be substituted at runtime if at least one other strategy option is defined while the others are null.
+
+.. _qos-builtin:
+
+Built-in QoS
 ------------
+.. _CircuitBreakerDelegatingHandler: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Ocelot/QualityOfService/CircuitBreakerDelegatingHandler.cs
+
+  | Class: `CircuitBreakerDelegatingHandler`_
+
+Ocelot's built-in *Quality of Service* implementation is part of the core ``Ocelot`` package.
+It wraps every outgoing downstream request in a `CircuitBreakerDelegatingHandler`_, providing circuit-breaker protection and an optional per-request timeout with no external dependencies.
+
+To activate it, call ``AddQualityOfService()`` on the ``OcelotBuilder`` [#f1]_:
+
+.. code-block:: csharp
+  :emphasize-lines: 3
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddQualityOfService();
+
+The circuit breaker state is maintained **per route** — each route has its own independent circuit breaker instance.
+There are two operating modes, selected automatically based on the options you configure.
+
+.. _qos-builtin-cb-count-mode:
+
+Count mode (default)
+^^^^^^^^^^^^^^^^^^^^
+
+Activated when ``MinimumThroughput`` is set **without** ``FailureRatio`` and ``SamplingDuration``.
+The circuit opens after ``MinimumThroughput`` **consecutive failures**.
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "MinimumThroughput": 3,
+    "BreakDuration": 1000
+  }
+
+With this configuration, the circuit opens after 3 consecutive failures and remains open for 1 second.
+
+.. _qos-builtin-cb-ratio-mode:
+
+Ratio mode
+^^^^^^^^^^
+
+Activated when ``FailureRatio`` **and** ``SamplingDuration`` are set alongside ``MinimumThroughput``.
+The circuit opens when the ratio of failed requests within a rolling ``SamplingDuration`` window equals or exceeds ``FailureRatio``, **provided** at least ``MinimumThroughput`` requests have been made in that window.
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "MinimumThroughput": 10,
+    "FailureRatio": 0.5,
+    "SamplingDuration": 10000,
+    "BreakDuration": 5000
+  }
+
+With this configuration, once 10 or more requests have been recorded in a 10-second rolling window, the circuit opens if 50 % or more of them are failures.
+The circuit then stays open for 5 seconds before transitioning to ``HalfOpen``.
+
+.. _qos-builtin-cb-state-machine:
+
+Circuit Breaker state machine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The built-in circuit breaker implements the standard three-state machine:
+
+.. list-table::
+    :widths: 15 85
+    :header-rows: 1
+
+    * - *State*
+      - *Behaviour*
+    * - ``Closed``
+      - Normal operation: requests pass through and failures are counted.
+    * - ``Open``
+      - Circuit is open: requests are **immediately** rejected with ``503 Service Unavailable`` — no downstream call is made.
+        After ``BreakDuration`` has elapsed, the circuit transitions to ``HalfOpen``.
+    * - ``HalfOpen``
+      - Exactly **one** probe request is allowed through.
+        If it succeeds, the circuit closes.
+        If it fails, the circuit reopens and the ``BreakDuration`` timer restarts.
+        All other concurrent requests while the probe is in flight are rejected with ``503``.
+
+.. _qos-builtin-timeout:
+
+Timeout
+^^^^^^^
+
+An optional per-request timeout can be configured independently of or alongside the circuit breaker:
+
+.. code-block:: json
+
+  "QoSOptions": {
+    "Timeout": 5000
+  }
+
+When a request exceeds ``Timeout`` milliseconds, it is cancelled.
+A ``503 Service Unavailable`` response is returned, and the event is recorded as a circuit-breaker failure.
+
+Setting ``Timeout`` to ``0`` or a negative value disables the timeout.
+To disable the per-request timeout entirely, omit the ``Timeout`` option or set it to ``0``.
+
+.. note::
+
+  When ``Timeout`` is the only option configured, the built-in circuit breaker is still active with its default values:
+  ``MinimumThroughput = 100`` and ``BreakDuration = 5000 ms``.
+  The circuit opens after 100 consecutive timeout failures and stays open for 5 seconds.
+  To control these defaults, configure ``MinimumThroughput`` and ``BreakDuration`` explicitly.
+
+.. _qos-builtin-server-errors:
+
+Server Error Codes
+^^^^^^^^^^^^^^^^^^
+
+The following HTTP response status codes are treated as failures by the built-in handler:
+
+.. list-table::
+    :widths: 10 90
+    :header-rows: 1
+
+    * - *Code*
+      - *Status*
+    * - 500
+      - Internal Server Error
+    * - 501
+      - Not Implemented
+    * - 502
+      - Bad Gateway
+    * - 503
+      - Service Unavailable
+    * - 504
+      - Gateway Timeout
+    * - 505
+      - HTTP Version Not Supported
+    * - 506
+      - Variant Also Negotiates
+    * - 507
+      - Insufficient Storage
+    * - 508
+      - Loop Detected
+
+Any other status code (including ``4xx`` client errors) is recorded as a success and does not contribute to the failure count.
+Unhandled exceptions (excluding ``OperationCanceledException``) are also counted as failures.
+
+.. _qos-builtin-server-errors-override:
+
+Overriding server error codes
+"""""""""""""""""""""""""""""
+
+The set of failure codes is exposed as the ``protected virtual`` property ``ServerErrorCodes`` on ``CircuitBreakerDelegatingHandler``.
+You can extend or replace this set by creating a subclass and overriding the property:
+
+.. code-block:: csharp
+
+  public class MyCircuitBreakerHandler : CircuitBreakerDelegatingHandler
+  {
+      public MyCircuitBreakerHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
+          : base(route, loggerFactory) { }
+
+      // Treat all 5xx codes AND 429 Too Many Requests as failures
+      protected override HashSet<HttpStatusCode> ServerErrorCodes { get; } =
+          new(DefaultServerErrorCodes) { HttpStatusCode.TooManyRequests };
+  }
+
+Then register it with the ``AddQualityOfService<THandler>()`` overload on ``OcelotBuilder``:
+
+.. code-block:: csharp
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddQualityOfService<MyCircuitBreakerHandler>();
+
+.. _qos-builtin-value-constraints:
+
+Built-in Value Constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The built-in handler silently substitutes a default when an option is unset or outside its valid range — no warning is logged.
+
+.. list-table::
+    :widths: 25 20 20 35
+    :header-rows: 1
+
+    * - *Option*
+      - *Valid range*
+      - *Default*
+      - *Notes*
+    * - ``BreakDuration``
+      - > 500 ms
+      - 5000 ms
+      - Duration the circuit stays open before transitioning to ``HalfOpen``.
+    * - ``MinimumThroughput``
+      - ≥ 2
+      - 100
+      - Set to ``0`` or negative to **disable** circuit-breaking entirely.
+    * - ``FailureRatio``
+      - (0.0, 1.0]
+      - 0.5
+      - Ratio mode only.
+    * - ``SamplingDuration``
+      - > 500 ms
+      - 10 000 ms
+      - Ratio mode only.
+    * - ``Timeout``
+      - > 10 ms, < 86 400 000 ms
+      - 30 000 ms
+      - Set to ``0`` or negative to **disable** timing out. Invalid positive values outside the range use the default (30 s).
+
+.. _qos-polly-installation:
+
+Installation (Polly)
+--------------------
 .. _Ocelot.Provider.Polly: https://www.nuget.org/packages/Ocelot.Provider.Polly
 .. _Ocelot.QualityOfService.Polly: https://www.nuget.org/packages/Ocelot.QualityOfService.Polly
 
-To utilize the *Quality of Service* via `Polly`_ library, begin by importing the appropriate `Ocelot.QualityOfService.Polly`_ extension package:
+To utilise *Quality of Service* via the `Polly`_ library, begin by importing the appropriate `Ocelot.QualityOfService.Polly`_ extension package:
 
 .. code-block:: powershell
 
@@ -42,7 +302,7 @@ Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPol
 .. code-block:: csharp
   :emphasize-lines: 5
 
-  using Ocelot.Provider.Polly;
+  using Ocelot.QualityOfService.Polly;
 
   builder.Services
       .AddOcelot(builder.Configuration)
@@ -68,8 +328,9 @@ Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPol
   Class: `FileQoSOptions`_
 
 Here is the complete *Quality of Service* configuration, also known as the "QoS options schema".
-Depending on your needs and choosen strategies definition of all properties are not required.
-If you skip a property then a default value will be substituted as per Ocelot/Polly specification.
+This schema is shared by both the :ref:`qos-builtin` and the :ref:`qos-polly-installation` implementations.
+Depending on your needs and chosen strategies, definition of all properties is not required.
+If you skip a property, a default value will be substituted — see :ref:`qos-builtin-value-constraints` for the built-in implementation and :ref:`qos-notes-value-constraints` for Polly.
 
 .. code-block:: json
 
@@ -113,7 +374,7 @@ If you skip a property then a default value will be substituted as per Ocelot/Po
 .. _break1: http://break.do
 
   **Note** [#f2]_: Ocelot checks that the values of options are valid during execution.
-  If not, it logs errors or warnings (refer to the :ref:`qos-notes-value-constraints` section in :ref:`qos-notes`).
+  If not, it logs errors or warnings (refer to the :ref:`qos-notes-value-constraints` section in :ref:`qos-notes` for Polly, or :ref:`qos-builtin-value-constraints` for the built-in implementation).
   For a complete explanation about strategies and mechanisms, consult Polly's `Resilience strategies`_ documentation.
 
 .. _qos-global-configuration:
@@ -200,10 +461,11 @@ allow 3 errors before breaking the circuit for 1 second, and allow up to 10% err
   If the array contains route keys, it defines a single group of routes to which the global options apply.
   Routes excluded from this group must specify their own route-level ``QoSOptions``.
 
-  3. Since Ocelot's Polly provider utilizes the `Resilience pipeline registry`_, each route has a dedicated pipeline cached in Polly's registry using the route's load-balancing key.
+  3. When using the **Polly** implementation: Ocelot's Polly provider utilizes the `Resilience pipeline registry`_, so each route has a dedicated pipeline cached in Polly's registry using the route's load-balancing key.
   For a static route, the load-balancing key uniquely identifies the route by its upstream options, whereas for dynamic routes the load-balancing key is typically the service name from the discovery provider.
   Thus, Polly's registry maintains dedicated pipelines for each discovered service, and those pipelines behave independently.
   Finally, it is important to understand that global *QoS* options do not create a single shared resilience pipeline in the registry.
+  When using the **built-in** implementation: each route also gets its own independent ``CircuitBreakerDelegatingHandler`` instance, so circuit state is always per-route.
 
   4. Dynamic routes were not supported in versions prior to `24.1`_.
   Beginning with version `24.1`_, global *QoS* options for :ref:`Dynamic Routing <routing-dynamic>` may be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
@@ -212,12 +474,18 @@ allow 3 errors before breaking the circuit for 1 second, and allow up to 10% err
 .. _Resilience pipeline registry: https://www.pollydocs.org/pipelines/resilience-pipeline-registry.html
 .. _qos-circuit-breaker-strategy:
 
-Circuit Breaker strategy
-------------------------
+Circuit Breaker strategy (Polly)
+---------------------------------
 .. _Circuit breaker resilience strategy: https://www.pollydocs.org/strategies/circuit-breaker.html
 
+  | Implementation: `Polly`_
   | Documentation: `Circuit breaker resilience strategy`_
   | Primary option: ``MinimumThroughput``, formerly ``ExceptionsAllowedBeforeBreaking``
+
+.. note::
+
+  This section describes the *Circuit Breaker* behaviour when using the **Polly** implementation.
+  For the built-in implementation, see :ref:`qos-builtin-cb-count-mode` and :ref:`qos-builtin-cb-ratio-mode`.
 
 The options ``MinimumThroughput`` and ``BreakDuration`` can be configured independently from ``Timeout``:
 
@@ -256,12 +524,18 @@ Additionally, the 10-second sampling duration defines the time window over which
 
 .. _qos-timeout-strategy:
 
-Timeout strategy
-----------------
+Timeout strategy (Polly)
+------------------------
 .. _Timeout resilience strategy: https://www.pollydocs.org/strategies/timeout.html
 
+  | Implementation: `Polly`_
   | Documentation: `Timeout resilience strategy`_
   | Primary option: ``Timeout``, formerly ``TimeoutValue``
+
+.. note::
+
+  This section describes the *Timeout* behaviour when using the **Polly** implementation.
+  For the built-in implementation, see :ref:`qos-builtin-timeout`.
 
 The ``Timeout`` can be configured independently from the options of the :ref:`qos-circuit-breaker-strategy`:
 
@@ -312,8 +586,13 @@ For more information, refer to the :ref:`config-default-timeout` section of the 
 
 .. _qos-notes-value-constraints:
 
-Value constraints
-^^^^^^^^^^^^^^^^^
+Value constraints (Polly)
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+  The constraints below apply to the **Polly** implementation.
+  For the **built-in** implementation's constraints, see :ref:`qos-builtin-value-constraints`.
 
 Starting with `Polly`_ v8, the `Resilience strategies`_ documentation outlines the following constraints on values:
 
@@ -360,8 +639,8 @@ This means the global *QoS* timeout can override Polly's default of `30 seconds 
 
 .. _qos-extensibility:
 
-Extensibility [#f5]_
---------------------
+Extensibility (Polly) [#f5]_
+-----------------------------
 
 To use your ``ResiliencePipeline<T>`` provider, you can apply the following syntax:
 

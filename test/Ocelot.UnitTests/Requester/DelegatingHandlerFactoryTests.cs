@@ -6,8 +6,6 @@ using Ocelot.Configuration.File;
 using Ocelot.Logging;
 using Ocelot.QualityOfService;
 using Ocelot.Requester;
-using Ocelot.Responses;
-using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.Requester;
 
@@ -16,7 +14,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     private DelegatingHandlerFactory _factory;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
-    private readonly Mock<IQoSFactory> _qosFactory;
+    private readonly Mock<IQualityOfServiceFactory> _qosFactory;
     private readonly Mock<ITracingHandlerFactory> _tracingFactory;
     private readonly Mock<IOptionsMonitor<FileConfiguration>> _optionsMonitor;
     private IServiceProvider _serviceProvider;
@@ -27,7 +25,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     {
         _qosDelegate = (a, b, c) => new FakeQoSHandler();
         _tracingFactory = new Mock<ITracingHandlerFactory>();
-        _qosFactory = new Mock<IQoSFactory>();
+        _qosFactory = new Mock<IQualityOfServiceFactory>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<DelegatingHandlerFactory>()).Returns(_logger.Object);
@@ -217,6 +215,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
             })
             .WithLoadBalancerKey(string.Empty)
             .Build();
+        GivenTheQosFactoryReturns(new FakeQoSHandler());
         GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
 
         // Act
@@ -307,16 +306,16 @@ public class DelegatingHandlerFactoryTests : UnitTest
     }
 
     [Fact]
-    public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_error()
+    [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
+    [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
+    public void Should_not_return_qos_provider_delegate_when_no_qos_options()
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
-            .WithQosOptions(GivenQoS())
+            .WithQosOptions(new()) // No QoS
             .WithHttpHandlerOptions(new(GivenHandlerOptions))
             .WithLoadBalancerKey(string.Empty)
             .Build();
-        _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new ErrorResponse<DelegatingHandler>(new AnyError()));
         GivenTheTracingFactoryReturns();
         GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
         GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
@@ -325,46 +324,10 @@ public class DelegatingHandlerFactoryTests : UnitTest
         var result = WhenIGet(route);
 
         // Assert
-        result.ThenThereIsDelegatesInProvider(4);
+        result.ThenThereIsDelegatesInProvider(3);
         result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(0);
         result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1);
         result.ThenHandlerAtPositionIs<FakeTracingHandler>(2);
-        result.ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3);
-        ThenTheWarningIsLogged(route);
-    }
-
-    [Fact]
-    public void Should_log_error_and_return_no_qos_provider_delegate_when_qos_factory_returns_null()
-    {
-        // Arrange
-        var route = new DownstreamRouteBuilder()
-            .WithQosOptions(GivenQoS())
-            .WithHttpHandlerOptions(new(GivenHandlerOptions))
-            .WithLoadBalancerKey(string.Empty)
-            .Build();
-        _qosFactory.Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns((ErrorResponse<DelegatingHandler>)null);
-        GivenTheTracingFactoryReturns();
-        GivenTheServiceProviderReturnsGlobalDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-        GivenTheServiceProviderReturnsSpecificDelegatingHandlers<FakeDelegatingHandler, FakeDelegatingHandlerTwo>();
-
-        // Act
-        var result = WhenIGet(route);
-
-        // Assert
-        result.ThenThereIsDelegatesInProvider(4);
-        result.ThenHandlerAtPositionIs<FakeDelegatingHandler>(0);
-        result.ThenHandlerAtPositionIs<FakeDelegatingHandlerTwo>(1);
-        result.ThenHandlerAtPositionIs<FakeTracingHandler>(2);
-        result.ThenHandlerAtPositionIs<NoQosDelegatingHandler>(3);
-        ThenTheWarningIsLogged(route);
-    }
-
-    private void ThenTheWarningIsLogged(DownstreamRoute route)
-    {
-        _logger.Verify(x => x.LogWarning(It.Is<Func<string>>(
-            y => y.Invoke() == $"Route '{route.Name()}' specifies use QoS but no QosHandler found in DI container. Will use not use a QosHandler, please check your setup!")),
-            Times.Once);
     }
 
     private void GivenTheTracingFactoryReturns()
@@ -409,7 +372,7 @@ public class DelegatingHandlerFactoryTests : UnitTest
     {
         _qosFactory
             .Setup(x => x.Get(It.IsAny<DownstreamRoute>()))
-            .Returns(new OkResponse<DelegatingHandler>(handler));
+            .Returns(handler);
     }
 
     private List<DelegatingHandler> WhenIGet(DownstreamRoute route)

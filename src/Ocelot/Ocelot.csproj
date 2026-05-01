@@ -70,4 +70,7 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" Link=".package\README.md" />
     <None Include="..\..\ocelot_icon.png" Pack="true" PackagePath="\" Link=".package\ocelot_icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ocelot.UnitTests" />
+  </ItemGroup>
 </Project>
