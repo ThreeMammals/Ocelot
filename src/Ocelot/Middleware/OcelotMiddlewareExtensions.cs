@@ -83,7 +83,7 @@ public static class OcelotMiddlewareExtensions
         //Configuration error, throw error message
         if (internalConfig.IsError)
         {
-            ThrowToStopOcelotStarting(internalConfig);
+            ThrowToStopOcelotStarting(internalConfig); // amazing conversion soft error to exception object to throw! LoL :)
         }
 
         // now save it in memory
@@ -106,48 +106,17 @@ public static class OcelotMiddlewareExtensions
             await configuration(builder);
         }
 
-        if (AdministrationApiInUse(adminPath))
+        if (adminPath != null) // Administration API is in use
         {
             //We have to make sure the file config is set for the ocelot.env.json and ocelot.json so that if we pull it from the
             //admin api it works...boy this is getting a spit spags boll.
             var fileConfigSetter = builder.ApplicationServices.GetService<IFileConfigurationSetter>();
 
-            await SetFileConfig(fileConfigSetter, fileConfig);
+            // Internally throws ConfigurationRepositoryException to stop Ocelot starting
+            await fileConfigSetter.SetAsync(fileConfig.CurrentValue, CancellationToken.None);
         }
 
-        return GetOcelotConfigAndReturn(internalConfigRepo);
-    }
-
-    private static bool AdministrationApiInUse(IAdministrationPath adminPath)
-    {
-        return adminPath != null;
-    }
-
-    private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptionsMonitor<FileConfiguration> fileConfig)
-    {
-        var response = await fileConfigSetter.Set(fileConfig.CurrentValue);
-
-        if (IsError(response))
-        {
-            ThrowToStopOcelotStarting(response);
-        }
-    }
-
-    private static bool IsError(Response response)
-    {
-        return response == null || response.IsError;
-    }
-
-    private static IInternalConfiguration GetOcelotConfigAndReturn(IInternalConfigurationRepository provider)
-    {
-        var ocelotConfiguration = provider.Get();
-
-        if (ocelotConfiguration?.Data == null || ocelotConfiguration.IsError)
-        {
-            ThrowToStopOcelotStarting(ocelotConfiguration);
-        }
-
-        return ocelotConfiguration.Data;
+        return internalConfigRepo.Get();
     }
 
     private static void ThrowToStopOcelotStarting(Response config)

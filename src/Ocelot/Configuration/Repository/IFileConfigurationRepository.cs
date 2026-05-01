@@ -1,11 +1,12 @@
 using Ocelot.Configuration.File;
-using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository;
 
 public interface IFileConfigurationRepository
 {
-    Task<Response<FileConfiguration>> Get();
+    FileConfiguration Get();
+    Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default);
 
-    Task<Response> Set(FileConfiguration fileConfiguration);
+    void Set(FileConfiguration configuration);
+    Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default);
 }

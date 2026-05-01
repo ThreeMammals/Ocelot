@@ -3,18 +3,16 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Responses;
-using FileSys = System.IO.File;
+using FileIO = System.IO.File;
 
 namespace Ocelot.Configuration.Repository;
-
-public class DiskFileConfigurationRepository : IFileConfigurationRepository
+public class DiskFileConfigurationRepository : IFileConfigurationRepository, IDisposable
 {
-    private readonly IWebHostEnvironment _hostingEnvironment;
-    private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
     private FileInfo _ocelotFile;
     private FileInfo _environmentFile;
-    private readonly object _lock = new();
+    private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
+    private readonly SemaphoreSlim _semaphore = new(1, 1); // 1 concurrent access
 
     public DiskFileConfigurationRepository(IWebHostEnvironment hostingEnvironment, IOcelotConfigurationChangeTokenSource changeTokenSource)
     {
@@ -34,48 +32,97 @@ public class DiskFileConfigurationRepository : IFileConfigurationRepository
     {
         folder ??= AppContext.BaseDirectory;
         _ocelotFile = new FileInfo(Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile));
+
         var envFile = !string.IsNullOrEmpty(_hostingEnvironment.EnvironmentName)
             ? string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, _hostingEnvironment.EnvironmentName)
             : ConfigurationBuilderExtensions.PrimaryConfigFile;
+
         _environmentFile = new FileInfo(Path.Combine(folder, envFile));
     }
 
-    public Task<Response<FileConfiguration>> Get()
+    public FileConfiguration Get()
     {
-        string jsonConfiguration;
-
-        lock (_lock)
+        string json;
+        _semaphore.Wait();
+        try
         {
-            jsonConfiguration = FileSys.ReadAllText(_environmentFile.FullName);
+            json = FileIO.ReadAllText(_environmentFile.FullName);
+        }
+        finally
+        {
+            _semaphore.Release();
         }
 
-        var fileConfiguration = JsonConvert.DeserializeObject<FileConfiguration>(jsonConfiguration);
-
-        return Task.FromResult<Response<FileConfiguration>>(new OkResponse<FileConfiguration>(fileConfiguration));
+        return JsonConvert.DeserializeObject<FileConfiguration>(json);
     }
 
-    public Task<Response> Set(FileConfiguration fileConfiguration)
+    public async Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default)
     {
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+        string json;
+        await _semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            json = await FileIO.ReadAllTextAsync(_environmentFile.FullName, cancellationToken);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
 
-        lock (_lock)
+        return JsonConvert.DeserializeObject<FileConfiguration>(json);
+    }
+
+    public void Set(FileConfiguration configuration)
+    {
+        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+        _semaphore.Wait();
+        try
         {
             if (_environmentFile.Exists)
-            {
                 _environmentFile.Delete();
-            }
 
-            FileSys.WriteAllText(_environmentFile.FullName, jsonConfiguration);
+            FileIO.WriteAllText(_environmentFile.FullName, json);
 
             if (_ocelotFile.Exists)
-            {
                 _ocelotFile.Delete();
-            }
 
-            FileSys.WriteAllText(_ocelotFile.FullName, jsonConfiguration);
+            FileIO.WriteAllText(_ocelotFile.FullName, json);
+        }
+        finally
+        {
+            _semaphore.Release();
         }
 
         _changeTokenSource.Activate();
-        return Task.FromResult<Response>(new OkResponse());
+    }
+
+    public async Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default)
+    {
+        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+        await _semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            if (_environmentFile.Exists)
+                _environmentFile.Delete();
+
+            await FileIO.WriteAllTextAsync(_environmentFile.FullName, json, cancellationToken);
+
+            if (_ocelotFile.Exists)
+                _ocelotFile.Delete();
+
+            await FileIO.WriteAllTextAsync(_ocelotFile.FullName, json, cancellationToken);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+
+        _changeTokenSource.Activate();
+    }
+
+    public void Dispose()
+    {
+        _semaphore.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

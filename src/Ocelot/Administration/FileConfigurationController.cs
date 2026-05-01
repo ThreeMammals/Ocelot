@@ -22,35 +22,34 @@ public class FileConfigurationController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
-        var response = await _repo.Get();
-
-        if (response.IsError)
-        {
-            return new BadRequestObjectResult(response.Errors);
-        }
-
-        return new OkObjectResult(response.Data);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Post([FromBody] FileConfiguration fileConfiguration)
-    {
+        FileConfiguration configuration;
         try
         {
-            var response = await _setter.Set(fileConfiguration);
-
-            if (response.IsError)
-            {
-                return new BadRequestObjectResult(response.Errors);
-            }
-
-            return new OkObjectResult(fileConfiguration);
+            configuration = await _repo.GetAsync(cancellationToken);
         }
         catch (Exception e)
         {
-            return new BadRequestObjectResult($"{e.Message}:{Environment.NewLine}{e.StackTrace}");
+            return BadRequest(e);
+        }
+
+        return (configuration is null)
+            ? BadRequest($"The {_repo.GetType().Name} has returned nothing")
+            : Ok(configuration);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] FileConfiguration configuration, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _setter.SetAsync(configuration, cancellationToken);
+            return Ok(configuration);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.ToString());
         }
     }
 }

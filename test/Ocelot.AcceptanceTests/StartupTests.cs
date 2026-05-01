@@ -47,7 +47,24 @@ public class StartupTests : Steps
 
     private class FakeFileConfigurationRepository : IFileConfigurationRepository
     {
-        public Task<Response<FileConfiguration>> Get() => throw new NotImplementedException();
-        public Task<Response> Set(FileConfiguration fileConfiguration) => throw new NotImplementedException();
+        public FileConfiguration Get()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Set(FileConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
