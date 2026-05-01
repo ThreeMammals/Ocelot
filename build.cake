@@ -1,5 +1,6 @@
 #tool dotnet:?package=GitVersion.Tool&version=6.6.2
 #tool nuget:?package=ReportGenerator&version=5.5.4
+#tool dotnet:?package=Microsoft.Playwright.CLI&version=1.2.3
 
 #addin nuget:?package=Cake.Http
 #addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
@@ -108,6 +109,7 @@ Task("Release")
 Task("Restore")
     .Does(() =>
 	{
+		StartProcess("dotnet", "tool restore");
 		var settings = new DotNetRestoreSettings
 		{
 			LockedMode = true, // equivalent to --locked-mode
