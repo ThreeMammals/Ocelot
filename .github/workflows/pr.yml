@@ -195,6 +195,8 @@ jobs:
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Install Playwright
+      env:
+        RUNNER_OS: ${{ runner.os }}
       run: |
         which pwsh || echo "pwsh not found"
         pwsh --version
@@ -204,10 +206,15 @@ jobs:
         ls -la bin/Debug/net*/playwright.*
         echo Rebuilding AcceptanceTests project...
         dotnet restore
-        dotnet build -p:WarningLevel=0 --framework ${{ matrix.framework }}.0
+        dotnet build -c Debug -p:WarningLevel=0 --framework ${{ matrix.framework }}.0
         echo Looking for Microsoft.Playwright* package files in bin/ folder
         ls -la bin/Debug/net*/playwright.*
-        pwsh bin/Debug/net*/playwright.ps1 install chromium
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          echo "Running on macOS using Playwright CLI"
+          playwright install chromium
+        else
+          pwsh bin/Debug/net*/playwright.ps1 install chromium
+        fi
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
