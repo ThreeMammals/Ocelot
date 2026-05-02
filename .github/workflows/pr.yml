@@ -194,15 +194,18 @@ jobs:
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
-    - name: Acceptance Tests
+    - name: Install Playwright
       run: |
+        which pwsh || echo "pwsh not found"
+        pwsh --version
         echo Installing Playwright browsers...
         cd ./test/Ocelot.AcceptanceTests
+        echo Looking for Microsoft.Playwright* package files in bin/ folder
         ls -la bin/Debug/net*/playwright.*
         # dotnet tool run playwright install chromium ./test/Ocelot.AcceptanceTests
-        ./bin/Debug/net*/playwright.sh install chromium
-        echo Acceptance testing...
-        dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        pwsh bin/Debug/net*/playwright.ps1 install chromium
+    - name: Acceptance Tests
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-cake:
     # needs: build-windows
