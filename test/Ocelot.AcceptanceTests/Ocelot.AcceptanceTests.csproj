@@ -48,10 +48,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Consul" Version="1.7.14.10" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
-    <!-- Microsoft -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.5" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.5" />
@@ -61,10 +58,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="1.59.0" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.5" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.43.0" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.201" />
+    <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" />
+    <!--TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341--> 
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 8.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">

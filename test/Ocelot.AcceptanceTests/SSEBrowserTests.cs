@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Playwright;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Testing;
-using System.IO.Pipelines;
-using Xunit;
 
 namespace Ocelot.AcceptanceTests.ServerSentEvents;
 
@@ -38,13 +32,13 @@ public class SSEBrowserTests : IAsyncLifetime
         _downstreamApp = downstreamBuilder.Build();
         _downstreamApp.Urls.Add($"http://localhost:{DownstreamPort}");
         _downstreamApp.MapHub<SseHub>("/testhub");
-        _downstreamApp.MapGet("/sse-plain", async (HttpContext ctx) =>
+        _downstreamApp.MapGet("/sse-plain", async ctx =>
         {
             ctx.Response.ContentType = "text/event-stream";
             await ctx.Response.WriteAsync("data: event1\n\n");
             await ctx.Response.Body.FlushAsync();
         });
-        _downstreamApp.MapGet("/not-sse", async (HttpContext ctx) =>
+        _downstreamApp.MapGet("/not-sse", async ctx =>
         {
             ctx.Response.ContentType = "text/plain";
             await ctx.Response.WriteAsync("chunk1");
@@ -103,9 +97,10 @@ public class SSEBrowserTests : IAsyncLifetime
     public async ValueTask DisposeAsync()
     {
         if (_browser != null) await _browser.DisposeAsync();
-        if (_playwright != null) _playwright.Dispose();
+        _playwright?.Dispose();
         if (_gatewayApp != null) await _gatewayApp.DisposeAsync();
         if (_downstreamApp != null) await _downstreamApp.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -118,10 +113,10 @@ public class SSEBrowserTests : IAsyncLifetime
         await _page.GotoAsync($"http://localhost:{OcelotPort}/proxy/sse-plain");
         sw.Stop();
 
-        Assert.NotNull(response);
-        Assert.True(response.Headers.ContainsKey("content-encoding"));
-        Assert.Equal("no", response.Headers["x-accel-buffering"]);
-        Assert.True(sw.ElapsedMilliseconds < 1000);
+        response.ShouldNotBeNull();
+        response.Headers.ContainsKey("content-encoding").ShouldBeTrue();
+        response.Headers["x-accel-buffering"].ShouldBe("no");
+        sw.ElapsedMilliseconds.ShouldBeLessThan(1000);
     }
 
     [Fact]
@@ -134,10 +129,9 @@ public class SSEBrowserTests : IAsyncLifetime
         await _page.GotoAsync($"http://localhost:{OcelotPort}/proxy/not-sse");
         sw.Stop();
 
-        Assert.NotNull(response);
-        Assert.True(response.Headers.ContainsKey("content-encoding"));
-
-        Assert.True(sw.ElapsedMilliseconds > 2000);
+        response.ShouldNotBeNull();
+        response.Headers.ContainsKey("content-encoding").ShouldBeTrue();
+        sw.ElapsedMilliseconds.ShouldBeGreaterThan(2000);
     }
 
     [Fact]
@@ -171,13 +165,13 @@ public class SSEBrowserTests : IAsyncLifetime
             </html>";
 
         await _page.SetContentAsync(html);
-        await connectionStartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await connectionStartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
 
         var hub = _downstreamApp.Services.GetRequiredService<IHubContext<SseHub>>();
-        await hub.Clients.All.SendAsync("ReceiveMessage", "Hello from Ocelot!");
+        await hub.Clients.All.SendAsync("ReceiveMessage", "Hello from Ocelot!", cancellationToken: Xunit.TestContext.Current.CancellationToken);
 
         var logText = await _page.Locator("#log").InnerTextAsync();
-        Assert.Contains("Received: Hello from Ocelot!", logText);
+        logText.ShouldContain("Received: Hello from Ocelot!");
     }
 
     private class SseHub : Hub { }
