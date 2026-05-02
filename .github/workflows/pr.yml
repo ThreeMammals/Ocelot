@@ -187,13 +187,19 @@ jobs:
     - name: Install certificate
       run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
     - name: Restore
-      run: dotnet restore --locked-mode ./Ocelot.slnx
+      run: |
+        dotnet restore --locked-mode ./Ocelot.slnx
+        dotnet tool restore
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
     - name: Unit Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: |
+        echo Installing Playwright browsers...
+        dotnet tool run playwright install chromium ./test/Ocelot.AcceptanceTests
+        echo Acceptance testing...
+        dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
   build-cake:
     # needs: build-windows
