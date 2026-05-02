@@ -145,7 +145,7 @@ jobs:
   # Matrix build job having 2 dimensions (os, ver)
   build:
     strategy:
-      max-parallel: 3
+      max-parallel: 1
       matrix:
         os: [ubuntu, macos, windows]
         framework: [net10]
@@ -197,7 +197,10 @@ jobs:
     - name: Acceptance Tests
       run: |
         echo Installing Playwright browsers...
-        dotnet tool run playwright install chromium ./test/Ocelot.AcceptanceTests
+        cd ./test/Ocelot.AcceptanceTests
+        ls -la bin/Debug/net*/playwright.*
+        # dotnet tool run playwright install chromium ./test/Ocelot.AcceptanceTests
+        ./bin/Debug/net*/playwright.sh install chromium
         echo Acceptance testing...
         dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
