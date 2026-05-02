@@ -202,7 +202,11 @@ jobs:
         cd ./test/Ocelot.AcceptanceTests
         echo Looking for Microsoft.Playwright* package files in bin/ folder
         ls -la bin/Debug/net*/playwright.*
-        # dotnet tool run playwright install chromium ./test/Ocelot.AcceptanceTests
+        echo Rebuilding AcceptanceTests project...
+        dotnet restore
+        dotnet build -warnlevel 0 --framework ${{ matrix.framework }}.0
+        echo Looking for Microsoft.Playwright* package files in bin/ folder
+        ls -la bin/Debug/net*/playwright.*
         pwsh bin/Debug/net*/playwright.ps1 install chromium
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
