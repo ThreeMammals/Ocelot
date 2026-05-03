@@ -177,17 +177,34 @@ public class OcelotBuilder : IOcelotBuilder
             .AddNewtonsoftJson();
     }
 
-    /// <summary>
-    /// Adds Configuration Poller feature (the <see cref="FileConfigurationPoller"/> class).
-    /// </summary>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    public IOcelotBuilder AddConfigurationDelegate(OcelotMiddlewareConfigurationDelegate createConfiguration)
+    {
+        Services.AddSingleton(createConfiguration);
+        return this;
+    }
+
     public IOcelotBuilder AddConfigurationPoller()
     {
+        return AddConfigurationPoller<FileConfigurationPoller, InMemoryFileConfigurationPollerOptions, DiskFileConfigurationRepository>();
+    }
+
+    public IOcelotBuilder AddConfigurationDiscoveryPoller<TPoller, TPollerOptions, TRepository>()
+        where TPoller : class, IFileConfigurationPoller
+        where TPollerOptions : ServiceDiscoveryFileConfigurationPollerOptions
+        where TRepository : class, IFileConfigurationRepository
+    {
+        return AddConfigurationPoller<TPoller, TPollerOptions, TRepository>();
+    }
+
+    public IOcelotBuilder AddConfigurationPoller<TPoller, TPollerOptions, TRepository>()
+        where TPoller : class, IFileConfigurationPoller
+        where TPollerOptions : class, IFileConfigurationPollerOptions
+        where TRepository : class, IFileConfigurationRepository
+    {
         Services
-            //.AddSingleton(ConsulMiddlewareConfigurationProvider.Get)
-            .AddHostedService<FileConfigurationPoller>()
-            .RemoveAll<IFileConfigurationPollerOptions>().AddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>()
-            .RemoveAll<IFileConfigurationRepository>().AddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
+            .RemoveAll<IFileConfigurationPoller>().AddHostedService<TPoller>()
+            .RemoveAll<IFileConfigurationPollerOptions>().AddSingleton<IFileConfigurationPollerOptions, TPollerOptions>()
+            .RemoveAll<IFileConfigurationRepository>().AddSingleton<IFileConfigurationRepository, TRepository>();
         return this;
     }
 
@@ -257,7 +274,7 @@ public class OcelotBuilder : IOcelotBuilder
     /// </summary>
     /// <param name="delegateType">The type of a <see cref="DelegatingHandler"/> to be registered.</param>
     /// <param name="global">True if the handler should be globally available.</param>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Generates an exception if the <paramref name="delegateType"/> type does not inherit from the <see cref="DelegatingHandler"/>.</exception>
     public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
     {
@@ -288,7 +305,7 @@ public class OcelotBuilder : IOcelotBuilder
     /// </summary>
     /// <typeparam name="THandler">The type of a <see cref="DelegatingHandler"/> to be registered.</typeparam>
     /// <param name="global">True if the handler should be globally available.</param>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {
@@ -347,10 +364,6 @@ public class OcelotBuilder : IOcelotBuilder
         return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
     }
 
-    /// <summary>
-    /// Adds the built-in Quality of Service feature from the <c>Ocelot.QualityOfService</c> namespace via <see cref="QosDelegatingHandlerDelegate"/> after force-removing any other enabled external QoS implementations.
-    /// </summary>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddQualityOfService()
     {
         Services.RemoveAll<QosDelegatingHandlerDelegate>();
@@ -358,12 +371,6 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
-    /// <summary>
-    /// Adds a custom Quality of Service handler of type <typeparamref name="THandler"/> that inherits from <see cref="CircuitBreakerDelegatingHandler"/>,
-    /// allowing overrides such as a custom <see cref="CircuitBreakerDelegatingHandler.ServerErrorCodes"/> set.
-    /// </summary>
-    /// <typeparam name="THandler">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddQualityOfService<THandler>()
         where THandler : CircuitBreakerDelegatingHandler
     {

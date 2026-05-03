@@ -6,7 +6,7 @@ using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Repository;
 
-public class FileConfigurationPoller : IHostedService, IDisposable
+public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService, IDisposable
 {
     private readonly IOcelotLogger _logger;
     private readonly IFileConfigurationRepository _repo;
@@ -61,7 +61,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         return Task.Run(() => _timer.Change(Timeout.Infinite, 0), cancellationToken);
     }
 
-    private void Poll()
+    public void Poll()
     {
         _logger.LogInformation(() => $"{nameof(Poll)}: Started polling");
         FileConfiguration configuration;
@@ -84,7 +84,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         var asJson = ToJson(configuration);
         if (asJson != _previousAsJson)
         {
-            var config = _internalConfigCreator.Create(configuration).GetAwaiter().GetResult();
+            var config = _internalConfigCreator.Create(configuration).GetAwaiter().GetResult(); // TODO Extend interface with sync version
             if (!config.IsError)
                 _internalConfigRepo.AddOrReplace(config.Data);
 
@@ -92,6 +92,39 @@ public class FileConfigurationPoller : IHostedService, IDisposable
         }
 
         _logger.LogInformation(() => $"{nameof(Poll)}: Finished polling");
+    }
+
+    public async Task PollAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
+        FileConfiguration configuration;
+        try
+        {
+            configuration = await _repo.GetAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e}.");
+            return;
+        }
+
+        if (configuration is null)
+        {
+            _logger.LogWarning(() => $"{nameof(PollAsync)}: Null object while getting {nameof(FileConfiguration)} via the {_repo.GetType().Name} service.");
+            return;
+        }
+
+        var asJson = ToJson(configuration);
+        if (asJson != _previousAsJson)
+        {
+            var config = await _internalConfigCreator.Create(configuration);
+            if (!config.IsError)
+                _internalConfigRepo.AddOrReplace(config.Data);
+
+            _previousAsJson = asJson;
+        }
+
+        _logger.LogInformation(() => $"{nameof(PollAsync)}: Finished polling");
     }
 
     /// <summary>

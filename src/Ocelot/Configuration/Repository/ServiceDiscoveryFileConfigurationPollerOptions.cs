@@ -2,18 +2,19 @@
 
 namespace Ocelot.Configuration.Repository;
 
-public class ConsulFileConfigurationPollerOptions : IFileConfigurationPollerOptions
+public class ServiceDiscoveryFileConfigurationPollerOptions : IFileConfigurationPollerOptions
 {
     private readonly IInternalConfigurationRepository _internalRepository;
     private readonly IFileConfigurationRepository _fileRepository;
 
-    public ConsulFileConfigurationPollerOptions(IInternalConfigurationRepository internalRepo, IFileConfigurationRepository fileRepo)
+    public ServiceDiscoveryFileConfigurationPollerOptions(IInternalConfigurationRepository internalRepo, IFileConfigurationRepository fileRepo)
     {
         _internalRepository = internalRepo;
         _fileRepository = fileRepo;
     }
 
-    public const int DefaultDelay = 1000;
+    public const int DefaultDelayMilliseconds = 1000;
+    public static int DelayMilliseconds { get; set; } = DefaultDelayMilliseconds;
 
     public int Delay()
     {
@@ -27,7 +28,7 @@ public class ConsulFileConfigurationPollerOptions : IFileConfigurationPollerOpti
         return GetDelay(configuration);
     }
 
-    private int GetDelay(FileConfiguration configuration)
+    protected virtual int GetDelay(FileConfiguration configuration)
     {
         var discoveryOpts = configuration?.GlobalConfiguration?.ServiceDiscoveryProvider;
         if (discoveryOpts != null && discoveryOpts.PollingInterval > 0)
@@ -37,6 +38,6 @@ public class ConsulFileConfigurationPollerOptions : IFileConfigurationPollerOpti
         var discoveryConfig = internalConfig?.ServiceProviderConfiguration;
         return (discoveryConfig != null && discoveryConfig.PollingInterval > 0)
             ? discoveryConfig.PollingInterval
-            : DefaultDelay;
+            : DelayMilliseconds;
     }
 }
