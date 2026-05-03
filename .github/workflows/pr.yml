@@ -192,8 +192,9 @@ jobs:
         dotnet tool restore
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
-    - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+    # Temporary skip to test PW on Mac
+    #- name: Unit Tests
+    #  run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Install Playwright
       run: |
         which pwsh || echo "pwsh not found"
