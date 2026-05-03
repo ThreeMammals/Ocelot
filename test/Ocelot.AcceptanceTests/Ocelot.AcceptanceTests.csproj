@@ -16,6 +16,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
+    <PlaywrightPlatform>all</PlaywrightPlatform>
   </PropertyGroup>
   <ItemGroup>
     <None Update="appsettings.product.json">
