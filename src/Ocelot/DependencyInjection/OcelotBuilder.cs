@@ -59,7 +59,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
         Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
-        Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
         Services.TryAddSingleton<IRoutesCreator, StaticRoutesCreator>();
         Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
         Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
@@ -74,8 +73,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-        Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
-        Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
         Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
         Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
@@ -113,7 +110,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
         Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
-        Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
         Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
         Services.TryAddSingleton<IPlaceholders, Placeholders>();
         Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
@@ -131,6 +127,7 @@ public class OcelotBuilder : IOcelotBuilder
 
         // Features
         Services.AddOcelotCache();
+        Services.AddOcelotConfigurationRepository();
         Services.AddOcelotHeaderRouting();
         Services.AddOcelotLogging();
         Services.AddOcelotMessageInvokerPool();
@@ -178,6 +175,20 @@ public class OcelotBuilder : IOcelotBuilder
             .AddControllersAsServices()
             .AddAuthorization()
             .AddNewtonsoftJson();
+    }
+
+    /// <summary>
+    /// Adds Configuration Poller feature (the <see cref="FileConfigurationPoller"/> class).
+    /// </summary>
+    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    public IOcelotBuilder AddConfigurationPoller()
+    {
+        Services
+            //.AddSingleton(ConsulMiddlewareConfigurationProvider.Get)
+            .AddHostedService<FileConfigurationPoller>()
+            .RemoveAll<IFileConfigurationPollerOptions>().AddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>()
+            .RemoveAll<IFileConfigurationRepository>().AddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
+        return this;
     }
 
     public IOcelotBuilder AddSingletonDefinedAggregator<T>()

@@ -2,9 +2,6 @@
 
 namespace Ocelot.Configuration.Repository;
 
-/// <summary>
-/// Register as singleton.
-/// </summary>
 public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
 {
 #if NET9_0_OR_GREATER

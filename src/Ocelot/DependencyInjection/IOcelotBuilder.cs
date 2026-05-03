@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Multiplexer;
+using Ocelot.QualityOfService;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.DependencyInjection;
@@ -14,6 +15,8 @@ public interface IOcelotBuilder
     IConfiguration Configuration { get; }
 
     IMvcCoreBuilder MvcCoreBuilder { get; }
+
+    IOcelotBuilder AddConfigurationPoller();
 
     /// <summary>
     /// Adds a <see cref="DelegatingHandler"/> of the <paramref name="delegateType"/> type as a transient service, with the <paramref name="global"/> option to make the handler globally available.
@@ -61,11 +64,11 @@ public interface IOcelotBuilder
     IOcelotBuilder AddQualityOfService();
 
     /// <summary>
-    /// Adds a custom Quality of Service handler that inherits from <see cref="Ocelot.QualityOfService.CircuitBreakerDelegatingHandler"/>,
+    /// Adds a custom Quality of Service handler that inherits from <see cref="CircuitBreakerDelegatingHandler"/>,
     /// allowing overrides such as a custom <c>ServerErrorCodes</c> set.
     /// </summary>
-    /// <typeparam name="THandler">A concrete subclass of <see cref="Ocelot.QualityOfService.CircuitBreakerDelegatingHandler"/>.</typeparam>
+    /// <typeparam name="THandler">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
     /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     IOcelotBuilder AddQualityOfService<THandler>()
-        where THandler : Ocelot.QualityOfService.CircuitBreakerDelegatingHandler;
+        where THandler : CircuitBreakerDelegatingHandler;
 }
