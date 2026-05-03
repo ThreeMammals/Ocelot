@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Administration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Configuration.Setter;
 using Ocelot.Errors;
 using Ocelot.Responses;
 

@@ -1,10 +1,8 @@
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Repository;
 using Ocelot.Infrastructure.Extensions;
-using Ocelot.Responses;
 
-namespace Ocelot.Configuration.Setter;
+namespace Ocelot.Configuration.Repository;
 
 public class FileAndInternalConfigurationSetter : IFileConfigurationSetter
 {

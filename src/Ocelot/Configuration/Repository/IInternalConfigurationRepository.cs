@@ -1,6 +1,4 @@
-﻿using Ocelot.Responses;
-
-namespace Ocelot.Configuration.Repository;
+﻿namespace Ocelot.Configuration.Repository;
 
 public interface IInternalConfigurationRepository
 {

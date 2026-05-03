@@ -8,7 +8,6 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Configuration.Setter;
 using Ocelot.DependencyInjection;
 using Ocelot.Errors;
 using Ocelot.Logging;

@@ -1,6 +1,6 @@
 using Ocelot.Configuration.File;
 
-namespace Ocelot.Configuration.Setter;
+namespace Ocelot.Configuration.Repository;
 
 public interface IFileConfigurationSetter
 {
