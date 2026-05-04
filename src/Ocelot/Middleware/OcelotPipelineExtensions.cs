@@ -42,7 +42,7 @@ public static class OcelotPipelineExtensions
                 ws.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
                 ws.UseMiddleware<LoadBalancingMiddleware>();
                 ws.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-                ws.UseMiddleware<WebSocketsProxyMiddleware>();
+                ws.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsProxyMiddleware);
             });
 
         // Allow the user to respond with absolutely anything they want.

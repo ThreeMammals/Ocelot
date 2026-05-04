@@ -496,4 +496,34 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
             Times.Once());
         Assert.True(closed);
     }
+
+    [Fact]
+    public void DefaultWebSocketBufferSize_ShouldBe4096()
+    {
+        var exposed = new ExposedBufferSizeMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        Assert.Equal(4096, exposed.ExposedBufferSize);
+    }
+
+    [Fact]
+    public void DefaultWebSocketBufferSize_CanBeOverriddenBySubclass()
+    {
+        var custom = new CustomBufferSizeMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        Assert.Equal(65536, custom.ExposedBufferSize);
+    }
+
+    private class ExposedBufferSizeMiddleware : WebSocketsProxyMiddleware
+    {
+        public ExposedBufferSizeMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
+            : base(logging, next, factory) { }
+
+        public int ExposedBufferSize => DefaultWebSocketBufferSize;
+    }
+
+    private class CustomBufferSizeMiddleware : ExposedBufferSizeMiddleware
+    {
+        public CustomBufferSizeMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
+            : base(logging, next, factory) { }
+
+        protected override int DefaultWebSocketBufferSize => 65536;
+    }
 }

@@ -19,7 +19,7 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
     };
 
-    private const int DefaultWebSocketBufferSize = 4096;
+    protected virtual int DefaultWebSocketBufferSize => 4096;
     private readonly RequestDelegate _next;
     private readonly IWebSocketsFactory _factory;
 
