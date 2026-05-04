@@ -6,6 +6,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.Logging;
+using Ocelot.QualityOfService;
 using Ocelot.RateLimiting;
 
 namespace Ocelot.DependencyInjection;
@@ -74,4 +75,7 @@ public static class Features
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddOcelotMetadata(this IServiceCollection services) => 
         services.AddSingleton<IMetadataCreator, DefaultMetadataCreator>();
+
+    public static IServiceCollection AddOcelotQualityOfService(this IServiceCollection services) => services
+        .AddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
 }

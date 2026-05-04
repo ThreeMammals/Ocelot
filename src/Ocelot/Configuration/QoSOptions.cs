@@ -62,5 +62,6 @@ public class QoSOptions
     public int? Timeout { get; init; }
 
     public bool UseQos => (MinimumThroughput.HasValue && MinimumThroughput > 0)
-        || (Timeout.HasValue && Timeout > 0);
+        || (Timeout.HasValue && Timeout > 0)
+        || (FailureRatio.HasValue && FailureRatio > 0);
 }

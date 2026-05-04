@@ -11,7 +11,7 @@ public class OcelotLogger : IOcelotLogger, IDisposable
 {
     private readonly ILogger _logger;
     private readonly IRequestScopedDataRepository _scopedDataRepository;
-    private bool _disposed;
+    private volatile bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OcelotLogger"/> class.
