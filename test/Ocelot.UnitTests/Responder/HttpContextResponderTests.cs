@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Moq;
 using Ocelot.Headers;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responder;
 
@@ -9,11 +11,15 @@ namespace Ocelot.UnitTests.Responder;
 public class HttpContextResponderTests
 {
     private readonly HttpContextResponder _responder;
+    private readonly Mock<IOcelotLogger> _logger;
 
     public HttpContextResponderTests()
     {
         var removeOutputHeaders = new RemoveOutputHeaders();
-        _responder = new HttpContextResponder(removeOutputHeaders);
+        var loggerFactory = new Mock<IOcelotLoggerFactory>();
+        _logger = new Mock<IOcelotLogger>();
+        loggerFactory.Setup(x => x.CreateLogger<HttpContextResponder>()).Returns(_logger.Object);
+        _responder = new HttpContextResponder(removeOutputHeaders, loggerFactory.Object);
     }
 
     [Fact]
@@ -144,7 +150,6 @@ public class HttpContextResponderTests
         httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
 
         var content = new StringContent("data: test");
-        // Ocelot might receive "text/event-stream; charset=utf-8"
         content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("text/event-stream; charset=utf-8");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
@@ -174,6 +179,55 @@ public class HttpContextResponderTests
 
         // Assert
         bodyFeature.DisableBufferingCalled.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Feat", "941")]
+    public async Task Should_log_warning_when_body_feature_is_null_for_sse()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(null);
+        
+        var content = new StringContent("data: test");
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        try
+        {
+            await _responder.SetResponseOnHttpContext(httpContext, response);
+        }
+        catch (NullReferenceException)
+        {
+            // Expected because context.Response.Body access fails when feature is null
+        }
+
+        // Assert
+        _logger.Verify(x => x.LogWarning(It.Is<string>(s => s.Contains("IHttpResponseBodyFeature is null"))), Times.Once);
+    }
+
+    [Theory]
+    [Trait("Feat", "941")]
+    [InlineData("text/event-stream")]
+    [InlineData("text/event-stream; charset=utf-8")]
+    [InlineData("TEXT/EVENT-STREAM")]
+    public async Task Should_detect_sse_for_various_content_types(string contentType)
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var bodyFeature = new MockHttpResponseBodyFeature();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
+
+        var content = new StringContent("data: test");
+        content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(contentType);
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        await _responder.SetResponseOnHttpContext(httpContext, response);
+
+        // Assert
+        bodyFeature.DisableBufferingCalled.ShouldBeTrue();
     }
 
     private class MockHttpResponseBodyFeature : IHttpResponseBodyFeature

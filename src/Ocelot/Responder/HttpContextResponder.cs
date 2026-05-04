@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
+using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.Responder;
 
@@ -12,10 +15,12 @@ namespace Ocelot.Responder;
 public class HttpContextResponder : IHttpResponder
 {
     private readonly IRemoveOutputHeaders _removeOutputHeaders;
+    private readonly IOcelotLogger _logger;
 
-    public HttpContextResponder(IRemoveOutputHeaders removeOutputHeaders)
+    public HttpContextResponder(IRemoveOutputHeaders removeOutputHeaders, IOcelotLoggerFactory loggerFactory)
     {
         _removeOutputHeaders = removeOutputHeaders;
+        _logger = loggerFactory.CreateLogger<HttpContextResponder>();
     }
 
     public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse downstream)
@@ -77,10 +82,22 @@ public class HttpContextResponder : IHttpResponder
 
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
-        var isSse = downstream.Content?.Headers?.ContentType?.MediaType?.StartsWith("text/event-stream", StringComparison.OrdinalIgnoreCase) == true;
+        var mediaType = downstream.Content?.Headers?.ContentType?.MediaType;
+        var isSse = mediaType?.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase) == true
+            || (mediaType?.StartsWith("text/event-stream", StringComparison.OrdinalIgnoreCase) == true && mediaType.Contains(';'));
+
         if (isSse)
         {
-            context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
+            var feature = context.Features.Get<IHttpResponseBodyFeature>();
+            if (feature != null)
+            {
+                feature.DisableBuffering();
+            }
+            else
+            {
+                var server = context.RequestServices?.GetService(typeof(IServer))?.GetType().Name ?? "Unknown";
+                _logger.LogWarning($"IHttpResponseBodyFeature is null for SSE request. Buffering cannot be disabled. Server: {server}, OS: {RuntimeInformation.OSDescription}, Framework: {RuntimeInformation.FrameworkDescription}");
+            }
 
             if (!context.Response.Headers.ContainsKey("X-Accel-Buffering"))
             {
