@@ -15,7 +15,7 @@ public class FileConfigurationSetterTests : UnitTest
     private readonly Mock<IInternalConfigurationRepository> _configRepo;
     private readonly Mock<IInternalConfigurationCreator> _configCreator;
     private Response<IInternalConfiguration> _configuration;
-    private object _result;
+    private readonly object _result;
     private readonly Mock<IFileConfigurationRepository> _repo;
 
     public FileConfigurationSetterTests()
@@ -25,6 +25,8 @@ public class FileConfigurationSetterTests : UnitTest
         _configCreator = new Mock<IInternalConfigurationCreator>();
         _configSetter = new FileAndInternalConfigurationSetter(_configRepo.Object, _configCreator.Object, _repo.Object);
     }
+
+    protected static CancellationToken CancelMe => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task Should_set_configuration()
@@ -47,50 +49,28 @@ public class FileConfigurationSetterTests : UnitTest
             RateLimitOptions = new(),
             Timeout = 111,
         };
-        GivenTheRepoReturns(new OkResponse());
         GivenTheCreatorReturns(new OkResponse<IInternalConfiguration>(config));
 
         // Act
-        _result = await _configSetter.Set(_fileConfiguration);
+        await _configSetter.SetAsync(_fileConfiguration, CancelMe);
 
         // Assert
         ThenTheConfigurationRepositoryIsCalledCorrectly();
     }
 
     [Fact]
-    public async Task Should_return_error_if_unable_to_set_file_configuration()
+    public async Task Should_throw_exception_if_unable_to_set_file_configuration()
     {
         // Arrange
         _fileConfiguration = new FileConfiguration();
-        GivenTheRepoReturns(new ErrorResponse(It.IsAny<Error>()));
+        GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(new FakeError("testMe")));
 
         // Act
-        _result = await _configSetter.Set(_fileConfiguration);
+        var e = await Assert.ThrowsAsync<ConfigurationRepositoryException>(
+            () => _configSetter.SetAsync(_fileConfiguration, CancelMe));
 
         // Assert
-        _result.ShouldBeOfType<ErrorResponse>();
-    }
-
-    [Fact]
-    public async Task Should_return_error_if_unable_to_set_ocelot_configuration()
-    {
-        // Arrange
-        _fileConfiguration = new FileConfiguration();
-        GivenTheRepoReturns(new OkResponse());
-        GivenTheCreatorReturns(new ErrorResponse<IInternalConfiguration>(It.IsAny<Error>()));
-
-        // Act
-        _result = await _configSetter.Set(_fileConfiguration);
-
-        // Assert
-        _result.ShouldBeOfType<ErrorResponse>();
-    }
-
-    private void GivenTheRepoReturns(Response response)
-    {
-        _repo
-            .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync(response);
+        Assert.Equal("CannotAddDataError: testMe", e.Message);
     }
 
     private void GivenTheCreatorReturns(Response<IInternalConfiguration> configuration)
@@ -104,5 +84,12 @@ public class FileConfigurationSetterTests : UnitTest
     private void ThenTheConfigurationRepositoryIsCalledCorrectly()
     {
         _configRepo.Verify(x => x.AddOrReplace(_configuration.Data), Times.Once);
+    }
+}
+
+public class FakeError : Error
+{
+    public FakeError(string message) : base(message, OcelotErrorCode.CannotAddDataError, 404)
+    {
     }
 }

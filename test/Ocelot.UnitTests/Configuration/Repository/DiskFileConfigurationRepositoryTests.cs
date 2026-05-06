@@ -36,7 +36,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         GivenTheConfigurationIs(config);
 
         // Act
-        _result = (await _repo.Get()).Data;
+        _result = await _repo.GetAsync(CancelMe);
 
         // Assert
         ThenTheFollowingIsReturned(config);
@@ -51,7 +51,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         GivenTheConfigurationIs(config);
 
         // Act
-        _result = (await _repo.Get()).Data;
+        _result = await _repo.GetAsync(CancelMe);
 
         // Assert
         ThenTheFollowingIsReturned(config);
@@ -104,6 +104,8 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         ThenTheOcelotJsonIsStoredAs(ocelotJson, config);
     }
 
+    protected static CancellationToken CancelMe => TestContext.Current.CancellationToken;
+
     private FileInfo GivenTheUserAddedOcelotJson()
     {
         var primaryFile = Path.Combine(TestID, ConfigurationBuilderExtensions.PrimaryConfigFile);
@@ -125,9 +127,9 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
 
     private async Task WhenISetTheConfiguration(FileConfiguration fileConfiguration)
     {
-        await _repo.Set(fileConfiguration);
-        var response = await _repo.Get();
-        _result = response.Data;
+        await _repo.SetAsync(fileConfiguration, CancelMe);
+        var response = await _repo.GetAsync(CancelMe);
+        _result = response;
     }
 
     private void ThenTheConfigurationIsStoredAs(FileConfiguration expecteds)

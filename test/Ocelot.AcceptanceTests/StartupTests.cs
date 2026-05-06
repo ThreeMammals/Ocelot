@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.Responses;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -47,24 +46,9 @@ public class StartupTests : Steps
 
     private class FakeFileConfigurationRepository : IFileConfigurationRepository
     {
-        public FileConfiguration Get()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Set(FileConfiguration configuration)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
+        public FileConfiguration Get() => throw new NotImplementedException();
+        public Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public void Set(FileConfiguration configuration) => throw new NotImplementedException();
+        public Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }

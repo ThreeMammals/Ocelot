@@ -2,15 +2,6 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
-      "Consul": {
-        "type": "Direct",
-        "requested": "[1.7.14.10, )",
-        "resolved": "1.7.14.10",
-        "contentHash": "7nYCLVHdJYxThVJ6Vo6wav3Qo6pVQ9o5PQn0Wbe+JA6/1hMfz3ymIAJYqj+jwQXoTixD4uuMTB+vEHPULShnwg==",
-        "dependencies": {
-          "Newtonsoft.Json": "13.0.1"
-        }
-      },
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[8.0.0, )",
@@ -777,15 +768,6 @@
       }
     },
     "net8.0": {
-      "Consul": {
-        "type": "Direct",
-        "requested": "[1.7.14.10, )",
-        "resolved": "1.7.14.10",
-        "contentHash": "7nYCLVHdJYxThVJ6Vo6wav3Qo6pVQ9o5PQn0Wbe+JA6/1hMfz3ymIAJYqj+jwQXoTixD4uuMTB+vEHPULShnwg==",
-        "dependencies": {
-          "Newtonsoft.Json": "13.0.1"
-        }
-      },
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[8.0.0, )",
@@ -1584,15 +1566,6 @@
       }
     },
     "net9.0": {
-      "Consul": {
-        "type": "Direct",
-        "requested": "[1.7.14.10, )",
-        "resolved": "1.7.14.10",
-        "contentHash": "7nYCLVHdJYxThVJ6Vo6wav3Qo6pVQ9o5PQn0Wbe+JA6/1hMfz3ymIAJYqj+jwQXoTixD4uuMTB+vEHPULShnwg==",
-        "dependencies": {
-          "Newtonsoft.Json": "13.0.1"
-        }
-      },
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[8.0.0, )",

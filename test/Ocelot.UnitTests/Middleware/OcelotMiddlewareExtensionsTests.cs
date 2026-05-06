@@ -38,9 +38,9 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
 
         _mockRepo = new Mock<IInternalConfigurationRepository>();
         _mockRepo.Setup(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()))
-            .Returns(new OkResponse());
+            .Returns(string.Empty);
         _mockRepo.Setup(x => x.Get())
-            .Returns(new OkResponse<IInternalConfiguration>(_mockInternalConfig.Object));
+            .Returns(_mockInternalConfig.Object);
 
         _mockFileConfig = new Mock<IOptionsMonitor<FileConfiguration>>();
         _mockFileConfig.Setup(x => x.CurrentValue).Returns(new FileConfiguration());
@@ -216,71 +216,13 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
     }
 
     [Fact]
-    public async Task UseOcelot_WhenConfigRepoGetReturnsError_ThrowsException()
-    {
-        // Arrange
-        var error = new FakeError("Repository error");
-        _mockRepo.Setup(x => x.Get())
-            .Returns(new ErrorResponse<IInternalConfiguration>(error));
-
-        var builder = GivenLightweightApplicationBuilder();
-
-        // Act, Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => builder.UseOcelot((app, config) => { }));
-    }
-
-    [Fact]
-    public async Task UseOcelot_WhenConfigRepoGetReturnsNullData_ThrowsException()
-    {
-        // Arrange
-        _mockRepo.Setup(x => x.Get())
-            .Returns(new OkResponse<IInternalConfiguration>(null));
-
-        var builder = GivenLightweightApplicationBuilder();
-
-        // Act, Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => builder.UseOcelot((app, config) => { }));
-    }
-
-    [Fact]
-    public async Task UseOcelot_WhenAdminPathExistsAndFileSetterReturnsError_ThrowsException()
-    {
-        // Arrange
-        var mockAdminPath = new Mock<IAdministrationPath>();
-        var mockSetter = new Mock<IFileConfigurationSetter>();
-        var error = new FakeError("File config set error");
-        mockSetter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync(new ErrorResponse(error));
-
-        var builder = GivenLightweightApplicationBuilder(mockAdminPath.Object, mockSetter.Object);
-
-        // Act, Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => builder.UseOcelot((app, config) => { }));
-    }
-
-    [Fact]
-    public async Task UseOcelot_WhenAdminPathExistsAndFileSetterReturnsNull_ThrowsException()
-    {
-        // Arrange
-        var mockAdminPath = new Mock<IAdministrationPath>();
-        var mockSetter = new Mock<IFileConfigurationSetter>();
-        mockSetter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync((Response)null);
-
-        var builder = GivenLightweightApplicationBuilder(mockAdminPath.Object, mockSetter.Object);
-
-        // Act, Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => builder.UseOcelot((app, config) => { }));
-    }
-
-    [Fact]
     public async Task UseOcelot_WhenAdminPathExistsAndFileSetterSucceeds_ReturnsApplicationBuilder()
     {
         // Arrange
         var mockAdminPath = new Mock<IAdministrationPath>();
         var mockSetter = new Mock<IFileConfigurationSetter>();
-        mockSetter.Setup(x => x.Set(It.IsAny<FileConfiguration>()))
-            .ReturnsAsync(new OkResponse());
+        mockSetter.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>(), It.IsAny<CancellationToken>()))
+            .Verifiable(); //.ReturnsAsync(new OkResponse());
 
         var builder = GivenLightweightApplicationBuilder(mockAdminPath.Object, mockSetter.Object);
 
@@ -297,13 +239,13 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
     {
         // Arrange
         var delegateInvoked = false;
-        OcelotMiddlewareConfigurationDelegate configDelegate = _ =>
+        Task configDelegate(IApplicationBuilder _)
         {
             delegateInvoked = true;
             return Task.CompletedTask;
-        };
+        }
 
-        var builder = GivenLightweightApplicationBuilder(configDelegates: new[] { configDelegate });
+        var builder = GivenLightweightApplicationBuilder(configDelegates: new[] { (OcelotMiddlewareConfigurationDelegate)configDelegate });
 
         // Act
         await builder.UseOcelot((app, config) => { });
@@ -317,11 +259,12 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
     {
         // Arrange
         var invokedCount = 0;
-        OcelotMiddlewareConfigurationDelegate delegate1 = _ => { invokedCount++; return Task.CompletedTask; };
-        OcelotMiddlewareConfigurationDelegate delegate2 = _ => { invokedCount++; return Task.CompletedTask; };
-        OcelotMiddlewareConfigurationDelegate delegate3 = _ => { invokedCount++; return Task.CompletedTask; };
+        // OcelotMiddlewareConfigurationDelegate
+        Task delegate1(IApplicationBuilder _) { invokedCount++; return Task.CompletedTask; }
+        Task delegate2(IApplicationBuilder _) { invokedCount++; return Task.CompletedTask; }
+        Task delegate3(IApplicationBuilder _) { invokedCount++; return Task.CompletedTask; }
 
-        var builder = GivenLightweightApplicationBuilder(configDelegates: new[] { delegate1, delegate2, delegate3 });
+        var builder = GivenLightweightApplicationBuilder(configDelegates: new[] { delegate1, delegate2, (OcelotMiddlewareConfigurationDelegate)delegate3 });
 
         // Act
         await builder.UseOcelot((app, config) => { });
@@ -389,7 +332,7 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
                 if (++addOrReplaceCount >= 2)
                     onChangeCompletedTcs.TrySetResult();
             })
-            .Returns(new OkResponse());
+            .Returns(string.Empty);
 
         var builder = GivenLightweightApplicationBuilder();
         await builder.UseOcelot((app, config) => { });
@@ -407,20 +350,7 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
         _mockRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Exactly(2));
     }
 
-    [Fact]
-    public async Task UseOcelot_WhenConfigRepoGetReturnsNull_ThrowsException()
-    {
-        // Arrange: Get() returns null so ocelotConfiguration?.Data takes the null-conditional branch on line 145
-        _mockRepo.Setup(x => x.Get())
-            .Returns((Response<IInternalConfiguration>)null);
-
-        var builder = GivenLightweightApplicationBuilder();
-
-        // Act, Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => builder.UseOcelot((app, config) => { }));
-    }
-
-    private IApplicationBuilder GivenFullApplicationBuilder()
+    private ApplicationBuilder GivenFullApplicationBuilder()
     {
         var configRoot = new ConfigurationBuilder().Build();
         var services = new ServiceCollection();
@@ -438,7 +368,7 @@ public class OcelotMiddlewareExtensionsTests : UnitTest
         return new ApplicationBuilder(provider);
     }
 
-    private IApplicationBuilder GivenLightweightApplicationBuilder(
+    private ApplicationBuilder GivenLightweightApplicationBuilder(
         IAdministrationPath adminPath = null,
         IFileConfigurationSetter fileConfigSetter = null,
         IEnumerable<OcelotMiddlewareConfigurationDelegate> configDelegates = null)

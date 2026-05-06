@@ -9,6 +9,6 @@ public class InMemoryFileConfigurationPollerOptionsTests
     {
         InMemoryFileConfigurationPollerOptions sut = new();
 
-        Assert.Equal(1000, sut.Delay);
+        Assert.Equal(1000, sut.Delay());
     }
 }

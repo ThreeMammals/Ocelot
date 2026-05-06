@@ -63,6 +63,9 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
     public void Poll()
     {
+        if (_polling)
+            return;
+
         _logger.LogInformation(() => $"{nameof(Poll)}: Started polling");
         FileConfiguration configuration;
         try
@@ -96,6 +99,9 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
     public async Task PollAsync(CancellationToken cancellationToken = default)
     {
+        if (_polling)
+            return;
+
         _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
         FileConfiguration configuration;
         try

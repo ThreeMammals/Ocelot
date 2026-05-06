@@ -1,8 +1,6 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-//using Ocelot.Provider.Consul;
-using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
@@ -109,14 +107,12 @@ public class ServiceDiscoveryFileConfigurationPollerOptionsTests
     }
 
     [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenFileConfigIsError()
+    public void Delay_ShouldReturnDefaultValue_WhenFileConfigIsNull()
     {
         // Arrange
-        var err = new UnableToSetConfigInConsulError("Error message");
-        var fileConfigResponse = new ErrorResponse<FileConfiguration>(err);
         _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .ReturnsAsync(fileConfigResponse);
+            .Setup(x => x.GetAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((FileConfiguration)null);
 
         IInternalConfiguration internalConfiguration = null;
         _mockInternalConfigRepo
@@ -212,7 +208,7 @@ public class ServiceDiscoveryFileConfigurationPollerOptionsTests
     }
 
     [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenInternalConfigIsError()
+    public void Delay_ShouldReturnDefaultValue_WhenInternalConfigIsNull()
     {
         // Arrange
         FileConfiguration configuration = null;
@@ -220,11 +216,9 @@ public class ServiceDiscoveryFileConfigurationPollerOptionsTests
             .Setup(x => x.Get())
             .Returns(configuration);
 
-        var err = new UnableToSetConfigInConsulError("Error message");
-        var internalConfigResponse = new ErrorResponse<IInternalConfiguration>(err);
         _mockInternalConfigRepo
             .Setup(x => x.Get())
-            .Returns(internalConfigResponse);
+            .Returns((IInternalConfiguration)null);
 
         // Act
         var delay = _sut.Delay();
@@ -360,7 +354,7 @@ public class ServiceDiscoveryFileConfigurationPollerOptionsTests
             .Returns(internalConfiguration);
 
         // Act
-        var delay = _sut.Delay;
+        var delay = _sut.Delay();
 
         // Assert
         _mockInternalConfigRepo.Verify(x => x.Get(), Times.Once);

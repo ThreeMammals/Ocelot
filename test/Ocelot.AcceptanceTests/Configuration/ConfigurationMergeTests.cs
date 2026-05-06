@@ -80,8 +80,7 @@ public sealed class ConfigurationMergeTests : Steps
 
         var repository = OcelotServices.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
         var response = repository.Get().ShouldNotBeNull();
-        response.IsError.ShouldBeFalse();
-        var internalConfig = response.Data.ShouldNotBeNull();
+        var internalConfig = response.ShouldNotBeNull();
 
         // Assert Arrange() setup
         internalConfig.RequestId.ShouldBe(nameof(ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter));

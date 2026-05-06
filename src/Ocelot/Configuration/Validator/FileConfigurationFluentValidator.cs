@@ -32,7 +32,7 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
 
         RuleForEach(configuration => configuration.Routes)
             .Must((config, route) => HaveServiceDiscoveryProviderRegistered(route, config.GlobalConfiguration.ServiceDiscoveryProvider))
-            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
+            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
 
         RuleForEach(configuration => configuration.Routes)
             .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.UpstreamPathTemplate))
@@ -43,7 +43,7 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
 
         RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
             .Must(HaveServiceDiscoveryProviderRegistered)
-            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?");
+            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
 
         RuleForEach(configuration => configuration.Routes)
             .Must((config, route) => IsNotDuplicateIn(route, config.Aggregates))
