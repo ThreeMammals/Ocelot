@@ -82,7 +82,7 @@ public class HttpContextResponder : IHttpResponder
 
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
-        var mediaType = downstream.Content?.Headers?.ContentType?.MediaType;
+        var mediaType = downstream.Content.Headers.ContentType.MediaType;
         var isSse = mediaType?.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase) == true
             || (mediaType?.StartsWith("text/event-stream", StringComparison.OrdinalIgnoreCase) == true && mediaType.Contains(';'));
 
@@ -95,18 +95,28 @@ public class HttpContextResponder : IHttpResponder
             }
             else
             {
-                var server = context.RequestServices?.GetService(typeof(IServer))?.GetType().Name ?? "Unknown";
+                var server = context.RequestServices?.GetService(typeof(IServer))?.ToString() ?? "Unknown";
                 _logger.LogWarning($"IHttpResponseBodyFeature is null for SSE request. Buffering cannot be disabled. Server: {server}, OS: {RuntimeInformation.OSDescription}, Framework: {RuntimeInformation.FrameworkDescription}");
             }
 
-            if (!context.Response.Headers.ContainsKey("X-Accel-Buffering"))
-            {
-                context.Response.Headers.Append("X-Accel-Buffering", "no");
-            }
+            ProcessSoftwareHeadersForServerSentEvents(context.Response.Headers);
         }
 
         await using var content = await downstream.Content.ReadAsStreamAsync();
         await content.CopyToAsync(context.Response.Body, context.RequestAborted);
+    }
+
+    protected virtual void ProcessSoftwareHeadersForServerSentEvents(IHeaderDictionary headers)
+    {
+        SetupNginxSseHeaders(headers);
+    }
+
+    protected virtual void SetupNginxSseHeaders(IHeaderDictionary headers)
+    {
+        if (!headers.ContainsKey("X-Accel-Buffering"))
+        {
+            headers.Append("X-Accel-Buffering", "no");
+        }
     }
 
     private static void SetStatusCode(HttpContext context, int statusCode)

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue 941 (SSE) Test</title>
+    <link rel="icon" type="image/png" href="/proxy/ocelot_icon.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+
+        .log-container {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-top: 20px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .status-connected {
+            color: green;
+        }
+
+        .status-disconnected {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title-container">
+        <img alt="Ocelot Icon" src="ocelot_icon.png" class="logo">
+        <h1>Issue <a href="https://github.com/ThreeMammals/Ocelot/pull/2383">941</a> (SSE) Test</h1>
+    </div>
+    <hr />
+
+    <div class="controls">
+        <h3>1. Select Connection Type</h3>
+        <div>
+            <label>
+                <input type="radio" name="connType" value="sse-plain" checked> Plain SSE &rarr; /proxy/sse-plain
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="connType" value="signalr"> SignalR over SSE &rarr; /proxy/testhub
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="connType" value="text-plain"> Text Plain (Buffered) &rarr; /proxy/text-plain
+            </label>
+        </div>
+        <br />
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+        <span class="status" id="status">Status: <span class="status-disconnected">Disconnected</span></span>
+    </div>
+
+    <div class="log-container" id="log">
+        <em>Waiting for events...</em>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const statusSpan = document.getElementById('status');
+
+        let eventSource = null;
+        let signalRConnection = null;
+
+        function addLog(msg) {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusSpan.innerHTML = 'Status: <span class="status-connected">Connected</span>';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusSpan.innerHTML = 'Status: <span class="status-disconnected">Disconnected</span>';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        connectBtn.onclick = async () => {
+            const type = document.querySelector('input[name="connType"]:checked').value;
+            const baseUrl = "http://localhost:5000";
+            log.innerHTML = '';
+            addLog(`Attempting to connect to ${type} at ${baseUrl}...`);
+
+            if (type === 'sse-plain') {
+                eventSource = new EventSource(`${baseUrl}/proxy/sse-plain`);
+                eventSource.onopen = () => {
+                    addLog('SSE Connection opened.');
+                    updateStatus(true);
+                };
+                eventSource.onmessage = (e) => {
+                    addLog(`Received SSE: ${e.data}`);
+                };
+                eventSource.onerror = (e) => {
+                    addLog('SSE Error/Closed.');
+                    eventSource.close();
+                    updateStatus(false);
+                };
+            } else if (type === 'signalr') {
+                signalRConnection = new signalR.HubConnectionBuilder()
+                    .withUrl(`${baseUrl}/proxy/testhub`, { transport: signalR.HttpTransportType.ServerSentEvents })
+                    .build();
+
+                signalRConnection.on('ReceiveMessage', (msg) => {
+                    addLog(`Received SignalR: ${msg}`);
+                });
+
+                try {
+                    await signalRConnection.start();
+                    addLog('SignalR Connection started via SSE.');
+                    updateStatus(true);
+                } catch (err) {
+                    addLog(`SignalR Error: ${err}`);
+                    updateStatus(false);
+                }
+
+                signalRConnection.onclose = () => {
+                    addLog('SignalR Connection closed.');
+                    updateStatus(false);
+                };
+            } else if (type === 'text-plain') {
+                try {
+                    updateStatus(true);
+                    const response = await fetch(`${baseUrl}/proxy/text-plain`);
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    addLog('Fetching text/plain chunks...');
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        addLog(`Received chunk: ${decoder.decode(value)}`);
+                    }
+                    addLog('Fetch complete.');
+                } catch (err) {
+                    addLog(`Fetch Error: ${err}`);
+                } finally {
+                    updateStatus(false);
+                }
+            }
+        };
+
+        disconnectBtn.onclick = () => {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                addLog('SSE Disconnected.');
+            }
+            if (signalRConnection) {
+                signalRConnection.stop();
+                signalRConnection = null;
+                addLog('SignalR Disconnected.');
+            }
+            updateStatus(false);
+        };
+    </script>
+</body>
+
+</html>

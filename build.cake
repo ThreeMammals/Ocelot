@@ -1,6 +1,5 @@
 #tool dotnet:?package=GitVersion.Tool&version=6.6.2
 #tool nuget:?package=ReportGenerator&version=5.5.4
-#tool dotnet:?package=Microsoft.Playwright.CLI&version=1.2.3
 
 #addin nuget:?package=Cake.Http
 #addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
@@ -581,12 +580,6 @@ Task("AcceptanceTests")
 			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
 			return;
 		}
-        Information("Installing Playwright browsers...");
-        var playwrightSettings = new ProcessSettings {
-            Arguments = "tool run playwright install chromium",
-            WorkingDirectory = "./test/Ocelot.AcceptanceTests"
-        };
-        StartProcess("dotnet", playwrightSettings);
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings

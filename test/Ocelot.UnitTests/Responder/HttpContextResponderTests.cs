@@ -188,7 +188,7 @@ public class HttpContextResponderTests
         // Arrange
         var httpContext = new DefaultHttpContext();
         httpContext.Features.Set<IHttpResponseBodyFeature>(null);
-        
+
         var content = new StringContent("data: test");
         content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
@@ -228,6 +228,45 @@ public class HttpContextResponderTests
 
         // Assert
         bodyFeature.DisableBufferingCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    [Trait("Feat", "941")]
+    public async Task Should_NOT_detect_sse_when_content_type_is_null()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var bodyFeature = new MockHttpResponseBodyFeature();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
+
+        var content = new StringContent("test");
+        content.Headers.ContentType = null;
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        await _responder.SetResponseOnHttpContext(httpContext, response);
+
+        // Assert
+        bodyFeature.DisableBufferingCalled.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Feat", "941")]
+    public async Task Should_log_unknown_server_when_request_services_is_null()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<IHttpResponseBodyFeature>(null);
+
+        var content = new StringContent("data: test");
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
+
+        // Act
+        try { await _responder.SetResponseOnHttpContext(httpContext, response); } catch { }
+
+        // Assert
+        _logger.Verify(x => x.LogWarning(It.Is<string>(s => s.Contains("Server: Unknown"))), Times.Once);
     }
 
     private class MockHttpResponseBodyFeature : IHttpResponseBodyFeature
