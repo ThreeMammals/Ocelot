@@ -5,6 +5,7 @@ using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net.Mime;
 using System.Runtime.InteropServices;
 
 namespace Ocelot.Responder;
@@ -80,25 +81,32 @@ public class HttpContextResponder : IHttpResponder
         }
     }
 
+#if NET9_0_OR_GREATER
+    public const string TextEventStreamMediaType = MediaTypeNames.Text.EventStream;
+#else
+    public const string TextEventStreamMediaType = "text/event-stream";
+#endif
+
+    protected virtual bool IsServerSentEventsStreaming(HttpContext context, DownstreamResponse downstream)
+    {
+        var mediaType = downstream.Content.Headers.ContentType?.MediaType ?? string.Empty;
+        return mediaType.Equals(TextEventStreamMediaType, StringComparison.OrdinalIgnoreCase)
+            || mediaType.Contains(TextEventStreamMediaType, StringComparison.OrdinalIgnoreCase);
+    }
+
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
-        var mediaType = downstream.Content.Headers.ContentType.MediaType;
-        var isSse = mediaType?.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase) == true
-            || (mediaType?.StartsWith("text/event-stream", StringComparison.OrdinalIgnoreCase) == true && mediaType.Contains(';'));
-
-        if (isSse)
+        if (IsServerSentEventsStreaming(context, downstream))
         {
             var feature = context.Features.Get<IHttpResponseBodyFeature>();
-            if (feature != null)
+            if (feature == null)
             {
-                feature.DisableBuffering();
-            }
-            else
-            {
-                var server = context.RequestServices?.GetService(typeof(IServer))?.ToString() ?? "Unknown";
-                _logger.LogWarning($"IHttpResponseBodyFeature is null for SSE request. Buffering cannot be disabled. Server: {server}, OS: {RuntimeInformation.OSDescription}, Framework: {RuntimeInformation.FrameworkDescription}");
+                var server = context.RequestServices.GetService(typeof(IServer)) ?? "Unknown";
+                _logger.LogWarning(() => $"{nameof(IHttpResponseBodyFeature)} is null for SSE request. Buffering cannot be disabled. Server: {server}, OS: {RuntimeInformation.OSDescription}, Framework: {RuntimeInformation.FrameworkDescription}");
+                return;
             }
 
+            feature.DisableBuffering();
             ProcessSoftwareHeadersForServerSentEvents(context.Response.Headers);
         }
 

@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Moq;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Headers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responder;
+using System.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Responder;
 
@@ -130,7 +132,7 @@ public class HttpContextResponderTests
         httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
 
         var content = new StringContent("data: test");
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
         // Act
@@ -150,7 +152,7 @@ public class HttpContextResponderTests
         httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
 
         var content = new StringContent("data: test");
-        content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("text/event-stream; charset=utf-8");
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("text/event-stream; charset=utf-8");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
         // Act
@@ -171,7 +173,7 @@ public class HttpContextResponderTests
         httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
 
         var content = new StringContent("not sse");
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+        content.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
         // Act
@@ -186,25 +188,32 @@ public class HttpContextResponderTests
     public async Task Should_log_warning_when_body_feature_is_null_for_sse()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<IHttpResponseBodyFeature>(null);
+        var services = new ServiceCollection();
+        services.AddSingleton<IServer, FakeServer>();
+        var serviceProvider = services.BuildServiceProvider();
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProvider,
+        };
+        context.Features.Set<IHttpResponseBodyFeature>(null); // !!!
 
         var content = new StringContent("data: test");
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
+        List<string> warnings = new();
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => warnings.Add(f.Invoke()));
+
         // Act
-        try
-        {
-            await _responder.SetResponseOnHttpContext(httpContext, response);
-        }
-        catch (NullReferenceException)
-        {
-            // Expected because context.Response.Body access fails when feature is null
-        }
+        await _responder.SetResponseOnHttpContext(context, response);
 
         // Assert
-        _logger.Verify(x => x.LogWarning(It.Is<string>(s => s.Contains("IHttpResponseBodyFeature is null"))), Times.Once);
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()),
+            Times.Once);
+        Assert.Single(warnings);
+        Assert.StartsWith("IHttpResponseBodyFeature is null for SSE request. Buffering cannot be disabled. Server: FakeServer,",
+            warnings[0]);
     }
 
     [Theory]
@@ -220,7 +229,7 @@ public class HttpContextResponderTests
         httpContext.Features.Set<IHttpResponseBodyFeature>(bodyFeature);
 
         var content = new StringContent("data: test");
-        content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(contentType);
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
         // Act
@@ -252,21 +261,34 @@ public class HttpContextResponderTests
 
     [Fact]
     [Trait("Feat", "941")]
-    public async Task Should_log_unknown_server_when_request_services_is_null()
+    public async Task Should_log_unknown_server_when_no_IServer_feat_in_DI()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<IHttpResponseBodyFeature>(null);
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var context = new DefaultHttpContext()
+        {
+            RequestServices = serviceProvider,
+        };
+        context.Features.Set<IHttpResponseBodyFeature>(null); // !!!
 
-        var content = new StringContent("data: test");
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/event-stream");
+        using var content = new StringContent("data: test");
+        content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         var response = new DownstreamResponse(content, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason");
 
+        List<string> warnings = new();
+        _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
+            .Callback<Func<string>>(f => warnings.Add(f.Invoke()));
+
         // Act
-        try { await _responder.SetResponseOnHttpContext(httpContext, response); } catch { }
+        await _responder.SetResponseOnHttpContext(context, response);
 
         // Assert
-        _logger.Verify(x => x.LogWarning(It.Is<string>(s => s.Contains("Server: Unknown"))), Times.Once);
+        _logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()),
+            Times.Once);
+        Assert.Single(warnings);
+        Assert.StartsWith("IHttpResponseBodyFeature is null for SSE request. Buffering cannot be disabled. Server: Unknown, OS:",
+            warnings[0]);
     }
 
     private class MockHttpResponseBodyFeature : IHttpResponseBodyFeature
@@ -278,5 +300,14 @@ public class HttpContextResponderTests
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task StartAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task CompleteAsync() => throw new NotImplementedException();
+    }
+
+    private class FakeServer : IServer
+    {
+        public IFeatureCollection Features => throw new NotImplementedException();
+        public void Dispose() => throw new NotImplementedException();
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull => throw new NotImplementedException();
+        public Task StopAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+        public override string ToString() => nameof(FakeServer);
     }
 }
