@@ -580,6 +580,12 @@ Task("AcceptanceTests")
 			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
 			return;
 		}
+		Information("Installing Playwright browsers...");
+		var arguments = new ProcessArgumentBuilder()
+        	.Append("bin/Debug/net*/playwright.ps1")
+        	.Append("install").Append("chromium");
+		var exitCode = StartProcess("pwsh", new ProcessSettings { Arguments = arguments, WorkingDirectory = "./test/Ocelot.AcceptanceTests" });
+		Information("DONE Installing Playwright browsers with exit code " + exitCode);
 		foreach (string tfm in GetTFMs())
 		{
 			var settings = new DotNetTestSettings
