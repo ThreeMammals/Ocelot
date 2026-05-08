@@ -3,7 +3,6 @@ using Ocelot.Administration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Errors;
-using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Controllers;
 
@@ -36,6 +35,7 @@ public class FileConfigurationControllerTests : UnitTest
         // Assert
         _repo.Verify(x => x.GetAsync(It.IsAny<CancellationToken>()),
             Times.Once);
+        result.ShouldBeOfType<OkObjectResult>();
     }
 
     [Fact]
@@ -56,17 +56,33 @@ public class FileConfigurationControllerTests : UnitTest
     }
 
     [Fact]
+    public async Task Should_catch_exception_when_get_throws()
+    {
+        // Arrange
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Get failed"));
+
+        // Act
+        var result = await _controller.Get(CancelMe);
+
+        // Assert
+        result.ShouldBeOfType<BadRequestObjectResult>();
+        var badRequest = result as BadRequestObjectResult;
+        Assert.IsType<Exception>(badRequest.Value);
+    }
+
+    [Fact]
     public async Task Should_post_file_configuration()
     {
         // Arrange
         var expected = new FileConfiguration();
-        //_setter.Setup(x => x.SetAsync(It.IsAny<FileConfiguration>()), It.IsAny<CancellationToken>());
 
         // Act
         var result = await _controller.Post(expected, CancelMe);
 
         // Assert
         _setter.Verify(x => x.SetAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+        result.ShouldBeOfType<OkObjectResult>();
     }
 
     [Fact]
@@ -106,7 +122,6 @@ public class FileConfigurationControllerTests : UnitTest
     private class FakeError : Error
     {
         public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404)
-        {
-        }
+        { }
     }
 }

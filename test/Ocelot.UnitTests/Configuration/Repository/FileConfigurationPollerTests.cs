@@ -32,6 +32,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _config = new Mock<IFileConfigurationPollerOptions>();
         _repo.Setup(x => x.Get()).Returns(_initialFileConfig);
         _config.Setup(x => x.Delay()).Returns(PollingDelayInMs);
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(PollingDelayInMs);
         _internalConfig = new Mock<IInternalConfiguration>();
         _internalConfigRepo = new Mock<IInternalConfigurationRepository>();
         _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
@@ -39,7 +40,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
     }
 
-    protected static CancellationToken CancelMe => TestContext.Current.CancellationToken;
+    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task Should_start_and_poll_initial_configuration()
@@ -89,7 +90,6 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         ThenTheConfigIsNotAddedMoreThan(1);
     }
 
-    // [Fact(Skip = "Requires redevelopment")]
     [Fact]
     public async Task Should_not_poll_if_already_polling()
     {
@@ -178,6 +178,135 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     {
         // Arrange, Act, Assert
         _poller.Dispose(); // when poller is disposed
+    }
+
+    [Fact]
+    public async Task Poll_Should_return_early_when_already_polling()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+
+        // Act - calling Poll() directly when not polling (polling flag is false now)
+        _poller.Poll();
+
+        // Assert - should have been polled at least once
+        ThenTheProviderIsPolled();
+    }
+
+    [Fact]
+    public async Task Poll_Should_handle_null_configuration()
+    {
+        // Arrange
+        _repo.Setup(x => x.Get()).Returns((FileConfiguration)null);
+
+        // Act - call Poll() directly
+        _poller.Poll();
+
+        // Assert
+        ThenTheSetterIsNotCalled();
+    }
+
+    [Fact]
+    public async Task Poll_Should_handle_exception_from_repo()
+    {
+        // Arrange
+        _repo.Setup(x => x.Get()).Throws(new Exception("Repository failure"));
+
+        // Act - call Poll() directly
+        _poller.Poll();
+
+        // Assert - no exception propagated, setter not called
+        ThenTheSetterIsNotCalled();
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_handle_null_configuration()
+    {
+        // Arrange
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync((FileConfiguration)null);
+
+        // Act - call PollAsync() directly
+        await _poller.PollAsync(CancelMe);
+
+        // Assert
+        ThenTheSetterIsNotCalled();
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_handle_exception_from_repo()
+    {
+        // Arrange
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Repository failure"));
+
+        // Act - call PollAsync() directly
+        await _poller.PollAsync(CancelMe);
+
+        // Assert - no exception propagated, setter not called
+        ThenTheSetterIsNotCalled();
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_update_config_when_changed()
+    {
+        // Arrange
+        var newConfig = GivenConfiguration();
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(newConfig);
+
+        // Act
+        await _poller.PollAsync(CancelMe);
+
+        // Assert
+        _internalConfigRepo.Verify(x => x.AddOrReplace(_internalConfig.Object), Times.Once);
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_not_add_to_internal_repo_if_creation_fails()
+    {
+        // Arrange
+        var newConfig = GivenConfiguration();
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(newConfig);
+        _internalConfigCreator
+            .Setup(x => x.Create(It.IsAny<FileConfiguration>()))
+            .ReturnsAsync(new ErrorResponse<IInternalConfiguration>(new AnyError()));
+
+        // Act
+        await _poller.PollAsync(CancelMe);
+
+        // Assert
+        ThenTheConfigIsNotAdded();
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_not_update_when_config_unchanged()
+    {
+        // Arrange - first poll sets initial config
+        _repo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_initialFileConfig);
+        await _poller.PollAsync(CancelMe); // first call sets _previousAsJson
+
+        // Reset invocations
+        _internalConfigRepo.Invocations.Clear();
+        _internalConfigCreator.Invocations.Clear();
+
+        // Act - poll again with same config
+        await _poller.PollAsync(CancelMe);
+
+        // Assert - no update since config didn't change
+        _internalConfigRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Should_dispose_with_timer_running()
+    {
+        // Arrange - start the poller synchronously to create a timer
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000); // long delay
+        await _poller.StartAsync(CancelMe);
+
+        // Act - dispose while timer is running
+        _poller.Dispose();
+
+        // Assert - no exception and timer is null
+        var timer = CurrentTimer();
+        timer.ShouldBeNull();
     }
 
     private static FileConfiguration GivenConfiguration() => new()

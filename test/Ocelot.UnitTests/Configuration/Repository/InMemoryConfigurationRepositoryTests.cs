@@ -9,6 +9,8 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
 {
     private readonly InMemoryInternalConfigurationRepository _repo;
     private IInternalConfiguration _config;
+    private string _addResult;
+    private IInternalConfiguration _getResult;
     private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
 
     public InMemoryConfigurationRepositoryTests()
@@ -25,10 +27,10 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         _config = new FakeConfig("initial", "adminath");
 
         // Act
-        var result = _repo.AddOrReplace(_config);
+        _addResult = _repo.AddOrReplace(_config);
 
         // Assert
-        result.ShouldBeEmpty();
+        _addResult.ShouldBe(string.Empty);
         _changeTokenSource.Verify(m => m.Activate(), Times.Once);
     }
 
@@ -37,13 +39,23 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
     {
         // Arrange
         _config = new FakeConfig("initial", "adminath");
-        _ = _repo.AddOrReplace(_config);
+        _repo.AddOrReplace(_config);
 
         // Act
-        var actual = _repo.Get();
+        _getResult = _repo.Get();
 
         // Assert
-        actual.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+        _getResult.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+    }
+
+    [Fact]
+    public void Get_Returns_Null_When_Nothing_Added()
+    {
+        // Act
+        _getResult = _repo.Get();
+
+        // Assert
+        _getResult.ShouldBeNull();
     }
 
     private class FakeConfig : IInternalConfiguration
