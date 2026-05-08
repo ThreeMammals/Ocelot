@@ -4,6 +4,7 @@ using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
@@ -151,6 +152,25 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         ThenTheConfigurationIsStoredAs(config);
         ThenTheConfigurationJsonIsIndented(config);
         _changeTokenSource.Verify(m => m.Activate(), Times.Once);
+    }
+
+    [Fact]
+    public void Initialize_WithNullFolder_UsesAppContextBaseDirectory()
+    {
+        // Arrange
+        _hostingEnvironment.Setup(he => he.EnvironmentName).Returns(TestName());
+
+        // Act - passing null folder exercises the `folder ??= AppContext.BaseDirectory` branch (line 33)
+        var repo = new DiskFileConfigurationRepository(_hostingEnvironment.Object, _changeTokenSource.Object, null);
+
+        // Assert - verify files were initialized under AppContext.BaseDirectory via reflection
+        var ocelotFileField = typeof(DiskFileConfigurationRepository)
+            .GetField("_ocelotFile", BindingFlags.Instance | BindingFlags.NonPublic);
+        var ocelotFile = ocelotFileField?.GetValue(repo) as FileInfo;
+        Assert.NotNull(ocelotFile);
+        Assert.Equal(
+            Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory),
+            ocelotFile.DirectoryName);
     }
 
     [Fact]

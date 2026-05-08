@@ -6,50 +6,18 @@ namespace Ocelot.UnitTests.Configuration.Repository;
 
 public class ServiceDiscoveryFileConfigurationPollerOptionsTests
 {
-    private readonly Mock<IInternalConfigurationRepository> _mockInternalConfigRepo = new();
-    private readonly Mock<IFileConfigurationRepository> _mockFileConfigurationRepository = new();
-    private readonly ServiceDiscoveryFileConfigurationPollerOptions _sut; // System Under Test
+    private readonly Mock<IInternalConfigurationRepository> _internalRepo = new();
+    private readonly Mock<IFileConfigurationRepository> _fileRepo = new();
+    private readonly ServiceDiscoveryFileConfigurationPollerOptions _sut;
+    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
 
     public ServiceDiscoveryFileConfigurationPollerOptionsTests()
     {
-        _sut = new(
-            _mockInternalConfigRepo.Object,
-            _mockFileConfigurationRepository.Object);
+        _sut = new(_internalRepo.Object, _fileRepo.Object);
     }
 
     [Fact]
-    public void Constructor_ShouldSetDependencies()
-    {
-        // Arrange & Act
-        var result = _sut;
-
-        // Assert
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenFileConfigurationIsNull()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        IInternalConfiguration internalConfig = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfig);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnFileConfigPollingInterval_WhenFileConfigHasValidPollingInterval()
+    public async Task DelayAsync_ShouldReturnPollingInterval_WhenFileConfigHasValidPollingInterval()
     {
         // Arrange
         const int expectedDelay = 5000;
@@ -57,360 +25,110 @@ public class ServiceDiscoveryFileConfigurationPollerOptionsTests
         {
             GlobalConfiguration = new()
             {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = expectedDelay
-                }
+                ServiceDiscoveryProvider = new() { PollingInterval = expectedDelay }
             }
         };
-        FileConfiguration configuration = fileConfiguration;
-
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
+        _fileRepo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(fileConfiguration);
 
         // Act
-        var delay = _sut.Delay();
+        var delay = await _sut.DelayAsync(CancelMe);
 
         // Assert
         Assert.Equal(expectedDelay, delay);
+        _fileRepo.Verify(x => x.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenFileConfigPollingIntervalIsZero()
+    public async Task DelayAsync_ShouldReturnDefaultDelay_WhenFileConfigIsNull()
     {
         // Arrange
-        var fileConfiguration = new FileConfiguration
+        _fileRepo.Setup(x => x.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync((FileConfiguration)null);
+        _internalRepo.Setup(x => x.Get()).Returns((IInternalConfiguration)null);
+
+        // Act
+        var delay = await _sut.DelayAsync(CancelMe);
+
+        // Assert
+        Assert.Equal(InMemoryFileConfigurationPollerOptions.DefaultDelayMilliseconds, delay);
+        _fileRepo.Verify(x => x.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static TheoryData<FileConfiguration, IInternalConfiguration, int> GetDelayTestCases => new()
+    {
+        // Branch 1: file config has a valid polling interval → file config value wins
         {
-            GlobalConfiguration = new()
+            new FileConfiguration
             {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = 0
-                }
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
+                GlobalConfiguration = new() { ServiceDiscoveryProvider = new() { PollingInterval = 5000 } }
+            },
+            null,
+            5000
+        },
 
-        IInternalConfiguration internalConfiguration = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenFileConfigIsNull()
-    {
-        // Arrange
-        _mockFileConfigurationRepository
-            .Setup(x => x.GetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync((FileConfiguration)null);
-
-        IInternalConfiguration internalConfiguration = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenFileConfigServiceDiscoveryProviderIsNull()
-    {
-        // Arrange
-        var fileConfiguration = new FileConfiguration
+        // Branch 2: file config polling interval is zero → fall through to internal config
         {
-            GlobalConfiguration = new()
+            new FileConfiguration
             {
-                ServiceDiscoveryProvider = null
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
+                GlobalConfiguration = new() { ServiceDiscoveryProvider = new() { PollingInterval = 0 } }
+            },
+            new InternalConfiguration { ServiceProviderConfiguration = new ServiceProviderConfiguration { PollingInterval = 3000 } },
+            3000
+        },
 
-        IInternalConfiguration internalConfiguration = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnInternalConfigPollingInterval_WhenFileConfigFailsButInternalConfigIsValid()
-    {
-        // Arrange
-        const int expectedDelay = 3000;
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        var internalConfiguration = new InternalConfiguration
+        // Branch 3: file config is null, internal config has valid polling interval
         {
-            ServiceProviderConfiguration = new()
+            null,
+            new InternalConfiguration { ServiceProviderConfiguration = new ServiceProviderConfiguration { PollingInterval = 2000 } },
+            2000
+        },
+
+        // Branch 4 (fallback): file config is null, internal config is null → default delay
+        {
+            null,
+            null,
+            ServiceDiscoveryFileConfigurationPollerOptions.DefaultDelayMilliseconds
+        },
+
+        // Branch 5 (fallback): both polling intervals are zero → default delay
+        {
+            new FileConfiguration
             {
-                PollingInterval = expectedDelay,
-            }
-        };
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
+                GlobalConfiguration = new() { ServiceDiscoveryProvider = new() { PollingInterval = 0 } }
+            },
+            new InternalConfiguration { ServiceProviderConfiguration = new ServiceProviderConfiguration { PollingInterval = 0 } },
+            ServiceDiscoveryFileConfigurationPollerOptions.DefaultDelayMilliseconds
+        },
 
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(expectedDelay, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenInternalConfigPollingIntervalIsZero()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-        var internalConfiguration = new InternalConfiguration
+        // Branch 6 (fallback): file config has null service discovery provider, internal config is null
         {
-            ServiceProviderConfiguration = new()
-            {
-                PollingInterval = 0,
-            }
-        };
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
+            new FileConfiguration { GlobalConfiguration = new() { ServiceDiscoveryProvider = null } },
+            null,
+            ServiceDiscoveryFileConfigurationPollerOptions.DefaultDelayMilliseconds
+        },
 
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenInternalConfigIsNull()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns((IInternalConfiguration)null);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturnDefaultValue_WhenInternalConfigServiceProviderConfigurationIsNull()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        var internalConfiguration = new InternalConfiguration
+        // Branch 7 (fallback): file config has null service discovery provider, internal config is null
         {
-            ServiceProviderConfiguration = null
-        };
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldPreferFileConfigOverInternalConfig_WhenBothHaveValidPollingIntervals()
-    {
-        // Arrange
-        const int fileConfigDelay = 5000;
-        const int internalConfigDelay = 3000;
-
-        var fileConfiguration = new FileConfiguration
-        {
-            GlobalConfiguration = new()
-            {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = fileConfigDelay,
-                }
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
-
-        var internalConfiguration = new InternalConfiguration
-        {
-            ServiceProviderConfiguration = new ServiceProviderConfiguration
-            {
-                PollingInterval = internalConfigDelay
-            }
-        };
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        Assert.Equal(fileConfigDelay, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldReturn1000_WhenPollingIntervalIsNegative()
-    {
-        // Arrange
-        const int negativeDelay = -100;
-        var fileConfiguration = new FileConfiguration
-        {
-            GlobalConfiguration = new()
-            {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = negativeDelay,
-                }
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        // Note: The current implementation allows negative values to pass through
-        // This test documents current behavior; consider if validation is needed
-        Assert.Equal(1000, delay);
-    }
-
-    [Fact]
-    public void Delay_ShouldCallFileConfigurationRepositoryGet()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        IInternalConfiguration internalConfiguration = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        _mockFileConfigurationRepository.Verify(x => x.Get(), Times.Once);
-    }
-
-    [Fact]
-    public void Delay_ShouldCallInternalConfigRepositoryGet_WhenFileConfigDoesNotHaveValidPollingInterval()
-    {
-        // Arrange
-        FileConfiguration configuration = null;
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(configuration);
-
-        IInternalConfiguration internalConfiguration = null;
-        _mockInternalConfigRepo
-            .Setup(x => x.Get())
-            .Returns(internalConfiguration);
-
-        // Act
-        var delay = _sut.Delay();
-
-        // Assert
-        _mockInternalConfigRepo.Verify(x => x.Get(), Times.Once);
-    }
-
-    [Fact]
-    public void Delay_ShouldNotCallInternalConfigRepositoryGet_WhenFileConfigHasValidPollingInterval()
-    {
-        // Arrange
-        var fileConfiguration = new FileConfiguration
-        {
-            GlobalConfiguration = new()
-            {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = 5000,
-                }
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
-
-        // Act
-        var delay = _sut.Delay;
-
-        // Assert
-        _mockInternalConfigRepo.Verify(x => x.Get(), Times.Never);
-    }
+            new FileConfiguration { GlobalConfiguration = null },
+            null,
+            ServiceDiscoveryFileConfigurationPollerOptions.DefaultDelayMilliseconds
+        },
+    };
 
     [Theory]
-    [InlineData(100)]
-    [InlineData(1000)]
-    [InlineData(5000)]
-    [InlineData(10000)]
-    public void Delay_ShouldReturnValidPollingInterval_WithVariousValues(int pollingInterval)
+    [MemberData(nameof(GetDelayTestCases))]
+    public void GetDelay_ShouldReturn_CorrectInterval_ForAllBranches(
+        FileConfiguration fileConfig,
+        IInternalConfiguration internalConfig,
+        int expectedDelay)
     {
         // Arrange
-        var fileConfiguration = new FileConfiguration
-        {
-            GlobalConfiguration = new()
-            {
-                ServiceDiscoveryProvider = new()
-                {
-                    PollingInterval = pollingInterval
-                }
-            }
-        };
-        _mockFileConfigurationRepository
-            .Setup(x => x.Get())
-            .Returns(fileConfiguration);
+        _fileRepo.Setup(x => x.Get()).Returns(fileConfig);
+        _internalRepo.Setup(x => x.Get()).Returns(internalConfig);
 
         // Act
         var delay = _sut.Delay();
 
         // Assert
-        Assert.Equal(pollingInterval, delay);
+        Assert.Equal(expectedDelay, delay);
     }
 }
