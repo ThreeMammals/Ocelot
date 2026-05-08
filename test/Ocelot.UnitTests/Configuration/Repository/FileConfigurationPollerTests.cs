@@ -5,6 +5,7 @@ using Ocelot.Configuration.Repository;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
@@ -178,6 +179,39 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     {
         // Arrange, Act, Assert
         _poller.Dispose(); // when poller is disposed
+    }
+
+    [Fact]
+    public void OnTimer_Should_return_early_when_already_polling()
+    {
+        // Arrange: set the private _polling field to true so OnTimer takes the early-return path (line 38)
+        var pollingField = typeof(FileConfigurationPoller)
+            .GetField("_polling", BindingFlags.Instance | BindingFlags.NonPublic);
+        pollingField!.SetValue(_poller, true);
+
+        // Act: invoke the private OnTimer method directly
+        var onTimerMethod = typeof(FileConfigurationPoller)
+            .GetMethod("OnTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+        onTimerMethod!.Invoke(_poller, [null]);
+
+        // Assert: Get() was never called because polling was already in progress
+        _repo.Verify(x => x.Get(), Times.Never);
+    }
+
+    [Fact]
+    public async Task PollAsync_Should_return_early_when_already_polling()
+    {
+        // Arrange: set the private _polling field to true so PollAsync takes the early-return path (line 103)
+        var pollingField = typeof(FileConfigurationPoller)
+            .GetField("_polling", BindingFlags.Instance | BindingFlags.NonPublic);
+        pollingField!.SetValue(_poller, true);
+
+        // Act
+        await _poller.PollAsync(CancelMe);
+
+        // Assert: GetAsync() was never called because polling was already in progress
+        _repo.Verify(x => x.GetAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _internalConfigRepo.Verify(x => x.AddOrReplace(It.IsAny<IInternalConfiguration>()), Times.Never);
     }
 
     [Fact]

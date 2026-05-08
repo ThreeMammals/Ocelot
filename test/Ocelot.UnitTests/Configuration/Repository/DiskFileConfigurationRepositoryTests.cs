@@ -135,6 +135,25 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     }
 
     [Fact]
+    public async Task Should_set_file_configuration_sync_when_files_already_exist()
+    {
+        // Arrange - pre-create both environment file and ocelot file so the delete branches (lines 82, 87) are exercised
+        Arrange();
+        var config = FakeFileConfigurationForSet();
+        GivenTheConfigurationIs(config);     // creates environment file
+        GivenTheUserAddedOcelotJson();       // creates ocelot.json file
+
+        // Act - call synchronous Set() which should delete and re-create both files
+        _repo.Set(config);
+        _result = await _repo.GetAsync(CancelMe);
+
+        // Assert
+        ThenTheConfigurationIsStoredAs(config);
+        ThenTheConfigurationJsonIsIndented(config);
+        _changeTokenSource.Verify(m => m.Activate(), Times.Once);
+    }
+
+    [Fact]
     public void Should_dispose()
     {
         Arrange();

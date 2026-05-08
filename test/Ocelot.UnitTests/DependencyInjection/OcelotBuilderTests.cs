@@ -16,12 +16,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.Creators;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
+using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
 using Ocelot.Requester;
@@ -624,5 +626,103 @@ public class OcelotBuilderTests : UnitTest
     {
         public FakeCircuitBreakerHandler(DownstreamRoute route, IOcelotLoggerFactory loggerFactory)
             : base(route, loggerFactory) { }
+    }
+
+    [Fact]
+    public void AddConfigurationDelegate_RegistersDelegateAsSingleton()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+        OcelotMiddlewareConfigurationDelegate configDelegate = _ => Task.CompletedTask;
+
+        // Act
+        var result = _ocelotBuilder.AddConfigurationDelegate(configDelegate);
+
+        // Assert
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var resolved = _serviceProvider.GetService<OcelotMiddlewareConfigurationDelegate>();
+        Assert.NotNull(resolved);
+        Assert.Same(configDelegate, resolved);
+    }
+
+    [Fact]
+    public void AddConfigurationPoller_NoParams_RegistersDefaultServices()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var result = _ocelotBuilder.AddConfigurationPoller();
+
+        // Assert
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var options = _serviceProvider.GetService<IFileConfigurationPollerOptions>();
+        Assert.NotNull(options);
+        Assert.IsType<InMemoryFileConfigurationPollerOptions>(options);
+        var repo = _serviceProvider.GetService<IFileConfigurationRepository>();
+        Assert.NotNull(repo);
+        Assert.IsType<DiskFileConfigurationRepository>(repo);
+    }
+
+    [Fact]
+    public void AddConfigurationDiscoveryPoller_RegistersCustomDiscoveryServices()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var result = _ocelotBuilder.AddConfigurationDiscoveryPoller<
+            FileConfigurationPoller,
+            FakeDiscoveryPollerOptions,
+            FakeDiskFileConfigurationRepository>();
+
+        // Assert
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var options = _serviceProvider.GetService<IFileConfigurationPollerOptions>();
+        Assert.NotNull(options);
+        Assert.IsType<FakeDiscoveryPollerOptions>(options);
+        var repo = _serviceProvider.GetService<IFileConfigurationRepository>();
+        Assert.NotNull(repo);
+        Assert.IsType<FakeDiskFileConfigurationRepository>(repo);
+    }
+
+    [Fact]
+    public void AddConfigurationPollerGeneric_RegistersCustomServices()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        var result = _ocelotBuilder.AddConfigurationPoller<
+            FileConfigurationPoller,
+            InMemoryFileConfigurationPollerOptions,
+            FakeDiskFileConfigurationRepository>();
+
+        // Assert
+        Assert.Same(_ocelotBuilder, result);
+        _serviceProvider = _services.BuildServiceProvider(true);
+        var options = _serviceProvider.GetService<IFileConfigurationPollerOptions>();
+        Assert.NotNull(options);
+        Assert.IsType<InMemoryFileConfigurationPollerOptions>(options);
+        var repo = _serviceProvider.GetService<IFileConfigurationRepository>();
+        Assert.NotNull(repo);
+        Assert.IsType<FakeDiskFileConfigurationRepository>(repo);
+    }
+
+    private sealed class FakeDiscoveryPollerOptions : ServiceDiscoveryFileConfigurationPollerOptions
+    {
+        public FakeDiscoveryPollerOptions(IInternalConfigurationRepository internalRepo, IFileConfigurationRepository fileRepo)
+            : base(internalRepo, fileRepo) { }
+    }
+
+    private sealed class FakeDiskFileConfigurationRepository : IFileConfigurationRepository
+    {
+        public FileConfiguration Get() => new();
+        public Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default) => Task.FromResult(new FileConfiguration());
+        public void Set(FileConfiguration configuration) { }
+        public Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }
