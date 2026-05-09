@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.Repository;
-using Ocelot.Errors.Middleware;
 using Ocelot.Logging;
 
 namespace Ocelot.Middleware;
@@ -17,18 +16,13 @@ public class ConfigurationMiddleware : OcelotMiddleware
         _configRepo = configRepo;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
         //todo check the config is actually ok?
         var config = _configRepo.Get();
+        if (config != null)
+            context.Items.SetIInternalConfiguration(config);
 
-        if (config.IsError)
-        {
-            throw new System.Exception("OOOOPS this should not happen raise an issue in GitHub");
-        }
-
-        httpContext.Items.SetIInternalConfiguration(config.Data);
-
-        await _next.Invoke(httpContext);
+        await _next.Invoke(context);
     }
 }

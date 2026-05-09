@@ -2,5 +2,6 @@
 
 public interface IFileConfigurationPollerOptions
 {
-    int Delay { get; }
+    int Delay();
+    Task<int> DelayAsync(CancellationToken cancellationToken = default);
 }

@@ -9,25 +9,25 @@ This means the same *service discovery* provider is applied to all routes where 
 
 Consul
 ------
-
 .. _Consul: https://www.consul.io/
 .. _Ocelot.Provider.Consul: https://www.nuget.org/packages/Ocelot.Provider.Consul
+.. _Ocelot.Discovery.Consul: https://www.nuget.org/packages/Ocelot.Discovery.Consul
 
-  | Package: `Ocelot.Provider.Consul`_
-  | Namespace: ``Ocelot.Provider.Consul``
+  | Package: `Ocelot.Discovery.Consul`_
+  | Namespace: ``Ocelot.Discovery.Consul``
 
-The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Provider.Consul>`_, which adds `Consul`_ support to Ocelot:
+The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Discovery.Consul>`_, which adds `Consul`_ support to Ocelot:
 
 .. code-block:: powershell
 
-    Install-Package Ocelot.Provider.Consul
+    Install-Package Ocelot.Discovery.Consul
 
 To register *Consul* services, invoke the ``AddConsul()`` extension method using the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_.
 Include the following code in your `Program`_:
 
 .. code-block:: csharp
 
-  using Ocelot.Provider.Consul;
+  using Ocelot.Discovery.Consul;
 
   builder.Services
       .AddOcelot(builder.Configuration)
@@ -39,7 +39,13 @@ If the ``ConsulProviderFactory`` cannot read, understand, or parse the ``Type`` 
 
 Explore these types of *service discovery* providers and learn about their differences in the subsections: :ref:`sd-consul-provider` and :ref:`sd-pollconsul-provider`.
 
-  **Note**: We have made the :ref:`sd-consul-provider` the default *service discovery* provider in Ocelot.
+.. note::
+
+  1. We have made the :ref:`sd-consul-provider` the default *service discovery* provider in Ocelot.
+
+  2. Prior to version `25.0`_, the package was named `Ocelot.Provider.Consul`_.
+     If you are using version `24.1`_ or earlier, install the `Ocelot.Provider.Consul`_ package.
+     For version `25.0`_ and later, the package ID is `Ocelot.Discovery.Consul`_.
 
 .. _sd-consul-configuration-in-kv:
 
@@ -104,7 +110,7 @@ If you do not set the ``ConfigurationKey``, Ocelot will default to using the str
 ``Consul`` Provider
 ^^^^^^^^^^^^^^^^^^^
 
-  Class: `Ocelot.Provider.Consul.Consul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+Consul&type=code>`_
+  Class: `Ocelot.Discovery.Consul.Consul <https://github.com/ThreeMammals/Ocelot.Discovery.Consul/blob/main/src/Consul.cs>`_
 
 The following is required in the ``GlobalConfiguration`` section.
 The ``ServiceDiscoveryProvider`` property is mandatory.
@@ -144,7 +150,7 @@ When set up, Ocelot will look up the downstream host and port from the *service 
 ``PollConsul`` Provider
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-  Class: `Ocelot.Provider.Consul.PollConsul <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20PollConsul&type=code>`_
+  Class: `Ocelot.Discovery.Consul.PollConsul <https://github.com/ThreeMammals/Ocelot.Discovery.Consul/blob/main/src/PollConsul.cs>`_
 
 A lot of users have requested a feature where Ocelot *polls Consul* for the latest service information instead of doing so per request.
 If you want Ocelot to *poll Consul* for the latest services, rather than relying on the default behavior (per request), you need to configure the following options:
@@ -263,9 +269,8 @@ First, define a new service-building class:
 .. code-block:: csharp
 
   using Ocelot.Logging;
-  using Ocelot.Provider.Consul;
-  using Ocelot.Provider.Consul.Interfaces;
-
+  using Ocelot.Discovery.Consul;
+  
   public class MyConsulServiceBuilder : DefaultConsulServiceBuilder
   {
       public MyConsulServiceBuilder(IHttpContextAccessor contextAccessor, IConsulClientFactory clientFactory, IOcelotLoggerFactory loggerFactory)
@@ -295,25 +300,26 @@ Eureka [#f4]_
 .. _Pivotal: https://pivotal.io/platform
 .. _Eureka: https://www.nuget.org/packages/Steeltoe.Discovery.Eureka
 .. _Ocelot.Provider.Eureka: https://www.nuget.org/packages/Ocelot.Provider.Eureka
+.. _Ocelot.Discovery.Eureka: https://www.nuget.org/packages/Ocelot.Discovery.Eureka
 
-  | Package: `Ocelot.Provider.Eureka`_
-  | Namespace: ``Ocelot.Provider.Eureka``
+  | Package: `Ocelot.Discovery.Eureka`_
+  | Namespace: ``Ocelot.Discovery.Eureka``
 
 This feature supports the Netflix `Eureka`_ *service discovery* provider.
 The primary reason for this is that it is a key product of `Steeltoe`_, which is associated with `Pivotal`_.
 Now, enough of the background!
 
-The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Provider.Eureka>`__ that provides `Eureka`_ support for Ocelot:
+The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Discovery.Eureka>`__ that provides `Eureka`_ support for Ocelot:
 
 .. code-block:: powershell
 
-    Install-Package Ocelot.Provider.Eureka
+    Install-Package Ocelot.Discovery.Eureka
 
 Next, add the following to your `Program <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Eureka/ApiGateway/Program.cs>`__:
 
 .. code-block:: csharp
 
-  using Ocelot.Provider.Eureka;
+  using Ocelot.Discovery.Eureka;
 
   builder.Services
       .AddOcelot(builder.Configuration)
@@ -347,6 +353,12 @@ One of the services polls *Eureka* every 30 seconds (default) to retrieve the la
 When Ocelot requests a given service, it retrieves the data from memory, minimizing performance issues.
 
 If not explicitly specified in `ocelot.json <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Eureka/ApiGateway/ocelot.json>`__, Ocelot will use the scheme (``http``, ``https``) set in *Eureka*.
+
+.. note::
+
+  Prior to version `25.0`_, the package was named `Ocelot.Provider.Eureka`_.
+  If you are using version `24.1`_ or earlier, install the `Ocelot.Provider.Eureka`_ package.
+  For version `25.0`_ and later, the package ID is `Ocelot.Discovery.Eureka`_.
 
 .. _sd-service-fabric:
 

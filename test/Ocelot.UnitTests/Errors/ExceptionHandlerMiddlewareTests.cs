@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Errors;
-using Ocelot.Errors.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
