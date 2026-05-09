@@ -4,6 +4,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
+using Ocelot.Testing.Steps;
 using System.Runtime.InteropServices;
 
 namespace Ocelot.AcceptanceTests.RateLimiting;
