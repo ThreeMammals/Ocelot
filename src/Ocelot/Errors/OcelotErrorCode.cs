@@ -2,8 +2,8 @@
 
 public enum OcelotErrorCode
 {
-    UnauthenticatedError = 0,
-    UnknownError = 1,
+    UnknownError = 0,
+    UnauthenticatedError = 1,
     DownstreampathTemplateAlreadyUsedError = 2,
     UnableToFindDownstreamRouteError = 3,
     CannotAddDataError = 4,

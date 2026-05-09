@@ -2,10 +2,20 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Repository;
 
+/// <summary>
+/// This hosted service pools periodically (~1 sec) configuration data from the <see cref="IFileConfigurationRepository"/> and propagates data into the <see cref="IInternalConfigurationRepository"/> to be reused across Ocelot services.
+/// Thus, this service is responsible for getting actual configuration from anywhere and reflect the state to internal Ocelot repo.
+/// </summary>
+/// <remarks>
+/// Feature: <see cref="IOcelotBuilder.AddConfigurationPoller()"/>.<br/>
+/// Feature PR: <see href="https://github.com/ThreeMammals/Ocelot/pull/157/">157</see>.<br/>
+/// Note, that the service is reused in Consul service discovery provider.
+/// </remarks>
 public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService, IDisposable
 {
     private readonly IOcelotLogger _logger;
@@ -139,7 +149,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
     /// <returns>hash of the config.</returns>
     private static string ToJson(FileConfiguration config)
     {
-        var currentHash = JsonConvert.SerializeObject(config);
+        var currentHash = JsonConvert.SerializeObject(config); // TODO WTF?
         return currentHash;
     }
 

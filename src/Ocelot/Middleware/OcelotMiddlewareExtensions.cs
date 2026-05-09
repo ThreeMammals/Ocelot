@@ -7,7 +7,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Infrastructure.Extensions;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using System.Diagnostics;

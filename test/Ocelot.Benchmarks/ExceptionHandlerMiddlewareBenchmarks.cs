@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
-using Ocelot.Errors.Middleware;
+using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
