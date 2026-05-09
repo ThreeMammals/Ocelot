@@ -9,7 +9,6 @@
     <IsTestProject>true</IsTestProject>
     <AssemblyName>Ocelot.Benchmarks</AssemblyName>
     <OutputType>Exe</OutputType>
-    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

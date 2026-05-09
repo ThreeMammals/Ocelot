@@ -4,79 +4,71 @@
     "net10.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.3.475, )",
-        "resolved": "11.3.475",
-        "contentHash": "PvGRYI84Zaco8mfJlzIlaTaoPixkWOLTt1D+GzRNJZ4G/vPZYHQaqJE9cpcL0X4MVsnGMXQTKeeF51cglgAD0g==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "requested": "[11.4.268, )",
+        "resolved": "11.4.268",
+        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "4owyiOoi3ytZY+U2/Q3dzcxhb8LztIpw0yRSYCXevsTK4cFLUYh+cSrkG/DVFXeLeFNJa2IZ8uQCyLBF9yDkbw==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "R16zRoWp8FjtpgUuANuRZJGfPO+CQ1dx2xU/77FBwrftIJvlm/xMGMpZhMQYqeLyC+G+rBJzYX9lBCduIFxWug==",
         "dependencies": {
-          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.3.475]"
+          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Services": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "7jB7KPqTGa6qQM7YyQWA5X/cjkEGWSyYMvIsf32ceCSoG06txDE657n/PgePnbZXRlCePnhfM948l9+aXNwuNQ==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "S//VSsgiv188I7H/ty+14BTN7GX7KIz2QCVU0SKixISfJSPXrcWSs/cLvBLRPazIsbqmREOLgRCm0rLjo1EmfQ==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Data": "[8.3.475]",
-          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.3.475]"
+          "Microsoft.ServiceFabric.Data": "[8.4.268]",
+          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.AspNetCore.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "wut67yR0P9R3JfeJjaie1uUfb7wjjbcb/851e7c7gnR7pBomSN3YDmOWAoYlseOHsxkSj0b3yGc6o19VTM1iaQ==",
+        "resolved": "8.4.268",
+        "contentHash": "tt1eO6VgGmSA2uD4SJShHa48GquojTK3Q2M1Igd6kWehBDw3Kg5Ddu8TwXbYpxmC0clbDFNvA1/NC8b3aukV4A==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Services": "[8.3.475]"
+          "Microsoft.ServiceFabric.Services": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "FderlvcKGLSN7p3RSv51g51x9RIlQsqyY0tN56rNiVzDOccJ/4oUkvnf/kA98CY+xoaNh1hljVrVyt7wvKijYg==",
+        "resolved": "8.4.268",
+        "contentHash": "mLsu4DRXYEfhlHzyE7zvdfXZTjVotqa16hKpfuez1YuXLQbWTGlvctpLDw2HLJNQtb6WeIOj5qVSWUGbJRJwrw==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]",
-          "Microsoft.ServiceFabric.Data.Extensions": "[8.3.475]",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]",
+          "Microsoft.ServiceFabric.Data.Extensions": "[8.4.268]",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Extensions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "kGiyL9uJrVquI1jjbOmY9J+fqLBLqJZk2PhWGCOv9dea3/2j9/oimpLwoi9I6nOflSTZSVfmrCy4SR4wpe2EcA==",
+        "resolved": "8.4.268",
+        "contentHash": "WPt1DVe8ipE6ziEhS+qQo2SCTGLdeNnw/DBWIoUKF3Gyko9GGcqTuwf7/eMt5Ve0wR9etBm4XMptl1P7ON8L0w==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "11.3.475",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "11.4.268",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Interfaces": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "7lw+YyR3jPowcfqrsgGpbxVwlXphs3ZrkTmnqjJH+3zI0bx/+6p5krpOeQCmlShIkzH06KbIK/7sgO23w1Vjmg==",
+        "resolved": "8.4.268",
+        "contentHash": "Y/WCJlKxRtYNkPQzkJnOrhnDeAYndE9cNylatCpyCsrmxRHv6bVy2vlfcdVUiXOuBIk8g0XTaJ+2m03T219XGg==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Diagnostics.Internal": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "yITbdO0O9D51uqLIjw5BTHJHrpRXK44aqjF/+w6WUBVMKAYfcraVA+W8fmYsB/bHrFEDSIAl6fEbDF3AOcoNQA==",
+        "resolved": "8.4.268",
+        "contentHash": "NFrr0BJh1wwYZP9AT75kv2uFhzZsD78WjQrGTAe3g3Du7OUCIUxBPkbNPJSrVmHIf2l4cq2p4EQy0Cexr/eCHA==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
-      },
-      "System.Memory": {
-        "type": "Transitive",
-        "resolved": "4.5.5",
-        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "ocelot.samples.web": {
         "type": "Project"
@@ -85,79 +77,71 @@
     "net8.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.3.475, )",
-        "resolved": "11.3.475",
-        "contentHash": "PvGRYI84Zaco8mfJlzIlaTaoPixkWOLTt1D+GzRNJZ4G/vPZYHQaqJE9cpcL0X4MVsnGMXQTKeeF51cglgAD0g==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "requested": "[11.4.268, )",
+        "resolved": "11.4.268",
+        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "4owyiOoi3ytZY+U2/Q3dzcxhb8LztIpw0yRSYCXevsTK4cFLUYh+cSrkG/DVFXeLeFNJa2IZ8uQCyLBF9yDkbw==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "R16zRoWp8FjtpgUuANuRZJGfPO+CQ1dx2xU/77FBwrftIJvlm/xMGMpZhMQYqeLyC+G+rBJzYX9lBCduIFxWug==",
         "dependencies": {
-          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.3.475]"
+          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Services": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "7jB7KPqTGa6qQM7YyQWA5X/cjkEGWSyYMvIsf32ceCSoG06txDE657n/PgePnbZXRlCePnhfM948l9+aXNwuNQ==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "S//VSsgiv188I7H/ty+14BTN7GX7KIz2QCVU0SKixISfJSPXrcWSs/cLvBLRPazIsbqmREOLgRCm0rLjo1EmfQ==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Data": "[8.3.475]",
-          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.3.475]"
+          "Microsoft.ServiceFabric.Data": "[8.4.268]",
+          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.AspNetCore.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "wut67yR0P9R3JfeJjaie1uUfb7wjjbcb/851e7c7gnR7pBomSN3YDmOWAoYlseOHsxkSj0b3yGc6o19VTM1iaQ==",
+        "resolved": "8.4.268",
+        "contentHash": "tt1eO6VgGmSA2uD4SJShHa48GquojTK3Q2M1Igd6kWehBDw3Kg5Ddu8TwXbYpxmC0clbDFNvA1/NC8b3aukV4A==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Services": "[8.3.475]"
+          "Microsoft.ServiceFabric.Services": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "FderlvcKGLSN7p3RSv51g51x9RIlQsqyY0tN56rNiVzDOccJ/4oUkvnf/kA98CY+xoaNh1hljVrVyt7wvKijYg==",
+        "resolved": "8.4.268",
+        "contentHash": "mLsu4DRXYEfhlHzyE7zvdfXZTjVotqa16hKpfuez1YuXLQbWTGlvctpLDw2HLJNQtb6WeIOj5qVSWUGbJRJwrw==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]",
-          "Microsoft.ServiceFabric.Data.Extensions": "[8.3.475]",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]",
+          "Microsoft.ServiceFabric.Data.Extensions": "[8.4.268]",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Extensions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "kGiyL9uJrVquI1jjbOmY9J+fqLBLqJZk2PhWGCOv9dea3/2j9/oimpLwoi9I6nOflSTZSVfmrCy4SR4wpe2EcA==",
+        "resolved": "8.4.268",
+        "contentHash": "WPt1DVe8ipE6ziEhS+qQo2SCTGLdeNnw/DBWIoUKF3Gyko9GGcqTuwf7/eMt5Ve0wR9etBm4XMptl1P7ON8L0w==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "11.3.475",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "11.4.268",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Interfaces": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "7lw+YyR3jPowcfqrsgGpbxVwlXphs3ZrkTmnqjJH+3zI0bx/+6p5krpOeQCmlShIkzH06KbIK/7sgO23w1Vjmg==",
+        "resolved": "8.4.268",
+        "contentHash": "Y/WCJlKxRtYNkPQzkJnOrhnDeAYndE9cNylatCpyCsrmxRHv6bVy2vlfcdVUiXOuBIk8g0XTaJ+2m03T219XGg==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Diagnostics.Internal": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "yITbdO0O9D51uqLIjw5BTHJHrpRXK44aqjF/+w6WUBVMKAYfcraVA+W8fmYsB/bHrFEDSIAl6fEbDF3AOcoNQA==",
+        "resolved": "8.4.268",
+        "contentHash": "NFrr0BJh1wwYZP9AT75kv2uFhzZsD78WjQrGTAe3g3Du7OUCIUxBPkbNPJSrVmHIf2l4cq2p4EQy0Cexr/eCHA==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
-      },
-      "System.Memory": {
-        "type": "Transitive",
-        "resolved": "4.5.5",
-        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "ocelot.samples.web": {
         "type": "Project"
@@ -166,79 +150,71 @@
     "net9.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.3.475, )",
-        "resolved": "11.3.475",
-        "contentHash": "PvGRYI84Zaco8mfJlzIlaTaoPixkWOLTt1D+GzRNJZ4G/vPZYHQaqJE9cpcL0X4MVsnGMXQTKeeF51cglgAD0g==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "requested": "[11.4.268, )",
+        "resolved": "11.4.268",
+        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "4owyiOoi3ytZY+U2/Q3dzcxhb8LztIpw0yRSYCXevsTK4cFLUYh+cSrkG/DVFXeLeFNJa2IZ8uQCyLBF9yDkbw==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "R16zRoWp8FjtpgUuANuRZJGfPO+CQ1dx2xU/77FBwrftIJvlm/xMGMpZhMQYqeLyC+G+rBJzYX9lBCduIFxWug==",
         "dependencies": {
-          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.3.475]"
+          "Microsoft.ServiceFabric.AspNetCore.Abstractions": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Services": {
         "type": "Direct",
-        "requested": "[8.3.475, )",
-        "resolved": "8.3.475",
-        "contentHash": "7jB7KPqTGa6qQM7YyQWA5X/cjkEGWSyYMvIsf32ceCSoG06txDE657n/PgePnbZXRlCePnhfM948l9+aXNwuNQ==",
+        "requested": "[8.4.268, )",
+        "resolved": "8.4.268",
+        "contentHash": "S//VSsgiv188I7H/ty+14BTN7GX7KIz2QCVU0SKixISfJSPXrcWSs/cLvBLRPazIsbqmREOLgRCm0rLjo1EmfQ==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Data": "[8.3.475]",
-          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.3.475]"
+          "Microsoft.ServiceFabric.Data": "[8.4.268]",
+          "Microsoft.ServiceFabric.Diagnostics.Internal": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.AspNetCore.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "wut67yR0P9R3JfeJjaie1uUfb7wjjbcb/851e7c7gnR7pBomSN3YDmOWAoYlseOHsxkSj0b3yGc6o19VTM1iaQ==",
+        "resolved": "8.4.268",
+        "contentHash": "tt1eO6VgGmSA2uD4SJShHa48GquojTK3Q2M1Igd6kWehBDw3Kg5Ddu8TwXbYpxmC0clbDFNvA1/NC8b3aukV4A==",
         "dependencies": {
-          "Microsoft.ServiceFabric.Services": "[8.3.475]"
+          "Microsoft.ServiceFabric.Services": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "FderlvcKGLSN7p3RSv51g51x9RIlQsqyY0tN56rNiVzDOccJ/4oUkvnf/kA98CY+xoaNh1hljVrVyt7wvKijYg==",
+        "resolved": "8.4.268",
+        "contentHash": "mLsu4DRXYEfhlHzyE7zvdfXZTjVotqa16hKpfuez1YuXLQbWTGlvctpLDw2HLJNQtb6WeIOj5qVSWUGbJRJwrw==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]",
-          "Microsoft.ServiceFabric.Data.Extensions": "[8.3.475]",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]",
+          "Microsoft.ServiceFabric.Data.Extensions": "[8.4.268]",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Extensions": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "kGiyL9uJrVquI1jjbOmY9J+fqLBLqJZk2PhWGCOv9dea3/2j9/oimpLwoi9I6nOflSTZSVfmrCy4SR4wpe2EcA==",
+        "resolved": "8.4.268",
+        "contentHash": "WPt1DVe8ipE6ziEhS+qQo2SCTGLdeNnw/DBWIoUKF3Gyko9GGcqTuwf7/eMt5Ve0wR9etBm4XMptl1P7ON8L0w==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "11.3.475",
-          "Microsoft.ServiceFabric.Data.Interfaces": "[8.3.475]"
+          "Microsoft.ServiceFabric": "11.4.268",
+          "Microsoft.ServiceFabric.Data.Interfaces": "[8.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Data.Interfaces": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "7lw+YyR3jPowcfqrsgGpbxVwlXphs3ZrkTmnqjJH+3zI0bx/+6p5krpOeQCmlShIkzH06KbIK/7sgO23w1Vjmg==",
+        "resolved": "8.4.268",
+        "contentHash": "Y/WCJlKxRtYNkPQzkJnOrhnDeAYndE9cNylatCpyCsrmxRHv6bVy2vlfcdVUiXOuBIk8g0XTaJ+2m03T219XGg==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
       },
       "Microsoft.ServiceFabric.Diagnostics.Internal": {
         "type": "Transitive",
-        "resolved": "8.3.475",
-        "contentHash": "yITbdO0O9D51uqLIjw5BTHJHrpRXK44aqjF/+w6WUBVMKAYfcraVA+W8fmYsB/bHrFEDSIAl6fEbDF3AOcoNQA==",
+        "resolved": "8.4.268",
+        "contentHash": "NFrr0BJh1wwYZP9AT75kv2uFhzZsD78WjQrGTAe3g3Du7OUCIUxBPkbNPJSrVmHIf2l4cq2p4EQy0Cexr/eCHA==",
         "dependencies": {
-          "Microsoft.ServiceFabric": "[11.3.475]"
+          "Microsoft.ServiceFabric": "[11.4.268]"
         }
-      },
-      "System.Memory": {
-        "type": "Transitive",
-        "resolved": "4.5.5",
-        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "ocelot.samples.web": {
         "type": "Project"

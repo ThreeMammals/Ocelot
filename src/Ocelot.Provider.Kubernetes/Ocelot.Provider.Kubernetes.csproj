@@ -13,7 +13,6 @@
     <PackageIconUrl>https://raw.githubusercontent.com/ThreeMammals/Ocelot/assets/images/ocelot_icon_128x128.png</PackageIconUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
     <AssemblyName>Ocelot.Provider.Kubernetes</AssemblyName>
-    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>24.1.0</AssemblyVersion>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Company>Three Mammals</Company>
@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.3.0" />
-    <PackageReference Include="System.Text.Json" Version="10.0.5" />
+    <PackageReference Include="System.Text.Json" Version="10.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
