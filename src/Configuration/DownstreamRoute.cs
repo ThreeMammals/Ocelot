@@ -39,7 +39,8 @@ public class DownstreamRoute
         HttpVersionPolicy downstreamHttpVersionPolicy,
         Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
         MetadataOptions metadataOptions,
-        int? timeout)
+        int? timeout,
+        int? webSocketBufferSize = null)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
         AddHeadersToDownstream = addHeadersToDownstream;
@@ -74,6 +75,7 @@ public class DownstreamRoute
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
         Timeout = timeout;
+        WebSocketBufferSize = webSocketBufferSize;
     }
 
     public string Key { get; }
@@ -135,6 +137,11 @@ public class DownstreamRoute
     /// <value>An <see cref="int"/> value in seconds.</value>
     public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
     private static int defaultTimeoutSeconds = DefTimeout;
+
+    /// <summary>The buffer size in bytes for WebSocket proxying. When <see langword="null"/>, the default of 4096 bytes is used.</summary>
+    /// <remarks>Larger values (e.g. 65536) reduce kernel transitions per second, significantly improving throughput for high-bandwidth WebSocket routes such as video streams. Has no effect on non-WebSocket routes.</remarks>
+    /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value in bytes, or <see langword="null"/> to use the default.</value>
+    public int? WebSocketBufferSize { get; }
 
     public string Name() => Name(false);
 

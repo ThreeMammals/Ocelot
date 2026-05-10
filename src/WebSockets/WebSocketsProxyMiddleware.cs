@@ -96,6 +96,9 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
+        var bufferSize = route.WebSocketBufferSize ?? DefaultWebSocketBufferSize;
+        client.Options.SetBuffer(bufferSize, bufferSize);
+
         if (route.DangerousAcceptAnyServerCertificateValidator)
         {
             client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
@@ -139,8 +142,8 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
         using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
         await Task.WhenAll(
-            PumpAsync(client.ToWebSocket(), server, context.RequestAborted),
-            PumpAsync(server, client.ToWebSocket(), context.RequestAborted));
+            PumpAsync(client.ToWebSocket(), server, bufferSize, context.RequestAborted),
+            PumpAsync(server, client.ToWebSocket(), bufferSize, context.RequestAborted));
     }
 
     /// <summary>

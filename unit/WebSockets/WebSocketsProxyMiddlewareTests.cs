@@ -42,6 +42,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
 
         _client = new Mock<IClientWebSocket>();
         _factory.Setup(x => x.CreateClient()).Returns(_client.Object);
+        _client.Setup(x => x.Options.SetBuffer(It.IsAny<int>(), It.IsAny<int>()));
     }
 
     [Fact]
@@ -234,6 +235,62 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         callback.ShouldNotBeNull();
         var validation = callback.Invoke(null, null, null, SslPolicyErrors.None);
         validation.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ShouldUseDefaultBufferSizeWhenWebSocketBufferSizeIsNotConfigured()
+    {
+        // Arrange
+        var setBufferCalls = new List<(int receive, int send)>();
+        GivenRouteWithBufferSize(null, setBufferCalls);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally(null);
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        setBufferCalls.ShouldHaveSingleItem();
+        setBufferCalls[0].receive.ShouldBe(4096);
+        setBufferCalls[0].send.ShouldBe(4096);
+    }
+
+    [Theory]
+    [InlineData(8192)]
+    [InlineData(65536)]
+    [InlineData(131072)]
+    public async Task ShouldUseConfiguredBufferSizeWhenWebSocketBufferSizeIsSet(int bufferSize)
+    {
+        // Arrange
+        var setBufferCalls = new List<(int receive, int send)>();
+        GivenRouteWithBufferSize(bufferSize, setBufferCalls);
+        AndDoNotSetupProtocolsAndHeaders();
+        AndDoNotConnectReally(null);
+
+        // Act
+        await _middleware.Invoke(_context.Object);
+
+        // Assert
+        setBufferCalls.ShouldHaveSingleItem();
+        setBufferCalls[0].receive.ShouldBe(bufferSize);
+        setBufferCalls[0].send.ShouldBe(bufferSize);
+    }
+
+    private void GivenRouteWithBufferSize(int? bufferSize, List<(int receive, int send)> calls)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri.UriSchemeWs}://localhost:12345");
+        var downstream = new DownstreamRequest(request);
+        var route = new DownstreamRouteBuilder()
+            .WithWebSocketBufferSize(bufferSize)
+            .Build();
+        _context.SetupGet(x => x.Items).Returns(new Dictionary<object, object>
+        {
+            { nameof(DownstreamRequest), downstream },
+            { nameof(DownstreamRoute), route },
+        });
+
+        _client.Setup(x => x.Options.SetBuffer(It.IsAny<int>(), It.IsAny<int>()))
+            .Callback<int, int>((recv, send) => calls.Add((recv, send)));
     }
 
     [Theory]

@@ -139,6 +139,7 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithKey(fileRoute.Key)
             .WithLoadBalancerKey(lbKey)
             .WithLoadBalancerOptions(lbOptions)
+            .WithWebSocketBufferSize(fileRoute.WebSocketBufferSize)
             .WithMetadata(metadata)
             .WithQosOptions(qosOptions)
             .WithRateLimitOptions(rateLimitOption)
