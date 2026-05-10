@@ -240,6 +240,18 @@ public class WebSocketsSteps : Steps
             WithWebSockets, null, ConfigureWebHost, null, null);
     }
 
+    protected Task StartOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices, OcelotPipelineConfiguration pipelineConfig)
+    {
+        var url = DownstreamUrl(port);
+        void ConfigureWebHost(IWebHostBuilder b) => b
+            .UseUrls(url)
+            .ConfigureLogging(WithConsole);
+        void WithWebSocketsAndConfig(IApplicationBuilder app)
+            => app.UseWebSockets().UseOcelot(pipelineConfig).Wait();
+        return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
+            WithWebSocketsAndConfig, null, ConfigureWebHost, null, null);
+    }
+
     protected static void WithWebSockets(IApplicationBuilder app)
         => app.UseWebSockets().UseOcelot().Wait();
     protected static void WithHttp2(ListenOptions options)
