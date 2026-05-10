@@ -1,14 +1,14 @@
 ﻿using Ocelot.Configuration.ChangeTracking;
-using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Repository;
 
-/// <summary>
-/// Register as singleton.
-/// </summary>
 public class InMemoryInternalConfigurationRepository : IInternalConfigurationRepository
 {
-    private static readonly object LockObject = new();
+#if NET9_0_OR_GREATER
+    private static readonly Lock Locker = new();
+#else
+    private static readonly object Locker = new();
+#endif
 
     private IInternalConfiguration _internalConfiguration;
     private readonly IOcelotConfigurationChangeTokenSource _changeTokenSource;
@@ -18,19 +18,22 @@ public class InMemoryInternalConfigurationRepository : IInternalConfigurationRep
         _changeTokenSource = changeTokenSource;
     }
 
-    public Response<IInternalConfiguration> Get()
+    public IInternalConfiguration Get()
     {
-        return new OkResponse<IInternalConfiguration>(_internalConfiguration);
+        lock (Locker)
+        {
+            return _internalConfiguration;
+        }
     }
 
-    public Response AddOrReplace(IInternalConfiguration internalConfiguration)
+    public string AddOrReplace(IInternalConfiguration internalConfiguration)
     {
-        lock (LockObject)
+        lock (Locker)
         {
             _internalConfiguration = internalConfiguration;
         }
 
         _changeTokenSource.Activate();
-        return new OkResponse();
+        return string.Empty; 
     }
 }

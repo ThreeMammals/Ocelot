@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Ocelot.Administration;
+using Ocelot.Configuration;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Infrastructure.Extensions;
@@ -40,9 +41,9 @@ public static class OcelotBuilderExtensions
 
     public static Task GetOcelotMiddlewareConfiguration(IApplicationBuilder builder)
     {
-        var repo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
-        var config = repo.Get();
-        var administrationPath = config?.Data?.AdministrationPath;
+        IInternalConfigurationRepository repo = builder.ApplicationServices.GetService<IInternalConfigurationRepository>();
+        IInternalConfiguration config = repo.Get();
+        var administrationPath = config?.AdministrationPath;
         var administration = builder.ApplicationServices.GetService<IAdministrationPath>();
         if (administration.ExternalJwtSigningUrl != null)
         {

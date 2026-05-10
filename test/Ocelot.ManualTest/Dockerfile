@@ -14,9 +14,9 @@ COPY Ocelot.sln Ocelot.sln
 COPY src/Ocelot/Ocelot.csproj src/Ocelot/Ocelot.csproj
 COPY src/Ocelot.Administration/Ocelot.Administration.csproj src/Ocelot.Administration/Ocelot.Administration.csproj
 COPY src/Ocelot.Cache.CacheManager/Ocelot.Cache.CacheManager.csproj src/Ocelot.Cache.CacheManager/Ocelot.Cache.CacheManager.csproj
-COPY src/Ocelot.Provider.Consul/Ocelot.Provider.Consul.csproj src/Ocelot.Provider.Consul/Ocelot.Provider.Consul.csproj
-COPY src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj src/Ocelot.Provider.Eureka/Ocelot.Provider.Eureka.csproj
-COPY src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj src/Ocelot.Provider.Polly/Ocelot.Provider.Polly.csproj
+COPY src/Ocelot.Discovery.Consul/Ocelot.Discovery.Consul.csproj src/Ocelot.Discovery.Consul/Ocelot.Discovery.Consul.csproj
+COPY src/Ocelot.Discovery.Eureka/Ocelot.Discovery.Eureka.csproj src/Ocelot.Discovery.Eureka/Ocelot.Discovery.Eureka.csproj
+COPY src/Ocelot.QualityOfService.Polly/Ocelot.QualityOfService.Polly.csproj src/Ocelot.QualityOfService.Polly/Ocelot.QualityOfService.Polly.csproj
 COPY src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj src/Ocelot.Tracing.Butterfly/Ocelot.Tracing.Butterfly.csproj
 COPY src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj
 COPY test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj

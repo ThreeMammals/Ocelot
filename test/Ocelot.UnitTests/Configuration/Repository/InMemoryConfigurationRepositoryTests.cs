@@ -2,7 +2,6 @@
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.Repository;
-using Ocelot.Responses;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
@@ -10,8 +9,8 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
 {
     private readonly InMemoryInternalConfigurationRepository _repo;
     private IInternalConfiguration _config;
-    private Response _result;
-    private Response<IInternalConfiguration> _getResult;
+    private string _addResult;
+    private IInternalConfiguration _getResult;
     private readonly Mock<IOcelotConfigurationChangeTokenSource> _changeTokenSource;
 
     public InMemoryConfigurationRepositoryTests()
@@ -28,10 +27,10 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         _config = new FakeConfig("initial", "adminath");
 
         // Act
-        _result = _repo.AddOrReplace(_config);
+        _addResult = _repo.AddOrReplace(_config);
 
         // Assert
-        _result.IsError.ShouldBeFalse();
+        _addResult.ShouldBe(string.Empty);
         _changeTokenSource.Verify(m => m.Activate(), Times.Once);
     }
 
@@ -40,13 +39,23 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
     {
         // Arrange
         _config = new FakeConfig("initial", "adminath");
-        _result = _repo.AddOrReplace(_config);
+        _repo.AddOrReplace(_config);
 
         // Act
         _getResult = _repo.Get();
 
         // Assert
-        _getResult.Data.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+        _getResult.Routes[0].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+    }
+
+    [Fact]
+    public void Get_Returns_Null_When_Nothing_Added()
+    {
+        // Act
+        _getResult = _repo.Get();
+
+        // Assert
+        _getResult.ShouldBeNull();
     }
 
     private class FakeConfig : IInternalConfiguration

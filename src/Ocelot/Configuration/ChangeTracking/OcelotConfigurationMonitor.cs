@@ -16,10 +16,7 @@ public class OcelotConfigurationMonitor : IOptionsMonitor<IInternalConfiguration
         _changeTokenSource = changeTokenSource;
     }
 
-    public IInternalConfiguration Get(string name)
-    {
-        return _repo.Get().Data;
-    }
+    public IInternalConfiguration Get(string name) => _repo.Get();
 
     public IDisposable OnChange(Action<IInternalConfiguration, string> listener)
     {
@@ -27,5 +24,5 @@ public class OcelotConfigurationMonitor : IOptionsMonitor<IInternalConfiguration
         return _changeTokenSource.ChangeToken.RegisterChangeCallback(_ => listener(CurrentValue, string.Empty), null);
     }
 
-    public IInternalConfiguration CurrentValue => _repo.Get().Data;
+    public IInternalConfiguration CurrentValue => _repo.Get();
 }

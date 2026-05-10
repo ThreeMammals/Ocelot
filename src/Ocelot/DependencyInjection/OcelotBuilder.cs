@@ -12,7 +12,6 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Repository;
-using Ocelot.Configuration.Setter;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
@@ -60,7 +59,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
         Services.TryAddSingleton<IHeaderFindAndReplaceCreator, HeaderFindAndReplaceCreator>();
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
-        Services.TryAddSingleton<IInternalConfigurationRepository, InMemoryInternalConfigurationRepository>();
         Services.TryAddSingleton<IRoutesCreator, StaticRoutesCreator>();
         Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
         Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
@@ -75,8 +73,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-        Services.TryAddSingleton<IFileConfigurationRepository, DiskFileConfigurationRepository>();
-        Services.TryAddSingleton<IFileConfigurationSetter, FileAndInternalConfigurationSetter>();
         Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
         Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
@@ -114,7 +110,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
         Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
-        Services.TryAddSingleton<IFileConfigurationPollerOptions, InMemoryFileConfigurationPollerOptions>();
         Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
         Services.TryAddSingleton<IPlaceholders, Placeholders>();
         Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
@@ -132,6 +127,7 @@ public class OcelotBuilder : IOcelotBuilder
 
         // Features
         Services.AddOcelotCache();
+        Services.AddOcelotConfigurationRepository();
         Services.AddOcelotHeaderRouting();
         Services.AddOcelotLogging();
         Services.AddOcelotMessageInvokerPool();
@@ -179,6 +175,37 @@ public class OcelotBuilder : IOcelotBuilder
             .AddControllersAsServices()
             .AddAuthorization()
             .AddNewtonsoftJson();
+    }
+
+    public IOcelotBuilder AddConfigurationDelegate(OcelotMiddlewareConfigurationDelegate createConfiguration)
+    {
+        Services.AddSingleton(createConfiguration);
+        return this;
+    }
+
+    public IOcelotBuilder AddConfigurationPoller()
+    {
+        return AddConfigurationPoller<FileConfigurationPoller, InMemoryFileConfigurationPollerOptions, DiskFileConfigurationRepository>();
+    }
+
+    public IOcelotBuilder AddConfigurationDiscoveryPoller<TPoller, TPollerOptions, TRepository>()
+        where TPoller : class, IFileConfigurationPoller
+        where TPollerOptions : ServiceDiscoveryFileConfigurationPollerOptions
+        where TRepository : class, IFileConfigurationRepository
+    {
+        return AddConfigurationPoller<TPoller, TPollerOptions, TRepository>();
+    }
+
+    public IOcelotBuilder AddConfigurationPoller<TPoller, TPollerOptions, TRepository>()
+        where TPoller : class, IFileConfigurationPoller
+        where TPollerOptions : class, IFileConfigurationPollerOptions
+        where TRepository : class, IFileConfigurationRepository
+    {
+        Services
+            .RemoveAll<IFileConfigurationPoller>().AddHostedService<TPoller>()
+            .RemoveAll<IFileConfigurationPollerOptions>().AddSingleton<IFileConfigurationPollerOptions, TPollerOptions>()
+            .RemoveAll<IFileConfigurationRepository>().AddSingleton<IFileConfigurationRepository, TRepository>();
+        return this;
     }
 
     public IOcelotBuilder AddSingletonDefinedAggregator<T>()
@@ -247,7 +274,7 @@ public class OcelotBuilder : IOcelotBuilder
     /// </summary>
     /// <param name="delegateType">The type of a <see cref="DelegatingHandler"/> to be registered.</param>
     /// <param name="global">True if the handler should be globally available.</param>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Generates an exception if the <paramref name="delegateType"/> type does not inherit from the <see cref="DelegatingHandler"/>.</exception>
     public IOcelotBuilder AddDelegatingHandler(Type delegateType, bool global = false)
     {
@@ -278,7 +305,7 @@ public class OcelotBuilder : IOcelotBuilder
     /// </summary>
     /// <typeparam name="THandler">The type of a <see cref="DelegatingHandler"/> to be registered.</typeparam>
     /// <param name="global">True if the handler should be globally available.</param>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
     {
@@ -337,10 +364,6 @@ public class OcelotBuilder : IOcelotBuilder
         return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
     }
 
-    /// <summary>
-    /// Adds the built-in Quality of Service feature from the <c>Ocelot.QualityOfService</c> namespace via <see cref="QosDelegatingHandlerDelegate"/> after force-removing any other enabled external QoS implementations.
-    /// </summary>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddQualityOfService()
     {
         Services.RemoveAll<QosDelegatingHandlerDelegate>();
@@ -348,12 +371,6 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
-    /// <summary>
-    /// Adds a custom Quality of Service handler of type <typeparamref name="THandler"/> that inherits from <see cref="CircuitBreakerDelegatingHandler"/>,
-    /// allowing overrides such as a custom <see cref="CircuitBreakerDelegatingHandler.ServerErrorCodes"/> set.
-    /// </summary>
-    /// <typeparam name="THandler">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
-    /// <returns>The reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     public IOcelotBuilder AddQualityOfService<THandler>()
         where THandler : CircuitBreakerDelegatingHandler
     {

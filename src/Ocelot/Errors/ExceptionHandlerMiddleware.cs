@@ -5,7 +5,7 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Errors.Middleware;
+namespace Ocelot.Errors;
 
 /// <summary>
 /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500.

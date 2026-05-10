@@ -12,7 +12,6 @@ public class OcelotConfigurationMonitorTests : UnitTest
     private Mock<IOcelotConfigurationChangeTokenSource> _mChangeTokenSource;
     private Mock<IChangeToken> _mChangeToken;
     private IInternalConfiguration _testConfiguration;
-    private Response<IInternalConfiguration> _repoResponse;
     private OcelotConfigurationMonitor _monitor;
 
     public OcelotConfigurationMonitorTests()
@@ -298,8 +297,7 @@ public class OcelotConfigurationMonitorTests : UnitTest
     private void GivenATestConfigurationIsSet()
     {
         _testConfiguration = new Mock<IInternalConfiguration>().Object;
-        _repoResponse = new OkResponse<IInternalConfiguration>(_testConfiguration);
-        _mConfigurationRepo.Setup(x => x.Get()).Returns(_repoResponse);
+        _mConfigurationRepo.Setup(x => x.Get()).Returns(_testConfiguration);
     }
 
     private void GivenTheMonitorIsCreated()

@@ -12,7 +12,7 @@ public class CannotStartOcelotTests : Steps
         {
             Scheme = "https",
             Host = "localhost",
-            Type = nameof(Provider.Consul.Consul),
+            Type = "Consul",
             Port = 8500,
         };
 
@@ -28,7 +28,7 @@ public class CannotStartOcelotTests : Steps
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?{NL}");
+        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?{NL}");
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class CannotStartOcelotTests : Steps
         {
             Scheme = "https",
             Host = "localhost",
-            Type = nameof(Provider.Consul.Consul),
+            Type = "Consul",
             Port = 8500,
         };
 
@@ -57,7 +57,7 @@ public class CannotStartOcelotTests : Steps
         }
 
         exception.ShouldNotBeNull();
-        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Provider.Consul and services.AddConsul() or Ocelot.Provider.Eureka and services.AddEureka()?{NL}");
+        exception.Message.ShouldBe($"Unable to start Ocelot, errors are:{NL}FileValidationFailedError: Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?{NL}");
     }
 
     [Fact]

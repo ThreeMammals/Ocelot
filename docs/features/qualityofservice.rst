@@ -679,7 +679,7 @@ Finally, to define your own set of exceptions for mapping, you can apply the fol
   builder.Services
       .AddOcelot(builder.Configuration)
       .AddPolly<MyProvider>(MyErrorMapping);
-  // Note: Default error mapping is defined in the DefaultErrorMapping field of the Ocelot.Provider.Polly.OcelotBuilderExtensions class
+  // Note: Default error mapping is defined in the DefaultErrorMapping field of the Ocelot.QualityOfService.Polly.OcelotBuilderExtensions class
 
 """"
 

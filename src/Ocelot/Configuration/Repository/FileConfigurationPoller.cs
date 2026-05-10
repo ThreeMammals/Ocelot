@@ -2,11 +2,21 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Repository;
 
-public class FileConfigurationPoller : IHostedService, IDisposable
+/// <summary>
+/// This hosted service pools periodically (~1 sec) configuration data from the <see cref="IFileConfigurationRepository"/> and propagates data into the <see cref="IInternalConfigurationRepository"/> to be reused across Ocelot services.
+/// Thus, this service is responsible for getting actual configuration from anywhere and reflect the state to internal Ocelot repo.
+/// </summary>
+/// <remarks>
+/// Feature: <see cref="IOcelotBuilder.AddConfigurationPoller()"/>.<br/>
+/// Feature PR: <see href="https://github.com/ThreeMammals/Ocelot/pull/157/">157</see>.<br/>
+/// Note, that the service is reused in Consul service discovery provider.
+/// </remarks>
+public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService, IDisposable
 {
     private readonly IOcelotLogger _logger;
     private readonly IFileConfigurationRepository _repo;
@@ -38,18 +48,18 @@ public class FileConfigurationPoller : IHostedService, IDisposable
             return;
 
         _polling = true;
-        PollAsync().GetAwaiter().GetResult(); // TODO This is not good, TimerCallback must be synchronous
+        Poll(); // PollAsync().GetAwaiter().GetResult(); // TODO This is not good, TimerCallback must be synchronous
         _polling = false;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_timer is not null)
-            return Task.CompletedTask;
+            return;
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is starting.");
-        _timer = new(OnTimer, null, _options.Delay, _options.Delay); // TODO state could be CancellationToken?
-        return Task.CompletedTask;
+        int delay = await _options.DelayAsync(cancellationToken);
+        _timer = new(OnTimer, null, delay, delay); // TODO state could be CancellationToken?
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -58,25 +68,72 @@ public class FileConfigurationPoller : IHostedService, IDisposable
             return Task.CompletedTask;
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
-        _timer.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
+        return Task.Run(() => _timer.Change(Timeout.Infinite, 0), cancellationToken);
     }
 
-    private async Task PollAsync()
+    public void Poll()
     {
-        _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
+        if (_polling)
+            return;
 
-        var fileConfig = await _repo.Get();
-        if (fileConfig.IsError)
+        _logger.LogInformation(() => $"{nameof(Poll)}: Started polling");
+        FileConfiguration configuration;
+        try
         {
-            _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting file config, errors are {string.Join(',', fileConfig.Errors.Select(x => x.Message))}");
+            configuration = _repo.Get();
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(() => $"{nameof(Poll)}: Error getting {nameof(FileConfiguration)} -> {e}.");
             return;
         }
 
-        var asJson = ToJson(fileConfig.Data);
+        if (configuration is null)
+        {
+            _logger.LogWarning(() => $"{nameof(Poll)}: Null object while getting {nameof(FileConfiguration)} via the {_repo.GetType().Name} service.");
+            return;
+        }
+
+        var asJson = ToJson(configuration);
         if (asJson != _previousAsJson)
         {
-            var config = await _internalConfigCreator.Create(fileConfig.Data);
+            var config = _internalConfigCreator.Create(configuration).GetAwaiter().GetResult(); // TODO Extend interface with sync version
+            if (!config.IsError)
+                _internalConfigRepo.AddOrReplace(config.Data);
+
+            _previousAsJson = asJson;
+        }
+
+        _logger.LogInformation(() => $"{nameof(Poll)}: Finished polling");
+    }
+
+    public async Task PollAsync(CancellationToken cancellationToken = default)
+    {
+        if (_polling)
+            return;
+
+        _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
+        FileConfiguration configuration;
+        try
+        {
+            configuration = await _repo.GetAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e}.");
+            return;
+        }
+
+        if (configuration is null)
+        {
+            _logger.LogWarning(() => $"{nameof(PollAsync)}: Null object while getting {nameof(FileConfiguration)} via the {_repo.GetType().Name} service.");
+            return;
+        }
+
+        var asJson = ToJson(configuration);
+        if (asJson != _previousAsJson)
+        {
+            var config = await _internalConfigCreator.Create(configuration);
             if (!config.IsError)
                 _internalConfigRepo.AddOrReplace(config.Data);
 
@@ -92,7 +149,7 @@ public class FileConfigurationPoller : IHostedService, IDisposable
     /// <returns>hash of the config.</returns>
     private static string ToJson(FileConfiguration config)
     {
-        var currentHash = JsonConvert.SerializeObject(config);
+        var currentHash = JsonConvert.SerializeObject(config); // TODO WTF?
         return currentHash;
     }
 

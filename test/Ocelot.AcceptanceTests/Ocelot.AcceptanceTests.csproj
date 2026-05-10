@@ -9,7 +9,6 @@
     <AssemblyName>Ocelot.AcceptanceTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeIdentifiers>win-x64;osx-x64</RuntimeIdentifiers>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -33,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
-    <ProjectReference Include="..\..\src\Ocelot.Provider.Consul\Ocelot.Provider.Consul.csproj" />
     <ProjectReference Include="..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
@@ -47,7 +45,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Consul" Version="1.7.14.10" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
