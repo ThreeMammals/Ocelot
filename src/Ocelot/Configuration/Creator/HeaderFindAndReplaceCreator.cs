@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.File;
+using Ocelot.Errors;
 using Ocelot.Infrastructure;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Header = System.Collections.Generic.KeyValuePair<string, string>;
 

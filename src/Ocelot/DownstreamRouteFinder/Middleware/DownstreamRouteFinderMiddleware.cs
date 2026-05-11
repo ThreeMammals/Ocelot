@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.Infrastructure.Extensions;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 

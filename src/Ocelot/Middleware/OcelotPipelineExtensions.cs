@@ -7,7 +7,7 @@ using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamPathManipulation.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator;
-using Ocelot.Errors.Middleware;
+using Ocelot.Errors;
 using Ocelot.Headers.Middleware;
 using Ocelot.LoadBalancer;
 using Ocelot.Multiplexer;

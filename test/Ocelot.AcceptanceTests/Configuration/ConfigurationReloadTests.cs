@@ -50,7 +50,7 @@ public sealed class ConfigurationReloadTests : Steps
             var internalConfigRepo = OcelotServices.GetService<IInternalConfigurationRepository>();
             var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
-            return internalConfig.Data.RequestId == config.Data.RequestId;
+            return internalConfig.RequestId == config.Data.RequestId;
         });
         result.ShouldBe(true);
     }
@@ -72,7 +72,7 @@ public sealed class ConfigurationReloadTests : Steps
         var internalConfigRepo = OcelotServices.GetService<IInternalConfigurationRepository>();
         var internalConfig = internalConfigRepo.Get();
         var config = await internalConfigCreator.Create(fileConfig);
-        internalConfig.Data.RequestId.ShouldBe(config.Data.RequestId);
+        internalConfig.RequestId.ShouldBe(config.Data.RequestId);
     }
 
     [Fact]
