@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
@@ -7,7 +7,11 @@ namespace Ocelot.Testing;
 public static class PortFinder
 {
     private const int EndPortRange = 45000;
-    private static volatile int CurrentPort = 20000;
+    private const int TotalTests = 500;
+    private static int TfmId => Environment.ProcessId;
+
+    // Adding process-specific offset to avoid port clashing during parallel multi-target test runs
+    private static volatile int CurrentPort = 20000 + (TfmId % TotalTests) * 20;
     private static readonly object SyncRoot = new();
 
     //private static readonly ConcurrentBag<int> UsedPorts = new();

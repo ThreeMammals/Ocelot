@@ -1,4 +1,4 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.6.2
+#tool dotnet:?package=GitVersion.Tool&version=6.6.2
 #tool nuget:?package=ReportGenerator&version=5.5.4
 
 #addin nuget:?package=Cake.Http
@@ -108,6 +108,7 @@ Task("Release")
 Task("Restore")
     .Does(() =>
 	{
+		StartProcess("dotnet", "tool restore");
 		var settings = new DotNetRestoreSettings
 		{
 			LockedMode = true, // equivalent to --locked-mode
@@ -579,9 +580,16 @@ Task("AcceptanceTests")
 			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
 			return;
 		}
-        // Sequential processing as an emulation of Visual Studio Test Explorer
 		foreach (string tfm in GetTFMs())
 		{
+			Information("Installing Playwright browsers...");
+			var arguments = new ProcessArgumentBuilder()
+				.Append("-File")
+				.Append($"bin/Release/{tfm}/playwright.ps1")
+				.Append("install").Append("chromium");
+			var exitCode = StartProcess("pwsh", new ProcessSettings { Arguments = arguments, WorkingDirectory = "./test/Ocelot.AcceptanceTests" });
+			Information("DONE Installing Playwright browsers with exit code " + exitCode);
+
 			var settings = new DotNetTestSettings
 			{
 				Configuration = compileConfig,
