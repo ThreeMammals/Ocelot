@@ -242,7 +242,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj --coverlet --settings coverlet.runsettings --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
