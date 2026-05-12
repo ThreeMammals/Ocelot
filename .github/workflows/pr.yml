@@ -236,11 +236,9 @@ jobs:
         run: dotnet restore --locked-mode ./Ocelot.slnx
       - name: Build
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
-      # - name: Unit Tests
-      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       - name: Unit Tests
         run: |
-          dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
           if grep -q "failed: 0" test_output.txt; then
             echo "✓ Test run successful"
@@ -250,7 +248,9 @@ jobs:
             exit 1
           fi
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+        run: |
+          dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj \
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       - name: Coverage files
         id: coverage
         run: ./.github/steps/prepare-coveralls.sh
