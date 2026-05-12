@@ -44,7 +44,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
@@ -68,7 +68,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
         route.AddClaimsToRequest.Remove("UserType"); // given I don't transform UserType claim
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
@@ -91,7 +91,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         string[] allowedScopes = ["api", "api.readOnly", "openid", "offline_access"];
         var route = GivenAuthRoute(port, scopes: allowedScopes);
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken);
+        await GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe);
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
 
         GivenThereIsAConfiguration(configuration);
@@ -116,7 +116,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var testName = TestName();
         var allScopes = allowedScopes.Append("api.readOnly").ToArray();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allScopes, Xunit.TestContext.Current.CancellationToken))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allScopes, CancelMe))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -154,7 +154,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
             new(nameof(ClaimTypes.Role), "User"),
         };
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -180,7 +180,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         configuration.GlobalConfiguration = GivenGlobalAuthConfiguration(allowedScopes: globalScopes);
 
         GivenThereIsAConfiguration(configuration);
-        await GivenThereIsExternalJwtSigningService(globalScopes, Xunit.TestContext.Current.CancellationToken);
+        await GivenThereIsExternalJwtSigningService(globalScopes, CancelMe);
         GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenIHaveAToken(scope: "apiGlobal");
@@ -201,7 +201,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var route = GivenAuthRoute(port, scopes: ["api", "api.read", "api.write"]);
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        await GivenThereIsExternalJwtSigningService(["api.read", "openid", "offline_access"], Xunit.TestContext.Current.CancellationToken);
+        await GivenThereIsExternalJwtSigningService(["api.read", "openid", "offline_access"], CancelMe);
         GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenIHaveATokenWithScope("api.read openid offline_access");
@@ -220,7 +220,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scopes: ["admin", "superuser"]);
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(["api.read", "api.write", "openid"], Xunit.TestContext.Current.CancellationToken);
+        await GivenThereIsExternalJwtSigningService(["api.read", "api.write", "openid"], CancelMe);
         GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);

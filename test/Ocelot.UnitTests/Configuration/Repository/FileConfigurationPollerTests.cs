@@ -41,8 +41,6 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
     }
 
-    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
-
     [Fact]
     public async Task Should_start_and_poll_initial_configuration()
     {

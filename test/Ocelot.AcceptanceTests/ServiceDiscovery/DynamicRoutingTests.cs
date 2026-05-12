@@ -348,7 +348,7 @@ public class DynamicRoutingTests : DiscoverySteps
         GivenMultipleServiceInstancesAreRunning(serviceUrls, Enumerable.Repeat(serviceName, ports.Length).ToArray());
         steps.GivenThereIsAConfiguration(configuration);
         steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
-        await steps.GivenThereIsExternalJwtSigningService(["apiGlobal"], Xunit.TestContext.Current.CancellationToken);
+        await steps.GivenThereIsExternalJwtSigningService(["apiGlobal"], CancelMe);
         await steps.GivenIHaveAToken(scope: "apiGlobal"); //,audience: ocelotClient.BaseAddress.Authority);
         steps.GivenIHaveAddedATokenToMyRequest();
 
@@ -398,7 +398,7 @@ public class DynamicRoutingTests : DiscoverySteps
         GivenMultipleServiceInstancesAreRunning(downstreamUrls, Enumerable.Repeat(Body(), downstreamUrls.Length).ToArray());
         steps.GivenThereIsAConfiguration(configuration);
         steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
-        await steps.GivenThereIsExternalJwtSigningService(["api", "apiGlobal", "Mr.Who"], Xunit.TestContext.Current.CancellationToken);
+        await steps.GivenThereIsExternalJwtSigningService(["api", "apiGlobal", "Mr.Who"], CancelMe);
         ocelotClient ??= steps.OcelotClient;
 
         await steps.GivenIHaveAToken(scope: "Mr.Who");

@@ -4,12 +4,11 @@ using Ocelot.Configuration.Repository;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
-public class ServiceDiscoveryFileConfigurationPollerOptionsTests
+public class ServiceDiscoveryFileConfigurationPollerOptionsTests : UnitTest
 {
     private readonly Mock<IInternalConfigurationRepository> _internalRepo = new();
     private readonly Mock<IFileConfigurationRepository> _fileRepo = new();
     private readonly ServiceDiscoveryFileConfigurationPollerOptions _sut;
-    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
 
     public ServiceDiscoveryFileConfigurationPollerOptionsTests()
     {

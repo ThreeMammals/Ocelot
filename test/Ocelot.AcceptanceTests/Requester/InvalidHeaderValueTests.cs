@@ -36,7 +36,7 @@ public sealed class InvalidHeaderValueTests : Steps
                                 null, // Action<TestServer> ? configureServer,
                                 null); // Action<HttpClient> ? configureClient
         HeadersCollection headers = [ new(headerName, headerValue) ];
-        var response = await GetRawAsync(gatewayPort, "/ocelot/posts/askdj", headers, Xunit.TestContext.Current.CancellationToken);
+        var response = await GetRawAsync(gatewayPort, "/ocelot/posts/askdj", headers, CancelMe);
 
         response.ShouldNotBeNullOrEmpty();
         string reason = Regex.Replace(status.ToString(), "(?<=[a-z])(?=[A-Z])", " ");

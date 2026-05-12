@@ -282,7 +282,7 @@ public sealed class QualityOfServiceTests : QosSteps
             ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             response.ReasonPhrase.ShouldBe("Request timeout");
             // await ThenTheResponseBodyShouldBeAsync("Request timeout for route -> /route2");
-            var body = await response.Content.ReadAsStringAsync(Xunit.TestContext.Current.CancellationToken);
+            var body = await response.Content.ReadAsStringAsync(CancelMe);
             body.ShouldStartWith("Request timeout for route -> /route"); // route1 or route2 due to load balancing
         }
     }

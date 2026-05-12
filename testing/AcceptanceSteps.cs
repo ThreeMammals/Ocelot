@@ -57,6 +57,8 @@ public class AcceptanceSteps : IDisposable
     protected virtual string TestID { get => _testId.ToString("N"); }
     public virtual string Body([CallerMemberName] string? responseBody = null) => responseBody ?? GetType().Name;
     public virtual string TestName([CallerMemberName] string? testName = null) => testName ?? GetType().Name; // but it could be TestID also
+    public virtual CancellationToken CancelMe => CancellationToken.None;
+
 
     public HttpClient? OcelotClient => ocelotClient;
 

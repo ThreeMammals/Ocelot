@@ -26,7 +26,7 @@ public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
         };
         var configuration = GivenConfiguration(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
+        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))

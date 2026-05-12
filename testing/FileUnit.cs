@@ -28,6 +28,7 @@ public class FileUnit : Unit, IDisposable
     }
 
     protected virtual string EnvironmentName() => TestID;
+    public override CancellationToken CancelMe => CancellationToken.None;
 
     public virtual void Dispose()
     {

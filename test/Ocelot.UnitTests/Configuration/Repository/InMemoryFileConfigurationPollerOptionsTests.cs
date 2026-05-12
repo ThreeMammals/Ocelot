@@ -2,10 +2,8 @@
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
-public class InMemoryFileConfigurationPollerOptionsTests
+public class InMemoryFileConfigurationPollerOptionsTests : UnitTest
 {
-    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
-
     [Fact]
     public void Delay_Returns_DefaultValue()
     {

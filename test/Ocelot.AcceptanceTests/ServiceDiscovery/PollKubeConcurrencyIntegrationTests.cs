@@ -117,7 +117,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(1, "First call should trigger cold start poll");
 
         // Make three parallel calls within the first polling interval (before 2nd polling)
-        await Task.Delay(FirstPollingWaitTime, Xunit.TestContext.Current.CancellationToken); // Wait less than polling interval
+        await Task.Delay(FirstPollingWaitTime, CancelMe); // Wait less than polling interval
         var parallelTasks = Enumerable.Range(0, 3)
             .Select(_ => given.Provider.GetAsync())
             .ToArray();
@@ -168,7 +168,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(1);
 
         // Multiple calls within first interval
-        await Task.Delay(FirstPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(FirstPollingWaitTime, CancelMe);
         var parallelCalls1 = await Task.WhenAll(
             Enumerable.Range(0, 3)
                 .Select(_ => given.Provider.GetAsync())
@@ -177,7 +177,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(1, "No additional polling yet");
 
         // Act - Wait for 2nd polling interval to occur
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken); // Wait more than polling interval
+        await Task.Delay(SecondPollingWaitTime, CancelMe); // Wait more than polling interval
         version = 2; // Simulate version update
 
         // Multiple calls in 2nd interval - should trigger second poll and return new version
@@ -226,14 +226,14 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(1);
 
         // Parallel calls in interval 1
-        await Task.Delay(FirstPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(FirstPollingWaitTime, CancelMe);
         var interval1Calls = await Task.WhenAll(
             Enumerable.Range(0, 2).Select(_ => given.Provider.GetAsync()).ToArray());
         interval1Calls.ShouldAllBe(r => r[0].Name == "service-v1");
         _kubeHandlerCallCount.ShouldBe(1);
 
         // Act & Assert - Interval 2
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(SecondPollingWaitTime, CancelMe);
         version = 2;
         var interval2Calls = await Task.WhenAll(
             Enumerable.Range(0, 2).Select(_ => given.Provider.GetAsync()).ToArray());
@@ -241,7 +241,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(2, "Counter should be 2 after 2nd polling");
 
         // Act & Assert - Interval 3
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(SecondPollingWaitTime, CancelMe);
         version = 3;
         var interval3Calls = await Task.WhenAll(
             Enumerable.Range(0, 2).Select(_ => given.Provider.GetAsync()).ToArray());
@@ -249,7 +249,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(3, "Counter should be 3 after 3rd polling");
 
         // Act & Assert - Interval 4
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(SecondPollingWaitTime, CancelMe);
         version = 4;
         var interval4Calls = await Task.WhenAll(
             Enumerable.Range(0, 2).Select(_ => given.Provider.GetAsync()).ToArray());
@@ -304,7 +304,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         coldStartCount.ShouldBe(1, "Cold start should call handler once despite 1000 concurrent calls");
 
         // Act - Wait for 2nd polling interval with heavy load
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(SecondPollingWaitTime, CancelMe);
         version = 2;
 
         var secondIntervalHeavyLoad = await Task.WhenAll(
@@ -359,7 +359,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
         _kubeHandlerCallCount.ShouldBe(1);
 
         // Act - Wait and trigger 2nd polling
-        await Task.Delay(SecondPollingWaitTime, Xunit.TestContext.Current.CancellationToken);
+        await Task.Delay(SecondPollingWaitTime, CancelMe);
         version = 2;
 
         // Heavy load that might span polling interval boundary
