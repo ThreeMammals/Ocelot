@@ -195,7 +195,7 @@ jobs:
   #   - name: Acceptance Tests
   #     run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
-  build-cake:
+  build:
     # needs: build-windows
     # needs: [build-linux, build-macos, build-windows]
     # needs: build
@@ -232,17 +232,12 @@ jobs:
         run: ./.github/steps/ubuntu.add-dns-records.sh  
       - name: Install certificate
         run: ./.github/steps/ubuntu.install-certificate.sh
-      # - name: Cake Build
-      #   uses: cake-build/cake-action@v3
-      #   with:
-      #     target: PullRequest
-      #     verbosity: Verbose
       - name: Restore
         run: dotnet restore --locked-mode ./Ocelot.slnx
       - name: Build
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
       - name: Unit Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj --coverlet --settings coverlet.runsettings --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
