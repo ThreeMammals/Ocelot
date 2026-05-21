@@ -117,6 +117,8 @@ public class AuthenticationSteps : AcceptanceSteps
         json.ShouldNotBeNullOrEmpty();
     }
 
+    public static string[] NoScopes => Array.Empty<string>();
+
     public Task<string> GivenThereIsExternalJwtSigningService(string[] extraScopes, CancellationToken token)
     {
         List<string> scopes = [OcelotScopes.Api, OcelotScopes.Api2];

@@ -7,6 +7,8 @@ public class RateLimitingSteps : AcceptanceSteps
     public Task<HttpResponseMessage[]> WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)
         => WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader(url, times);
 
+    protected HttpResponseMessage[]? Responses;
+
     public async Task<HttpResponseMessage[]> WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader(
         string url, int times, string clientIdHeader = "ClientId", string clientIdHeaderValue = "ocelotclient1")
     {
@@ -17,8 +19,8 @@ public class RateLimitingSteps : AcceptanceSteps
             request.Headers.Add(clientIdHeader, clientIdHeaderValue);
             tasks.Add(ocelotClient!.SendAsync(request));
         }
-        var responses = await Task.WhenAll(tasks);
-        response = responses.Last();
-        return responses;
+        Responses = await Task.WhenAll(tasks);
+        response = Responses.Last();
+        return Responses;
     }
 }

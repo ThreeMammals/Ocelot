@@ -87,6 +87,23 @@ public class AcceptanceSteps : IDisposable
         r.UpstreamPathTemplate = upstream ?? "/";
         return r;
     }
+    public virtual FileRoute GivenRoute(int port, HttpMethod method, string? upstream = null, string? downstream = null)
+    {
+        var r = GivenRoute(port, upstream, downstream);
+        r.UpstreamHttpMethod.Clear();
+        r.UpstreamHttpMethod.Add(method.ToString());
+        return r;
+    }
+    public virtual FileRoute GivenRouteWithMethods(int port, params string[] methods)
+    {
+        var r = GivenRoute(port);
+        r.UpstreamHttpMethod.Clear();
+
+        if (methods is not null && methods.Length > 0)
+            r.UpstreamHttpMethod = new(methods);
+
+        return r;
+    }
 
     public virtual void GivenThereIsAConfiguration(FileConfiguration configuration)
         => GivenThereIsAConfiguration(configuration, ocelotConfigFileName);
@@ -302,7 +319,7 @@ public class AcceptanceSteps : IDisposable
     #endregion
 
     public static void GivenIWait(int wait) => Thread.Sleep(wait);
-    public static Task GivenIWaitAsync(int wait) => Task.Delay(wait);
+    public Task GivenIWaitAsync(int wait) => Task.Delay(wait, CancelMe);
 
     #region Cookies
 
@@ -373,7 +390,7 @@ public class AcceptanceSteps : IDisposable
     public async Task WhenIGetUrlOnTheApiGateway(string url)
         => response = await ocelotClient.ShouldNotBeNull().GetAsync(url);
 
-    public Task<HttpResponseMessage> WhenIGetUrl(string url)
+    public Task<HttpResponseMessage> WhenImGettingUrlOnTheApiGateway(string url)
         => ocelotClient.ShouldNotBeNull().GetAsync(url);
 
     public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
@@ -455,10 +472,10 @@ public class AcceptanceSteps : IDisposable
         watcher.Stop();
     }
 
-    public void ThenTheResponseBody([CallerMemberName] string testName = "")
-        => ThenTheResponseBodyShouldBe(testName);
-    public Task ThenTheResponseBodyAsync([CallerMemberName] string testName = "")
-        => ThenTheResponseBodyShouldBeAsync(testName);
+    public void ThenTheResponseBody([CallerMemberName] string responseBody = "")
+        => ThenTheResponseBodyShouldBe(responseBody);
+    public Task ThenTheResponseBodyAsync([CallerMemberName] string responseBody = "")
+        => ThenTheResponseBodyShouldBeAsync(responseBody);
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
         => response.ShouldNotBeNull()
@@ -486,7 +503,7 @@ public class AcceptanceSteps : IDisposable
     public void ThenTheContentLengthIs(int expected)
         => response.ShouldNotBeNull().Content.Headers.ContentLength.ShouldBe(expected);
 
-    public void ThenTheStatusCodeShouldBeOK()
+    public void ThenTheStatusCodeShouldBeOk()
         => ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     public void ThenTheStatusCodeShouldBe(HttpStatusCode expected)
         => response.ShouldNotBeNull().StatusCode.ShouldBe(expected);
