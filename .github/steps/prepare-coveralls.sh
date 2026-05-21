@@ -10,12 +10,13 @@ echo "::endgroup::"
 DOTNET_TFM="${1:-net10.0}"
 
 echo ------------ Detect coverage file ------------ 
-ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/*
-coverage_1st_folder=$(ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/TestResults*/ | head -1)
-echo "Detected first folder : $coverage_1st_folder"
+ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/*/
+coverage_folder=$(ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/TestResults*/ | head -1)
+echo "Detected first folder : $coverage_folder"
+echo TestResults files are...
+ls $coverage_folder/*
+coverage_file="${coverage_folder%/}/coverage.cobertura.*.xml"
 echo "Detecting file $coverage_file ..."
-ls $coverage_1st_folder%/coverage.*"
-coverage_file="${coverage_1st_folder%/}/coverage.cobertura.*.xml"
 if [ -f "$coverage_file" ]; then
   echo "Coverage file exists."
   echo "COVERAGE_file_exists=true" >> $GITHUB_OUTPUT
