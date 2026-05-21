@@ -8,15 +8,18 @@ echo "::endgroup::"
 # Default to "net10.0" if no argument is provided
 DOTNET_TFM="${1:-net10.0}"
 
-echo ------------ Detect coverage file ------------ 
+echo "::group::Listing $DOTNET_TFM build folder"
 ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/*/
+echo "::endgroup::"
+
 coverage_folder=$(ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/TestResults*/ | head -1)
 echo "Detected first folder : $coverage_folder"
-echo TestResults files are...
-ls $coverage_folder
-echo DONE
 
-coverage_pattern="${coverage_folder}/coverage.cobertura.*.xml"
+echo "::group::TestResults files are ..."
+ls $coverage_folder
+echo "::endgroup::"
+
+coverage_pattern="${coverage_folder%/}/coverage.cobertura.*.xml"
 # Expand the pattern to an array
 coverage_files=($coverage_pattern)
 coverage_file="${coverage_files[0]}"
