@@ -20,6 +20,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
         UpstreamHttpMethod = new();
+        ConnectionClose = false;
     }
 
     public FileRoute(FileRoute from)
@@ -31,6 +32,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
     public Dictionary<string, string> AddHeadersToRequest { get; set; }
     public Dictionary<string, string> AddQueriesToRequest { get; set; }
     public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
+    public bool ConnectionClose { get; set; }
     public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
     public List<string> DelegatingHandlers { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
@@ -68,6 +70,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         to.AddQueriesToRequest = new(from.AddQueriesToRequest);
         to.AuthenticationOptions = from.AuthenticationOptions is null ? null : new(from.AuthenticationOptions);
         to.ChangeDownstreamPathTemplate = new(from.ChangeDownstreamPathTemplate);
+        to.ConnectionClose = from.ConnectionClose;
         to.DangerousAcceptAnyServerCertificateValidator = from.DangerousAcceptAnyServerCertificateValidator;
         to.DelegatingHandlers = new(from.DelegatingHandlers);
         to.DownstreamHeaderTransform = new Dictionary<string, string>(from.DownstreamHeaderTransform);
