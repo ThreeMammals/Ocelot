@@ -2,304 +2,61 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.5, )",
-        "resolved": "10.0.5",
-        "contentHash": "vW2zhkWziyfhoSXNf42mTWyilw+vfwBGOsODDsHSFtOIY6LCgfRVUyaAilLEL4Kc1fzhaxcep5pS0VWYPSDW0w=="
-      },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg=="
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
+        "requested": "[10.0.8, )",
+        "resolved": "10.0.8",
+        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q=="
       },
       "ocelot.samples.web": {
         "type": "Project"
       }
     },
     "net8.0": {
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.5, )",
-        "resolved": "10.0.5",
-        "contentHash": "vW2zhkWziyfhoSXNf42mTWyilw+vfwBGOsODDsHSFtOIY6LCgfRVUyaAilLEL4Kc1fzhaxcep5pS0VWYPSDW0w==",
+        "requested": "[10.0.8, )",
+        "resolved": "10.0.8",
+        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q==",
         "dependencies": {
-          "System.IO.Pipelines": "10.0.5",
-          "System.Text.Encodings.Web": "10.0.5"
-        }
-      },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg=="
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
+          "System.IO.Pipelines": "10.0.8",
+          "System.Text.Encodings.Web": "10.0.8"
         }
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
-        "resolved": "10.0.5",
-        "contentHash": "8/ZHN/j2y1t+7McdCf1wXku2/c7wtrGLz3WQabIoPuLAn3bHDWT6YOJYreJq8sCMPSo6c8iVYXUdLlFGX5PEqw=="
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
+        "resolved": "10.0.8",
+        "contentHash": "STVNTIVd+UrYvSo31D2tOOTs19IThdjGDN14FS3/NZb4PWsVakAg/VT4sq+JYWGP/GtazzvXwebWL6LPBAwnFQ=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "10.0.5",
-        "contentHash": "opvD/nKTzGKA7GVntZ9L823kN6IxgHQfuxY+VI9gv8VE1Y7CSKoi/QS1EYDQiA63MqtZsD7X6zkISd2ZQJohTQ=="
+        "resolved": "10.0.8",
+        "contentHash": "HvFIJXM/CMTRu6PBQmjukQZ/O32Vx5fOEYZs0kq0OD5s9vJQ19KHLWCVmnfh3gNC7pbYomm06tzOTgJBflr/nQ=="
       },
       "ocelot.samples.web": {
         "type": "Project"
       }
     },
     "net9.0": {
-      "Steeltoe.Discovery.ClientCore": {
-        "type": "Direct",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "QsmXGfgjTPdj/GW4X51U7q1im5maOpMBe6sbuzMiqXCy890XS4j5jIFtXkNZRGzXm1IW0NuDe9+iwS7HnrRp2g==",
-        "dependencies": {
-          "Steeltoe.Discovery.ClientBase": "3.3.0"
-        }
-      },
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.5, )",
-        "resolved": "10.0.5",
-        "contentHash": "vW2zhkWziyfhoSXNf42mTWyilw+vfwBGOsODDsHSFtOIY6LCgfRVUyaAilLEL4Kc1fzhaxcep5pS0VWYPSDW0w==",
+        "requested": "[10.0.8, )",
+        "resolved": "10.0.8",
+        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q==",
         "dependencies": {
-          "System.IO.Pipelines": "10.0.5",
-          "System.Text.Encodings.Web": "10.0.5"
-        }
-      },
-      "Steeltoe.Common": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "hwTApMg/TnX1imTvGRbhth8dHe3AUWD/MxKXK0kqEE84mEPjK4IDHJiV38Mx4+mH13x6xbipeCKte+KdadaqLQ==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "System.Reflection.MetadataLoadContext": "4.6.0"
-        }
-      },
-      "Steeltoe.Common.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "86nxnq4Wd6MQFz8ZSfYwvgg8RocfmZAOGxS8sHCspB2pTkmMsqdQBhpI3yufZBYXxqt48EIXuzBqZCSAr1ggJg=="
-      },
-      "Steeltoe.Common.Http": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "KuEKWfx2yubvbVzq5c/1rTBusL/FvLXA2w93jBfi5KQn1D0F9c6R03wLgpMFM46j0KxGZF5iKxm00g/8GHETlQ==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "35thB2pyX5nY9RFFDlRwmyee/qYA5OgPr6YkhmDnjCA515VLz6uV/74CHwi4urBbmfP1LX74XnrDyZhxMYQDHg==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0",
-          "Steeltoe.Extensions.Configuration.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Connector.ConnectorBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "tMSiExMaHuI6+wmZ/XoIrnYNY1qWwqCCPTk5Zvuu9b2FbdNNNd/Awpq34r70V/2bYswxUwXRgcOAESyfRn+e+w==",
-        "dependencies": {
-          "Steeltoe.Common": "3.3.0",
-          "Steeltoe.Connector.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "4cqyNvuzPo/Obr3bkEn/d6yntSkPJa5iuaR5Htu1O70iRQU2MFa1UOLDKBl/u3G4L0FU27EHqY49GHyS+0czMA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Discovery.ClientBase": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "yZzshF4tuzD2ge4kA/drUN6MdjfafVcJen83ohrcsP6jiLaNweabPR5WTjK9dfVMyot8t2FjsLMXKcYx/NnsFw==",
-        "dependencies": {
-          "Steeltoe.Common.Http": "3.3.0",
-          "Steeltoe.Connector.ConnectorBase": "3.3.0",
-          "Steeltoe.Discovery.Abstractions": "3.3.0"
-        }
-      },
-      "Steeltoe.Extensions.Configuration.Abstractions": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "8hMFGX21iAt+OibwFMr8LKnB6zSS372cOMz4A2X4K4dDsKjISZYwaXWoEzDmxuZn6HHywsQhIhR4//2bUPhsFA==",
-        "dependencies": {
-          "Steeltoe.Common.Abstractions": "3.3.0"
+          "System.IO.Pipelines": "10.0.8",
+          "System.Text.Encodings.Web": "10.0.8"
         }
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
-        "resolved": "10.0.5",
-        "contentHash": "8/ZHN/j2y1t+7McdCf1wXku2/c7wtrGLz3WQabIoPuLAn3bHDWT6YOJYreJq8sCMPSo6c8iVYXUdLlFGX5PEqw=="
-      },
-      "System.Reflection.MetadataLoadContext": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "TezS9fEP9kzL5U6GYHZY6I/tqz6qiHKNgAzuT6JJXJXuP+wWvNLN03gPxBK2uLP0LrLg/QXEAF++lxBNBSYILA=="
+        "resolved": "10.0.8",
+        "contentHash": "STVNTIVd+UrYvSo31D2tOOTs19IThdjGDN14FS3/NZb4PWsVakAg/VT4sq+JYWGP/GtazzvXwebWL6LPBAwnFQ=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "10.0.5",
-        "contentHash": "opvD/nKTzGKA7GVntZ9L823kN6IxgHQfuxY+VI9gv8VE1Y7CSKoi/QS1EYDQiA63MqtZsD7X6zkISd2ZQJohTQ=="
+        "resolved": "10.0.8",
+        "contentHash": "HvFIJXM/CMTRu6PBQmjukQZ/O32Vx5fOEYZs0kq0OD5s9vJQ19KHLWCVmnfh3gNC7pbYomm06tzOTgJBflr/nQ=="
       },
       "ocelot.samples.web": {
         "type": "Project"

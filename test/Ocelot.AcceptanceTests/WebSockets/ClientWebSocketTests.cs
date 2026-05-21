@@ -4,6 +4,7 @@ using Ocelot.AcceptanceTests.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
+using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;

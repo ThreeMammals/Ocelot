@@ -15,6 +15,7 @@ using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.LoadBalancer;
 using Ocelot.Testing.Steps;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
@@ -570,7 +571,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
     private static readonly object K8sCounterLocker = new();
 #endif
     private RoundRobinAnalyzer _roundRobinAnalyzer;
-    private AutoResetEvent _k8sWatchResetEvent = new(false);
+    private readonly AutoResetEvent _k8sWatchResetEvent = new(false);
     private RoundRobinAnalyzer GetRoundRobinAnalyzer(DownstreamRoute route, IServiceDiscoveryProvider provider)
     {
         lock (K8sCounterLocker)

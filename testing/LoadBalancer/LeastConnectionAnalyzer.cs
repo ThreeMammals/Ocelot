@@ -5,9 +5,9 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Testing.LoadBalancer;
 
-internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
+public sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalancer
 {
     private readonly LeastConnection loadBalancer;
 
@@ -18,7 +18,7 @@ internal sealed class LeastConnectionAnalyzer : LoadBalancerAnalyzer, ILoadBalan
         loadBalancer.Leased += Me_Leased;
     }
 
-    private void Me_Leased(object sender, LeaseEventArgs args) => Events.Add(args);
+    private void Me_Leased(object? sender, LeaseEventArgs args) => Events.Add(args);
 
     public override string Type => nameof(LeastConnectionAnalyzer);
     public override Task<Response<ServiceHostAndPort>> LeaseAsync(HttpContext httpContext) => loadBalancer.LeaseAsync(httpContext);
