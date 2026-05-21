@@ -1,5 +1,5 @@
 #!/bin/bash
-# Prepare Coveralls, with 1 optional argument
+# Prepare Coveralls, with 2 optional arguments
 echo "::group::Listing environment variables"
 env | sort
 echo "::endgroup::"
@@ -8,11 +8,15 @@ echo "::endgroup::"
 # Default to "net10.0" if no argument is provided
 DOTNET_TFM="${1:-net10.0}"
 
-echo "::group::Listing $DOTNET_TFM build folder"
-ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/*/
+# Second argument: build configuration (string)
+# Default to "Debug" if no argument is provided
+BUILD_CONFIGURATION="${2:-Debug}"
+
+echo "::group::Listing $DOTNET_TFM build folder for $BUILD_CONFIGURATION configuration"
+ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
 echo "::endgroup::"
 
-coverage_folder=$(ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/TestResults*/ | head -1)
+coverage_folder=$(ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
 echo "Detected first folder : $coverage_folder"
 
 echo "::group::TestResults files are ..."

@@ -247,11 +247,11 @@ jobs:
             echo "✗ Test run failed: No 'failed: 0' found"
             exit 1
           fi
-      # - name: Acceptance Tests
-      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      - name: Acceptance Tests
+        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/prepare-coveralls.sh net10.0
+        run: ./.github/steps/prepare-coveralls.sh # net10.0 Debug
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2
