@@ -251,7 +251,7 @@ jobs:
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/prepare-coveralls.sh
+        run: ./.github/steps/prepare-coveralls.sh net10.0
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2

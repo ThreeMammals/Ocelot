@@ -4,11 +4,18 @@ echo "::group::Listing environment variables"
 env | sort
 echo "::endgroup::"
 
+# First argument: target .NET major version (digit)
+# Default to 8 if no argument is provided
+# Target major version (e.g. 10, 9, 8...)
+DOTNET_TFM="${1:-net10.0}"
+
 echo ------------ Detect coverage file ------------ 
-coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
+ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/*
+coverage_1st_folder=$(ls -d ./test/Ocelot.UnitTests/bin/Debug/$DOTNET_TFM/TestResults*/ | head -1)
 echo "Detected first folder : $coverage_1st_folder"
-coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
 echo "Detecting file $coverage_file ..."
+ls $coverage_1st_folder%/coverage.*"
+coverage_file="${coverage_1st_folder%/}/coverage.cobertura.*.xml"
 if [ -f "$coverage_file" ]; then
   echo "Coverage file exists."
   echo "COVERAGE_file_exists=true" >> $GITHUB_OUTPUT
