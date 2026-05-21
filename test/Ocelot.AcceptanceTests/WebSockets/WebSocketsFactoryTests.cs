@@ -4,30 +4,29 @@ using Ocelot.Testing.Steps;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
 
+[Trait("Feat", "212")] // https://github.com/ThreeMammals/Ocelot/issues/212
+[Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
 public sealed class WebSocketsFactoryTests : WebSocketsSteps
 {
-    [Fact]
-    [Trait("Feat", "212")]
-    [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
-    public async Task ShouldProxyWebsocketInputToDownstreamService()
+    [BddfyFact]
+    public void ShouldProxyWebsocketInputToDownstreamService()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAConfiguration(configuration);
         int ocelotPort = PortFinder.GetRandomPort();
         var ocelotUrl = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
-        await StartOcelotWithWebSockets(ocelotPort, null);
-        await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancellationToken.None);
-        await StartClient(ocelotUrl);
-        ThenTheReceivedCountIs(10);
-
-        void ThenTheReceivedCountIs(int count) => _firstRecieved.Count.ShouldBe(count);
+        this
+            .Given(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancelMe))
+            .When(_ => StartClient(ocelotUrl))
+            .Then(_ => ThenTheReceivedCountIs(10))
+        .BDDfy();
     }
+    private void ThenTheReceivedCountIs(int count) => _firstRecieved.Count.ShouldBe(count);
 
-    [Fact]
-    [Trait("Feat", "212")]
-    [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
+    [BddfyFact]
     public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
     {
         int port1 = PortFinder.GetRandomPort();
@@ -36,13 +35,14 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         route.LoadBalancerOptions = new(nameof(RoundRobin));
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
-        this.Given(_ => GivenThereIsAConfiguration(configuration))
+        this
+            .Given(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync, CancellationToken.None))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync, CancellationToken.None))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync, CancelMe))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync, CancelMe))
             .When(_ => WhenIStartTheClients(ocelotPort))
             .Then(_ => ThenBothDownstreamServicesAreCalled())
-            .BDDfy();
+        .BDDfy();
     }
 
     private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()

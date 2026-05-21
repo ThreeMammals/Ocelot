@@ -2,44 +2,38 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ocelot.AcceptanceTests;
 
-public sealed class CancelRequestTests : Steps, IDisposable
+/// <summary>
+/// TODO This test must be moved to another feat namespace, probably to Requester or to Routing...
+/// </summary>
+public sealed class CancelRequestTests : Steps
 {
-    public CancelRequestTests()
+    [BddfyFact]
+    [Trait("Bug", "893")] // https://github.com/ThreeMammals/Ocelot/issues/893
+    [Trait("PR", "1367")] // https://github.com/ThreeMammals/Ocelot/pull/1367
+    public void ShouldAbortServiceWorkWhenCancellingTheRequest()
     {
-    }
-
-    [Fact]
-    public async Task ShouldAbortServiceWork_WhenCancellingTheRequest()
-    {
-        // Arrange
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         var started = new Notifier("service work started notifier");
         var stopped = new Notifier("service work finished notifier");
-        GivenThereIsAServiceRunningOn(DownstreamUrl(port), started, stopped);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(port), started, stopped))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIAmGettingUrlAndWaitingForNotification(started))
+            .Then(x => _ex.ShouldNotBeNull(null).ShouldBeOfType<TaskCanceledException>(null))
+            .And(x => started.NotificationSent.ShouldBeTrue(null))
+            .And(x => stopped.NotificationSent.ShouldBeFalse(null))
+        .BDDfy();
+    }
 
-        // Act: Initialize
-        var getting = WhenIGetUrl("/");
+    private Exception _ex;
+    private async Task WhenIAmGettingUrlAndWaitingForNotification(Notifier started)
+    {
+        var getting = WhenImGettingUrlOnTheApiGateway("/");
         var canceling = WhenIWaitForNotification(started).ContinueWith(Cancel);
-        Exception ex = null;
-
-        // Act
-        try
-        {
-            await Task.WhenAll(getting, canceling);
-        }
-        catch (Exception e)
-        {
-            ex = e;
-        }
-
-        // Assert
-        started.NotificationSent.ShouldBeTrue();
-        stopped.NotificationSent.ShouldBeFalse();
-        ex.ShouldNotBeNull().ShouldBeOfType<TaskCanceledException>();
+        _ex = await Task.WhenAll(getting, canceling).ShouldThrowAsync<TaskCanceledException>();
     }
 
     private Task Cancel(Task t) => Task.Run(ocelotClient.CancelPendingRequests);

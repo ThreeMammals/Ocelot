@@ -12,12 +12,12 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
 {
-    [Fact]
+    [BddfyFact]
     public void Should_return_200_OK_and_forward_claim_as_header()
     {
         var port = PortFinder.GetRandomPort();
-        string[] allowedScopes = ["openid", "offline_access", "api"];
-        var route = GivenAuthRoute(port, scopes: allowedScopes);
+        string[] scopes = ["openid", "offline_access", "api"];
+        var route = GivenAuthRoute(port, scopes: scopes);
         route.AddHeadersToRequest = new()
         {
             { "CustomerId", "Claims[CustomerId] > value" },
@@ -32,7 +32,8 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             { "LocationId", "222" },
         };
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
@@ -40,10 +41,10 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
             .And(x => ThenTheResponseHeaderIs("RequestHeaders", "CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_header UserId:1234567890"))
-            .BDDfy();
+        .BDDfy();
     }
 
     private const string UserId = "1234567890";

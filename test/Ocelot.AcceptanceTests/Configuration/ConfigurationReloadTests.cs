@@ -32,14 +32,15 @@ public sealed class ConfigurationReloadTests : Steps
         };
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_reload_config_on_change()
     {
-        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+        this
+            .Given(x => GivenThereIsAConfiguration(_initialConfig))
             .And(x => GivenOcelotIsRunningReloadingConfig(true))
             .And(x => GivenThereIsAConfiguration(_anotherConfig))
             .And(x => ThenConfigShouldBeWithTimeout(_anotherConfig, 10000))
-            .BDDfy();
+        .BDDfy();
     }
 
     private async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
@@ -55,15 +56,16 @@ public sealed class ConfigurationReloadTests : Steps
         result.ShouldBe(true);
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_reload_config_on_change()
     {
-        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+        this
+            .Given(x => GivenThereIsAConfiguration(_initialConfig))
             .And(x => GivenOcelotIsRunningReloadingConfig(false))
             .And(x => GivenThereIsAConfiguration(_anotherConfig))
-            .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
+            .And(x => GivenIWait(MillisecondsToWaitForChangeToken))
             .And(x => ThenConfigShouldBe(_initialConfig))
-            .BDDfy();
+        .BDDfy();
     }
 
     private async Task ThenConfigShouldBe(FileConfiguration fileConfig)
@@ -75,29 +77,31 @@ public sealed class ConfigurationReloadTests : Steps
         internalConfig.RequestId.ShouldBe(config.Data.RequestId);
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_trigger_change_token_on_change()
     {
-        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+        this
+            .Given(x => GivenThereIsAConfiguration(_initialConfig))
             .And(x => GivenOcelotIsRunningReloadingConfig(true))
             .And(x => GivenIHaveAChangeToken())
             .And(x => GivenThereIsAConfiguration(_anotherConfig))
-            .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
+            .And(x => GivenIWait(MillisecondsToWaitForChangeToken))
             .Then(x => TheChangeTokenShouldBeActive(true))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_trigger_change_token_with_no_change()
     {
-        this.Given(x => GivenThereIsAConfiguration(_initialConfig))
+        this
+            .Given(x => GivenThereIsAConfiguration(_initialConfig))
             .And(x => GivenOcelotIsRunningReloadingConfig(false))
             .And(x => GivenIHaveAChangeToken())
-            .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
+            .And(x => GivenIWait(MillisecondsToWaitForChangeToken)) // Wait for prior activation to expire.
             .And(x => GivenThereIsAConfiguration(_anotherConfig))
-            .And(x => Steps.GivenIWait(MillisecondsToWaitForChangeToken))
+            .And(x => GivenIWait(MillisecondsToWaitForChangeToken))
             .Then(x => TheChangeTokenShouldBeActive(false))
-            .BDDfy();
+        .BDDfy();
     }
 
     private const int MillisecondsToWaitForChangeToken = (int)(OcelotConfigurationChangeToken.PollingIntervalSeconds * 1000) - 100;

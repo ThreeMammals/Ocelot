@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Serilog;
@@ -47,31 +44,12 @@ public sealed class LogLevelTests : Steps
     private void TestFactory(string[] notAllowedMessageTypes, string[] allowedMessageTypes, LogLevel level)
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    RequestIdKey = "Oc-RequestId",
-                },
-            },
-        };
-
+        var route = GivenRoute(port);
+        route.RequestIdKey = "Oc-RequestId";
+        var configuration = GivenConfiguration(route);
         using var logger = GetLogger(level);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -80,7 +58,7 @@ public sealed class LogLevelTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => logger.Dispose())
             .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
-            .BDDfy();
+        .BDDfy();
     }
 
     private Task<int> GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
@@ -109,32 +87,32 @@ public sealed class LogLevelTests : Steps
             host => host.ConfigureLogging(l => l.ClearProviders().AddSerilog(logger)),
             null, null);
 
-    [Fact]
+    [BddfyFact]
     public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(
         [ "TRACE", "INFORMATION", "WARNING", "ERROR" ],
         [ "CRITICAL" ], LogLevel.Critical);
 
-    [Fact]
+    [BddfyFact]
     public void If_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(
         [ "TRACE", "INFORMATION", "WARNING", "DEBUG" ],
         [ "CRITICAL", "ERROR" ], LogLevel.Error);
 
-    [Fact]
+    [BddfyFact]
     public void If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(
         [ "TRACE", "INFORMATION", "DEBUG" ],
         [ "CRITICAL", "ERROR", "WARNING" ], LogLevel.Warning);
     
-    [Fact]
+    [BddfyFact]
     public void If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(
         [ "TRACE", "DEBUG" ],
         [ "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Information);
 
-    [Fact]
+    [BddfyFact]
     public void If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(
         [ "TRACE" ],
         [ "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Debug);
 
-    [Fact]  
+    [BddfyFact]  
     public void If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(
         [],
         [ "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Trace);

@@ -5,119 +5,121 @@ namespace Ocelot.AcceptanceTests.Security;
 
 public sealed class SecurityOptionsTests: Steps
 {
-    public SecurityOptionsTests()
-    {
-    }
-
-    [Fact]
-    [Trait("Feat", "2170")]
+    [BddfyFact]
+    [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_call_with_allowed_ip_in_global_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.35")[0];
-        var route = GivenRoute(port, "/myPath", "/worldPath");
+        var route = GivenRoute(port, "/worldPath", "/myPath");
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK));
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "2170")]
+    [BddfyFact]
+    [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_block_call_with_blocked_ip_in_global_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.55")[0];
-        var route = GivenRoute(port, "/myPath", "/worldPath");
+        var route = GivenRoute(port, "/worldPath", "/myPath");
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized));
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_call_with_allowed_ip_in_route_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.1")[0];
-        var securityConfig = new FileSecurityOptions
+        var route = GivenRoute(port, "/worldPath", "/myPath");
+        route.SecurityOptions = new()
         {
-            IPAllowedList = new() { "192.168.1.1" },
+            IPAllowedList = [ "192.168.1.1" ],
         };
-        var route = GivenRoute(port, "/myPath", "/worldPath", securityConfig);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK));
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_block_call_with_blocked_ip_in_route_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.1")[0];
-        var securityConfig = new FileSecurityOptions
+        var route = GivenRoute(port, "/worldPath", "/myPath");
+        route.SecurityOptions = new()
         {
-            IPBlockedList = new() { "192.168.1.1" },
+            IPBlockedList = [ "192.168.1.1" ],
         };
-        var route = GivenRoute(port, "/myPath", "/worldPath", securityConfig);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized));
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "2170")]
+    [BddfyFact]
+    [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.55")[0];
-        var securityConfig = new FileSecurityOptions
+        var route = GivenRoute(port, "/worldPath", "/myPath");
+        route.SecurityOptions = new()
         {
-            IPAllowedList = new() { "192.168.1.55" },
+            IPAllowedList = [ "192.168.1.55" ],
         };
-        var route = GivenRoute(port, "/myPath", "/worldPath", securityConfig);
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
-           .And(x => GivenThereIsAConfiguration(configuration))
-           .And(x => GivenOcelotIsRunning())
-           .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-           .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-           .Then(x => ThenTheResponseBodyShouldBe("Hello from Fabrizio"));
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .Then(x => ThenTheResponseBodyShouldBe("Hello from Fabrizio"))
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "2170")]
+    [BddfyFact]
+    [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
     {
         var port = PortFinder.GetRandomPort();
         var ip = Dns.GetHostAddresses("192.168.1.35")[0];
-        var securityConfig = new FileSecurityOptions
+        var route = GivenRoute(port, "/worldPath", "/myPath");
+        route.SecurityOptions = new()
         {
-            IPBlockedList = new() { "192.168.1.35" },
+            IPBlockedList = [ "192.168.1.35" ],
         };
-        var route = GivenRoute(port, "/myPath", "/worldPath", securityConfig);
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
-           .And(x => GivenThereIsAConfiguration(configuration))
-           .And(x => GivenOcelotIsRunning())
-           .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-           .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized));
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, ip))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+        .BDDfy();
     }
 
     private void GivenThereIsAServiceRunningOn(int port, IPAddress ipAddess)
@@ -133,7 +135,7 @@ public sealed class SecurityOptionsTests: Steps
     private FileConfiguration GivenGlobalConfiguration(FileRoute route, string allowed, string blocked, bool exclude = true)
     {
         var config = GivenConfiguration(route);
-        config.GlobalConfiguration.SecurityOptions = new FileSecurityOptions
+        config.GlobalConfiguration.SecurityOptions = new()
         {
             IPAllowedList = new() { allowed },
             IPBlockedList = new() { blocked },
@@ -141,12 +143,4 @@ public sealed class SecurityOptionsTests: Steps
         };
         return config;
     }
-
-    private static FileRoute GivenRoute(int port, string downstream, string upstream, FileSecurityOptions fileSecurityOptions = null) => new()
-    {
-        DownstreamPathTemplate = downstream,
-        UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = [HttpMethods.Get],
-        SecurityOptions = fileSecurityOptions ?? new(),
-    };
 }

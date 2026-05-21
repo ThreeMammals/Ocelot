@@ -53,7 +53,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// Act: Make single GetAsync() call
     /// Assert: Handler counter should be 1 (cold start poll)
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario1")]
     [Trait("Feature", "PollingBehavior")]
     public async Task Scenario_1_SingleCallAfterStart_HandlerCalledOnce()
@@ -89,7 +89,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// Multiple parallel calls should return the same queued service version without triggering additional polls.
     /// All three calls occur before the next polling interval elapses.
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario2")]
     [Trait("Feature", "ParallelCalls")]
     public async Task Scenario_2_ThreeParallelCallsWithinFirstInterval_HandlerCalledOnce()
@@ -140,7 +140,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// Second polling interval: handler is called again, returns version 2
     /// Then multiple calls return version 2
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario3")]
     [Trait("Feature", "PollingIntervals")]
     public async Task Scenario_3_FirstIntervalThenSecondPollingWithNewVersion_HandlerCalledTwice()
@@ -200,7 +200,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// 
     /// This tests that polling happens at regular intervals and each poll increments the counter.
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario4")]
     [Trait("Feature", "RegularPolling")]
     public async Task Scenario_4_MultipleCallsEachIntervalNewVersionEachPolling_CounterIncreasedByOne()
@@ -265,7 +265,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// Even with 1000 concurrent calls, the handler should be called exactly twice
     /// (once for cold start, once for 2nd polling interval).
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario5")]
     [Trait("Feature", "HeavyLoad")]
     [Trait("Performance", "Stress")]
@@ -327,7 +327,7 @@ public class PollKubeConcurrencyIntegrationTests : Steps
     /// Even under heavy load with 1000+ concurrent calls, all responses should be identical
     /// until the polling interval updates the services.
     /// </summary>
-    [Fact(Skip = "Under development")]
+    [BddfyFact(Skip = "Under development")]
     [Trait("Concurrency", "Scenario5Extended")]
     [Trait("Feature", "ConsistencyUnderLoad")]
     public async Task Scenario_5b_HeavyLoadAllResponsesConsistent_NoPartialUpdates()

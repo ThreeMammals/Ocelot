@@ -13,17 +13,19 @@ public sealed class ThreadSafeHeadersTests : Steps
         _results = new();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
-        GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300);
-        ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, null))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, null))
+            .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
+        .BDDfy();
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))

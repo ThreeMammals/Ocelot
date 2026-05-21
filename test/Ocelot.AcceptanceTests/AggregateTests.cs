@@ -28,193 +28,59 @@ public sealed class AggregateTests : Steps
         _downstreamPaths = new string[3];
     }
 
-    [Fact]
-    [Trait("Issue", "597")]
+    [BddfyFact]
+    [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
     public void Should_fix_issue_597()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
+        var route1 = GivenAggRoute(port, "key1", "/key1data/{userid}", "/api/values?MailId={userid}");
+        var route2 = GivenAggRoute(port, "key2", "/key2data/{userid}", "/api/values?MailId={userid}");
+        var route3 = GivenAggRoute(port, "key3", "/key3data/{userid}", "/api/values?MailId={userid}");
+        var route4 = GivenAggRoute(port, "key4", "/key4data/{userid}", "/api/values?MailId={userid}");
+        var configuration = GivenConfiguration(route1, route2, route3, route4);
+        configuration.Aggregates[0].UpstreamPathTemplate = "/EmpDetail/IN/{userid}";
+        configuration.Aggregates[0].UpstreamHost = null;
+        configuration.Aggregates.Add(new()
         {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/api/values?MailId={userid}",
-                    UpstreamPathTemplate = "/key1data/{userid}",
-                    UpstreamHttpMethod = ["Get"],
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    Key = "key1",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/api/values?MailId={userid}",
-                    UpstreamPathTemplate = "/key2data/{userid}",
-                    UpstreamHttpMethod = ["Get"],
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    Key = "key2",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/api/values?MailId={userid}",
-                    UpstreamPathTemplate = "/key3data/{userid}",
-                    UpstreamHttpMethod = ["Get"],
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    Key = "key3",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/api/values?MailId={userid}",
-                    UpstreamPathTemplate = "/key4data/{userid}",
-                    UpstreamHttpMethod = ["Get"],
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    Key = "key4",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    RouteKeys = ["key1", "key2", "key3", "key4"],
-                    UpstreamPathTemplate = "/EmpDetail/IN/{userid}",
-                },
-                new FileAggregateRoute
-                {
-                    RouteKeys = ["key1", "key2"],
-                    UpstreamPathTemplate = "/EmpDetail/US/{userid}",
-                },
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                RequestIdKey = "CorrelationID",
-            },
-        };
-
+            RouteKeys = ["key1", "key2"],
+            UpstreamPathTemplate = "/EmpDetail/US/{userid}",
+        });
+        configuration.GlobalConfiguration.RequestIdKey = "CorrelationID";
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-        this.Given(x => x.GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
+        this
+            .Given(x => x.GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
+    [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
     public void Should_return_response_200_with_advanced_aggregate_configs()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var port3 = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
+        var route1 = GivenAggRoute(port1, "Comments", "/Comments", "/");
+        var route2 = GivenAggRoute(port2, "UserDetails", "/UserDetails/{userId}", "/users/{userId}");
+        var route3 = GivenAggRoute(port3, "PostDetails", "/PostDetails/{postId}", "/posts/{postId}");
+        var configuration = GivenConfiguration(route1, route2, route3);
+        configuration.Aggregates[0].RouteKeysConfig = new()
         {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port1,
-                        },
-                    },
-                    UpstreamPathTemplate = "/Comments",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Comments",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/users/{userId}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port2,
-                        },
-                    },
-                    UpstreamPathTemplate = "/UserDetails/{userId}",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "UserDetails",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/posts/{postId}",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port3,
-                        },
-                    },
-                    UpstreamPathTemplate = "/PostDetails/{postId}",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "PostDetails",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = ["Comments", "UserDetails", "PostDetails"],
-                    RouteKeysConfig = new()
-                    {
-                        new AggregateRouteConfig
-                            { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-                        new AggregateRouteConfig
-                            { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
-                    },
-                },
-            },
+            new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
+            new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
         };
-
         var userDetailsResponseContent = @"{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""}";
         var postDetailsResponseContent = @"{""id"":1,""title"":""post1""}";
         var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
 
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
             .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -222,87 +88,44 @@ public sealed class AggregateTests : Steps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
+    [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
     public void Should_return_response_200_with_simple_url_user_defined_aggregate()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port1,
-                        },
-                    },
-                    UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Laura",
-                },
-
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port2,
-                        },
-                    },
-                    UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Tom",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = ["Laura", "Tom"],
-                    Aggregator = "FakeDefinedAggregator",
-                },
-            },
-        };
-
-        var expected = "Bye from Laura, Bye from Tom";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        configuration.Aggregates[0].Aggregator = nameof(FakeDefinedAggregator);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
+            .And(x => ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/laura", "Laura");
-        var route2 = GivenRoute(port2, "/tom", "Tom");
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
@@ -310,201 +133,71 @@ public sealed class AggregateTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url_one_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port1,
-                        },
-                    },
-                    UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Laura",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port2,
-                        },
-                    },
-                    UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Tom",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = ["Laura", "Tom"],
-                },
-            },
-        };
-
-        var expected = "{\"Laura\":,\"Tom\":{Hello from Tom}}";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
+            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url_both_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port1,
-                        },
-                    },
-                    UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Laura",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port2,
-                        },
-                    },
-                    UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Tom",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = ["Laura", "Tom"],
-                },
-            },
-        };
-
-        var expected = "{\"Laura\":,\"Tom\":}";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
+            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_be_thread_safe()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new()
-            {
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port1,
-                        },
-                    },
-                    UpstreamPathTemplate = "/laura",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Laura",
-                },
-                new FileRoute
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamScheme = "http",
-                    DownstreamHostAndPorts = new()
-                    {
-                        new FileHostAndPort
-                        {
-                            Host = "localhost",
-                            Port = port2,
-                        },
-                    },
-                    UpstreamPathTemplate = "/tom",
-                    UpstreamHttpMethod = ["Get"],
-                    Key = "Tom",
-                },
-            },
-            Aggregates = new()
-            {
-                new FileAggregateRoute
-                {
-                    UpstreamPathTemplate = "/",
-                    UpstreamHost = "localhost",
-                    RouteKeys = ["Laura", "Tom"],
-                },
-            },
-        };
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
             .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-            .BDDfy();
+        .BDDfy();
     }
 
     private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
@@ -549,10 +242,11 @@ public sealed class AggregateTests : Steps
         content.ShouldBe(expectedBody);
     }
 
-    //[Fact]
-    //[Trait("Bug", "1396")]
-    //public void Should_return_response_200_with_user_forwarding()
-    //{
+    [BddfyFact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
+    [Trait("Bug", "1396")] // https://github.com/ThreeMammals/Ocelot/issues/1396
+    [Trait("PR", "1462")] // https://github.com/ThreeMammals/Ocelot/pull/1462
+    public void Should_return_response_200_with_user_forwarding()
+    {
     //    var port1 = PortFinder.GetRandomPort();
     //    var port2 = PortFinder.GetRandomPort();
     //    var port3 = PortFinder.GetRandomPort();
@@ -618,7 +312,7 @@ public sealed class AggregateTests : Steps
     //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
     //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
     //            .BDDfy();
-    //    }
+    }
 
     //    // Assert
     //    for (var i = 0; i < actualContexts.Length; i++)
@@ -631,74 +325,67 @@ public sealed class AggregateTests : Steps
     //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
     //    }
     //}
-    [Fact]
-    [Trait("Bug", "2039")]
+
+    #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
+    [BddfyFact]
+    [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
     public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
-        var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+        var route1 = GivenAggRoute(port1, "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(port2, "Service2", "/Service2", "/Sub2");
         var configuration = GivenConfiguration(route1, route2);
         var requestBody = @"{""id"":1,""response"":""fromBody-#REPLACESTRING#""}";
         var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
         var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "2039")]
+    [BddfyFact]
+    [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
     public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, "/Service1", "Service1", "/Sub1");
-        var route2 = GivenRoute(port2, "/Service2", "Service2", "/Sub2");
+        var route1 = GivenAggRoute(port1, "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(port2, "Service2", "/Service2", "/Sub2");
         var configuration = GivenConfiguration(route1, route2);
-
         var formValues = new[]
         {
             new KeyValuePair<string, string>("param1", "value1"),
             new KeyValuePair<string, string>("param2", "from-form-REPLACESTRING"),
         };
-
         var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
         var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-
-        this.Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
             .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
     private static string FormatFormCollection(IFormCollection reqForm)
-    {
-        var sb = new StringBuilder()
-            .Append('"');
-
-        foreach (var kvp in reqForm)
-        {
-            sb.Append($"[{kvp.Key}:{kvp.Value}]");
-        }
-
-        return sb
+        => new StringBuilder()
+            .Append('"')
+            .AppendJoin(string.Empty, reqForm.Select(x => $"[{x.Key}:{x.Value}]"))
             .Append('"')
             .ToString();
-    }
+    #endregion PR 2050 
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
     {
@@ -771,40 +458,31 @@ public sealed class AggregateTests : Steps
         _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
     }
 
-    private static FileRoute GivenRoute(int port, string upstream, string key, string downstream = null) => new()
+    private FileRoute GivenAggRoute(int port, string key, string upstream = null, string downstream = null)
     {
-        DownstreamPathTemplate = downstream ?? "/",
-        DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = new() { new("localhost", port) },
-        UpstreamPathTemplate = upstream,
-        UpstreamHttpMethod = [HttpMethods.Get],
-        Key = key,
-    };
+        var r = GivenRoute(port, upstream, downstream);
+        r.Key = key;
+        return r;
+    }
 
     public override FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
         var conf = base.GivenConfiguration(routes);
-        conf.Aggregates.Add(
-            new()
+        conf.Aggregates.Add(new()
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
                 RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
-            }
-        );
+            });
         return conf;
     }
 }
 
-public class FakeDep
-{
-}
+public class FakeDep { }
 
 public class FakeDefinedAggregator : IDefinedAggregator
 {
-    public FakeDefinedAggregator(FakeDep dep)
-    {
-    }
+    public FakeDefinedAggregator(FakeDep dep) { }
 
     public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
     {

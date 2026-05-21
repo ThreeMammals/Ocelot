@@ -4,17 +4,13 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.AcceptanceTests.Routing;
 
-[Trait("PR", "1312")]
-[Trait("Feat", "360")]
+[Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
+[Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360
 public sealed class RoutingBasedOnHeadersTests : Steps
 {
     private string _downstreamPath;
 
-    public RoutingBasedOnHeadersTests()
-    {
-    }
-
-    [Fact]
+    [BddfyFact]
     public void Should_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -25,18 +21,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_one_header_value_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -47,8 +43,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader("other", "otherValue"))
@@ -56,10 +52,10 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_two_header_values_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -73,8 +69,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
@@ -83,10 +79,10 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -98,17 +94,17 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, anotherHeaderValue))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_match_one_header_value_when_no_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -119,16 +115,16 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_match_two_header_values_when_one_different()
     {
         var port = PortFinder.GetRandomPort();
@@ -142,8 +138,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
@@ -151,10 +147,10 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             .And(x => GivenIAddAHeader(headerName2, "anothervalue"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_match_two_header_values_when_one_not_existing()
     {
         var port = PortFinder.GetRandomPort();
@@ -168,18 +164,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName1, headerValue1))
             .And(x => GivenIAddAHeader("other", "otherValue"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_not_match_one_header_value_when_header_duplicated()
     {
         var port = PortFinder.GetRandomPort();
@@ -190,18 +186,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
             .And(x => GivenIAddAHeader(headerName, "othervalue"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_aggregated_route_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -216,18 +212,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         });
         var configuration = GivenConfiguration(routeA, routeB);
         configuration.Aggregates.Add(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
             .And(x => GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_aggregated_route_not_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -242,17 +238,17 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         });
         var configuration = GivenConfiguration(routeA, routeB);
         configuration.Aggregates.Add(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
             .And(x => x.GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_header_placeholder()
     {
         var port = PortFinder.GetRandomPort();
@@ -263,18 +259,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "{header:code}",
             });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/api.internal-uk/products", HttpStatusCode.OK, Hello("UK")))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/api.internal-uk/products", HttpStatusCode.OK, Hello("UK")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "uk"))
             .When(x => WhenIGetUrlOnTheApiGateway("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello("UK")))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_header_placeholder_not_in_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
@@ -285,18 +281,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "product-{header:everything}",
             });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-info", HttpStatusCode.OK, Hello("products")))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-info", HttpStatusCode.OK, Hello("products")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "product-Camera"))
             .When(x => WhenIGetUrlOnTheApiGateway("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello("products")))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_distinguish_route_for_different_roles()
     {
         var port = PortFinder.GetRandomPort();
@@ -308,18 +304,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             });
         var route2 = GivenRouteWithUpstreamHeaderTemplates(port, "/products", "/products", null);
         var configuration = GivenConfiguration(route, route2);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-admin", HttpStatusCode.OK, Hello("products admin")))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-admin", HttpStatusCode.OK, Hello("products admin")))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "admin.xxx.com"))
             .When(x => WhenIGetUrlOnTheApiGateway("/products"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello("products admin")))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_header_and_url_placeholders()
     {
         var port = PortFinder.GetRandomPort();
@@ -330,18 +326,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "start_{header:country_code}_version_{header:version}_end",
             });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/pl/v1/bb", HttpStatusCode.OK, Hello()))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/pl/v1/bb", HttpStatusCode.OK, Hello()))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "start_pl_version_v1_end"))
             .When(x => WhenIGetUrlOnTheApiGateway("/bb"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_header_with_braces()
     {
         var port = PortFinder.GetRandomPort();
@@ -352,18 +348,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "my_{header}",
             });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/aa", HttpStatusCode.OK, Hello()))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/aa", HttpStatusCode.OK, Hello()))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, "my_{header}"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_match_two_headers_with_the_same_name()
     {
         var port = PortFinder.GetRandomPort();
@@ -377,8 +373,8 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = multipleValues.ToString(), // headerValue1 + ";{header:whatever}",
             });
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue1))
@@ -386,7 +382,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))
-            .BDDfy();
+        .BDDfy();
     }
 
     private static string Hello() => Hello("Jolanta");

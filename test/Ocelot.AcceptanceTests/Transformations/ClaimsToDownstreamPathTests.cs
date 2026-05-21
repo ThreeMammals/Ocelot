@@ -12,7 +12,7 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
 {
-    [Fact]
+    [BddfyFact]
     public void Should_return_200_OK_and_change_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
@@ -26,7 +26,8 @@ public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
         };
         var configuration = GivenConfiguration(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))
@@ -34,10 +35,10 @@ public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
             .And(x => GivenIHaveAToken(testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/users"))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Victor"))
             .And(x => ThenTheDownstreamPathIs("/users/1234567890"))
-            .BDDfy();
+        .BDDfy();
     }
 
     private const string UserId = "1234567890";

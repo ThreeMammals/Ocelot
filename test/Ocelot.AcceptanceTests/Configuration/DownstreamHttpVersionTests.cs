@@ -6,42 +6,42 @@ using System.Security.Authentication;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
-[Trait("PR", "1127")]
-[Trait("Feat", "1124")]
+[Trait("PR", "1127")] // https://github.com/ThreeMammals/Ocelot/pull/1127
+[Trait("Feat", "1124")] // https://github.com/ThreeMammals/Ocelot/issues/1124
 public sealed class DownstreamHttpVersionTests : Steps
 {
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_200_when_using_http_one()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttp, HttpVersion.Version10);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_200_when_using_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttp, HttpVersion.Version11);
         route.DangerousAcceptAnyServerCertificateValidator = true;
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_200_when_using_http_two_point_zero()
     {
         var port = PortFinder.GetRandomPort();
@@ -51,17 +51,17 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-
-        this.Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2))
+        this
+            .Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
     {
         var port = PortFinder.GetRandomPort();
@@ -71,17 +71,17 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-            .BDDfy();
+        .BDDfy();
     }
 
     //TODO: does this test make any sense?
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
@@ -91,14 +91,14 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(_ => ThenTheResponseBodyShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
     private FileRoute GivenRoute(int port, string scheme, Version httpVersion) => new()

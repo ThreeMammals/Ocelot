@@ -48,7 +48,7 @@
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
+    <PackageReference Include="TestStack.BDDfy.Xunit" Version="3.0.0" /><!-- TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
     <!-- Microsoft -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.8" />

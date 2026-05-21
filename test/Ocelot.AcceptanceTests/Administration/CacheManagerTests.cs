@@ -16,7 +16,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
     public CacheManagerTests() : base()
     { }
 
-    [Fact(
+    [BddfyFact(
         DisplayName = "TODO " + nameof(ShouldClearCacheRegionViaAdministrationAPI),
         Skip = "TODO: Requires redevelopment after deprecation of Ocelot.Administration.IdentityServer4 package.")]
     public async Task ShouldClearCacheRegionViaAdministrationAPI()
@@ -51,7 +51,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
         GivenIHaveAddedATokenToMyRequest(token);
 
         //await WhenIGetUrlOnTheApiGateway("/");
-        //ThenTheStatusCodeShouldBeOK(); // currently HttpStatusCode.BadGateway
+        //ThenTheStatusCodeShouldBeOk(); // currently HttpStatusCode.BadGateway
         response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}", CancelMe);
         ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent); // currently HttpStatusCode.Unauthorized
     }

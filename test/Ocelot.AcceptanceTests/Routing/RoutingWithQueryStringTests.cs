@@ -4,11 +4,7 @@ namespace Ocelot.AcceptanceTests.Routing;
 
 public sealed class RoutingWithQueryStringTests : Steps
 {
-    public RoutingWithQueryStringTests()
-    {
-    }
-
-    [Fact]
+    [BddfyFact]
     public void Should_return_response_200_with_query_string_template()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -18,8 +14,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/{unitId}/updates",
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/{unitId}/updates"))
@@ -27,11 +23,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/subscriptions/{subscriptionId}/updates"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?unitId={unitId}"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Theory]
-    [Trait("Bug", "952")]
+    [BddfyTheory]
+    [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     [InlineData("")]
     [InlineData("&x=xxx")]
     public void Should_return_200_with_query_string_template_different_keys(string additionalParams)
@@ -43,8 +39,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/units/{subscriptionId}/updates?unit={unit}",
             "/api/subscriptions/{subscriptionId}/updates?unitId={unit}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/subscriptions/{subscriptionId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/units/{subscriptionId}/updates?unit={unitId}{additionalParams}"))
@@ -52,11 +48,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/subscriptions/{subscriptionId}/updates"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?unitId={unitId}{additionalParams}"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "952")]
+    [BddfyFact]
+    [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names()
     {
         const string userId = "webley";
@@ -65,8 +61,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/users?userId={userId}",
             "/persons?personId={userId}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userId}"))
@@ -74,11 +70,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={userId}"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "952")]
+    [BddfyFact]
+    [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
     {
         const string uid = "webley";
@@ -87,8 +83,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/users?userId={uid}",
             "/persons?personId={uid}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={uid}"))
@@ -96,11 +92,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={uid}&userId={uid}"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Bug", "952")]
+    [BddfyFact]
+    [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ_case_sensitive()
     {
         const string userid = "webley";
@@ -109,8 +105,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/users?userId={userid}",
             "/persons?personId={userid}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/persons", "Hello from @webley"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/users?userId={userid}"))
@@ -118,10 +114,10 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from @webley"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/persons"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?personId={userid}&userId={userid}"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Theory]
+    [BddfyTheory]
     [Trait("Bug", "1174")] // https://github.com/ThreeMammals/Ocelot/issues/1174
     [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "?projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
     [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "?$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00%3A00%3A00z%20and%20DateOfSale%20le%202020-03-15T00%3A00%3A00z")]
@@ -132,8 +128,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/contracts?{everythingelse}",
             "/api/contracts?{everythingelse}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", "Hello from @sunilk3"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/contracts", "Hello from @sunilk3"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/contracts?{everythingelse}"))
@@ -141,10 +137,10 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from @sunilk3"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/api/contracts"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe(expected))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     [Trait("Bug", "548")] // https://github.com/ThreeMammals/Ocelot/issues/548
     [Trait("Commit", "00a6000")] // https://github.com/ThreeMammals/Ocelot/commit/00a600064deea0877058d04e6189d7e0278c99a5
     [Trait("Release", "10.0.4")]
@@ -155,8 +151,8 @@ public sealed class RoutingWithQueryStringTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/odata/customers", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/odata/customers?$filter=Name eq 'Sam' "))
@@ -164,11 +160,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/odata/customers"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?$filter=Name%20eq%20%27Sam%27"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "467")]
+    [BddfyFact]
+    [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_200_with_query_string_upstream_template()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -178,8 +174,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}"))
@@ -187,11 +183,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/units/{subscriptionId}/{unitId}/updates"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe(string.Empty))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "467")]
+    [BddfyFact]
+    [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_404_with_query_string_upstream_template_no_query_string()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -201,17 +197,17 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "467")]
+    [BddfyFact]
+    [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_404_with_query_string_upstream_template_different_query_string()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -221,17 +217,17 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?test=1"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "467")]
+    [BddfyFact]
+    [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_200_with_query_string_upstream_template_multiple_params()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -241,8 +237,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/api/subscriptions/{subscriptionId}/updates?unitId={unitId}",
             "/api/units/{subscriptionId}/{unitId}/updates");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/api/units/{subscriptionId}/{unitId}/updates", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/api/subscriptions/{subscriptionId}/updates?unitId={unitId}&productId=1"))
@@ -250,10 +246,10 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/api/units/{subscriptionId}/{unitId}/updates"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe("?productId=1"))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Fact]
+    [BddfyFact]
     [Trait("Bug", "2002")] // https://github.com/ThreeMammals/Ocelot/issues/2002
     [Trait("Commit", "a034e8c")] // https://github.com/ThreeMammals/Ocelot/commit/a034e8c1e3fc23a086ad10000c85615b9696a43e
     [Trait("Release", "23.3.0")]
@@ -268,8 +264,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             "/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}",
             "/account/{username}/groups/{groupName}/roles?roleId={roleid}&{everything}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/account/{username}/groups/{groupName}/roles", "Hello from Béchir"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/account/{username}/groups/{groupName}/roles", "Hello from Béchir"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/WeatherForecast/{roleid}/groups?username={username}&groupName={groupName}&{everything}"))
@@ -277,14 +273,14 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Béchir"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/account/{username}/groups/{groupName}/roles"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?roleId={roleid}&{everything}"))
-            .BDDfy();
+        .BDDfy();
     }
 
     /// <summary>
     /// To reproduce 1288: query string should contain the placeholder name and value.
     /// </summary>
-    [Fact]
-    [Trait("Bug", "1288")]
+    [BddfyFact]
+    [Trait("Bug", "1288")] // https://github.com/ThreeMammals/Ocelot/issues/1288
     public void Should_copy_query_string_to_downstream_path()
     {
         var idName = "id";
@@ -296,8 +292,8 @@ public sealed class RoutingWithQueryStringTests : Steps
             $"/safe/{{{idName}}}",
             $"/cpx/t1/{{{idName}}}");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, $"/cpx/t1/{idValue}", "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway($"/safe/{idValue}?{queryName}={queryValue}"))
@@ -305,11 +301,11 @@ public sealed class RoutingWithQueryStringTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheDownstreamUrlPathShouldBe($"/cpx/t1/{idValue}"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe($"?{queryName}={queryValue}"))
-            .BDDfy();
+        .BDDfy();
     }
 
     #region PR 2351
-    [Fact]
+    [BddfyFact]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder_as_a_Catch_All_Query_String()
@@ -325,22 +321,23 @@ public sealed class RoutingWithQueryStringTests : Steps
             downstream: "/v1/payment-methods");
         var configuration = GivenConfiguration(route1, route2);
         var query = $"?{nameof(customer_id)}={customer_id}";
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", "Hello from Bhargav"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/v1/payment-methods", "Hello from Bhargav"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate.Replace("?{id}", query)))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Bhargav"))
             .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe(query))
             .When(x => WhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheDownstreamUrlPathShouldBe("/v1/payment-methods"))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe(string.Empty))
-            .BDDfy();
+        .BDDfy();
     }
 
-    [Theory]
+    [BddfyTheory]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     [InlineData("/finance/v1/payment-methods/{id}", "/v1/payment-methods/{id}", // Placeholder: {id}, Query: customer_id
@@ -373,15 +370,16 @@ public sealed class RoutingWithQueryStringTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, upstream, downstream);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, path, "Hello from Bhargav"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, path, "Hello from Bhargav"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway(url))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Bhargav"))
             .And(x => ThenTheDownstreamUrlPathShouldBe(path))
             .And(x => ThenTheDownstreamUrlQueryStringShouldBe(query))
-            .BDDfy();
+        .BDDfy();
     }
     #endregion of PR 2351
 
