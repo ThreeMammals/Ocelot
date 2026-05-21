@@ -34,7 +34,6 @@
   <ItemGroup>
     <PackageReference Include="KubeClient" Version="3.1.1" />
     <PackageReference Include="KubeClient.Extensions.DependencyInjection" Version="3.1.1" />
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.201" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ocelot\Ocelot.csproj" />
