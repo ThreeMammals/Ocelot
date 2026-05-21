@@ -7,8 +7,8 @@
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>24.1.0</AssemblyVersion>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <Authors>Raman Maksimchuk</Authors>
     <Company>Three Mammals</Company>

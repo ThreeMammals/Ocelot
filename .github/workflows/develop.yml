@@ -52,20 +52,37 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: |
+        dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 \
+          --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj > test_output.txt 2>&1 || true
+        if grep -q "failed: 0" test_output.txt && grep -q "succeeded:" test_output.txt; then
+          echo "✓ Test run successful"
+          echo "::group::------- Test Output -------"
+          cat test_output.txt
+          echo "::endgroup::"
+          echo "✓ Test run successful"
+          exit 0
+        else
+          echo "✗ Test run failed"
+          echo "::group::------- Test Output -------"
+          cat test_output.txt
+          echo "::endgroup::"
+          echo "✗ Test run failed"
+          exit 1
+        fi
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
-  build-cake:
+  coverage:
     needs: build
     runs-on: ubuntu-latest
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v6
+        # with:
+        #   fetch-depth: 0
       - name: SH-scripts executable
         run: chmod +x .github/steps/*.sh
       - name: Setup .NET 10
@@ -77,13 +94,41 @@ jobs:
             samples/**/packages.lock.json
             src/**/packages.lock.json
             test/**/packages.lock.json
-      - name: Cake Build
-        uses: cake-build/cake-action@v3
-        with:
-          target: UnitTests # LatestFramework
+      - name: .NET Info
+        run: dotnet --info
+      # Not required for unit testing (but it is for acceptance testing)
+      # - name: Add DNS-records
+      #   run: ./.github/steps/ubuntu.add-dns-records.sh  
+      # - name: Install certificate
+      #   run: ./.github/steps/ubuntu.install-certificate.sh
+      - name: Restore
+        run: dotnet restore --locked-mode ./Ocelot.slnx
+      - name: Build
+        run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
+      - name: Unit Tests
+        run: |
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" > test_output.txt 2>&1 || true
+          if grep -q "failed: 0" test_output.txt && grep -q "succeeded:" test_output.txt; then
+            echo "✓ Test run successful"
+            echo "::group::------- Test Output -------"
+            cat test_output.txt
+            echo "::endgroup::"
+            echo "✓ Test run successful"
+            exit 0
+          else
+            echo "✗ Test run failed"
+            echo "::group::------- Test Output -------"
+            cat test_output.txt
+            echo "::endgroup::"
+            echo "✗ Test run failed"
+            exit 1
+          fi
+      # - name: Acceptance Tests
+      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/prepare-coveralls.sh
+        run: ./.github/steps/prepare-coveralls.sh # net10.0 Debug
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2
@@ -98,4 +143,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.coverage.outputs.COVERAGE_file }}
           flags: unit
-        continue-on-error: true
+        # continue-on-error: true

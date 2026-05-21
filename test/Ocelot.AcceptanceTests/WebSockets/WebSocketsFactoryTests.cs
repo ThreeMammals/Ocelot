@@ -1,5 +1,6 @@
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.Testing.Steps;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
 

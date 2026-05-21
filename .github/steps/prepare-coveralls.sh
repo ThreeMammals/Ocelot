@@ -1,13 +1,33 @@
 #!/bin/bash
-# Prepare Coveralls
+# Prepare Coveralls, with 2 optional arguments
 echo "::group::Listing environment variables"
 env | sort
 echo "::endgroup::"
 
-echo ------------ Detect coverage file ------------ 
-coverage_1st_folder=$(ls -d /home/runner/work/Ocelot/Ocelot/artifacts/UnitTests/*/ | head -1)
-echo "Detected first folder : $coverage_1st_folder"
-coverage_file="${coverage_1st_folder%/}/coverage.cobertura.xml"
+# First argument: target .NET TFM (string)
+# Default to "net10.0" if no argument is provided
+DOTNET_TFM="${1:-net10.0}"
+
+# Second argument: build configuration (string)
+# Default to "Debug" if no argument is provided
+BUILD_CONFIGURATION="${2:-Debug}"
+
+echo "::group::Listing $DOTNET_TFM build folder for $BUILD_CONFIGURATION configuration"
+ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
+echo "::endgroup::"
+
+coverage_folder=$(ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
+echo "Detected first folder : $coverage_folder"
+
+echo "::group::TestResults files are ..."
+ls $coverage_folder
+echo "::endgroup::"
+
+coverage_pattern="${coverage_folder%/}/coverage.cobertura.*.xml"
+# Expand the pattern to an array
+coverage_files=($coverage_pattern)
+coverage_file="${coverage_files[0]}"
+
 echo "Detecting file $coverage_file ..."
 if [ -f "$coverage_file" ]; then
   echo "Coverage file exists."

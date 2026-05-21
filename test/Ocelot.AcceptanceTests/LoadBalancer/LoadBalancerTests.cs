@@ -7,6 +7,7 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.LoadBalancer;
 using Ocelot.Testing.Steps;
 using Ocelot.Values;
 
@@ -91,14 +92,14 @@ public sealed class LoadBalancerTests : ConcurrentSteps
     [Trait("Feat", "961")]
     public void ShouldLoadBalanceRequestWithCustomLoadBalancer()
     {
-        Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc =
-            (serviceProvider, route, discoveryProvider) => new CustomLoadBalancer(discoveryProvider.GetAsync);
+        static CustomLoadBalancer GetLoadBalancer(IServiceProvider serviceProvider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+            => new(discoveryProvider.GetAsync);
         var ports = PortFinder.GetPorts(2);
         var route = GivenLbRoute(ports, nameof(CustomLoadBalancer));
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         Action<IServiceCollection> withCustomLoadBalancer = (s)
-            => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(loadBalancerFactoryFunc);
+            => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(GetLoadBalancer);
         GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
         this.Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(withCustomLoadBalancer))
