@@ -36,15 +36,16 @@
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="xunit.v3" Version="4.0.0-pre.108" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0-pre.4">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="coverlet.collector" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="TestStack.BDDfy" Version="8.0.9.120-beta" /><!-- TestStack.BDDfy.Xunit TODO Requires deprecation in favor of Reqnroll, see task 2341 -->
