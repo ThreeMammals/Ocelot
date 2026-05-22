@@ -5,7 +5,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
-using Ocelot.Security.IPSecurity;
+using Ocelot.Security;
 
 namespace Ocelot.UnitTests.Security;
 

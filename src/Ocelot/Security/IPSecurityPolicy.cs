@@ -3,7 +3,7 @@ using Ocelot.Configuration;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
-namespace Ocelot.Security.IPSecurity;
+namespace Ocelot.Security;
 
 public class IPSecurityPolicy : ISecurityPolicy
 {
