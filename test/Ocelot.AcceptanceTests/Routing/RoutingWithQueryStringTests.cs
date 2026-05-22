@@ -4,7 +4,7 @@ namespace Ocelot.AcceptanceTests.Routing;
 
 public sealed class RoutingWithQueryStringTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_query_string_template()
     {
         var subscriptionId = Guid.NewGuid().ToString();
@@ -26,7 +26,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     [InlineData("")]
     [InlineData("&x=xxx")]
@@ -51,7 +51,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names()
     {
@@ -73,7 +73,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ()
     {
@@ -95,7 +95,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "952")] // https://github.com/ThreeMammals/Ocelot/issues/952
     public void Should_map_query_parameters_with_different_names_and_save_old_param_if_placeholder_and_param_names_differ_case_sensitive()
     {
@@ -117,7 +117,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "1174")] // https://github.com/ThreeMammals/Ocelot/issues/1174
     [InlineData("projectNumber=45&startDate=2019-12-12&endDate=2019-12-12", "?projectNumber=45&startDate=2019-12-12&endDate=2019-12-12")]
     [InlineData("$filter=ProjectNumber eq 45 and DateOfSale ge 2020-03-01T00:00:00z and DateOfSale le 2020-03-15T00:00:00z", "?$filter=ProjectNumber%20eq%2045%20and%20DateOfSale%20ge%202020-03-01T00%3A00%3A00z%20and%20DateOfSale%20le%202020-03-15T00%3A00%3A00z")]
@@ -140,7 +140,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "548")] // https://github.com/ThreeMammals/Ocelot/issues/548
     [Trait("Commit", "00a6000")] // https://github.com/ThreeMammals/Ocelot/commit/00a600064deea0877058d04e6189d7e0278c99a5
     [Trait("Release", "10.0.4")]
@@ -163,7 +163,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_200_with_query_string_upstream_template()
     {
@@ -186,7 +186,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_404_with_query_string_upstream_template_no_query_string()
     {
@@ -206,7 +206,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_404_with_query_string_upstream_template_different_query_string()
     {
@@ -226,7 +226,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "467")] // https://github.com/ThreeMammals/Ocelot/pull/467
     public void Should_return_response_200_with_query_string_upstream_template_multiple_params()
     {
@@ -249,7 +249,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2002")] // https://github.com/ThreeMammals/Ocelot/issues/2002
     [Trait("Commit", "a034e8c")] // https://github.com/ThreeMammals/Ocelot/commit/a034e8c1e3fc23a086ad10000c85615b9696a43e
     [Trait("Release", "23.3.0")]
@@ -279,7 +279,7 @@ public sealed class RoutingWithQueryStringTests : Steps
     /// <summary>
     /// To reproduce 1288: query string should contain the placeholder name and value.
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "1288")] // https://github.com/ThreeMammals/Ocelot/issues/1288
     public void Should_copy_query_string_to_downstream_path()
     {
@@ -305,7 +305,7 @@ public sealed class RoutingWithQueryStringTests : Steps
     }
 
     #region PR 2351
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     public void Should_not_corrupt_query_parameter_names_containing_id_when_route_has_id_placeholder_as_a_Catch_All_Query_String()
@@ -337,7 +337,7 @@ public sealed class RoutingWithQueryStringTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("PR", "2351")] // https://github.com/ThreeMammals/Ocelot/pull/2351
     [Trait("Bug", "2346")] // https://github.com/ThreeMammals/Ocelot/issues/2346
     [InlineData("/finance/v1/payment-methods/{id}", "/v1/payment-methods/{id}", // Placeholder: {id}, Query: customer_id

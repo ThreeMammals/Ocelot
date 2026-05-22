@@ -7,7 +7,7 @@ namespace Ocelot.AcceptanceTests;
 /// </summary>
 public sealed class CancelRequestTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "893")] // https://github.com/ThreeMammals/Ocelot/issues/893
     [Trait("PR", "1367")] // https://github.com/ThreeMammals/Ocelot/pull/1367
     public void ShouldAbortServiceWorkWhenCancellingTheRequest()

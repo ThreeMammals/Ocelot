@@ -10,7 +10,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
 {
     private string _downstreamPath;
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -32,7 +32,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_one_header_value_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -55,7 +55,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_two_header_values_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -82,7 +82,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -104,7 +104,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_one_header_value_when_no_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -124,7 +124,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_two_header_values_when_one_different()
     {
         var port = PortFinder.GetRandomPort();
@@ -150,7 +150,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_two_header_values_when_one_not_existing()
     {
         var port = PortFinder.GetRandomPort();
@@ -175,7 +175,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_one_header_value_when_header_duplicated()
     {
         var port = PortFinder.GetRandomPort();
@@ -197,7 +197,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_aggregated_route_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -223,7 +223,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_aggregated_route_not_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -248,7 +248,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_header_placeholder()
     {
         var port = PortFinder.GetRandomPort();
@@ -270,7 +270,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_header_placeholder_not_in_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
@@ -292,7 +292,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_distinguish_route_for_different_roles()
     {
         var port = PortFinder.GetRandomPort();
@@ -315,7 +315,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_header_and_url_placeholders()
     {
         var port = PortFinder.GetRandomPort();
@@ -337,7 +337,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_header_with_braces()
     {
         var port = PortFinder.GetRandomPort();
@@ -359,7 +359,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_match_two_headers_with_the_same_name()
     {
         var port = PortFinder.GetRandomPort();

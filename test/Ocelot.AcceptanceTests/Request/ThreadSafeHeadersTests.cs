@@ -12,7 +12,7 @@ public sealed class ThreadSafeHeadersTests : Steps
         _results = new();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "61")] // https://github.com/ThreeMammals/Ocelot/pull/61
     public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
     {

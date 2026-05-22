@@ -28,7 +28,7 @@ public sealed class AggregateTests : Steps
         _downstreamPaths = new string[3];
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
     public void Should_fix_issue_597()
     {
@@ -57,7 +57,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
     [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
     public void Should_return_response_200_with_advanced_aggregate_configs()
@@ -91,7 +91,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
     [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
     public void Should_return_response_200_with_simple_url_user_defined_aggregate()
@@ -114,7 +114,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url()
@@ -136,7 +136,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url_one_service_404()
@@ -158,7 +158,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_return_response_200_with_simple_url_both_service_404()
@@ -180,7 +180,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
     public void Should_be_thread_safe()
@@ -242,7 +242,7 @@ public sealed class AggregateTests : Steps
         content.ShouldBe(expectedBody);
     }
 
-    [BddfyFact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
+    [Fact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
     [Trait("Bug", "1396")] // https://github.com/ThreeMammals/Ocelot/issues/1396
     [Trait("PR", "1462")] // https://github.com/ThreeMammals/Ocelot/pull/1462
     public void Should_return_response_200_with_user_forwarding()
@@ -327,7 +327,7 @@ public sealed class AggregateTests : Steps
     //}
 
     #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
     public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
     {
@@ -351,7 +351,7 @@ public sealed class AggregateTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
     public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
     {

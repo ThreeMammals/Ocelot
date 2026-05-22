@@ -16,7 +16,7 @@ public sealed class InvalidHeaderValueTests : Steps
     private int _gatewayPort;
     private string _response;
 
-    [BddfyTheory]
+    [Theory]
     [InlineData("skull", "-=💀=-", HttpStatusCode.BadRequest)] // original bug 2374
     [InlineData("utf8char", "-=é=-", HttpStatusCode.BadRequest)]
     [InlineData("utf16char", "-=漢=-", HttpStatusCode.BadRequest)]

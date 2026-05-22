@@ -12,7 +12,7 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
 public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_200_OK_and_forward_claim_as_header()
     {
         var port = PortFinder.GetRandomPort();

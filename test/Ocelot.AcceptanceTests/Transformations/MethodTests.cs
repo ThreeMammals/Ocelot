@@ -5,7 +5,7 @@ namespace Ocelot.AcceptanceTests.Transformations;
 
 public sealed class MethodTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_get_converted_to_post()
     {
         var port = PortFinder.GetRandomPort();
@@ -20,7 +20,7 @@ public sealed class MethodTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_get_converted_to_post_with_content()
     {
         var port = PortFinder.GetRandomPort();
@@ -38,7 +38,7 @@ public sealed class MethodTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_get_converted_to_get_with_content()
     {
         var port = PortFinder.GetRandomPort();

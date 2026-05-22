@@ -10,7 +10,7 @@ public sealed class ContentTests : Steps
     private long _memoryUsageAfterCallToService;
     private bool _contentTypeHeaderExists;
 
-    [BddfyFact]
+    [Fact]
     public void Should_Not_add_content_type_or_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -28,7 +28,7 @@ public sealed class ContentTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_add_content_type_and_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -45,7 +45,7 @@ public sealed class ContentTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_add_default_content_type_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -61,7 +61,7 @@ public sealed class ContentTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "1824")] // https://github.com/ThreeMammals/Ocelot/pull/1824
     [Trait("Feat", "356")] // https://github.com/ThreeMammals/Ocelot/issues/356
     [Trait("Feat", "695")] // https://github.com/ThreeMammals/Ocelot/issues/695

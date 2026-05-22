@@ -6,7 +6,7 @@ namespace Ocelot.AcceptanceTests;
 [Trait("Feat", "309")] // https://github.com/ThreeMammals/Ocelot/issues/309
 public sealed class SslTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "325")] // https://github.com/ThreeMammals/Ocelot/pull/325
     public void Should_dangerous_accept_any_server_certificate_validator()
     {
@@ -23,7 +23,7 @@ public sealed class SslTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "325")] // https://github.com/ThreeMammals/Ocelot/pull/325
     public void Should_not_dangerous_accept_any_server_certificate_validator()
     {

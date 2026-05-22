@@ -30,7 +30,7 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
         return this;
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData("Test1", "Test2")] // with multiple schemes
     [InlineData(JwtBearerDefaults.AuthenticationScheme, "Test")] // with default scheme
     [InlineData("Test", JwtBearerDefaults.AuthenticationScheme)] // with default scheme

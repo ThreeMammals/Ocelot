@@ -8,9 +8,9 @@ namespace Ocelot.AcceptanceTests.Request;
 public sealed class StreamContentTests : Steps
 {
 #if NET10_0_OR_GREATER
-    [BddfyFact(Skip = "TODO Require fixing for net10.0 TFM or streaming feature review.")]
+    [Fact(Skip = "TODO Require fixing for net10.0 TFM or streaming feature review.")]
 #else
-    [BddfyFact]
+    [Fact]
 #endif
     public void Should_stream_with_content_length()
     {
@@ -29,9 +29,9 @@ public sealed class StreamContentTests : Steps
     }
 
 #if NET10_0_OR_GREATER
-    [BddfyFact(Skip = "TODO Require fixing for net10.0 TFM or streaming feature review.")]
+    [Fact(Skip = "TODO Require fixing for net10.0 TFM or streaming feature review.")]
 #else
-    [BddfyFact]
+    [Fact]
 #endif
     [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
     public async Task Should_stream_with_chunked_content()

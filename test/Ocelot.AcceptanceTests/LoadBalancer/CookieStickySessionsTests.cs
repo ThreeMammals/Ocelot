@@ -20,7 +20,7 @@ public sealed class CookieStickySessionsTests : Steps
         _counters = new int[2];
     }
 
-    [BddfyFact]
+    [Fact]
     public void ShouldUseSameDownstreamHost_ForSingleRouteWithHighLoad()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -39,7 +39,7 @@ public sealed class CookieStickySessionsTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void ShouldUseDifferentDownstreamHost_ForDoubleRoutesWithDifferentCookies()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -60,7 +60,7 @@ public sealed class CookieStickySessionsTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void ShouldUseSameDownstreamHost_ForDifferentRoutesWithSameCookie()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -81,7 +81,7 @@ public sealed class CookieStickySessionsTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324

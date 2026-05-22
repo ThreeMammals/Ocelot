@@ -8,7 +8,7 @@ namespace Ocelot.AcceptanceTests.Security;
 
 public sealed class SecurityOptionsTests: Steps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_call_with_allowed_ip_in_global_config()
     {
@@ -29,7 +29,7 @@ public sealed class SecurityOptionsTests: Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public async Task Should_block_call_with_blocked_ip_in_global_config()
     {
@@ -50,7 +50,7 @@ public sealed class SecurityOptionsTests: Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_with_allowed_ip_in_route_config()
     {
         var ip = "192.168.1.1";
@@ -74,7 +74,7 @@ public sealed class SecurityOptionsTests: Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_block_call_with_blocked_ip_in_route_config()
     {
         var ip = "192.168.1.1";
@@ -97,7 +97,7 @@ public sealed class SecurityOptionsTests: Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
     {
@@ -122,7 +122,7 @@ public sealed class SecurityOptionsTests: Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
     public void Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
     {

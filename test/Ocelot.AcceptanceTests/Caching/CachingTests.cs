@@ -15,7 +15,7 @@ public sealed class CachingTests : Steps
     {
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_cached_response()
     {
         var port = PortFinder.GetRandomPort();
@@ -39,7 +39,7 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_cached_response_with_expires_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -65,7 +65,7 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_return_cached_response_as_ttl_expires()
     {
         var port = PortFinder.GetRandomPort();
@@ -89,7 +89,7 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     [Trait("Feat", "2058")] // https://github.com/ThreeMammals/Ocelot/pull/2058
@@ -124,7 +124,7 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     [Trait("Feat", "2058")] // https://github.com/ThreeMammals/Ocelot/pull/2058
@@ -158,7 +158,7 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1172")] // https://github.com/ThreeMammals/Ocelot/pull/1172
     public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
     {

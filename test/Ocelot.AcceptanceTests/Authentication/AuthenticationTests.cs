@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.DependencyInjection;
 using Ocelot.Testing.Authentication;
 
@@ -20,7 +19,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
     //    return new FluentStepBuilder<TScenario>(testObject).Given(step);
     //}
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_401_using_identity_server_access_token()
     {
         var port = PortFinder.GetRandomPort();
@@ -40,7 +39,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_using_identity_server()
     {
         var testName = TestName();
@@ -60,7 +59,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public async Task Should_return_response_401_using_identity_server_with_token_requested_for_other_api()
     {
         var testName = TestName();
@@ -90,7 +89,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         services.AddAuthentication().AddJwtBearer(configureOptions + WithOtherApiAudience);
     }
 
-    [BddfyFact]
+    [Fact]
     public async Task Should_return_201_using_identity_server_access_token()
     {
         var body = Body();
@@ -110,7 +109,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
     [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     [InlineData(true, HttpStatusCode.OK)]
@@ -139,7 +138,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         ? GivenIHaveAToken().ContinueWith(t => GivenIHaveAddedATokenToMyRequest())
         : Task.CompletedTask;
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
     [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     public async Task Should_allow_anonymous_route_and_return_200_when_global_auth_options_and_no_token()
@@ -163,7 +162,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
@@ -217,7 +216,7 @@ public sealed class AuthenticationTests : AuthenticationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336

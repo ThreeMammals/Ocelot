@@ -17,7 +17,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
     public ClientHeaderRateLimitingTests()
     { }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "37")] // https://github.com/ThreeMammals/Ocelot/pull/37
     public void Should_call_with_rate_limiting()
     {
@@ -38,7 +38,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "37")] // https://github.com/ThreeMammals/Ocelot/pull/37
     public void Should_wait_for_period_timespan_to_elapse_before_making_next_request()
     {
@@ -87,7 +87,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         }
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "37")] // https://github.com/ThreeMammals/Ocelot/pull/37
     public void Should_call_middleware_with_white_list_client()
     {
@@ -123,7 +123,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         bodies.ForEach(body => int.Parse(body).ShouldBe(bodies.IndexOf(body) + 1)); // 1, 2, 3, 4
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "1590")] // https://github.com/ThreeMammals/Ocelot/issues/1590
     public void StatusShouldNotBeEqualTo429WhenPeriodTimespanValueIsGreaterThanPeriod()
     {
@@ -159,7 +159,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "1305")] // https://github.com/ThreeMammals/Ocelot/issues/1305
     [InlineData(false)]
     [InlineData(true)]
@@ -189,7 +189,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "37")] // https://github.com/ThreeMammals/Ocelot/pull/37
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("PR", "2294")] // https://github.com/ThreeMammals/Ocelot/pull/2294
@@ -211,7 +211,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "1915")] // https://github.com/ThreeMammals/Ocelot/issues/1915
     public void Should_apply_global_options_when_there_are_no_route_opts()
@@ -258,7 +258,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
             retryAfter.ShouldStartWith(start2); // 0.2xx
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1229")] // https://github.com/ThreeMammals/Ocelot/issues/1229
     public void Should_apply_group_global_options_when_route_opts_has_a_key()
     {
@@ -321,7 +321,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         bodies.ForEach(b => b.ShouldBe(body));
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2294")] // https://github.com/ThreeMammals/Ocelot/pull/2294
     public void Should_rate_limit_using_sliding_period_without_wait_period()
     {
@@ -365,7 +365,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         theRestOfMilliseconds.ShouldBeGreaterThan(ms);
         return theRestOfMilliseconds;
     }
-    public Task GivenIWaitUntilSlidingPeriodEnds(int lowMs, string period)
+    private Task GivenIWaitUntilSlidingPeriodEnds(int lowMs, string period)
     {
         int restOfMilliseconds = ThenTheRestOfMillisecondsShouldBeGreaterThan(lowMs);
         // Mutual behavior arises from test instability, which is sensitive to consumed CPU resources and thread synchronization in CI/CD environments

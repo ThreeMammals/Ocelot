@@ -8,7 +8,7 @@ namespace Ocelot.AcceptanceTests.Configuration;
 [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
 public class TimeoutTests : TimeoutSteps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
     public async Task HasRouteAndGlobalTimeouts_RouteTimeoutShouldTakePrecedenceOverGlobalTimeout()
     {
@@ -28,7 +28,7 @@ public class TimeoutTests : TimeoutSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
     public async Task HasGlobalTimeoutOnly_ForAllRoutesGlobalTimeoutShouldTakePrecedenceOverAbsoluteGlobalTimeout()
     {
@@ -64,7 +64,7 @@ public class TimeoutTests : TimeoutSteps
             WatchWhenIGetUrlOnTheApiGateway(route1.UpstreamPathTemplate),
             WatchWhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate));
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
     public async Task HasRouteTimeout_ShouldTimeoutAfterRouteTimeout()
     {
@@ -87,7 +87,7 @@ public class TimeoutTests : TimeoutSteps
     [Collection(nameof(SequentialTests))]
     public class Sequential : TimeoutSteps
     {
-        [BddfyFact]
+        [Fact]
         [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
         [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
         public async Task NoRouteTimeoutAndNoGlobalOne_ShouldTimeoutAfterCustomDefaultTimeout()

@@ -4,7 +4,7 @@ public sealed class RequestIdTests : Steps
 {
     public const string RequestIdKey = "Oc-RequestId";
 
-    [BddfyFact]
+    [Fact]
     public void Should_use_default_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
@@ -20,7 +20,7 @@ public sealed class RequestIdTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_use_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
@@ -39,7 +39,7 @@ public sealed class RequestIdTests : Steps
     /// <summary>
     /// Now defaults to case insensitive routing but you can override with a setting, also global request id setting available
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Commit", "ff57766")] // https://github.com/ThreeMammals/Ocelot/commit/ff5776613f973e838473eedb7f3eeac988da25f0
     public void Should_use_global_request_id_and_forward()
     {
@@ -57,7 +57,7 @@ public sealed class RequestIdTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "329")] // https://github.com/ThreeMammals/Ocelot/pull/329
     public void Should_use_global_request_id_create_and_forward()
     {

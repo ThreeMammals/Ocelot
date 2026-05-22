@@ -8,7 +8,7 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class GzipTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "263")] // https://github.com/ThreeMammals/Ocelot/issues/263
     [Trait("Feat", "267")] // https://github.com/ThreeMammals/Ocelot/pull/267
     public void Should_return_response_200_with_simple_url()

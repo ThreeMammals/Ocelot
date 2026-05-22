@@ -8,7 +8,7 @@ public class CannotStartOcelotTests : Steps
     private static readonly string NL = Environment.NewLine;
     private Exception _ex;
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "580")] // https://github.com/ThreeMammals/Ocelot/issues/580
     [Trait("Feat", "584")] // https://github.com/ThreeMammals/Ocelot/pull/584
     public void Should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered_with_dynamic_re_routes()
@@ -28,7 +28,7 @@ public class CannotStartOcelotTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "580")] // https://github.com/ThreeMammals/Ocelot/issues/580
     [Trait("Feat", "584")] // https://github.com/ThreeMammals/Ocelot/pull/584
     public void Should_throw_exception_if_cannot_start_because_service_discovery_provider_specified_in_config_but_no_service_discovery_provider_registered()
@@ -50,7 +50,7 @@ public class CannotStartOcelotTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "568")] // https://github.com/ThreeMammals/Ocelot/issues/568
     [Trait("Feat", "578")] // https://github.com/ThreeMammals/Ocelot/pull/578
     public void Should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_globally()
@@ -70,7 +70,7 @@ public class CannotStartOcelotTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "568")] // https://github.com/ThreeMammals/Ocelot/issues/568
     [Trait("Feat", "578")] // https://github.com/ThreeMammals/Ocelot/pull/578
     public void Should_throw_exception_if_cannot_start_because_no_qos_delegate_registered_for_re_route()
@@ -90,7 +90,7 @@ public class CannotStartOcelotTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "156")] // https://github.com/ThreeMammals/Ocelot/issues/156
     [Trait("Feat", "160")] // https://github.com/ThreeMammals/Ocelot/pull/160
     public void Should_throw_exception_if_cannot_start()

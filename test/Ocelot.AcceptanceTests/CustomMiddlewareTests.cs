@@ -15,7 +15,7 @@ public class CustomMiddlewareTests : Steps
         _counter = 0;
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_pre_query_string_builder_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -39,7 +39,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_authorization_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -63,7 +63,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_authentication_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -87,7 +87,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_pre_error_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -111,7 +111,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_pre_authorization_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -135,7 +135,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_pre_http_authentication_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -159,7 +159,7 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_throw_when_pipeline_terminates_early()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
@@ -189,7 +189,7 @@ public class CustomMiddlewareTests : Steps
     /// At the moment you must use Response.OnCompleted callback and cannot change the response :(
     /// I will see if this can be changed one day.
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "237")] // https://github.com/ThreeMammals/Ocelot/issues/237
     [Trait("PR", "241")] // https://github.com/ThreeMammals/Ocelot/pull/241
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6

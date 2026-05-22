@@ -11,7 +11,7 @@ public class StartupTests : Steps
     /// <summary>
     /// TODO: The test should be moved to the Configuration namespace since it is part of Configuration Repository and/or Configuration Middleware feats.
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "463")] // https://github.com/ThreeMammals/Ocelot/issues/463
     [Trait("PR", "506")] // https://github.com/ThreeMammals/Ocelot/pull/506
     public void Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()

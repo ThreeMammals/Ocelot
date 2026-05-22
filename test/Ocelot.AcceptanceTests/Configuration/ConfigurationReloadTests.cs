@@ -32,7 +32,7 @@ public sealed class ConfigurationReloadTests : Steps
         };
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_reload_config_on_change()
     {
         this
@@ -56,7 +56,7 @@ public sealed class ConfigurationReloadTests : Steps
         result.ShouldBe(true);
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_reload_config_on_change()
     {
         this
@@ -77,7 +77,7 @@ public sealed class ConfigurationReloadTests : Steps
         internalConfig.RequestId.ShouldBe(config.Data.RequestId);
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_trigger_change_token_on_change()
     {
         this
@@ -90,7 +90,7 @@ public sealed class ConfigurationReloadTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_trigger_change_token_with_no_change()
     {
         this

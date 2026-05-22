@@ -8,7 +8,7 @@ namespace Ocelot.AcceptanceTests.WebSockets;
 [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
 public sealed class WebSocketsFactoryTests : WebSocketsSteps
 {
-    [BddfyFact]
+    [Fact]
     public void ShouldProxyWebsocketInputToDownstreamService()
     {
         var port = PortFinder.GetRandomPort();
@@ -26,7 +26,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
     }
     private void ThenTheReceivedCountIs(int count) => _firstRecieved.Count.ShouldBe(count);
 
-    [BddfyFact]
+    [Fact]
     public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
     {
         int port1 = PortFinder.GetRandomPort();

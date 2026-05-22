@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Ocelot.AcceptanceTests.Authorization;
 using Ocelot.Testing.Authentication;
 
@@ -12,7 +11,7 @@ namespace Ocelot.AcceptanceTests.Transformations;
 [Trait("Release", "13.8.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.8.0
 public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_200_OK_and_change_downstream_path()
     {
         var port = PortFinder.GetRandomPort();

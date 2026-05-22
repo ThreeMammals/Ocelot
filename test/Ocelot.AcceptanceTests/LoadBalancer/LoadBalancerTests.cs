@@ -15,7 +15,7 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 
 public sealed class LoadBalancerTests : ConcurrentSteps
 {
-    [BddfyTheory]
+    [Theory]
     [Trait("Feat", "211")] // https://github.com/ThreeMammals/Ocelot/pull/211
     [InlineData(false)] // original scenario, clean config
     [InlineData(true)] // extended scenario using analyzer
@@ -60,7 +60,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "365")] // https://github.com/ThreeMammals/Ocelot/pull/365
     [InlineData(false)] // original scenario, clean config
     [InlineData(true)] // extended scenario using analyzer
@@ -92,7 +92,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "961")] // https://github.com/ThreeMammals/Ocelot/issues/961
     public void ShouldLoadBalanceRequestWithCustomLoadBalancer()
     {
@@ -116,7 +116,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
@@ -152,7 +152,7 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324

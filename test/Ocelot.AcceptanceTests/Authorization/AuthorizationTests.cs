@@ -34,7 +34,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         return claims;
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Commit", "3285be3")] // https://github.com/ThreeMammals/Ocelot/commit/3285be3
     [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
     public void Should_return_200_OK_authorizing_route()
@@ -58,7 +58,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Commit", "b8951c4")] // https://github.com/ThreeMammals/Ocelot/commit/b8951c4
     [Trait("Release", "1.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0-beta.1 -> https://github.com/ThreeMammals/Ocelot/releases/tag/1.1.0
     public void Should_return_403_Forbidden_authorizing_route()
@@ -83,7 +83,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
     [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
     [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
@@ -107,7 +107,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
     [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
     [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
@@ -138,7 +138,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
     /// </summary>
     /// <remarks>AI search:
     /// C# ASP.NET JsonConfigurationProvider Keys with "http://" prefix are not deserialized into dictionary.</remarks>
-    [BddfyFact(DisplayName = "TODO " + nameof(Should_fix_issue_240))]
+    [Fact(DisplayName = "TODO " + nameof(Should_fix_issue_240))]
     [Trait("Bug", "240")] // https://github.com/ThreeMammals/Ocelot/issues/240
     [Trait("PR", "243")] // https://github.com/ThreeMammals/Ocelot/pull/243
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
@@ -171,7 +171,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
@@ -199,7 +199,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
     }
 
     #region PR 1478
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "913")] // https://github.com/ThreeMammals/Ocelot/issues/913
     [Trait("PR", "1478")] // https://github.com/ThreeMammals/Ocelot/pull/1478
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
@@ -224,7 +224,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "913")]
     [Trait("PR", "1478")]
     [Trait("Release", "24.1.0")]

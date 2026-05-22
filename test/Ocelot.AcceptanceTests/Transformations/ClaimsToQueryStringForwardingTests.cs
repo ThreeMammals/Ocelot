@@ -29,7 +29,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         return claims;
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_200_OK_and_forward_claim_as_query_string()
     {
         var port = PortFinder.GetRandomPort();
@@ -53,7 +53,7 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string()
     {
         var port = PortFinder.GetRandomPort();

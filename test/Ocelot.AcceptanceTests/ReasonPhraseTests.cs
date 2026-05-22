@@ -5,7 +5,7 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class ReasonPhraseTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "599")] // https://github.com/ThreeMammals/Ocelot/issues/599
     [Trait("PR", "618")] // https://github.com/ThreeMammals/Ocelot/pull/618
     public void Should_return_reason_phrase()

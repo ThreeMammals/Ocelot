@@ -16,7 +16,7 @@ public sealed class CacheManagerTests : AuthenticationSteps
     public CacheManagerTests() : base()
     { }
 
-    [BddfyFact(
+    [Fact(
         DisplayName = "TODO " + nameof(ShouldClearCacheRegionViaAdministrationAPI),
         Skip = "TODO: Requires redevelopment after deprecation of Ocelot.Administration.IdentityServer4 package.")]
     public async Task ShouldClearCacheRegionViaAdministrationAPI()

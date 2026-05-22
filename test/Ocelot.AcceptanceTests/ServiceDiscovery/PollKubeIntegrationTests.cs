@@ -32,7 +32,7 @@ public class PollKubeIntegrationTests : Steps
         _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
     }
 
-    [BddfyFact(Skip = "Under development")]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     public async Task Should_return_service_from_k8s_on_first_call()
     {
@@ -67,7 +67,7 @@ public class PollKubeIntegrationTests : Steps
         receivedToken.Value.ShouldContain("Bearer");
     }
 
-    [BddfyFact(Skip = "Under development")]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     [Trait("Concurrency", "Multiple")]
     public async Task Should_return_queued_service_on_concurrent_calls()
@@ -108,7 +108,7 @@ public class PollKubeIntegrationTests : Steps
         results.ShouldAllBe(r => r[0].HostAndPort.DownstreamPort == 9090);
     }
 
-    [BddfyFact(Skip = "Under development")]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Polling")]
     [Trait("Timing", "Interval")]
     public async Task Should_poll_at_specified_intervals()
@@ -146,7 +146,7 @@ public class PollKubeIntegrationTests : Steps
         callCount.ShouldBeGreaterThanOrEqualTo(1);
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feature", "QueueManagement")]
     [Trait("Behavior", "OldVersionRemoval")]
     public async Task Should_remove_outdated_versions_and_keep_latest()
@@ -185,7 +185,7 @@ public class PollKubeIntegrationTests : Steps
         lastCall[0].HostAndPort.DownstreamPort.ShouldBeGreaterThan(1);
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feature", "ErrorHandling")]
     public async Task Should_return_empty_when_provider_disposed()
     {
@@ -219,7 +219,7 @@ public class PollKubeIntegrationTests : Steps
         servicesAfterDisposal.Count.ShouldBe(0);
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feature", "ErrorHandling")]
     [Trait("Scenario", "KubeAPIError")]
     public async Task Should_handle_k8s_api_error_gracefully()
@@ -246,7 +246,7 @@ public class PollKubeIntegrationTests : Steps
         // First call may return empty due to API error
     }
 
-    [BddfyFact(Skip = "Under development")]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "ColdStart")]
     public async Task Should_perform_initial_poll_on_first_call_when_queue_is_empty()
     {
@@ -280,7 +280,7 @@ public class PollKubeIntegrationTests : Steps
         services[0].HostAndPort.DownstreamPort.ShouldBe(5000);
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feature", "QueueManagement")]
     public async Task Should_not_enqueue_services_when_already_polling()
     {
@@ -311,7 +311,7 @@ public class PollKubeIntegrationTests : Steps
         pollCount.ShouldBeGreaterThanOrEqualTo(1);
     }
 
-    [BddfyFact(Skip = "Under development")]
+    [Fact(Skip = "Under development")]
     [Trait("Feature", "Threading")]
     public async Task Should_safely_handle_disposal_during_polling()
     {

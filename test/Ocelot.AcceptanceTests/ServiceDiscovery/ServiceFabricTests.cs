@@ -7,7 +7,7 @@ public sealed class ServiceFabricTests : Steps
 {
     private string _downstreamPath;
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "570")] // https://github.com/ThreeMammals/Ocelot/pull/570
     [Trait("Bug", "555")] // https://github.com/ThreeMammals/Ocelot/issues/555
     public void Should_fix_issue_555()
@@ -32,7 +32,7 @@ public sealed class ServiceFabricTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "242")] // https://github.com/ThreeMammals/Ocelot/pull/242
     public void Should_support_service_fabric_naming_and_dns_service_stateless_and_guest()
     {
@@ -56,7 +56,7 @@ public sealed class ServiceFabricTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "242")] // https://github.com/ThreeMammals/Ocelot/pull/242
     public void Should_support_service_fabric_naming_and_dns_service_statefull_and_actors()
     {
@@ -80,7 +80,7 @@ public sealed class ServiceFabricTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("PR", "722")] // https://github.com/ThreeMammals/Ocelot/pull/722
     [Trait("Feat", "721")] // https://github.com/ThreeMammals/Ocelot/issues/721
     [InlineData("/api/{version}/values", "/values", "Service_{version}/Api", "/Service_1.0/Api/values", "/api/1.0/values?test=best", "test=best")]

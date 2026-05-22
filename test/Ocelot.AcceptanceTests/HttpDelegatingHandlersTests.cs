@@ -8,7 +8,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
 {
     private string _downstreamPath;
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_route_ordered_specific_handlers()
     {
         var port = PortFinder.GetRandomPort();
@@ -26,7 +26,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_global_di_handlers()
     {
         var port = PortFinder.GetRandomPort();
@@ -43,7 +43,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_global_di_handlers_multiple_times()
     {
         var port = PortFinder.GetRandomPort();
@@ -76,7 +76,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_call_global_di_handlers_with_dependency()
     {
         var port = PortFinder.GetRandomPort();

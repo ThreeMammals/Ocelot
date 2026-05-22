@@ -21,7 +21,7 @@ public sealed class ConfigurationMergeTests : Steps
         Files.Add(_globalConfigFileName);
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "1216")] // https://github.com/ThreeMammals/Ocelot/issues/1216
     [Trait("Feat", "1227")] // https://github.com/ThreeMammals/Ocelot/pull/1227
     [InlineData(MergeOcelotJson.ToFile, true)]
@@ -40,7 +40,7 @@ public sealed class ConfigurationMergeTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2084")] // https://github.com/ThreeMammals/Ocelot/issues/2084
     [InlineData(MergeOcelotJson.ToFile, true)]
     [InlineData(MergeOcelotJson.ToMemory, false)]

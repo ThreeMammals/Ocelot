@@ -2,7 +2,7 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class CaseSensitiveRoutingTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_global_ignore_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
@@ -17,7 +17,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_route_ignore_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
@@ -33,7 +33,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_404_when_route_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
@@ -49,7 +49,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_route_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
@@ -65,7 +65,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_404_when_global_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();
@@ -81,7 +81,7 @@ public sealed class CaseSensitiveRoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_global_respect_case_sensitivity_set()
     {
         var port = PortFinder.GetRandomPort();

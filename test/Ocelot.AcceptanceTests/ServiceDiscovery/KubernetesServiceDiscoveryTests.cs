@@ -40,7 +40,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         };
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(nameof(Kube))]
     [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
@@ -68,7 +68,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Feat", "1967")] // https://github.com/ThreeMammals/Ocelot/issues/1967
     [InlineData("", HttpStatusCode.BadGateway)]
     [InlineData("http", HttpStatusCode.OK)]
@@ -109,7 +109,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2110")] // https://github.com/ThreeMammals/Ocelot/issues/2110
     [InlineData(1, 30, null)]
     [InlineData(2, 50, null)]
@@ -125,7 +125,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
     [InlineData(10, 999, nameof(WatchKube))]
     public void ShouldHighlyLoadOnStableKubeProviderWithRoundRobinLoadBalancing(int totalServices, int totalRequests, string discoveryType)
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
+        Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
 
         discoveryType ??= nameof(Kube);
         var serviceName = ServiceName();
@@ -143,7 +143,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2110")] // https://github.com/ThreeMammals/Ocelot/issues/2110
     [InlineData(5, 50, 1, null)]
     [InlineData(5, 50, 2, null)]
@@ -153,7 +153,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
     [InlineData(5, 50, 4, nameof(WatchKube))]
     public void ShouldHighlyLoadOnUnstableKubeProviderWithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration, string discoveryType)
     {
-        Skip.If(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
+        Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skip in MacOS because the test is very unstable");
 
         discoveryType ??= nameof(Kube);
         var serviceName = ServiceName();
@@ -168,7 +168,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(nameof(Kube))]
     [InlineData(nameof(PollKube))] // Bug 2304 -> https://github.com/ThreeMammals/Ocelot/issues/2304
     [InlineData(nameof(WatchKube))]
@@ -197,7 +197,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2168")] // https://github.com/ThreeMammals/Ocelot/discussions/2168
     [Trait("PR", "2174")] // https://github.com/ThreeMammals/Ocelot/pull/2174
     public void ShouldReturnServicesFromK8sWhenOneWatchRequestUpdatesServicesInfo()
@@ -246,7 +246,7 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         }
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324

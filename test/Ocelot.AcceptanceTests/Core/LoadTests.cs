@@ -2,7 +2,6 @@
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Testing.Steps;
 using System.Diagnostics;
-using TestStack.BDDfy.Xunit;
 
 namespace Ocelot.AcceptanceTests.Core;
 
@@ -19,13 +18,12 @@ public sealed class LoadTests : ConcurrentSteps
     /// This test should be moved to a separate project. It should be run during release only as an extra check for quality gates.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "1348")] // https://github.com/ThreeMammals/Ocelot/pull/1348
     [Trait("Bug", "2246")] // https://github.com/ThreeMammals/Ocelot/issues/2246
     public async Task ShouldLoadRegexCachingHeavily_NoMemoryLeaks()
     {
-        // xUnit v3 expression -> Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! It should be moved to a separate project. It should be run during release only as an extra check for quality gates.");
-        Skip.If(IsCiCd(), "Skipped in CI/CD! It should be moved to a separate project. It should be run during release only as an extra check for quality gates.");
+        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! It should be moved to a separate project. It should be run during release only as an extra check for quality gates.");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/my-gateway/order/{orderNumber}", "/order/{orderNumber}");

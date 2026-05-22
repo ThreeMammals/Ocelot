@@ -9,7 +9,7 @@ public sealed class RoutingTests : Steps
     private string _downstreamPath;
     private string _downstreamQuery;
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_match_forward_slash_in_pattern_before_next_forward_slash()
     {
         var port = PortFinder.GetRandomPort();
@@ -25,7 +25,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_404_when_no_configuration_at_all()
     {
         this
@@ -36,7 +36,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_forward_slash_and_placeholder_only()
     {
         var port = PortFinder.GetRandomPort();
@@ -52,7 +52,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_favouring_forward_slash_with_path_route()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -70,7 +70,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_favouring_forward_slash()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -88,7 +88,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_favouring_forward_slash_route_because_it_is_first()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -106,7 +106,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_nothing_and_placeholder_only()
     {
         var port = PortFinder.GetRandomPort();
@@ -122,7 +122,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
@@ -138,7 +138,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "134")] // https://github.com/ThreeMammals/Ocelot/issues/134
     public void Should_fix_issue_134()
     {
@@ -160,7 +160,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_path_missing_forward_slash_as_first_char()
     {
         var port = PortFinder.GetRandomPort();
@@ -176,7 +176,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_host_has_trailing_slash()
     {
         var port = PortFinder.GetRandomPort();
@@ -192,7 +192,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData("/products")]
     [InlineData("/products/")]
     public void Should_return_ok_when_upstream_url_ends_with_forward_slash_but_template_does_not(string url)
@@ -211,7 +211,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "649")] // https://github.com/ThreeMammals/Ocelot/issues/649
     [InlineData("/account/authenticate")]
     [InlineData("/account/authenticate/")]
@@ -231,7 +231,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_not_found_when_upstream_url_ends_with_forward_slash_but_template_does_not()
     {
         var port = PortFinder.GetRandomPort();
@@ -246,7 +246,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "683")] // https://github.com/ThreeMammals/Ocelot/issues/683
     [InlineData("/products/{productId}", "/products/{productId}", "/products/")]
     public void Should_return_response_200_with_empty_placeholder(string downstream, string upstream, string requestURL)
@@ -264,7 +264,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_complex_url()
     {
         var port = PortFinder.GetRandomPort();
@@ -280,7 +280,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_with_complex_url_that_starts_with_placeholder()
     {
         var port = PortFinder.GetRandomPort();
@@ -296,7 +296,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_not_add_trailing_slash_to_downstream_url()
     {
         var port = PortFinder.GetRandomPort();
@@ -311,7 +311,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_201_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
@@ -326,7 +326,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_201_with_complex_query_string()
     {
         var port = PortFinder.GetRandomPort();
@@ -342,7 +342,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Feat", "89")] // https://github.com/ThreeMammals/Ocelot/pull/89
     [InlineData("/api/{finalUrlPath}", "/api/api1/{finalUrlPath}", "/api/api1/product/products/categories/", "/api/product/products/categories/")]
     [InlineData("/api/{urlPath}", "/myApp1Name/api/{urlPath}", "/myApp1Name/api/products/1", "/api/products/1")]
@@ -361,7 +361,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "748")] // https://github.com/ThreeMammals/Ocelot/issues/748
     [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/1", "/downstream/test/1", "?p1=v1&p2=v2&something-else=")]
     [InlineData("/downstream/test/{everything}", "/upstream/test/{everything}", "/upstream/test/", "/downstream/test/", "?p1=v1&p2=v2&something-else=")]
@@ -417,7 +417,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
     
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2199")] // https://github.com/ThreeMammals/Ocelot/issues/2199
     [Trait("Feat", "2200")] // https://github.com/ThreeMammals/Ocelot/pull/2200
     [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
@@ -453,7 +453,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
     
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2209")] // https://github.com/ThreeMammals/Ocelot/issues/2209
     [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
         "/api/InvoIces_abc/def-ghi_abcd/xyz?urlId=bla", "/api/invoices/abc-def-ghi", "?urlId=bla")]
@@ -484,7 +484,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
     
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2209")] // https://github.com/ThreeMammals/Ocelot/issues/2209
     [InlineData("/api/invoices/{url0}-{url1}-{url2}", "/api/invoices_{url0}/{url1}-{url2}_abcd/{url3}?urlId={url4}", 
         "/api/InvoIces_abc/def-ghi_abcd/xyz?urlId=bla", "/api/invoices/abc-def-ghi")]
@@ -513,7 +513,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2212")] // https://github.com/ThreeMammals/Ocelot/issues/2212
     [InlineData("/data-registers/{version}/it/{everything}", "/dati-registri/{version}/{everything}", "/dati-registri/v1.0/operatore/R80QQ5J9600/valida", "/data-registers/v1.0/it/operatore/R80QQ5J9600/valida")]
     [InlineData("/files/{version}/uploads/{everything}", "/data/{version}/storage/{everything}", "/data/v2.0/storage/images/photos/nature", "/files/v2.0/uploads/images/photos/nature")]
@@ -538,7 +538,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "91")] // https://github.com/ThreeMammals/Ocelot/issues/91
     [Trait("Feat", "94")] // https://github.com/ThreeMammals/Ocelot/pull/94
     public void Should_return_response_201_with_simple_url_and_multiple_upstream_http_method()
@@ -556,7 +556,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "91")] // https://github.com/ThreeMammals/Ocelot/issues/91
     [Trait("Feat", "94")] // https://github.com/ThreeMammals/Ocelot/pull/94
     public void Should_return_response_200_with_simple_url_and_any_upstream_http_method()
@@ -575,7 +575,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "134")] // https://github.com/ThreeMammals/Ocelot/issues/134
     public void Should_return_404_when_calling_upstream_route_with_no_matching_downstream_route()
     {
@@ -594,7 +594,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "145")] // https://github.com/ThreeMammals/Ocelot/issues/145
     public void Should_not_set_trailing_slash_on_url_template()
     {
@@ -612,7 +612,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "270")] // https://github.com/ThreeMammals/Ocelot/issues/270
     [Trait("PR", "272")] // https://github.com/ThreeMammals/Ocelot/pull/272
     public void Should_use_priority()
@@ -633,7 +633,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "548")] // https://github.com/ThreeMammals/Ocelot/issues/548
     public void Should_match_multiple_paths_with_catch_all()
     {
@@ -650,7 +650,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "271")] // https://github.com/ThreeMammals/Ocelot/issues/271
     public void Should_fix_issue_271()
     {
@@ -671,7 +671,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "2116")] // https://github.com/ThreeMammals/Ocelot/issues/2116
     [InlineData("debug()")] // no query
     [InlineData("debug%28%29")] // debug()
@@ -691,7 +691,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2064")] // https://github.com/ThreeMammals/Ocelot/issues/2064
     [Trait("Bug", "2065")] // https://github.com/ThreeMammals/Ocelot/discussions/2065
     public void Should_match_correct_route_when_placeholder_appears_after_query_start()
@@ -713,7 +713,7 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2132")] // https://github.com/ThreeMammals/Ocelot/issues/2132
     public void Should_match_correct_route_when_a_configuration_exists_with_query_param_wildcard()
     {

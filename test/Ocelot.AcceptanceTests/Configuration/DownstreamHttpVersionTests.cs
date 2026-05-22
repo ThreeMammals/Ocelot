@@ -10,7 +10,7 @@ namespace Ocelot.AcceptanceTests.Configuration;
 [Trait("Feat", "1124")] // https://github.com/ThreeMammals/Ocelot/issues/1124
 public sealed class DownstreamHttpVersionTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_using_http_one()
     {
         var port = PortFinder.GetRandomPort();
@@ -25,7 +25,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_using_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
@@ -41,7 +41,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_using_http_two_point_zero()
     {
         var port = PortFinder.GetRandomPort();
@@ -61,7 +61,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
     {
         var port = PortFinder.GetRandomPort();
@@ -81,7 +81,7 @@ public sealed class DownstreamHttpVersionTests : Steps
     }
 
     //TODO: does this test make any sense?
-    [BddfyFact]
+    [Fact]
     public void Should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();

@@ -21,7 +21,7 @@ public class DynamicRoutingTests : DiscoverySteps
 {
     public const bool EnabledDiscovery = true;
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "351")] // https://github.com/ThreeMammals/Ocelot/pull/351
     public void ShouldForwardQueryStringToDownstream()
     {
@@ -50,7 +50,7 @@ public class DynamicRoutingTests : DiscoverySteps
         pathAndQuery.ShouldAllBe(pathQuery => pathWithQueryString.Contains(pathQuery));
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
@@ -74,7 +74,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
@@ -123,7 +123,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2330")] // https://github.com/ThreeMammals/Ocelot/issues/2330
     [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
@@ -183,7 +183,7 @@ public class DynamicRoutingTests : DiscoverySteps
         return scenario;
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2330")] // https://github.com/ThreeMammals/Ocelot/issues/2330
     [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
@@ -264,7 +264,7 @@ public class DynamicRoutingTests : DiscoverySteps
         }
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2320")] // https://github.com/ThreeMammals/Ocelot/issues/2320
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
@@ -295,7 +295,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2320")] // https://github.com/ThreeMammals/Ocelot/issues/2320
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
@@ -353,7 +353,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
@@ -389,7 +389,7 @@ public class DynamicRoutingTests : DiscoverySteps
     private void GivenIEnsureOcelotClient(AuthenticationSteps steps)
         => ocelotClient ??= steps.OcelotClient;
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
@@ -453,7 +453,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -488,7 +488,7 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339

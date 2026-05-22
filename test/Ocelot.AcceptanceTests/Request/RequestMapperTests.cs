@@ -6,7 +6,7 @@ namespace Ocelot.AcceptanceTests.Request;
 [Trait("PR", "1972")] // https://github.com/ThreeMammals/Ocelot/pull/1972
 public sealed class RequestMapperTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_map_request_without_content()
     {
         var port = PortFinder.GetRandomPort();
@@ -22,7 +22,7 @@ public sealed class RequestMapperTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_map_request_with_content_length()
     {
         var port = PortFinder.GetRandomPort();
@@ -38,7 +38,7 @@ public sealed class RequestMapperTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_map_request_with_empty_content()
     {
         var port = PortFinder.GetRandomPort();
@@ -54,7 +54,7 @@ public sealed class RequestMapperTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
     public void Should_map_request_with_chunked_content()
     {
@@ -71,7 +71,7 @@ public sealed class RequestMapperTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
     public void Should_map_request_with_empty_chunked_content()
     {

@@ -35,7 +35,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
 
     /// <summary>It tests the following stack: HTTP 1.1, SSL, WebSocket.</summary>
     /// <returns>A <see cref="Task"/> object.</returns>
-    [BddfyTheory]
+    [Theory]
     [InlineData("ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
     /* [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
@@ -55,7 +55,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     /// <summary>It tests the following stack: HTTP/2, SSL, WebSocket.</summary>
     /// <remarks>HTTP/2 always requires an SSL certificate.</remarks>
     /// <returns>A <see cref="Task"/> object.</returns>
-    [BddfyFact]
+    [Fact]
     public void Http20ClientWhenDirectConnectionThenShouldConnect()
     {
         int port = PortFinder.GetRandomPort();
@@ -81,7 +81,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
 
     ///// <summary>In the middle, Ocelot tests the following stack: HTTP 1.1, SSL, WebSocket.</summary>
     ///// <returns>A <see cref="Task"/> object.</returns>
-    [BddfyTheory]
+    [Theory]
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
     /*[InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
@@ -115,7 +115,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     // AI Q.2: C# Yarp | Does Yarp support webSocket+HTTP/2 forwarding?
     // AI A.2: Yes! YARP (Yet Another Reverse Proxy) supports WebSockets over HTTP/2 starting in .NET 7 and YARP 2.0.
     //         See MS Learn | YARP Proxying WebSockets and SPDY -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/websockets
-    [BddfyFact(DisplayName = "TODO " + nameof(Http20ClientWhenOcelotInTheMiddleThenShouldConnect),
+    [Fact(DisplayName = "TODO " + nameof(Http20ClientWhenOcelotInTheMiddleThenShouldConnect),
         Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
     public void Http20ClientWhenOcelotInTheMiddleThenShouldConnect()
     {
@@ -143,7 +143,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [Trait("Bug", "930")] // https://github.com/ThreeMammals/Ocelot/issues/930
     [Trait("PR", "2091")] // https://github.com/ThreeMammals/Ocelot/pull/2091
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx")] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets

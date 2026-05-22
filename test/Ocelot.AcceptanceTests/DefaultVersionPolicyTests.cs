@@ -9,7 +9,7 @@ namespace Ocelot.AcceptanceTests;
 [Trait("Feat", "1672")] // https://github.com/ThreeMammals/Ocelot/issues/1672
 public sealed class DefaultVersionPolicyTests : Steps
 {
-    [BddfyFact]
+    [Fact]
     public void Should_return_bad_gateway_when_request_higher_receive_lower()
     {
         var port = PortFinder.GetRandomPort();
@@ -25,7 +25,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_bad_gateway_when_request_lower_receive_higher()
     {
         var port = PortFinder.GetRandomPort();
@@ -41,7 +41,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_bad_gateway_when_request_exact_receive_different()
     {
         var port = PortFinder.GetRandomPort();
@@ -57,7 +57,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_ok_when_request_version_exact_receive_exact()
     {
         var port = PortFinder.GetRandomPort();
@@ -73,7 +73,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_ok_when_request_version_lower_receive_lower()
     {
         var port = PortFinder.GetRandomPort();
@@ -89,7 +89,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_ok_when_request_version_lower_receive_exact()
     {
         var port = PortFinder.GetRandomPort();
@@ -105,7 +105,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_ok_when_request_version_higher_receive_higher()
     {
         var port = PortFinder.GetRandomPort();
@@ -121,7 +121,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_return_ok_when_request_version_higher_receive_exact()
     {
         var port = PortFinder.GetRandomPort();

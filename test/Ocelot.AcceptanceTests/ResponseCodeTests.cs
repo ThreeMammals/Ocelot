@@ -5,7 +5,7 @@ public sealed class ResponseCodeTests : Steps
     /// <summary>
     /// TODO: Move the test to the Headers Transform namespace since the bug was related to the Headers Transform middleware.
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "440")] // https://github.com/ThreeMammals/Ocelot/issues/440
     [Trait("PR", "450")] // https://github.com/ThreeMammals/Ocelot/pull/450
     public void ShouldReturnResponse304WhenServiceReturns304()

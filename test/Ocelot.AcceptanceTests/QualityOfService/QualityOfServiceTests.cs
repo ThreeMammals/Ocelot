@@ -16,7 +16,7 @@ public sealed class QualityOfServiceTests : QosSteps
 {
     public const bool NoDiscovery = false;
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
     [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
     public void Should_not_timeout()
@@ -43,7 +43,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "318")] // https://github.com/ThreeMammals/Ocelot/issues/318
     [Trait("PR", "319")] // https://github.com/ThreeMammals/Ocelot/pull/319
     public void Should_timeout()
@@ -63,7 +63,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "1550")] // https://github.com/ThreeMammals/Ocelot/issues/1550
     [Trait("Bug", "1706")] // https://github.com/ThreeMammals/Ocelot/issues/1706
     [Trait("PR", "1753")] // https://github.com/ThreeMammals/Ocelot/pull/1753
@@ -86,7 +86,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "2085")] // https://github.com/ThreeMammals/Ocelot/issues/2085
     public void Should_open_circuit_breaker_for_DefaultBreakDuration()
     {
@@ -125,7 +125,7 @@ public sealed class QualityOfServiceTests : QosSteps
     /// and that after the break period elapses the circuit closes again so requests can succeed.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous acceptance test.</returns>
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public void Should_open_circuit_breaker_then_close()
     {
@@ -157,7 +157,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact] // [SkippableFact]
+    [Fact] // [SkippableFact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
     public void Should_open_circuit_breaker_then_close_without_timeout_strategy()
@@ -177,7 +177,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact] // [SkippableFact]
+    [Fact] // [SkippableFact]
     [Trait("PR", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
     public void Open_circuit_should_not_effect_different_route()
     {
@@ -222,7 +222,7 @@ public sealed class QualityOfServiceTests : QosSteps
     // TODO: If failed in parallel execution mode, switch to SequentialTests
     // This issue may arise when transitioning all tests to parallel execution
     // This test must be sequential because of usage of the static DownstreamRoute.DefaultTimeoutSeconds
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "1833")] // https://github.com/ThreeMammals/Ocelot/issues/1833
     public void Should_timeout_per_default_after_90_seconds()
     {
@@ -248,7 +248,7 @@ public sealed class QualityOfServiceTests : QosSteps
         }
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
     [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
     public void HasRouteAndGlobalTimeouts_RouteTimeoutShouldTakePrecedenceOverGlobalTimeout()
@@ -277,7 +277,7 @@ public sealed class QualityOfServiceTests : QosSteps
     private async Task WhenImWatchingWhenIGetUrlOnTheApiGateway()
         => _watcher = await WatchWhenIGetUrlOnTheApiGateway();
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1314")] // https://github.com/ThreeMammals/Ocelot/issues/1314
     public void HasGlobalTimeoutOnlyThenForAllRoutesGlobalTimeoutShouldTakePrecedenceOverAbsoluteGlobalTimeout()
     {
@@ -315,7 +315,7 @@ public sealed class QualityOfServiceTests : QosSteps
     private async Task ResponseBodyShouldStartWith(string expected)
         => (await response.Content.ReadAsStringAsync(CancelMe)).ShouldStartWith(expected);
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public void HasRouteAndGlobalFailureRatiosThenRouteFailureRatioShouldTakePrecedenceOverGlobalFailureRatio()
@@ -365,7 +365,7 @@ public sealed class QualityOfServiceTests : QosSteps
     private static int TimeoutStrategy() => 10;
     private bool FailEvery2ndReqStrategy() => !_isOK && ++_count % 2 == 0;
 
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "2081")] // https://github.com/ThreeMammals/Ocelot/pull/2081
     [Trait("Feat", "2080")] // https://github.com/ThreeMammals/Ocelot/issues/2080
     public void HasGlobalFailureRatioOnlyThenGlobalFailureRatioShouldTakePrecedenceOverPollyDefaultFailureRatio()
@@ -430,7 +430,7 @@ public sealed class QualityOfServiceTests : QosSteps
     /// <c>FailureRatio = 0.5</c>, <c>MinimumThroughput = 8</c>, <c>SamplingDuration = 10 s</c> —
     /// 7 calls, all failing → circuit <b>stays closed</b> (throughput too low).
     /// </remarks>
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
     [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void FailureRatioWhenBelowMinimumThroughputThenCircuitStaysClosed()
@@ -471,7 +471,7 @@ public sealed class QualityOfServiceTests : QosSteps
     /// <c>FailureRatio = 0.5</c>, <c>MinimumThroughput = 8</c>, <c>SamplingDuration = 10 s</c> —
     /// 8 calls, 5 failing (62.5 %) → circuit <b>opens</b>.
     /// </remarks>
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
     [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void FailureRatioWhenAtMinimumThroughputWithExceededRatioThenCircuitOpens()
@@ -513,7 +513,7 @@ public sealed class QualityOfServiceTests : QosSteps
     private int _callCount = 0;
     private bool FailFirstNthReqStrategy(int successCalls) => ++_callCount > successCalls;
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -551,7 +551,7 @@ public sealed class QualityOfServiceTests : QosSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
@@ -603,7 +603,7 @@ public sealed class QualityOfServiceTests : QosSteps
     /// <see cref="QoSOptions.MinimumThroughput"/> consecutive 404 Responses — something the default
     /// built-in handler would never do, because 404 is not in <see cref="CircuitBreakerDelegatingHandler.DefaultServerErrorCodes"/>.
     /// </summary>
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "2384")] // https://github.com/ThreeMammals/Ocelot/issues/2384
     [Trait("PR", "2385")] // https://github.com/ThreeMammals/Ocelot/pull/2385
     public void AddQualityOfServiceWhenGenericCustomServerErrorCodesThenOpensCircuitOn404()

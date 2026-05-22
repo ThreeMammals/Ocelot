@@ -28,7 +28,7 @@ public sealed class DownstreamMetadataTests : Steps
     {
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(typeof(StringDownStreamMetadataHandler))]
     [InlineData(typeof(StringArrayDownStreamMetadataHandler))]
     [InlineData(typeof(BoolDownStreamMetadataHandler))]
@@ -60,7 +60,7 @@ public sealed class DownstreamMetadataTests : Steps
     /// <param name="trimChars">The trimmed characters.</param>
     /// <param name="stringSplitOption">If the empty entries should be removed.</param>
     /// <param name="currentConfig">The current test configuration.</param>
-    [BddfyTheory]
+    [Theory]
     [InlineData(new[] { "," }, new[] { ' ' }, nameof(StringSplitOptions.None), StringArrayConfig.Default)]
     [InlineData(
         new[] { ";", ".", "," },
@@ -112,7 +112,7 @@ public sealed class DownstreamMetadataTests : Steps
         .BDDfy();
     }
 
-    [BddfyTheory]
+    [Theory]
     [InlineData(NumberStyles.Any, "de-CH", NumberConfig.Default)]
     [InlineData(NumberStyles.AllowParentheses | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign, "de-CH", NumberConfig.AlternateNumberStyle)]
     public void ShouldMatchTargetNumberAccordingToConfiguration(

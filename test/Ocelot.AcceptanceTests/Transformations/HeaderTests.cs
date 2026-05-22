@@ -17,7 +17,7 @@ public sealed class HeaderTests : Steps
     private static FileHttpHandlerOptions UseCookieContainer => new() { UseCookieContainer = true };
     private static FileHttpHandlerOptions DoNotUseCookieContainer => new() { UseCookieContainer = false };
 
-    [BddfyFact]
+    [Fact]
     public void Should_transform_upstream_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -35,7 +35,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     public void Should_transform_downstream_header()
     {
         var port = PortFinder.GetRandomPort();
@@ -52,7 +52,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "190")] // https://github.com/ThreeMammals/Ocelot/issues/190
     public void Should_fix_issue_190()
     {
@@ -75,7 +75,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "205")] // https://github.com/ThreeMammals/Ocelot/issues/205
     public void Should_fix_issue_205()
     {
@@ -98,7 +98,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "417")] // https://github.com/ThreeMammals/Ocelot/issues/417
     public void Should_fix_issue_417()
     {
@@ -122,7 +122,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "274")] // https://github.com/ThreeMammals/Ocelot/issues/274
     public void Request_should_reuse_cookies_with_cookie_container()
     {
@@ -144,7 +144,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "274")] // https://github.com/ThreeMammals/Ocelot/issues/274
     public void Request_should_have_own_cookies_no_cookie_container()
     {
@@ -166,7 +166,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "474")] // https://github.com/ThreeMammals/Ocelot/issues/474
     [Trait("PR", "483")] // https://github.com/ThreeMammals/Ocelot/pull/483
     public void Issue_474_should_not_put_spaces_in_header()
@@ -185,7 +185,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Bug", "474")] // https://github.com/ThreeMammals/Ocelot/issues/474
     [Trait("PR", "483")] // https://github.com/ThreeMammals/Ocelot/pull/483
     public void Issue_474_should_put_spaces_in_header()
@@ -206,7 +206,7 @@ public sealed class HeaderTests : Steps
         .BDDfy();
     }
 
-    [BddfyFact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
+    [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
     [Trait("Feat", "623")] // https://github.com/ThreeMammals/Ocelot/issues/623
     [Trait("PR", "632")] // https://github.com/ThreeMammals/Ocelot/pull/632
     public void Should_pass_remote_ip_address_if_as_x_forwarded_for_header()
@@ -242,7 +242,7 @@ public sealed class HeaderTests : Steps
     public const string X_Forwarded_Host = "X-Forwarded-Host";
     public const string X_Forwarded_Proto = "X-Forwarded-Proto";
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
     [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
     public void ShouldApplyGlobalUpstreamHeaderTransformsForAllRoutes()
@@ -301,7 +301,7 @@ Ot-Route: ?"))
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "1658")] // https://github.com/ThreeMammals/Ocelot/issues/1658
     [Trait("PR", "1659")] // https://github.com/ThreeMammals/Ocelot/pull/1659
     public void ShouldApplyGlobalDownstreamHeaderTransformsForAllRoutes()

@@ -15,7 +15,6 @@ global using Ocelot.Testing.Boxing;
 global using Shouldly;
 global using System.Net;
 global using TestStack.BDDfy;
-global using TestStack.BDDfy.Xunit;
 global using Xunit;
 
 using System.Diagnostics.CodeAnalysis;

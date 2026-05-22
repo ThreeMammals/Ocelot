@@ -13,7 +13,7 @@ namespace Ocelot.AcceptanceTests.Requester;
 public sealed class MessageInvokerPoolTests : RequesterSteps
 {
     #region Integration tests
-    [BddfyFact]
+    [Fact]
     [Trait("PR", "1824")] // https://github.com/ThreeMammals/Ocelot/pull/1824
     public void Should_reuse_cookies_from_container()
     {
@@ -107,7 +107,7 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
         => _response.StatusCode.ShouldBe(statusCode);
     #endregion
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "2320")]
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
@@ -136,7 +136,7 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
         .BDDfy();
     }
 
-    [BddfyFact]
+    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2320")] // https://github.com/ThreeMammals/Ocelot/issues/2320
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
