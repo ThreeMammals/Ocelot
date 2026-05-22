@@ -20,7 +20,7 @@ public class IPSecurityPolicy : ISecurityPolicy
         {
             if (options.IPBlockedList.Contains(clientIp.ToString()))
             {
-                var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP");
+                var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP"); // TODO 401? WTF? It must be 403 Forbidden :) LoL We should not require any authentication!
                 return new ErrorResponse(error);
             }
         }
@@ -29,7 +29,7 @@ public class IPSecurityPolicy : ISecurityPolicy
         {
             if (!options.IPAllowedList.Contains(clientIp.ToString()))
             {
-                var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid");
+                var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid"); // TODO 403 Forbidden
                 return new ErrorResponse(error);
             }
         }
@@ -38,5 +38,5 @@ public class IPSecurityPolicy : ISecurityPolicy
     }
 
     public Task<Response> SecurityAsync(DownstreamRoute downstreamRoute, HttpContext context)
-        => Task.Run(() => Security(downstreamRoute, context));
+        => Task.Run(() => Security(downstreamRoute, context), context.RequestAborted);
 }
