@@ -47,8 +47,8 @@ public sealed class AggregateTests : Steps
         });
         configuration.GlobalConfiguration.RequestIdKey = "CorrelationID";
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-        this
-            .Given(x => x.GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
+        Scenario<AggregateTests>()
+            .Given(x => GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))

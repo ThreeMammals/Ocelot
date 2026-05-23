@@ -11,6 +11,24 @@ public class Steps : AcceptanceSteps
         BddfyConfig.Configure();
     }
 
+    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
+
+    public IFluentStepBuilder<TScenario> Scenario<TScenario>() where TScenario : class
+        => new FluentStepBuilder<TScenario>(this as TScenario);
+    public static IFluentStepBuilder<TScenario> Scenario<TScenario>(TScenario scenario) where TScenario : class
+        => new FluentStepBuilder<TScenario>(scenario);
+
+    /// <summary>
+    /// Runs the BDDfy scenario. Call this at the end of each test method.
+    /// </summary>
+    protected void RunBddfy(string title = null)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            this.BDDfy();
+        else
+            this.BDDfy(title);
+    }
+
     public void GivenOcelotIsRunningWithDelegatingHandler<THandler>(bool global = false)
         where THandler : DelegatingHandler
         => GivenOcelotIsRunning(s => s.AddOcelot().AddDelegatingHandler<THandler>(global));

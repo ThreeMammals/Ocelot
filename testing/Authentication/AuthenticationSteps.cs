@@ -192,7 +192,7 @@ public class AuthenticationSteps : AcceptanceSteps
         return JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptions.Web);
     }
 
-    protected FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
+    public FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
     {
         FileRoute? r = GivenRoute(port, path, path) as FileRoute;
         r!.AuthenticationOptions = options;
