@@ -28,6 +28,35 @@ public sealed class IPSecurityPolicyTests : UnitTest
     }
 
     [Fact]
+    public void Should_return_OkResponse_when_options_null()
+    {
+        // Arrange
+        _downstreamRouteBuilder.WithSecurityOptions(null);
+        _context.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
+
+        var actual = _policy.Security(_context.Items.DownstreamRoute(), _context);
+
+        // Assert
+        Assert.False(actual.IsError);
+        Assert.IsType<OkResponse>(actual);
+    }
+
+    [Fact]
+    public void Should_return_OkResponse_when_RemoteIpAddress_null()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = null;
+        var options = new FileSecurityOptions();
+
+        // Act
+        var actual = WhenTheSecurityPolicy(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+        Assert.IsType<OkResponse>(actual);
+    }
+
+    [Fact]
     public void Should_No_blocked_Ip_and_allowed_Ip()
     {
         // Arrange, Act
@@ -406,14 +435,127 @@ public sealed class IPSecurityPolicyTests : UnitTest
         Assert.False(actual.IsError);
     }
 
-    private Response WhenTheSecurityPolicy(FileSecurityOptions options, FileGlobalConfiguration global = null)
+    private void SetupContext(FileSecurityOptions options, FileGlobalConfiguration global = null)
     {
-        // Arrange
         var securityOptions = _securityOptionsCreator.Create(options, global ?? Empty);
         _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
         _context.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
+    }
 
-        // Act
+    private Response WhenTheSecurityPolicy(FileSecurityOptions options, FileGlobalConfiguration global = null)
+    {
+        SetupContext(options, global);
         return _policy.Security(_context.Items.DownstreamRoute(), _context);
     }
+    private Task<Response> WhenTheSecurityPolicyAsync(FileSecurityOptions options, FileGlobalConfiguration global = null)
+    {
+        SetupContext(options, global);
+        return _policy.SecurityAsync(_context.Items.DownstreamRoute(), _context);
+    }
+
+    #region PR 2392
+    [Fact]
+    public async Task Should_SecurityAsync_No_blocked_Ip_and_allowed_Ip()
+    {
+        // Arrange
+        var options = new FileSecurityOptions();
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_blockedIp_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.1");
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_allowedIp_clientIp_allow()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions("192.168.1.1");
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_allowedIp_clientIp_block()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.2")[0];
+        var options = new FileSecurityOptions("192.168.1.1");
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.True(actual.IsError);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_respect_request_cancellation_token()
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        _context.RequestAborted = cts.Token;
+        var options = new FileSecurityOptions();
+        SetupContext(options);
+
+        // Act
+        var task = _policy.SecurityAsync(_context.Items.DownstreamRoute(), _context);
+        cts.Cancel();
+
+        // Assert - Should handle cancellation gracefully without throwing
+        var ex = await Record.ExceptionAsync(() => task);
+        Assert.NotNull(ex);
+        Assert.IsType<TaskCanceledException>(ex);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_returns_ok_response_when_security_passes()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions();
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.IsType<OkResponse>(actual);
+        Assert.False(actual.IsError);
+    }
+
+    [Fact]
+    public async Task Should_SecurityAsync_returns_error_response_when_blocked()
+    {
+        // Arrange
+        _context.Connection.RemoteIpAddress = Dns.GetHostAddresses("192.168.1.1")[0];
+        var options = new FileSecurityOptions(blockedIPs: "192.168.1.1");
+
+        // Act
+        var actual = await WhenTheSecurityPolicyAsync(options);
+
+        // Assert
+        Assert.IsType<ErrorResponse>(actual);
+        Assert.True(actual.IsError);
+    }
+    #endregion
 }
