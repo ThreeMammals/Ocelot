@@ -12,7 +12,7 @@ namespace Ocelot.AcceptanceTests.Authentication;
 [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
 [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740
 [Trait("Feat", "1580")] // https://github.com/ThreeMammals/Ocelot/issues/1580
-public sealed class MultipleAuthSchemesFeatureTests : AuthenticationSteps
+public sealed class MultipleAuthSchemesFeatureTests : AuthSteps
 {
     private string[] _serverUrls;
     private BearerToken[] _tokens;

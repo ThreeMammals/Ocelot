@@ -603,4 +603,5 @@ public class DynamicRoutingTests : DiscoverySteps
     }
 
     protected override string ServiceNamespace() => nameof(DynamicRoutingTests);
+    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 }

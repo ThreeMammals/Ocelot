@@ -52,4 +52,6 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         DownstreamScheme = Uri.UriSchemeWs,
         DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
     };
+
+    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 }

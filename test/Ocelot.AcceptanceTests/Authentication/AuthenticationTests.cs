@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
-using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Authentication;
 
-public sealed class AuthenticationTests : AuthenticationSteps
+public sealed class AuthenticationTests : AuthSteps
 {
     //public IFluentStepBuilder<AuthenticationTests> GivenScenario(Expression<Func<AuthenticationTests, Task>> step)
     //{

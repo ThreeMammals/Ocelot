@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;
 
-public sealed class CacheManagerTests : AuthenticationSteps
+public sealed class CacheManagerTests : AuthSteps
 {
     public CacheManagerTests() : base()
     { }
