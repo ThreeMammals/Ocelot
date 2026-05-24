@@ -1,6 +1,7 @@
 ﻿using Ocelot.AcceptanceTests.Properties;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using TestStack.BDDfy.Configuration;
 
 namespace Ocelot.AcceptanceTests;
 
@@ -9,7 +10,21 @@ public class Steps : AcceptanceSteps
     public Steps() : base()
     {
         BddfyConfig.Configure();
+        Configurator.Processors.ConsoleReport.Disable();
     }
+
+    /*
+    protected readonly ITestOutputHelper _output;
+    public Steps(ITestOutputHelper output) : base()
+    {
+        _output = output;
+        BddfyConfig.Configure();
+
+        // Important: Redirect BDDfy console output
+        // Configurator.Processors.ConsoleReport.Use(_output);   // Try this first
+    }
+    protected void Report(string message) => _output.WriteLine(message);
+    */
 
     public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 
