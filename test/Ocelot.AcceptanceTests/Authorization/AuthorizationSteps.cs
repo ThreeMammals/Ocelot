@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Authorization;
 
-public class AuthorizationSteps : AuthenticationSteps
+using Authentication;
+
+public class AuthorizationSteps : AuthSteps
 {
     public void GivenIUpdateSubClaim() => AuthTokenRequesting += UpdateSubClaim;
 

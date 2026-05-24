@@ -13,21 +13,34 @@ using HeadersCollection = List<KeyValuePair<string, string>>;
 public sealed class InvalidHeaderValueTests : Steps
 {
     private const int RequestTimeoutSeconds = 3;
+    private int _gatewayPort;
+    private string _response;
 
     [Theory]
     [InlineData("skull", "-=💀=-", HttpStatusCode.BadRequest)] // original bug 2374
     [InlineData("utf8char", "-=é=-", HttpStatusCode.BadRequest)]
     [InlineData("utf16char", "-=漢=-", HttpStatusCode.BadRequest)]
     [InlineData("ascii", "valid-ascii", HttpStatusCode.OK)]
-    public async Task Should_return_400_BadRequest_having_non_ascii_header_value_otherwise_200_OK(
+    public void Should_return_400_BadRequest_having_non_ascii_header_value_otherwise_200_OK(
         string headerName, string headerValue, HttpStatusCode status)
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/ocelot/posts/{id}", "/todos/{id}");
         var configuration = GivenConfiguration(route);
-        GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy");
-        var gatewayPort = await GivenOcelotHostIsRunning(
+        HeadersCollection headers = [new(headerName, headerValue)];
+        string reason = Regex.Replace(status.ToString(), "(?<=[a-z])(?=[A-Z])", " ");
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy"))
+            .And(x => GivenOcelotHostIsRunning())
+            .When(x => WhenIGetRawAsync(_gatewayPort, "/ocelot/posts/askdj", headers, CancelMe))
+            .Then(x => ThenRawResponseShouldNotBeNullOrEmpty())
+            .And(x => ThenRawResponseShouldStartWith($"HTTP/1.1 {(int)status} {reason}"))
+        .BDDfy();
+    }
+
+    private async Task GivenOcelotHostIsRunning()
+        => _gatewayPort = await GivenOcelotHostIsRunning(
                                 null, // Action<WebHostBuilderContext, IConfigurationBuilder> ? configureDelegate,
                                 null, // Action<IServiceCollection> ? configureServices,
                                 null, // Action<IApplicationBuilder> ? configureApp,
@@ -35,21 +48,17 @@ public sealed class InvalidHeaderValueTests : Steps
                                 null, // Action<IWebHostBuilder> ? postConfigureHost,
                                 null, // Action<TestServer> ? configureServer,
                                 null); // Action<HttpClient> ? configureClient
-        HeadersCollection headers = [ new(headerName, headerValue) ];
-        var response = await GetRawAsync(gatewayPort, "/ocelot/posts/askdj", headers, Xunit.TestContext.Current.CancellationToken);
 
-        response.ShouldNotBeNullOrEmpty();
-        string reason = Regex.Replace(status.ToString(), "(?<=[a-z])(?=[A-Z])", " ");
-        response.ShouldStartWith($"HTTP/1.1 {(int)status} {reason}");
-    }
-
-    private static Task<string> GetRawAsync(int port, string path, HeadersCollection headers, CancellationToken cancellation)
+    private async Task<string> WhenIGetRawAsync(int port, string path, HeadersCollection headers, CancellationToken cancellation)
     {
         headers.Insert(0, new(HeaderNames.Connection, "close"));
         headers.Insert(0, new(HeaderNames.Accept, "*/*"));
         headers.Insert(0, new(HeaderNames.Host, $"localhost:{port}"));
-        return SendRawRequestAsync(IPAddress.Loopback, port, HttpMethod.Get, path, new(headers), cancellation);
+        return _response = await SendRawRequestAsync(IPAddress.Loopback, port, HttpMethod.Get, path, new(headers), cancellation);
     }
+
+    private void ThenRawResponseShouldNotBeNullOrEmpty() => _response.ShouldNotBeNullOrEmpty();
+    private void ThenRawResponseShouldStartWith(string start) => _response.ShouldStartWith(start);
 
     private static async Task<string> SendRawRequestAsync(IPAddress address, int port,
         HttpMethod method, string path, Dictionary<string, string> headers, CancellationToken cancellation)

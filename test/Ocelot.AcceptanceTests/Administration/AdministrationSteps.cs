@@ -3,7 +3,7 @@ using Ocelot.Testing.Authentication;
 
 namespace Ocelot.AcceptanceTests.Administration;
 
-public sealed class AdministrationSteps : AuthenticationSteps
+public sealed class AdministrationSteps : AuthSteps
 {
     private Task GivenThereIsOcelotInternalJwtAuthServiceRunning(CancellationToken token)
     {

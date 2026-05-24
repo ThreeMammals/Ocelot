@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 using System.Diagnostics;
 
 namespace Ocelot.AcceptanceTests;
@@ -11,16 +10,14 @@ public sealed class ContentTests : Steps
     private long _memoryUsageAfterCallToService;
     private bool _contentTypeHeaderExists;
 
-    public ContentTests() : base()
-    {
-    }
-
     [Fact]
     public void Should_Not_add_content_type_or_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = GivenConfiguration(port);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+        var route = GivenRoute(port, HttpMethod.Get);
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -28,53 +25,61 @@ public sealed class ContentTests : Steps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .And(x => ThenTheContentTypeShouldBeEmpty())
             .And(x => ThenTheContentLengthShouldBeZero())
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
     public void Should_add_content_type_and_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = GivenConfiguration(port, HttpMethods.Post);
+        var route = GivenRoute(port, HttpMethod.Post);
+        var configuration = GivenConfiguration(route);
         var contentType = "application/json";
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent", contentType))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .And(x => ThenTheContentTypeIsIs(contentType))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
     public void Should_add_default_content_type_header()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = GivenConfiguration(port, HttpMethods.Post);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
+        var route = GivenRoute(port, HttpMethod.Post);
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
             .And(x => ThenTheContentTypeIsIs("text/plain; charset=utf-8"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("PR", "1824")]
-    [Trait("Issues", "356 695 1924")]
+    [Trait("PR", "1824")] // https://github.com/ThreeMammals/Ocelot/pull/1824
+    [Trait("Feat", "356")] // https://github.com/ThreeMammals/Ocelot/issues/356
+    [Trait("Feat", "695")] // https://github.com/ThreeMammals/Ocelot/issues/695
+    [Trait("Bug", "1924")] // https://github.com/ThreeMammals/Ocelot/issues/1924
     public void Should_Not_increase_memory_usage_When_downloading_large_file()
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = GivenConfiguration(port);
-        var dummyDatFilePath = GenerateDummyDatFile(100);
-        this.Given(x => x.GivenThereIsAServiceWithPayloadRunningOn(port, "/", dummyDatFilePath))
+        var route = GivenRoute(port, HttpMethod.Get);
+        var configuration = GivenConfiguration(route);
+        var dummyDatFilePath = GenerateDummyDatFile(100); // large file
+        this
+            .Given(x => x.GivenThereIsAServiceWithPayloadRunningOn(port, "/", dummyDatFilePath))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => x.ThenMemoryUsageShouldNotIncrease())
-            .BDDfy();
+        .BDDfy();
     }
 
     private void ThenMemoryUsageShouldNotIncrease()
@@ -153,22 +158,4 @@ public sealed class ContentTests : Steps
 
         return payloadPath;
     }
-
-    private static FileConfiguration GivenConfiguration(int port, string method = null) => new()
-    {
-        Routes = new()
-        {
-            new FileRoute
-            {
-                DownstreamPathTemplate = "/",
-                DownstreamScheme = Uri.UriSchemeHttp,
-                DownstreamHostAndPorts = new()
-                {
-                    new FileHostAndPort("localhost", port),
-                },
-                UpstreamPathTemplate = "/",
-                UpstreamHttpMethod = [method ?? HttpMethods.Get],
-            },
-        },
-    };
 }

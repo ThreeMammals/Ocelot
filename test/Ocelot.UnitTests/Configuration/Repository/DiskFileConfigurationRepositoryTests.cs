@@ -182,8 +182,6 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
         // Assert - no exception thrown
     }
 
-    private static CancellationToken CancelMe => TestContext.Current.CancellationToken;
-
     private FileInfo GivenTheUserAddedOcelotJson()
     {
         var primaryFile = Path.Combine(TestID, ConfigurationBuilderExtensions.PrimaryConfigFile);

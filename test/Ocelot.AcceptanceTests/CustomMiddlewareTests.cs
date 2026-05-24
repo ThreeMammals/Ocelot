@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
 using Ocelot.Middleware;
 using System.Diagnostics;
 
 namespace Ocelot.AcceptanceTests;
 
+[Trait("Commit", "ab5d7fa")] // https://github.com/ThreeMammals/Ocelot/commit/ab5d7fa33da5578a9a0b463016e42b417dd9d55e
 public class CustomMiddlewareTests : Steps
 {
     private int _counter;
@@ -27,17 +26,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -51,17 +50,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -75,18 +74,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/", "/41879/");
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -100,18 +98,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -125,18 +122,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -150,18 +146,17 @@ public class CustomMiddlewareTests : Steps
                 await next.Invoke();
             },
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -176,18 +171,17 @@ public class CustomMiddlewareTests : Steps
                     return; // do not invoke the rest of the pipeline
                 }),
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => x.ThenTheCounterIs(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     /// <summary>
@@ -211,16 +205,16 @@ public class CustomMiddlewareTests : Steps
             }
             return Task.CompletedTask;
         };
-
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/", "/west");
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, "/test"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, "/test"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
     private Task<int> GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)

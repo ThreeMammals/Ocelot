@@ -126,12 +126,6 @@
           "xunit.v3.assert.source": "3.2.2"
         }
       },
-      "Microsoft.Testing.Platform": {
-        "type": "Direct",
-        "requested": "[2.2.3, )",
-        "resolved": "2.2.3",
-        "contentHash": "LhM1/Qoi8Ams5QcD4r3f09CSOono9iQr3NEJQItFtyzWB55nWTgEOsVqXqMWWWIwk3nkPqc+XfnlJmp8xUI5fg=="
-      },
       "Nito.AsyncEx": {
         "type": "Direct",
         "requested": "[5.1.2, )",
@@ -515,6 +509,11 @@
           "Microsoft.Testing.Platform": "2.2.2"
         }
       },
+      "Microsoft.Testing.Platform": {
+        "type": "Transitive",
+        "resolved": "2.2.2",
+        "contentHash": "9mUsTOri0aVqBX7/EJwqVJxVwdOzGUVJqK1H2EMfIl9xxJuSdqhfAlJbukl/iNugvi4+cmQs/LI8PLTDUT9P1A=="
+      },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
         "resolved": "2.2.2",
@@ -873,12 +872,6 @@
           "System.Reactive": "7.0.0-preview.15",
           "xunit.v3.assert.source": "3.2.2"
         }
-      },
-      "Microsoft.Testing.Platform": {
-        "type": "Direct",
-        "requested": "[2.2.3, )",
-        "resolved": "2.2.3",
-        "contentHash": "LhM1/Qoi8Ams5QcD4r3f09CSOono9iQr3NEJQItFtyzWB55nWTgEOsVqXqMWWWIwk3nkPqc+XfnlJmp8xUI5fg=="
       },
       "Nito.AsyncEx": {
         "type": "Direct",
@@ -1264,6 +1257,11 @@
         "dependencies": {
           "Microsoft.Testing.Platform": "2.2.2"
         }
+      },
+      "Microsoft.Testing.Platform": {
+        "type": "Transitive",
+        "resolved": "2.2.2",
+        "contentHash": "9mUsTOri0aVqBX7/EJwqVJxVwdOzGUVJqK1H2EMfIl9xxJuSdqhfAlJbukl/iNugvi4+cmQs/LI8PLTDUT9P1A=="
       },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
@@ -1651,12 +1649,6 @@
           "xunit.v3.assert.source": "3.2.2"
         }
       },
-      "Microsoft.Testing.Platform": {
-        "type": "Direct",
-        "requested": "[2.2.3, )",
-        "resolved": "2.2.3",
-        "contentHash": "LhM1/Qoi8Ams5QcD4r3f09CSOono9iQr3NEJQItFtyzWB55nWTgEOsVqXqMWWWIwk3nkPqc+XfnlJmp8xUI5fg=="
-      },
       "Nito.AsyncEx": {
         "type": "Direct",
         "requested": "[5.1.2, )",
@@ -2040,6 +2032,11 @@
         "dependencies": {
           "Microsoft.Testing.Platform": "2.2.2"
         }
+      },
+      "Microsoft.Testing.Platform": {
+        "type": "Transitive",
+        "resolved": "2.2.2",
+        "contentHash": "9mUsTOri0aVqBX7/EJwqVJxVwdOzGUVJqK1H2EMfIl9xxJuSdqhfAlJbukl/iNugvi4+cmQs/LI8PLTDUT9P1A=="
       },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",

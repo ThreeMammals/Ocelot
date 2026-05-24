@@ -31,24 +31,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <!-- VSTest framework 
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="10.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    -->
-    <!-- Microsoft Testing Platform (MTP) -->
     <PackageReference Include="coverlet.MTP" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Testing.Platform" Version="2.2.3" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.108" />
-
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" /><!--See MockWebSocket-->
+    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.108" />
     <!-- Microsoft -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.8" />

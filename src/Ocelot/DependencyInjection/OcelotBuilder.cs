@@ -33,7 +33,6 @@ using Ocelot.Request.Mapper;
 using Ocelot.Requester;
 using Ocelot.Responder;
 using Ocelot.Security;
-using Ocelot.Security.IPSecurity;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.WebSockets;

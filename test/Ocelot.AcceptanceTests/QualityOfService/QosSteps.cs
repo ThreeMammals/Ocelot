@@ -125,4 +125,6 @@ public class QosSteps : TimeoutSteps
                 BrokenServiceStatusCode[kv.Key] = onlineStatusCode;
         }
     }
+
+    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 }

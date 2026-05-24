@@ -21,8 +21,6 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
             .Returns(_logger.Object);
     }
 
-    private static CancellationToken CancelMe { get => TestContext.Current.CancellationToken; } 
-
     private CircuitBreakerDelegatingHandler CreateHandler(QoSOptions opts, HttpMessageHandler innerHandler)
     {
         var route = new DownstreamRouteBuilder().WithQosOptions(opts).Build();

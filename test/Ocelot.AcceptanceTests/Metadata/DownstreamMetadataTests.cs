@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 using Ocelot.Metadata;
 using Ocelot.Middleware;
 using System.Globalization;
 
 namespace Ocelot.AcceptanceTests.Metadata;
 
-[Trait("Feat", "738")]
+[Trait("Feat", "738")] // https://github.com/ThreeMammals/Ocelot/issues/738
 public sealed class DownstreamMetadataTests : Steps
 {
     public enum StringArrayConfig
@@ -41,29 +40,17 @@ public sealed class DownstreamMetadataTests : Steps
             GetSourceAndTargetDictionary(currentType);
 
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = [ Localhost(port) ],
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    Metadata = sourceDictionary,
-                    DelegatingHandlers = [ currentType.Name ],
-                },
-            },
-        };
-
-        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
+        var route = GivenRoute(port);
+        route.Metadata = sourceDictionary;
+        route.DelegatingHandlers = [currentType.Name];
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(currentType))
-            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
     /// <summary>
@@ -103,42 +90,26 @@ public sealed class DownstreamMetadataTests : Steps
     {
         (Dictionary<string, string> sourceDictionary, Dictionary<string, string[]> _) =
             GetSourceAndTargetDictionariesForStringArrayType(currentConfig);
-
         sourceDictionary.Add(nameof(StringArrayConfig), currentConfig.ToString());
 
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
+        var route = GivenRoute(port);
+        route.Metadata = sourceDictionary;
+        route.DelegatingHandlers = [nameof(StringArrayDownStreamMetadataHandler)];
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.MetadataOptions = new()
         {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = [ Localhost(port) ],
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    Metadata = sourceDictionary,
-                    DelegatingHandlers = [ nameof(StringArrayDownStreamMetadataHandler) ],
-                },
-            },
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                MetadataOptions = new()
-                {
-                    Separators = separators,
-                    TrimChars = trimChars,
-                    StringSplitOption = stringSplitOption,
-                },
-            },
+            Separators = separators,
+            TrimChars = trimChars,
+            StringSplitOption = stringSplitOption,
         };
-
-        this.Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
+        this
+            .Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler)))
-            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Theory]
@@ -151,40 +122,26 @@ public sealed class DownstreamMetadataTests : Steps
     {
         (Dictionary<string, string> sourceDictionary, Dictionary<string, int> _) =
             GetSourceAndTargetDictionariesForNumberType();
-
         sourceDictionary.Add(nameof(NumberConfig), currentConfig.ToString());
 
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
+        var route = GivenRoute(port);
+        route.Metadata = sourceDictionary;
+        route.DelegatingHandlers = [nameof(IntDownStreamMetadataHandler)];
+        var configuration = GivenConfiguration(route);
+        configuration.GlobalConfiguration.MetadataOptions = new()
         {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = [ Localhost(port) ],
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    Metadata = sourceDictionary,
-                    DelegatingHandlers = [nameof(IntDownStreamMetadataHandler)],
-                },
-            },
-            GlobalConfiguration = new()
-            {
-                MetadataOptions = new()
-                {
-                    NumberStyle = numberStyles.ToString(),
-                    CurrentCulture = cultureName,
-                },
-            },
+            NumberStyle = numberStyles.ToString(),
+            CurrentCulture = cultureName,
         };
-        GivenThereIsAServiceRunningOn(port);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        var body = Body();
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
-            .When(x => WhenIGetUrlOnTheApiGateway($"/"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
     /// <summary>
@@ -223,46 +180,38 @@ public sealed class DownstreamMetadataTests : Steps
     // for the delegating handler name
     private class StringDownStreamMetadataHandler : DownstreamMetadataHandler<string>
     {
-        public StringDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-        {
-        }
+        public StringDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     private class StringArrayDownStreamMetadataHandler : DownstreamMetadataHandler<string[]>
     {
-        public StringArrayDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(
-            httpContextAccessor)
-        {
-        }
+        public StringArrayDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     private class BoolDownStreamMetadataHandler : DownstreamMetadataHandler<bool?>
     {
-        public BoolDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-        {
-        }
+        public BoolDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     private class DoubleDownStreamMetadataHandler : DownstreamMetadataHandler<double>
     {
-        public DoubleDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-        {
-        }
+        public DoubleDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     private class IntDownStreamMetadataHandler : DownstreamMetadataHandler<int>
     {
-        public IntDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-        {
-        }
+        public IntDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     private class SuperDataContainerDownStreamMetadataHandler : DownstreamMetadataHandler<SuperDataContainer>
     {
-        public SuperDataContainerDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor) : base(
-            httpContextAccessor)
-        {
-        }
+        public SuperDataContainerDownStreamMetadataHandler(IHttpContextAccessor httpContextAccessor)
+            : base(httpContextAccessor) { }
     }
 
     /// <summary>
@@ -552,11 +501,8 @@ public sealed class DownstreamMetadataTests : Steps
     public class SuperDataContainer
     {
         public string Key1 { get; set; }
-
         public string Key2 { get; set; }
-
         public double Key3 { get; set; }
-
         public bool? Key4 { get; set; }
 
         public override bool Equals(object obj)

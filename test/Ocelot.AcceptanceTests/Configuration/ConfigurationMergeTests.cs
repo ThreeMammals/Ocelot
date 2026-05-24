@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
@@ -21,26 +22,26 @@ public sealed class ConfigurationMergeTests : Steps
     }
 
     [Theory]
-    [Trait("Bug", "1216")]
-    [Trait("Feat", "1227")]
+    [Trait("Bug", "1216")] // https://github.com/ThreeMammals/Ocelot/issues/1216
+    [Trait("Feat", "1227")] // https://github.com/ThreeMammals/Ocelot/pull/1227
     [InlineData(MergeOcelotJson.ToFile, true)]
     [InlineData(MergeOcelotJson.ToMemory, false)]
     public void ShouldRunWithGlobalConfigMerged_WithExplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
     {
         Arrange();
-
-        // Act
-        GivenOcelotIsRunning((context, config) => config
+        Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate = (context, config) => config
             .SetBasePath(context.HostingEnvironment.ContentRootPath)
-            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, _globalConfigFileName, null, false, false));
-
-        // Assert
-        TheOcelotPrimaryConfigFileExists(fileExist);
-        ThenGlobalConfigurationHasBeenMerged();
+            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, _globalConfigFileName, null, false, false);
+        var testName = TestName();
+        this
+            .Given(x => GivenOcelotIsRunning(configureDelegate))
+            .Then(x => TheOcelotPrimaryConfigFileExists(fileExist))
+            .And(x => ThenGlobalConfigurationHasBeenMerged(testName))
+        .BDDfy();
     }
 
     [Theory]
-    [Trait("Bug", "2084")]
+    [Trait("Bug", "2084")] // https://github.com/ThreeMammals/Ocelot/issues/2084
     [InlineData(MergeOcelotJson.ToFile, true)]
     [InlineData(MergeOcelotJson.ToMemory, false)]
     public void ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
@@ -58,33 +59,39 @@ public sealed class ConfigurationMergeTests : Steps
         var routeAPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "A"));
         var routeBPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "B"));
         var environmentPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "Env"));
-        GivenThereIsAConfiguration(globalConfig, globalPath);
-        GivenThereIsAConfiguration(routeAConfig, routeAPath);
-        GivenThereIsAConfiguration(routeBConfig, routeBPath);
-        GivenThereIsAConfiguration(environmentConfig, environmentPath);
-
-        // Act
-        GivenOcelotIsRunning(
-            (context, config) => config
+        Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate = (context, config) => config
                 .SetBasePath(context.HostingEnvironment.ContentRootPath)
                 .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
-                .AddJsonFile(environmentPath),
-            null, null, null, host => host.UseEnvironment("Env"), null, null);
-
-        // Assert
-        TheOcelotPrimaryConfigFileExists(false);
-        ThenGlobalConfigurationHasBeenMerged();
-
+                .AddJsonFile(environmentPath);
+        var testName = TestName();
+        this
+            .Given(x => GivenThereIsAConfiguration(globalConfig, globalPath))
+            .And(x => GivenThereIsAConfiguration(routeAConfig, routeAPath))
+            .And(x => GivenThereIsAConfiguration(routeBConfig, routeBPath))
+            .And(x => GivenThereIsAConfiguration(environmentConfig, environmentPath))
+            .When(x => GivenOcelotIsRunning(configureDelegate, null, null, null, host => host.UseEnvironment("Env"), null, null)) // Act
+            .Then(x => TheOcelotPrimaryConfigFileExists(false))
+            .And(x => ThenGlobalConfigurationHasBeenMerged(testName))
+            .And(x => ThenPrimaryConfigFileExistsInTheFolder(folder, fileExist))
+            .And(x => ThenConfigurationExistsInTheInternalConfigurationRepository())
+            .And(x => ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName))
+        .BDDfy();
+    }
+    private static void ThenPrimaryConfigFileExistsInTheFolder(string folder, bool fileExist)
+    {
         var actualLocation = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         File.Exists(actualLocation).ShouldBe(fileExist);
-
+    }
+    private IInternalConfiguration _internalConfig;
+    private void ThenConfigurationExistsInTheInternalConfigurationRepository()
+    {
         var repository = OcelotServices.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
-        var response = repository.Get().ShouldNotBeNull();
-        var internalConfig = response.ShouldNotBeNull();
-
-        // Assert Arrange() setup
-        internalConfig.RequestId.ShouldBe(nameof(ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter));
-        internalConfig.ServiceProviderConfiguration.ConfigurationKey.ShouldBe(nameof(ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter));
+        _internalConfig = repository.Get().ShouldNotBeNull();
+    }
+    private void ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(string testName)
+    {
+        _internalConfig.RequestId.ShouldBe(testName);
+        _internalConfig.ServiceProviderConfiguration.ConfigurationKey.ShouldBe(testName);
     }
 
     private void Arrange([CallerMemberName] string testName = null)

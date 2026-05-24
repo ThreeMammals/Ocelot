@@ -8,40 +8,31 @@ namespace Ocelot.AcceptanceTests;
 
 public class StartupTests : Steps
 {
-    public StartupTests()
-    {
-    }
-
+    /// <summary>
+    /// TODO: The test should be moved to the Configuration namespace since it is part of Configuration Repository and/or Configuration Middleware feats.
+    /// </summary>
     [Fact]
+    [Trait("Bug", "463")] // https://github.com/ThreeMammals/Ocelot/issues/463
+    [Trait("PR", "506")] // https://github.com/ThreeMammals/Ocelot/pull/506
     public void Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         var fakeRepo = new FakeFileConfigurationRepository();
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .BDDfy();
+        .BDDfy();
     }
 
     private void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)
     {
         void WithFakeRepo(IServiceCollection s) => s.AddSingleton(fake).AddOcelot();
         GivenOcelotIsRunning(WithFakeRepo);
-    }
-
-    private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, basePath, context =>
-        {
-            var downstreamPath = !string.IsNullOrEmpty(context.Request.PathBase.Value) ? context.Request.PathBase.Value : context.Request.Path.Value;
-            bool oK = downstreamPath == basePath;
-            context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
-            return context.Response.WriteAsync(oK ? responseBody : "downstream path didn't match base path");
-        });
     }
 
     private class FakeFileConfigurationRepository : IFileConfigurationRepository

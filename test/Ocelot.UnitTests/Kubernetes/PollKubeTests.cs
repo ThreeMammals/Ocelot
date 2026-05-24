@@ -1,4 +1,4 @@
-﻿using Ocelot.Logging;
+using Ocelot.Logging;
 using Ocelot.Provider.Kubernetes;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
@@ -36,7 +36,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
 
     [Fact]
     [Trait("PR", "772")] // https://github.com/ThreeMammals/Ocelot/pull/772
-    public void Should_return_service_from_kube()
+    public async Task Should_return_service_from_kube()
     {
         // Arrange
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
@@ -79,13 +79,15 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         int pollingInterval = 100;
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
         List<Service> services = [service];
-        var slowPolling = Task.Delay(pollingInterval + 50, TestContext.Current.CancellationToken)
-            .ContinueWith(x => services);
+        var slowPolling = Task.Delay(pollingInterval + 50, CancelMe)
+            .ContinueWith(x => services, CancelMe);
         _discoveryProvider.Setup(x => x.GetAsync()).Returns(slowPolling);
         _provider = new PollKube(pollingInterval, _factory.Object, _discoveryProvider.Object);
 
-        // Act
+        // Act - Allow background task to start and begin polling
         var coldRequestTask = _provider.GetAsync(); // calls Poll() due to empty queue
+        await Task.Delay(10, CancelMe); // Give polling time to start
+
         var method = _provider.GetType().GetMethod("OnTimerCallbackAsync", BindingFlags.Instance | BindingFlags.NonPublic);
         method.Invoke(_provider, [new object()]);
         _discoveryProvider.Verify(x => x.GetAsync(), Times.Once);
@@ -95,6 +97,9 @@ public sealed class PollKubeTests : UnitTest, IDisposable
 
         method.Invoke(_provider, [new object()]);
         _discoveryProvider.Verify(x => x.GetAsync(), Times.AtLeast(2));
+
+        // Ensure background task completes before disposal
+        await Task.Delay(pollingInterval + 100, CancelMe);
     }
 
     [Fact]
@@ -105,7 +110,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         int pollingInterval = 100;
         var service = new Service(string.Empty, new ServiceHostAndPort(string.Empty, 0), string.Empty, string.Empty, new List<string>());
         List<Service> services = [service];
-        var slowPolling = Task.Delay(pollingInterval + 50, TestContext.Current.CancellationToken).ContinueWith(x => services);
+        var slowPolling = Task.Delay(pollingInterval + 50, CancelMe).ContinueWith(x => services, CancelMe);
         _discoveryProvider.Setup(x => x.GetAsync()).Returns(slowPolling);
         _provider = new PollKube(pollingInterval, _factory.Object, _discoveryProvider.Object);
 
@@ -139,9 +144,14 @@ public sealed class PollKubeTests : UnitTest, IDisposable
     {
         // Arrange
         _provider = new PollKube(10_000, _factory.Object, _discoveryProvider.Object);
+        
+        // Act - Give any background task minimal time to initialize
+        await Task.Delay(5, CancelMe);
+        
+        // Dispose to stop any polling
         _provider.Dispose();
 
-        // Act
+        // Act - Call GetAsync after disposal
         var actual = await _provider.GetAsync();
 
         // Assert
@@ -163,7 +173,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         }
 
         // Act
-        var task = (Task<List<Service>>)method.Invoke(_provider, [CancellationToken.None]);
+        var task = (Task<List<Service>>)method.Invoke(_provider, [CancelMe]);
         var actual = await task;
 
         // Assert
@@ -181,7 +191,7 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         var method = _provider.GetType().GetMethod("PollAsync", BindingFlags.Instance | BindingFlags.NonPublic);
 
         // Act
-        var task = (Task<List<Service>>)method.Invoke(_provider, [CancellationToken.None]);
+        var task = (Task<List<Service>>)method.Invoke(_provider, [CancelMe]);
         var actual = await task;
 
         // Assert
@@ -247,8 +257,10 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         var ctsField = _provider.GetType().GetField("_cts", BindingFlags.Instance | BindingFlags.NonPublic);
         var cts = (CancellationTokenSource)ctsField.GetValue(_provider);
 
-        // Act
+        // Act - Allow StartAsync task to be created
         var task = (Task)method.Invoke(_provider, null);
+        await Task.Delay(10, CancelMe); // Give task time to start
+        
         cts.Cancel(); // This will trigger OperationCanceledException in StartAsync loop
         await task; // Should not throw
 

@@ -2,7 +2,7 @@
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.Security.Middleware;
+namespace Ocelot.Security;
 
 public class SecurityMiddleware : OcelotMiddleware
 {

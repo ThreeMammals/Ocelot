@@ -16,11 +16,12 @@ public sealed class ReturnsErrorTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -32,12 +33,13 @@ public sealed class ReturnsErrorTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceThrowingAnException(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -51,12 +53,13 @@ public sealed class ReturnsErrorTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceThrowingAnException(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => x.GivenOcelotIsRunningWithLogger())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenWarningShouldBeLogged(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     private Task<int> GivenOcelotIsRunningWithLogger()
@@ -65,10 +68,8 @@ public sealed class ReturnsErrorTests : Steps
             .Services
             .AddSingleton<IOcelotLoggerFactory, MockLoggerFactory>());
 
-    private void GivenThereIsAServiceRunningOn(int port)
-    {
-        handler.GivenThereIsAServiceRunningOn(port, context => throw new Exception("BLAMMMM"));
-    }
+    private void GivenThereIsAServiceThrowingAnException(int port)
+        => handler.GivenThereIsAServiceRunningOn(port, context => throw new Exception("BLAMMMM"));
 
     private void ThenWarningShouldBeLogged(int howMany)
     {
