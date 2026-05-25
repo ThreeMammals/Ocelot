@@ -2,17 +2,28 @@
   "Routes": [
     {
       "UpstreamPathTemplate": "/ws",
-      "DownstreamPathTemplate": "/ws",
+      "DownstreamPathTemplate": "/WebSocket/EchoWebSocket.ashx",
       "DownstreamScheme": "ws",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5001
+          "Host": "corefx-net-http11.azurewebsites.net",
+          "Port": 80
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/wss",
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "echo.websocket.org",
+          "Port": 443
         }
       ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:5000"
+    "BaseUrl": "https://localhost:7777" // "http://localhost:5555"
   }
 }

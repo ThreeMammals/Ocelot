@@ -13,22 +13,21 @@ builder.Services
     .AddOcelot(builder.Configuration);
 
 if (builder.Environment.IsDevelopment())
-{
     builder.Logging.AddConsole();
-}
 
 var app = builder.Build();
 app.UseWebSockets();
 
-var pipelineConfig = new OcelotPipelineConfiguration
+var wsPipeline = new OcelotPipelineConfiguration
 {
     WebSocketsProxyMiddleware = (context, next) =>
     {
+        Task Next(HttpContext ctx) => next();
         var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
         var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
-        var middleware = new CustomWebSocketsProxyMiddleware(loggerFactory, _ => next(), factory);
+        var middleware = new CustomWebSocketsProxyMiddleware(loggerFactory, Next, factory);
         return middleware.Invoke(context);
     },
 };
-await app.UseOcelot(pipelineConfig);
+await app.UseOcelot(wsPipeline);
 await app.RunAsync();
