@@ -39,14 +39,7 @@ app.Use(async (context, next) =>
 app.UseWebSockets();
 var wsPipeline = new OcelotPipelineConfiguration
 {
-    WebSocketsProxyMiddleware = (context, next) =>
-    {
-        Task Next(HttpContext ctx) => next();
-        var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
-        var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
-        var middleware = new CustomWebSocketsProxyMiddleware(loggerFactory, Next, factory);
-        return middleware.Invoke(context);
-    },
+    WebSocketsProxyMiddleware = MyWebSocketsProxyMiddleware,
 };
 await app.UseOcelot(wsPipeline);
 await app.RunAsync();
@@ -55,4 +48,12 @@ static async Task<string> GetWelcomeHtmlAsync(CancellationToken cancellation)
 {
     var htmlFilePath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "welcome.html");
     return await File.ReadAllTextAsync(htmlFilePath, cancellation);
+}
+static Task MyWebSocketsProxyMiddleware(HttpContext context, Func<Task> next)
+{
+    Task Next(HttpContext ctx) => next();
+    var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
+    var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
+    var middleware = new CustomWebSocketsProxyMiddleware(loggerFactory, Next, factory);
+    return middleware.Invoke(context);
 }
