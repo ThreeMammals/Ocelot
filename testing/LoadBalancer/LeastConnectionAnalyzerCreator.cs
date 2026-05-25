@@ -1,16 +1,16 @@
 ﻿using Ocelot.Configuration;
-using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.LoadBalancer.Interfaces;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Testing.LoadBalancer;
 
-internal sealed class RoundRobinAnalyzerCreator : ILoadBalancerCreator
+public sealed class LeastConnectionAnalyzerCreator : ILoadBalancerCreator
 {
     // We need to adhere to the same implementations of RoundRobinCreator, which results in a significant design overhead, (until redesigned)
     public Response<ILoadBalancer> Create(DownstreamRoute route, IServiceDiscoveryProvider serviceProvider)
     {
-        var loadBalancer = new RoundRobinAnalyzer(
+        var loadBalancer = new LeastConnectionAnalyzer(
             serviceProvider.GetAsync,
             !string.IsNullOrEmpty(route.ServiceName) // if service discovery mode then use service name; otherwise use balancer key
                 ? route.ServiceName
@@ -18,5 +18,5 @@ internal sealed class RoundRobinAnalyzerCreator : ILoadBalancerCreator
         return new OkResponse<ILoadBalancer>(loadBalancer);
     }
 
-    public string Type => nameof(RoundRobinAnalyzer);
+    public string Type => nameof(LeastConnectionAnalyzer);
 }

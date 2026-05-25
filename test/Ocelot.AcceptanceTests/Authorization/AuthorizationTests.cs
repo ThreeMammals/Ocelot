@@ -44,7 +44,8 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
@@ -54,7 +55,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -68,7 +69,8 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var claims = GivenRouteClaimsRequirement(route, "UserType", OcelotScopes.OcAdmin);
         route.AddClaimsToRequest.Remove("UserType"); // given I don't transform UserType claim
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
@@ -78,30 +80,31 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
             .And(x => ThenTheResponseBodyShouldBeEmpty())
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "100")] // https://github.com/ThreeMammals/Ocelot/issues/100
     [Trait("PR", "104")] // https://github.com/ThreeMammals/Ocelot/pull/104
     [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
-    public async Task Should_return_200_OK_using_identity_server_with_allowed_scope()
+    public void Should_return_200_OK_using_identity_server_with_allowed_scope()
     {
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         string[] allowedScopes = ["api", "api.readOnly", "openid", "offline_access"];
         var route = GivenAuthRoute(port, scopes: allowedScopes);
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken);
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
-
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-
-        await GivenIHaveAToken(scope: "api.readOnly");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
+            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveAToken("api.readOnly", null, null, null, testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBeAsync("Hello from Laura"))
+        .BDDfy();
     }
 
     [Fact]
@@ -110,13 +113,14 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "1.4.5")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.5
     public void Should_return_403_Forbidden_using_identity_server_with_scope_not_allowed()
     {
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         string[] allowedScopes = ["api", "openid", "offline_access"];
         var route = GivenAuthRoute(port, scopes: allowedScopes);
         var configuration = GivenConfiguration(route);
-        var testName = TestName();
         var allScopes = allowedScopes.Append("api.readOnly").ToArray();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allScopes, Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(allScopes, CancelMe))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -124,7 +128,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .BDDfy();
+        .BDDfy();
     }
 
     /// <summary>
@@ -140,6 +144,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
     public void Should_fix_issue_240()
     {
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
@@ -153,8 +158,8 @@ public sealed class AuthorizationTests : AuthorizationSteps
             new(nameof(ClaimTypes.Role), "AdminUser"),
             new(nameof(ClaimTypes.Role), "User"),
         };
-        var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -163,31 +168,34 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     [Trait("PR", "2114")] // https://github.com/ThreeMammals/Ocelot/pull/2114
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-    public async Task Should_return_200_OK_with_global_allowed_scopes()
+    public void Should_return_200_OK_with_global_allowed_scopes()
     {
+        var body = Body();
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AuthenticationProviderKeys = []; // no route auth!
         var configuration = GivenConfiguration(route);
         string[] globalScopes = ["api", "apiGlobal"];
         configuration.GlobalConfiguration = GivenGlobalAuthConfiguration(allowedScopes: globalScopes);
-
-        GivenThereIsAConfiguration(configuration);
-        await GivenThereIsExternalJwtSigningService(globalScopes, Xunit.TestContext.Current.CancellationToken);
-        GivenThereIsAServiceRunningOn(port);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken(scope: "apiGlobal");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOK();
-        await ThenTheResponseBodyAsync();
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenThereIsExternalJwtSigningService(globalScopes, CancelMe))
+            .And(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveAToken("apiGlobal", null, null, null, testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBeOk())
+            .And(x => ThenTheResponseBodyAsync(body))
+        .BDDfy();
     }
 
     #region PR 1478
@@ -197,18 +205,23 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
     public async Task Should_return_200_OK_with_space_separated_scope_match()
     {
+        var body = Body();
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scopes: ["api", "api.read", "api.write"]);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAConfiguration(configuration);
-        await GivenThereIsExternalJwtSigningService(["api.read", "openid", "offline_access"], Xunit.TestContext.Current.CancellationToken);
-        GivenThereIsAServiceRunningOn(port);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveATokenWithScope("api.read openid offline_access");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOK();
-        await ThenTheResponseBodyAsync();
+        string[] extraScopes = ["api.read", "openid", "offline_access"];
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenThereIsExternalJwtSigningService(extraScopes, CancelMe))
+            .And(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveATokenWithScope("api.read openid offline_access", testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBeOk())
+            .And(x => ThenTheResponseBodyAsync(body))
+        .BDDfy();
     }
 
     [Fact]
@@ -217,17 +230,22 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "24.1.0")]
     public async Task Should_return_403_Forbidden_with_space_separated_scope_no_match()
     {
+        var body = Body();
+        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scopes: ["admin", "superuser"]);
         var configuration = GivenConfiguration(route);
-        await GivenThereIsExternalJwtSigningService(["api.read", "api.write", "openid"], Xunit.TestContext.Current.CancellationToken);
-        GivenThereIsAServiceRunningOn(port);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveATokenWithScope("api.read api.write openid");
-        GivenIHaveAddedATokenToMyRequest();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        string[] extraScopes = ["api.read", "api.write", "openid"];
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(extraScopes, CancelMe))
+            .And(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveATokenWithScope("api.read api.write openid", testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+        .BDDfy();
     }
     #endregion PR 1478
 }

@@ -19,8 +19,6 @@ public class FileConfigurationControllerTests : UnitTest
         _controller = new FileConfigurationController(_repo.Object, _setter.Object);
     }
 
-    protected static CancellationToken CancelMe => TestContext.Current.CancellationToken;
-
     [Fact]
     public async Task Should_get_file_configuration()
     {

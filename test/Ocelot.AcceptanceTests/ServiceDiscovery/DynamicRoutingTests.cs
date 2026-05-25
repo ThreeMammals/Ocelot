@@ -1,24 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.AcceptanceTests.Authentication;
 using Ocelot.AcceptanceTests.Caching;
 using Ocelot.AcceptanceTests.QualityOfService;
 using Ocelot.AcceptanceTests.Requester;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
-using Ocelot.Metadata;
-using Ocelot.QualityOfService;
 using Ocelot.Requester;
-using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Testing.Authentication;
 using Ocelot.Testing.Steps;
-using Ocelot.Values;
 
 namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 
@@ -27,8 +19,10 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 /// </summary>
 public class DynamicRoutingTests : DiscoverySteps
 {
+    public const bool EnabledDiscovery = true;
+
     [Fact]
-    [Trait("Feat", "351")]
+    [Trait("Feat", "351")] // https://github.com/ThreeMammals/Ocelot/pull/351
     public void ShouldForwardQueryStringToDownstream()
     {
         var ports = PortFinder.GetPorts(2);
@@ -38,22 +32,29 @@ public class DynamicRoutingTests : DiscoverySteps
         {
             { serviceName, serviceUrls },
         });
-        GivenMultipleServiceInstancesAreRunning(serviceUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscovery);
         var pathWithQueryString = $"/{serviceName}/?{nameof(TestID)}={TestID}";
-        WhenIGetUrlOnTheApiGatewayConcurrently(pathWithQueryString, 2);
-        ThenAllServicesShouldHaveBeenCalledTimes(2);
-        ThenServicesShouldHaveBeenCalledTimes(1, 1);
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(pathWithQueryString, 2))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(2))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(1, 1))
+            .And(x => ThenAllResponsesHeaderExists(HeaderNames.Path))
+            .And(x => ThenAllResponsesPathAndQueryShouldAllBeContainedInThePath(pathWithQueryString))
+        .BDDfy();
+    }
+    private void ThenAllResponsesPathAndQueryShouldAllBeContainedInThePath(string pathWithQueryString)
+    {
         var pathAndQuery = ThenAllResponsesHeaderExists(HeaderNames.Path).ToList();
         pathAndQuery.ShouldAllBe(pathQuery => pathWithQueryString.Contains(pathQuery));
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2319")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void ShouldApplyGlobalLoadBalancerOptions_ForAllDynamicRoutes()
+    public void ShouldApplyGlobalLoadBalancerOptionsForAllDynamicRoutes()
     {
         var ports = PortFinder.GetPorts(5);
         var serviceName = ServiceName();
@@ -62,20 +63,22 @@ public class DynamicRoutingTests : DiscoverySteps
         {
             { serviceName, serviceUrls },
         });
-        GivenMultipleServiceInstancesAreRunning(serviceUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscovery);
-        WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50);
-        ThenAllServicesShouldHaveBeenCalledTimes(50);
-        ThenAllServicesCalledRealisticAmountOfTimes(9, 11); // soft assertion
-        ThenServicesShouldHaveBeenCalledTimes(10, 10, 10, 10, 10); // distribution by RoundRobin algorithm, aka strict assertion
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", 50))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
+            .And(x => ThenAllServicesCalledRealisticAmountOfTimes(9, 11)) // soft assertion
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(10, 10, 10, 10, 10)) // distribution by RoundRobin algorithm, aka strict assertion
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2319")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void ShouldApplyGlobalGroupLoadBalancerOptions_ForDynamicRoutes_WhenRouteOptsHasAKey()
+    public void ShouldApplyGlobalGroupLoadBalancerOptionsForDynamicRoutesWhenRouteOptsHasAKey()
     {
         // 1st route
         var ports1 = PortFinder.GetPorts(2);
@@ -102,27 +105,29 @@ public class DynamicRoutingTests : DiscoverySteps
         };
 
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscovery);
-
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 4);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing/", 5);
-        ThenServicesShouldHaveBeenCalledTimes(2, 0, 2, 2, 5, 0); // main assertion, explanation is below
-        ThenServiceShouldHaveBeenCalledTimes(0, 2); // NoLoadBalancer for 2
-        ThenServiceShouldHaveBeenCalledTimes(1, 0); // NoLoadBalancer for 2
-        ThenServiceShouldHaveBeenCalledTimes(2, 2); // RoundRobin for 4
-        ThenServiceShouldHaveBeenCalledTimes(3, 2); // RoundRobin for 4
-        ThenServiceShouldHaveBeenCalledTimes(4, 5); // NoLoadBalancer for 5
-        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 5
+        var serviceName = ServiceName();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 4))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing/", 5))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(2, 0, 2, 2, 5, 0)) // main assertion, explanation is below
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 2)) // NoLoadBalancer for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 0)) // NoLoadBalancer for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(2, 2)) // RoundRobin for 4
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(3, 2)) // RoundRobin for 4
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(4, 5)) // NoLoadBalancer for 5
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(5, 0)) // NoLoadBalancer for 5
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2330")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2330")] // https://github.com/ThreeMammals/Ocelot/issues/2330
     [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
-    public void ShouldApplyGlobalCacheOptions_ForAllDynamicRoutes()
+    public void ShouldApplyGlobalCacheOptionsForAllDynamicRoutes()
     {
         const int TTL = 1; // let's cache for one second
         var ports = PortFinder.GetPorts(2);
@@ -132,55 +137,57 @@ public class DynamicRoutingTests : DiscoverySteps
         {
             { serviceName, serviceUrls },
         });
-        configuration.GlobalConfiguration.CacheOptions = new()
-        {
-            TtlSeconds = TTL, // Let's cache for one second
-        };
+        configuration.GlobalConfiguration.CacheOptions = new(TTL); // let's cache for one second
 
         var (testBody1, testBody2) = CachingTests.TestBodiesFactory();
-        GivenMultipleServiceInstancesAreRunning(serviceUrls, responses: [testBody1, testBody2]);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscovery);
-        AssertCachedRoute(TTL, serviceName, ports, [testBody1, testBody2]);
+        string[] responses = [testBody1, testBody2];
+        var scenario = this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, responses))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery));
+            AssertCachedRoute(scenario, TTL, serviceName, ports, [testBody1, testBody2])
+        .BDDfy();
     }
 
-    private void AssertCachedRoute(int ttl, string serviceName, int[] ports, string[] expectedBody, bool cached = true, bool balanced = true, int shift = 0)
+    private IFluentStepBuilder<DynamicRoutingTests> AssertCachedRoute(IFluentStepBuilder<DynamicRoutingTests> scenario,
+        int ttl, string serviceName, int[] ports, string[] expectedBody, bool cached = true, bool balanced = true, int shift = 0)
     {
-        Array.Clear(Counters);
         var url = $"/{serviceName}/";
-        WhenIGetUrlOnTheApiGatewayConcurrently(url, 2);
-        ThenAllServicesShouldHaveBeenCalledTimes(2);
+        int counter = cached ? 1 : 2;
+        Action<int> GivenCounterIs = v => counter = v;
+        scenario.Given(x => Array.Clear(Counters));
+        scenario.When(x => WhenIGetUrlOnTheApiGatewayConcurrently(url, 2));
+        scenario.Then(x => ThenAllServicesShouldHaveBeenCalledTimes(2));
 
         //ThenServicesShouldHaveBeenCalledTimes(1, 1); // distribution by RoundRobin algorithm, aka strict assertion
-        ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? 1 : 2);
-        ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? 1 : 0);
+        scenario.And(x => ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? 1 : 2));
+        scenario.And(x => ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? 1 : 0));
 
-        GivenIWait(100);
-        WhenIGetUrlOnTheApiGatewayConcurrently(url, 2);
-        ThenAllServicesShouldHaveBeenCalledTimes(cached ? 2 : 4); // the counters remain unchanged, and the items are still in the cache
-        int counter = cached ? 1 : 2;
+        scenario.Given(x => GivenIWaitAsync(100));
+        scenario.When(x => WhenIGetUrlOnTheApiGatewayConcurrently(url, 2));
+        scenario.Then(x => ThenAllServicesShouldHaveBeenCalledTimes(cached ? 2 : 4)); // the counters remain unchanged, and the items are still in the cache
 
         //ThenServicesShouldHaveBeenCalledTimes(counter, counter); // the counters remain unchanged
-        ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? counter : 2 * counter);
-        ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? counter : 0);
+        scenario.And(x => ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? counter : 2 * counter));
+        scenario.And(x => ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? counter : 0));
 
-        GivenIWait(ttl * 1000); // allow cached items to expire
-        WhenIGetUrlOnTheApiGatewayConcurrently(url, 2);
-        ThenAllServicesShouldHaveBeenCalledTimes(cached ? 4 : 6); // the counters have been updated because new items were added to the cache
-        counter = cached ? 2 : 3;
+        scenario.Given(x => GivenIWaitAsync(ttl * 1000)); // allow cached items to expire
+        scenario.When(x => WhenIGetUrlOnTheApiGatewayConcurrently(url, 2));
+        scenario.Then(x => ThenAllServicesShouldHaveBeenCalledTimes(cached ? 4 : 6)); // the counters have been updated because new items were added to the cache
+        scenario.Given(x => GivenCounterIs.Invoke(cached ? 2 : 3));
 
         //ThenServicesShouldHaveBeenCalledTimes(counter, counter); // the counters have been updated
-        ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? counter : 2 * counter);
-        ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? counter : 0);
-
-        ThenAllResponseBodiesShouldBe(ports, expectedBody);
+        scenario.Then(x => ThenServiceShouldHaveBeenCalledTimes(shift + 0, balanced ? counter : 2 * counter));
+        scenario.And(x => ThenServiceShouldHaveBeenCalledTimes(shift + 1, balanced ? counter : 0));
+        scenario.And(x => ThenAllResponseBodiesShouldBe(ports, expectedBody));
+        return scenario;
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2330")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2330")] // https://github.com/ThreeMammals/Ocelot/issues/2330
     [Trait("PR", "2331")] // https://github.com/ThreeMammals/Ocelot/pull/2331
-    public void ShouldApplyGlobalGroupCacheOptions_WhenRouteOptsHasAKey()
+    public void ShouldApplyGlobalGroupCacheOptionsWhenRouteOptsHasAKey()
     {
         const int TTL = 1; // let's cache for one second
 
@@ -212,42 +219,59 @@ public class DynamicRoutingTests : DiscoverySteps
 
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
         var (testBody1, testBody2) = CachingTests.TestBodiesFactory();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls, responses: [testBody1, testBody2, testBody1, testBody2, testBody1, testBody2]);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscovery);
-        int length = Counters.Length;
-        AssertCachedRoute(TTL, route1.ServiceName, ports1, [testBody1, testBody2], cached: false, shift: 0);
-        int[] counters1 = new int[length];
-        Array.Copy(Counters, counters1, length);
-
-        AssertCachedRoute(TTL, route2.ServiceName, ports2, [testBody1, testBody2], cached: true, shift: 2);
-        int[] counters2 = new int[length];
-        Array.Copy(Counters, counters2, length);
-
-        AssertCachedRoute(TTL, route3.ServiceName, ports3, [testBody1, testBody2], cached: false, balanced: false, shift: 4);
-        int[] counters3 = new int[length];
-        Array.Copy(Counters, counters3, length);
-
-        for (int i = 0; i < length; i++)
+        string[] responses = [testBody1, testBody2, testBody1, testBody2, testBody1, testBody2];
+        var scenario = this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, responses))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery));
+            AssertCachedRoute(scenario, TTL, route1.ServiceName, ports1, [testBody1, testBody2], cached: false, shift: 0)
+            .Then(x => ThenICopyCounters1());
+            AssertCachedRoute(scenario, TTL, route2.ServiceName, ports2, [testBody1, testBody2], cached: true, shift: 2)
+            .Then(x => ThenICopyCounters2());
+            AssertCachedRoute(scenario, TTL, route3.ServiceName, ports3, [testBody1, testBody2], cached: false, balanced: false, shift: 4)
+            .Then(x => ThenICopyCounters3())
+            .Then(x => SumCountersPerIndex())
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(3, 3, 2, 2, 6, 0)) // main assertion, explanation is below
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 3)) // RoundRobin for 6, not cached
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 3)) // RoundRobin for 6, not cached
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(2, 2)) // RoundRobin for 6, cached 1
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(3, 2)) // RoundRobin for 6, cached 1
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(4, 6)) // NoLoadBalancer for 6, not cached
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(5, 0)) // NoLoadBalancer for 6, not cached
+        .BDDfy();
+    }
+    private int[] _counters1, _counters2, _counters3;
+    private void ThenICopyCounters1()
+    {
+        _counters1 = new int[Counters.Length];
+        Array.Copy(Counters, _counters1, Counters.Length);
+    }
+    private void ThenICopyCounters2()
+    {
+        _counters2 = new int[Counters.Length];
+        Array.Copy(Counters, _counters2, Counters.Length);
+    }
+    private void ThenICopyCounters3()
+    {
+        _counters3 = new int[Counters.Length];
+        Array.Copy(Counters, _counters3, Counters.Length);
+    }
+    private void SumCountersPerIndex()
+    {
+        for (int i = 0; i < Counters.Length; i++)
         {
-            Counters[i] = counters1[i] + counters2[i] + counters3[i];
+            Counters[i] = _counters1[i] + _counters2[i] + _counters3[i];
         }
-        ThenServicesShouldHaveBeenCalledTimes(3, 3, 2, 2, 6, 0); // main assertion, explanation is below
-        ThenServiceShouldHaveBeenCalledTimes(0, 3); // RoundRobin for 6, not cached
-        ThenServiceShouldHaveBeenCalledTimes(1, 3); // RoundRobin for 6, not cached
-        ThenServiceShouldHaveBeenCalledTimes(2, 2); // RoundRobin for 6, cached 1
-        ThenServiceShouldHaveBeenCalledTimes(3, 2); // RoundRobin for 6, cached 1
-        ThenServiceShouldHaveBeenCalledTimes(4, 6); // NoLoadBalancer for 6, not cached
-        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 6, not cached
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2320")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2320")] // https://github.com/ThreeMammals/Ocelot/issues/2320
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
-    public void ShouldApplyGlobalHttpHandlerOptions_ForAllDynamicRoutes()
+    public void ShouldApplyGlobalHttpHandlerOptionsForAllDynamicRoutes()
     {
         var ports = PortFinder.GetPorts(3);
+        int times = ports.Length;
         var serviceName = ServiceName();
         var serviceUrls = ports.Select(DownstreamUrl).ToArray();
         var configuration = GivenDynamicRouting(new()
@@ -260,23 +284,24 @@ public class DynamicRoutingTests : DiscoverySteps
             PooledConnectionLifetimeSeconds = 88,
             UseTracing = true, // let's enable global tracing
         };
-        GivenMultipleServiceInstancesAreRunning(serviceUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting);
-        int times = ports.Length;
-        WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times);
-        ThenAllServicesShouldHaveBeenCalledTimes(times);
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1); // distribution by RoundRobin algorithm, aka strict assertion
-
-        ThenRouteHttpHandlerOptionsAre(serviceName, configuration.GlobalConfiguration.Metadata, 77, 88, true);
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(times))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 1)) // distribution by RoundRobin algorithm, aka strict assertion
+            .And(x => ThenRouteHttpHandlerOptionsAre(serviceName, configuration.GlobalConfiguration.Metadata, 77, 88, true))
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2320")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2320")] // https://github.com/ThreeMammals/Ocelot/issues/2320
     [Trait("PR", "2332")] // https://github.com/ThreeMammals/Ocelot/pull/2332
-    public void ShouldApplyGlobalGroupHttpHandlerOptions_ForDynamicRoutes_WhenRouteOptsHasAKey()
+    public void ShouldApplyGlobalGroupHttpHandlerOptionsForDynamicRoutesWhenRouteOptsHasAKey()
     {
+        var serviceName = ServiceName();
         // 1st route
         var ports1 = PortFinder.GetPorts(2);
         var route1 = GivenLbRoute("route1", key: null); // 1st route is not in the global group
@@ -310,33 +335,33 @@ public class DynamicRoutingTests : DiscoverySteps
             UseProxy = false,
             UseTracing = true, // enable global tracing
         };
-
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting);
-
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/noTracing/", 2);
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 2, 0);
-
-        ThenRouteHttpHandlerOptionsAre(route1.ServiceName, route1.Metadata,
-            int.MaxValue, HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds, false); // default opts
-        ThenRouteHttpHandlerOptionsAre(route2.ServiceName, route2.Metadata,
-            globalOpts.MaxConnectionsPerServer.Value, globalOpts.PooledConnectionLifetimeSeconds.Value, globalOpts.UseTracing.Value); // global opts
-        ThenRouteHttpHandlerOptionsAre(route3.ServiceName, route3.Metadata,
-            route3Opts.MaxConnectionsPerServer.Value, route3Opts.PooledConnectionLifetimeSeconds.Value, route3Opts.UseTracing.Value); // route opts
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/noTracing/", 2))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 2, 0))
+            .And(x => ThenRouteHttpHandlerOptionsAre(route1.ServiceName, route1.Metadata,
+                int.MaxValue, HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds, false)) // default opts
+            .And(x => ThenRouteHttpHandlerOptionsAre(route2.ServiceName, route2.Metadata,
+                globalOpts.MaxConnectionsPerServer.Value, globalOpts.PooledConnectionLifetimeSeconds.Value, globalOpts.UseTracing.Value)) // global opts
+            .And(x => ThenRouteHttpHandlerOptionsAre(route3.ServiceName, route3.Metadata,
+                route3Opts.MaxConnectionsPerServer.Value, route3Opts.PooledConnectionLifetimeSeconds.Value, route3Opts.UseTracing.Value)) // route opts
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
-    public async Task ShouldApplyGlobalAuthenticationOptions_ForAllDynamicRoutes()
+    public void ShouldApplyGlobalAuthenticationOptionsForAllDynamicRoutes()
     {
         using var steps = new AuthenticationSteps();
         var ports = PortFinder.GetPorts(3);
+        int times = ports.Length;
         var serviceName = ServiceName();
         var serviceUrls = ports.Select(DownstreamUrl).ToArray();
         var configuration = GivenDynamicRouting(new()
@@ -344,28 +369,31 @@ public class DynamicRoutingTests : DiscoverySteps
             { serviceName, serviceUrls },
         });
         configuration.GlobalConfiguration.AuthenticationOptions = new(AuthenticationSteps.GivenOptions(false, ["apiGlobal"], [JwtBearerDefaults.AuthenticationScheme]));
-
-        GivenMultipleServiceInstancesAreRunning(serviceUrls, Enumerable.Repeat(serviceName, ports.Length).ToArray());
-        steps.GivenThereIsAConfiguration(configuration);
-        steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
-        await steps.GivenThereIsExternalJwtSigningService(["apiGlobal"], Xunit.TestContext.Current.CancellationToken);
-        await steps.GivenIHaveAToken(scope: "apiGlobal"); //,audience: ocelotClient.BaseAddress.Authority);
-        steps.GivenIHaveAddedATokenToMyRequest();
-
-        int times = ports.Length;
-        ocelotClient ??= steps.OcelotClient;
-        WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times);
-        ThenAllServicesShouldHaveBeenCalledTimes(times);
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1); // distribution by RoundRobin algorithm, aka strict assertion
-        ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
-        ThenAllResponseBodiesShouldBe(serviceName);
+        string[] scopes = ["apiGlobal"];
+        var responses = Enumerable.Repeat(serviceName, ports.Length).ToArray();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, responses))
+            .And(x => steps.GivenThereIsAConfiguration(configuration))
+            .And(x => steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps)))
+            .And(x => steps.GivenThereIsExternalJwtSigningService(scopes, CancelMe))
+            .And(x => steps.GivenIHaveAToken(scopes[0], null, null, null, serviceName)) //,audience: ocelotClient.BaseAddress.Authority);
+            .And(x => steps.GivenIHaveAddedATokenToMyRequest())
+            .And(x => GivenIEnsureOcelotClient(steps))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{serviceName}/", times))
+            .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(times))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 1)) // distribution by RoundRobin algorithm, aka strict assertion
+            .And(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .And(x => ThenAllResponseBodiesShouldBe(serviceName))
+        .BDDfy();
     }
+    private void GivenIEnsureOcelotClient(AuthenticationSteps steps)
+        => ocelotClient ??= steps.OcelotClient;
 
     [Fact]
-    [Trait("Feat", "585")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2316")] // https://github.com/ThreeMammals/Ocelot/issues/2316
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
-    public async Task ShouldApplyGlobalGroupAuthenticationOptions_ForDynamicRoutes_WhenRouteOptsHasAKey()
+    public void ShouldApplyGlobalGroupAuthenticationOptionsForDynamicRoutesWhenRouteOptsHasAKey()
     {
         using var steps = new AuthenticationSteps();
 
@@ -394,39 +422,42 @@ public class DynamicRoutingTests : DiscoverySteps
             {
                 RouteKeys = ["R2"],
             };
+        var body = Body();
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls, Enumerable.Repeat(Body(), downstreamUrls.Length).ToArray());
-        steps.GivenThereIsAConfiguration(configuration);
-        steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps));
-        await steps.GivenThereIsExternalJwtSigningService(["api", "apiGlobal", "Mr.Who"], Xunit.TestContext.Current.CancellationToken);
-        ocelotClient ??= steps.OcelotClient;
+        var responses = Enumerable.Repeat(body, downstreamUrls.Length).ToArray();
+        string[] extraScopes = ["api", "apiGlobal", "Mr.Who"];
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, responses))
+            .And(x => steps.GivenThereIsAConfiguration(configuration))
+            .And(x => steps.GivenOcelotIsRunning(WithDiscoveryAndJwtBearerAuthentication(steps)))
+            .And(x => steps.GivenThereIsExternalJwtSigningService(extraScopes, CancelMe))
+            .And(x => GivenIEnsureOcelotClient(steps))
+            .And(x => steps.GivenIHaveAToken("Mr.Who", null, null, null, body))
+            .And(x => steps.GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK)) // auth is switched off and the scope doesn't matter
+            .And(x => ThenAllResponseBodiesShouldBe(body))
 
-        await steps.GivenIHaveAToken(scope: "Mr.Who");
-        steps.GivenIHaveAddedATokenToMyRequest();
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route1/", 2);
-        ThenAllStatusCodesShouldBe(HttpStatusCode.OK); // auth is switched off and the scope doesn't matter
-        ThenAllResponseBodiesShouldBe(Body());
+            .Given(x => steps.GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, body))
+            .And(x => steps.GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK)) // global scope has been accepted
+            .And(x => ThenAllResponseBodiesShouldBe(body))
 
-        await steps.GivenIHaveAToken(scope: globalOptions.AllowedScopes[0]);
-        steps.GivenIHaveAddedATokenToMyRequest();
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route2/", 2);
-        ThenAllStatusCodesShouldBe(HttpStatusCode.OK); // global scope has been accepted
-        ThenAllResponseBodiesShouldBe(Body());
-
-        await steps.GivenIHaveAToken(scope: "Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
-        steps.GivenIHaveAddedATokenToMyRequest();
-        WhenIGetUrlOnTheApiGatewayConcurrently("/noAuthorization/", 2);
-        ThenAllStatusCodesShouldBe(HttpStatusCode.Forbidden);
-        ThenAllResponseBodiesShouldBe("0");
-
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0);
+            .And(x => steps.GivenIHaveAToken("Mr.Who", null, null, null, body)) // should be different scope of route #3 which is "invalid-scope"
+            .And(x => steps.GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/noAuthorization/", 2))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.Forbidden))
+            .And(x => ThenAllResponseBodiesShouldBe("0"))
+            .And(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 1, 1, 0, 0))
+        .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
-    public async Task ShouldApplyGlobalQosOptions_ForAllDynamicRoutes()
+    public void ShouldApplyGlobalQosOptionsForAllDynamicRoutes()
     {
         var ports = PortFinder.GetPorts(3);
         var serviceName = ServiceName();
@@ -441,9 +472,6 @@ public class DynamicRoutingTests : DiscoverySteps
             MinimumThroughput = 2, // exceptions-errors
             Timeout = 500, // ms
         };
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndQualityOfService);
-
         using var steps = new QosSteps(this);
         Counters = new int[serviceUrls.Length];
         steps.CounterStrategy = (port) =>
@@ -451,16 +479,20 @@ public class DynamicRoutingTests : DiscoverySteps
             int index = Array.FindIndex(serviceUrls, url => new Uri(url).Port == port);
             int count = Interlocked.Increment(ref Counters[index]);
         };
-        await steps.TestRouteCircuitBreaker(ports, $"/{serviceName}/", globalOptions, isDiscovery: true); // test global scenario
-        await steps.TestRouteTimeout(ports, $"/{serviceName}/", globalOptions);
-        ThenServicesShouldHaveBeenCalledTimes(2, 2, 1);
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscoveryAndQualityOfService))
+            .When(x => steps.TestRouteCircuitBreaker(ports, $"/{serviceName}/", globalOptions, 0, EnabledDiscovery)) // test global scenario
+            .And(x => steps.TestRouteTimeout(ports, $"/{serviceName}/", globalOptions))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(2, 2, 1))
+        .BDDfy();
     }
 
     [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2338")] // https://github.com/ThreeMammals/Ocelot/issues/2338
     [Trait("PR", "2339")] // https://github.com/ThreeMammals/Ocelot/pull/2339
-    public async Task ShouldApplyGlobalQosOptions_ForAllDynamicRoutes_WithGroupedOpts()
+    public void ShouldApplyGlobalQosOptionsForAllDynamicRoutesWithGroupedOpts()
     {
         const int GlobalTimeout = 1500, GlobalExceptions = 3, GlobalBreakMs = 2000;
         var ports1 = PortFinder.GetPorts(2);
@@ -493,31 +525,29 @@ public class DynamicRoutingTests : DiscoverySteps
             {
                 RouteKeys = ["R2"],
             };
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithDiscoveryAndQualityOfService);
-
+        var body = Body();
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls,
-            Enumerable.Repeat(Body(), downstreamUrls.Length).ToArray(),
-            codes: Enumerable.Repeat(HttpStatusCode.NotFound, ports1.Length)
-                .Concat(Enumerable.Repeat(HttpStatusCode.InternalServerError, ports2.Length))
-                .Concat(Enumerable.Repeat(HttpStatusCode.OK, ports3.Length))
-                .ToArray());
-
         using var steps = new QosSteps(this);
-        WhenIGetUrlOnTheApiGatewayConcurrently($"/{route1.ServiceName}/", 2);
-        ThenAllStatusCodesShouldBe(HttpStatusCode.NotFound); // QoS is switched off and the scope doesn't matter
-        ThenAllResponseBodiesShouldBe(Body());
-
         steps.CounterStrategy = (port) =>
         {
             int index = Array.FindIndex(downstreamUrls, url => new Uri(url).Port == port);
             int count = Interlocked.Increment(ref Counters[index]);
         };
-        await steps.TestRouteCircuitBreaker(ports2, $"/{route2.ServiceName}/", globalOptions, isDiscovery: true); // test global scenario
-        await steps.TestRouteTimeout(ports3, $"/{route3.ServiceName}/", route3.QoSOptions);
-
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 1, 2, 0);
+        this.Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscoveryAndQualityOfService))
+            .And(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls,
+                Enumerable.Repeat(body, downstreamUrls.Length).ToArray(),
+                Enumerable.Repeat(HttpStatusCode.NotFound, ports1.Length)
+                    .Concat(Enumerable.Repeat(HttpStatusCode.InternalServerError, ports2.Length))
+                    .Concat(Enumerable.Repeat(HttpStatusCode.OK, ports3.Length))
+                    .ToArray()))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently($"/{route1.ServiceName}/", 2))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.NotFound)) // QoS is switched off and the scope doesn't matter
+            .And(x => ThenAllResponseBodiesShouldBe(body))
+            .When(x => steps.TestRouteCircuitBreaker(ports2, $"/{route2.ServiceName}/", globalOptions, 0, EnabledDiscovery)) // test global scenario
+            .And(x => steps.TestRouteTimeout(ports3, $"/{route3.ServiceName}/", route3.QoSOptions))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 1, 2, 0))
+        .BDDfy();
     }
 
     private FileDynamicRoute GivenLbRoute(string serviceName, string serviceNamespace = null,
@@ -573,4 +603,5 @@ public class DynamicRoutingTests : DiscoverySteps
     }
 
     protected override string ServiceNamespace() => nameof(DynamicRoutingTests);
+    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 }

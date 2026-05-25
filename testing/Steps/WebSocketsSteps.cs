@@ -8,12 +8,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Middleware;
 using Ocelot.WebSockets;
+using Shouldly;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Testing.Steps;
 
-public class WebSocketsSteps : Steps
+public class WebSocketsSteps : AcceptanceSteps
 {
     private readonly WebSocketsFactory _factory = new();
     private readonly List<string> _secondRecieved = new();

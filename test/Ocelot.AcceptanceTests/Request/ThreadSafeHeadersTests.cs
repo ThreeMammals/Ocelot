@@ -1,9 +1,8 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Core;
+namespace Ocelot.AcceptanceTests.Request;
 
-// Old integration tests
 public sealed class ThreadSafeHeadersTests : Steps
 {
     private readonly ConcurrentBag<ThreadSafeHeadersTestResult> _results;
@@ -14,16 +13,19 @@ public sealed class ThreadSafeHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("Feat", "61")] // https://github.com/ThreeMammals/Ocelot/pull/61
     public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAConfiguration(configuration);
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
-        GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300);
-        ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests)))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests)))
+            .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
+        .BDDfy();
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))

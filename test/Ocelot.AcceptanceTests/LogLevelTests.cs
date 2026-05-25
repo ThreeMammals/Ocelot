@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Serilog;
@@ -47,31 +44,12 @@ public sealed class LogLevelTests : Steps
     private void TestFactory(string[] notAllowedMessageTypes, string[] allowedMessageTypes, LogLevel level)
     {
         var port = PortFinder.GetRandomPort();
-        var configuration = new FileConfiguration
-        {
-            Routes = new List<FileRoute>
-            {
-                new()
-                {
-                    DownstreamPathTemplate = "/",
-                    DownstreamHostAndPorts = new List<FileHostAndPort>
-                    {
-                        new()
-                        {
-                            Host = "localhost",
-                            Port = port,
-                        },
-                    },
-                    DownstreamScheme = "http",
-                    UpstreamPathTemplate = "/",
-                    UpstreamHttpMethod = ["Get"],
-                    RequestIdKey = "Oc-RequestId",
-                },
-            },
-        };
-
+        var route = GivenRoute(port);
+        route.RequestIdKey = "Oc-RequestId";
+        var configuration = GivenConfiguration(route);
         using var logger = GetLogger(level);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -80,7 +58,7 @@ public sealed class LogLevelTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .Then(x => logger.Dispose())
             .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
-            .BDDfy();
+        .BDDfy();
     }
 
     private Task<int> GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)

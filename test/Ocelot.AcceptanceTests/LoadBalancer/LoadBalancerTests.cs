@@ -7,6 +7,7 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.Testing.LoadBalancer;
 using Ocelot.Testing.Steps;
 using Ocelot.Values;
 
@@ -15,7 +16,7 @@ namespace Ocelot.AcceptanceTests.LoadBalancer;
 public sealed class LoadBalancerTests : ConcurrentSteps
 {
     [Theory]
-    [Trait("Feat", "211")]
+    [Trait("Feat", "211")] // https://github.com/ThreeMammals/Ocelot/pull/211
     [InlineData(false)] // original scenario, clean config
     [InlineData(true)] // extended scenario using analyzer
     public void ShouldLoadBalanceRequestWithLeastConnection(bool withAnalyzer)
@@ -32,8 +33,10 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         }
         Action<IServiceCollection> withLeastConnectionAnalyzer = (s)
             => s.AddOcelot().AddCustomLoadBalancer<LeastConnectionAnalyzer>(getAnalyzer);
-        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        var serviceName = TestName();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(withAnalyzer ? withLeastConnectionAnalyzer : WithAddOcelot))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
@@ -54,11 +57,11 @@ public sealed class LoadBalancerTests : ConcurrentSteps
                 c == 50 || c == 49,
 #endif
                 CalledTimesMessage())) // LeastConnection algorithm distributes counters as 49/50 or 50/49 depending on thread synchronization
-            .BDDfy();
+        .BDDfy();
     }
 
     [Theory]
-    [Trait("Bug", "365")]
+    [Trait("Bug", "365")] // https://github.com/ThreeMammals/Ocelot/pull/365
     [InlineData(false)] // original scenario, clean config
     [InlineData(true)] // extended scenario using analyzer
     public void ShouldLoadBalanceRequestWithRoundRobin(bool withAnalyzer)
@@ -75,8 +78,10 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         }
         Action<IServiceCollection> withRoundRobinAnalyzer = (s)
             => s.AddOcelot().AddCustomLoadBalancer<RoundRobinAnalyzer>(getAnalyzer);
-        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        var serviceName = TestName();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(withAnalyzer ? withRoundRobinAnalyzer : WithAddOcelot))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 99))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(99))
@@ -84,34 +89,36 @@ public sealed class LoadBalancerTests : ConcurrentSteps
             .And(x => ThenServiceCountersShouldMatchLeasingCounters(lbAnalyzer, ports, 99))
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(99, ports.Length), Top(99, ports.Length)))
             .And(x => ThenServicesShouldHaveBeenCalledTimes(50, 49)) // strict assertion
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "961")]
+    [Trait("Feat", "961")] // https://github.com/ThreeMammals/Ocelot/issues/961
     public void ShouldLoadBalanceRequestWithCustomLoadBalancer()
     {
-        Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc =
-            (serviceProvider, route, discoveryProvider) => new CustomLoadBalancer(discoveryProvider.GetAsync);
+        static CustomLoadBalancer GetLoadBalancer(IServiceProvider serviceProvider, DownstreamRoute route, IServiceDiscoveryProvider discoveryProvider)
+            => new(discoveryProvider.GetAsync);
         var ports = PortFinder.GetPorts(2);
         var route = GivenLbRoute(ports, nameof(CustomLoadBalancer));
         var configuration = GivenConfiguration(route);
         var downstreamServiceUrls = ports.Select(DownstreamUrl).ToArray();
         Action<IServiceCollection> withCustomLoadBalancer = (s)
-            => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(loadBalancerFactoryFunc);
-        GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+            => s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>(GetLoadBalancer);
+        var serviceName = TestName();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamServiceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(withCustomLoadBalancer))
             .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/", 50))
             .Then(x => ThenAllServicesShouldHaveBeenCalledTimes(50))
             .And(x => ThenAllServicesCalledRealisticAmountOfTimes(Bottom(50, ports.Length), Top(50, ports.Length)))
             .And(x => ThenServicesShouldHaveBeenCalledTimes(25, 25)) // strict assertion
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2319")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
     public void ShouldApplyGlobalOptions_ForStaticRoutes()
     {
@@ -127,28 +134,29 @@ public sealed class LoadBalancerTests : ConcurrentSteps
         configuration.GlobalConfiguration.LoadBalancerOptions = new(nameof(RoundRobin));
 
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
-
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 5);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 7);
-
-        ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 2, 7, 0); // main assertion, explanation is below
-        ThenServiceShouldHaveBeenCalledTimes(0, 1); // RoundRobin for 2
-        ThenServiceShouldHaveBeenCalledTimes(1, 1); // RoundRobin for 2
-        ThenServiceShouldHaveBeenCalledTimes(2, 3); // LeastConnection for 5
-        ThenServiceShouldHaveBeenCalledTimes(3, 2); // LeastConnection for 5
-        ThenServiceShouldHaveBeenCalledTimes(4, 7); // NoLoadBalancer for 7
-        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 7
+        var serviceName = TestName();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 5))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 7))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 2, 7, 0)) // main assertion, explanation is below
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 1)) // RoundRobin for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 1)) // RoundRobin for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(2, 3)) // LeastConnection for 5
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(3, 2)) // LeastConnection for 5
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(4, 7)) // NoLoadBalancer for 7
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(5, 0)) // NoLoadBalancer for 7
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "2319")]
+    [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
+    [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void ShouldApplyGlobalGroupOptions_ForStaticRoutes_WhenRouteOptsHasAKey()
+    public void ShouldApplyGlobalGroupOptionsForStaticRoutesWhenRouteOptsHasAKey()
     {
         // 1st route
         var ports1 = PortFinder.GetPorts(2);
@@ -173,21 +181,23 @@ public sealed class LoadBalancerTests : ConcurrentSteps
             Type = nameof(RoundRobin),
         };
 
+        var serviceName = TestName();
         var downstreamUrls = ports1.Union(ports2).Union(ports3).Select(DownstreamUrl).ToArray();
-        GivenMultipleServiceInstancesAreRunning(downstreamUrls);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
-
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 4);
-        WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 5);
-        ThenServicesShouldHaveBeenCalledTimes(2, 0, 2, 2, 5, 0); // main assertion, explanation is below
-        ThenServiceShouldHaveBeenCalledTimes(0, 2); // NoLoadBalancer for 2
-        ThenServiceShouldHaveBeenCalledTimes(1, 0); // NoLoadBalancer for 2
-        ThenServiceShouldHaveBeenCalledTimes(2, 2); // RoundRobin for 4
-        ThenServiceShouldHaveBeenCalledTimes(3, 2); // RoundRobin for 4
-        ThenServiceShouldHaveBeenCalledTimes(4, 5); // NoLoadBalancer for 5
-        ThenServiceShouldHaveBeenCalledTimes(5, 0); // NoLoadBalancer for 5
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(downstreamUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route1", 2))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/route2", 4))
+            .And(x => WhenIGetUrlOnTheApiGatewayConcurrently("/noLoadBalancing", 5))
+            .Then(x => ThenServicesShouldHaveBeenCalledTimes(2, 0, 2, 2, 5, 0)) // main assertion, explanation is below
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(0, 2)) // NoLoadBalancer for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 0)) // NoLoadBalancer for 2
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(2, 2)) // RoundRobin for 4
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(3, 2)) // RoundRobin for 4
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(4, 5)) // NoLoadBalancer for 5
+            .And(x => ThenServiceShouldHaveBeenCalledTimes(5, 0)) // NoLoadBalancer for 5
+        .BDDfy();
     }
 
     private sealed class CustomLoadBalancer : ILoadBalancer

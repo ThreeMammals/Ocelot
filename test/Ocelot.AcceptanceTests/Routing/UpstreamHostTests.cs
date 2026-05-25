@@ -8,23 +8,20 @@ namespace Ocelot.AcceptanceTests.Routing;
 /// </summary>
 public sealed class UpstreamHostTests : Steps
 {
-    public UpstreamHostTests()
-    {
-    }
-
     [Fact]
     public void Should_return_response_200_with_simple_url_and_hosts_match()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -35,13 +32,14 @@ public sealed class UpstreamHostTests : Steps
         var route = GivenDefaultRoute(port).WithUpstreamHost("localhost");
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("DONTMATCH");
         var configuration = GivenConfiguration(route, route2);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -52,13 +50,14 @@ public sealed class UpstreamHostTests : Steps
         var route = GivenDefaultRoute(port).WithUpstreamHost("DONTMATCH");
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route, route2);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -69,13 +68,14 @@ public sealed class UpstreamHostTests : Steps
         var route = GivenDefaultRoute(port).WithUpstreamHost(null);
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route, route2);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -84,12 +84,13 @@ public sealed class UpstreamHostTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("127.0.0.20:5000");
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-            .BDDfy();
+        .BDDfy();
     }
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)

@@ -3,13 +3,12 @@ using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
-using Ocelot.Testing.LoadBalancer;
 using Ocelot.Values;
 using System.Collections.Concurrent;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Testing.LoadBalancer;
 
-internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer, ILoadBalancer
+public class LoadBalancerAnalyzer : ILoadBalancerAnalyzer, ILoadBalancer
 {
     protected readonly string _serviceName;
     protected LoadBalancerAnalyzer(string serviceName) => _serviceName = serviceName;
@@ -31,44 +30,44 @@ internal class LoadBalancerAnalyzer : ILoadBalancerAnalyzer, ILoadBalancer
         foreach (var generation in allGenerations)
         {
             var l = Events.Where(e => e.Service.Tags.Contains(generation)).ToList();
-            eventsPerGeneration.Add(generation, l);
+            eventsPerGeneration.Add(generation!, l);
         }
 
         Dictionary<string, List<int>> generationIndices = new();
         foreach (var generation in allGenerations)
         {
-            var l = eventsPerGeneration[generation].Select(e => e.ServiceIndex).Distinct().ToList();
-            generationIndices.Add(generation, l);
+            var l = eventsPerGeneration[generation!].Select(e => e.ServiceIndex).Distinct().ToList();
+            generationIndices.Add(generation!, l);
         }
 
         Dictionary<string, List<Lease>> generationLeases = new();
         foreach (var generation in allGenerations)
         {
-            var l = eventsPerGeneration[generation].Select(e => e.Lease).ToList();
-            generationLeases.Add(generation, l);
+            var l = eventsPerGeneration[generation!].Select(e => e.Lease).ToList();
+            generationLeases.Add(generation!, l);
         }
 
         Dictionary<string, List<ServiceHostAndPort>> generationHosts = new();
         foreach (var generation in allGenerations)
         {
-            var l = eventsPerGeneration[generation].Select(e => e.Lease.HostAndPort).Distinct().ToList();
-            generationHosts.Add(generation, l);
+            var l = eventsPerGeneration[generation!].Select(e => e.Lease.HostAndPort).Distinct().ToList();
+            generationHosts.Add(generation!, l);
         }
 
         Dictionary<string, List<Lease>> generationLeasesWithMaxConnections = new();
         foreach (var generation in allGenerations)
         {
             List<Lease> leases = new();
-            var uniqueHosts = generationHosts[generation];
+            var uniqueHosts = generationHosts[generation!];
             foreach (var host in uniqueHosts)
             {
-                int max = generationLeases[generation].Where(l => l == host).Max(l => l.Connections);
-                Lease wanted = generationLeases[generation].Find(l => l == host && l.Connections == max);
+                int max = generationLeases[generation!].Where(l => l == host).Max(l => l.Connections);
+                Lease wanted = generationLeases[generation!].Find(l => l == host && l.Connections == max);
                 leases.Add(wanted);
             }
 
             leases = leases.OrderBy(l => l.HostAndPort.DownstreamPort).ToList();
-            generationLeasesWithMaxConnections.Add(generation, leases);
+            generationLeasesWithMaxConnections.Add(generation!, leases);
         }
 
         return generationLeasesWithMaxConnections;

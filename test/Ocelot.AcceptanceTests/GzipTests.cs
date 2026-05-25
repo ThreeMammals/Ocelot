@@ -8,24 +8,23 @@ namespace Ocelot.AcceptanceTests;
 
 public sealed class GzipTests : Steps
 {
-    public GzipTests()
-    {
-    }
-
     [Fact]
+    [Trait("Bug", "263")] // https://github.com/ThreeMammals/Ocelot/issues/263
+    [Trait("Feat", "267")] // https://github.com/ThreeMammals/Ocelot/pull/267
     public void Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithMethods(HttpMethods.Post);
         var configuration = GivenConfiguration(route);
         var input = "people";
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura", "\"people\""))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura", "\"people\""))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .BDDfy();
+        .BDDfy();
     }
 
     private static StreamContent GivenThePostHasGzipContent(object input)

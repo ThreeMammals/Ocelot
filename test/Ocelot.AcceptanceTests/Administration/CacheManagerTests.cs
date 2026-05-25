@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Administration;
 
-public sealed class CacheManagerTests : AuthenticationSteps
+public sealed class CacheManagerTests : AuthSteps
 {
     public CacheManagerTests() : base()
     { }
@@ -44,15 +44,15 @@ public sealed class CacheManagerTests : AuthenticationSteps
             WithUseOcelot, // Action<IApplicationBuilder> configureApp,
             null, null, null, null);
         bool isExternal = true;
-        await GivenThereIsExternalJwtSigningService([OcelotScopes.OcAdmin], Xunit.TestContext.Current.CancellationToken);
+        await GivenThereIsExternalJwtSigningService([OcelotScopes.OcAdmin], CancelMe);
         var token = await GivenIHaveATokenWithUrlPath(
             path: !isExternal ? AdminPath : string.Empty,
             scope: OcelotScopes.OcAdmin);
         GivenIHaveAddedATokenToMyRequest(token);
 
         //await WhenIGetUrlOnTheApiGateway("/");
-        //ThenTheStatusCodeShouldBeOK(); // currently HttpStatusCode.BadGateway
-        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}", Xunit.TestContext.Current.CancellationToken);
+        //ThenTheStatusCodeShouldBeOk(); // currently HttpStatusCode.BadGateway
+        response = await ocelotClient.DeleteAsync($"{AdminPath}/outputcache/{TestName()}", CancelMe);
         ThenTheStatusCodeShouldBe(HttpStatusCode.NoContent); // currently HttpStatusCode.Unauthorized
     }
 

@@ -14,5 +14,6 @@
   <Project Path="samples/ServiceFabric/DownstreamService/Ocelot.Samples.ServiceFabric.DownstreamService.csproj" />
   <Project Path="samples/Web/Ocelot.Samples.Web.csproj" />
   <Project Path="samples/WebSocket/Ocelot.Samples.WebSocket.csproj" />
+  <Project Path="src/Ocelot.Provider.Kubernetes/Ocelot.Provider.Kubernetes.csproj" />
   <Project Path="src/Ocelot/Ocelot.csproj" />
 </Solution>

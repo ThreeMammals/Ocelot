@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Ocelot.Configuration.File;
 using System.Security.Cryptography;
 
 namespace Ocelot.AcceptanceTests.Request;
@@ -17,16 +16,16 @@ public sealed class StreamContentTests : Steps
     {
         var contentSize = 1024L * 1024L * 1024L; // 1GB
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, HttpMethods.Post);
+        var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, false)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(contentSize + ";;" + contentSize))
-            .BDDfy();
+        .BDDfy();
     }
 
 #if NET10_0_OR_GREATER
@@ -34,19 +33,21 @@ public sealed class StreamContentTests : Steps
 #else
     [Fact]
 #endif
+    [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
     public async Task Should_stream_with_chunked_content()
     {
         var contentSize = 1024L * 1024L * 1024L; // 1GB
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, HttpMethods.Post);
+        var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, true)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(";chunked;" + contentSize))
-            .BDDfy();
+        .BDDfy();
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, string basePath)
@@ -75,18 +76,6 @@ public sealed class StreamContentTests : Steps
             await response.WriteAsync(request.ContentLength + ";" + request.Headers.TransferEncoding + ";" + streamLength);
         });
     }
-
-    private static FileRoute GivenRoute(int port, string method = null) => new()
-    {
-        DownstreamPathTemplate = "/",
-        DownstreamScheme = Uri.UriSchemeHttp,
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [method ?? HttpMethods.Get],
-    };
 }
 
 internal class StreamTestContent : HttpContent

@@ -7,8 +7,8 @@ namespace Ocelot.AcceptanceTests.Caching;
 
 public sealed class CachingTests : Steps
 {
-    private const string HelloTomContent = "Hello from Tom";
-    private const string HelloLauraContent = "Hello from Laura";
+    private const string HelloFromTom = "Hello from Tom";
+    private const string HelloFromLaura = "Hello from Laura";
     private int _counter = 0;
 
     public CachingTests()
@@ -24,19 +24,19 @@ public sealed class CachingTests : Steps
             TtlSeconds = 100,
         };
         var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloFromLaura, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloFromTom, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
-            .BDDfy();
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .And(x => ThenTheContentLengthIs(HelloFromLaura.Length))
+        .BDDfy();
     }
 
     [Fact]
@@ -49,19 +49,20 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
         var headerExpires = "Expires";
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, headerExpires, "-1"))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloFromLaura, headerExpires, "-1"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloFromTom, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .And(x => ThenTheContentLengthIs(HelloFromLaura.Length))
             .And(x => ThenTheResponseContentHeaderIs(headerExpires, "-1"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
@@ -73,26 +74,26 @@ public sealed class CachingTests : Steps
             TtlSeconds = 1,
         };
         var configuration = GivenFileConfiguration(port, options);
-
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, null, null))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloFromLaura, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, null, null))
-            .And(x => GivenTheCacheExpires())
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloFromTom, null, null))
+            .And(x => GivenTheCacheExpiresIn(1000))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .BDDfy();
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromTom))
+        .BDDfy();
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [Trait("Feat", "2058")]
-    [Trait("Bug", "2059")]
+    [Trait("Feat", "2058")] // https://github.com/ThreeMammals/Ocelot/pull/2058
+    [Trait("Bug", "2059")] // https://github.com/ThreeMammals/Ocelot/issues/2059
     public void Should_return_different_cached_response_when_request_body_changes_and_EnableContentHashing_is_true(bool asGlobalConfig)
     {
         var port = PortFinder.GetRandomPort();
@@ -103,8 +104,8 @@ public sealed class CachingTests : Steps
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig, HttpMethods.Post);
-
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
@@ -120,14 +121,14 @@ public sealed class CachingTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody2String))
             .And(x => ThenTheCounterValueShouldBe(2))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [Trait("Feat", "2058")]
-    [Trait("Bug", "2059")]
+    [Trait("Feat", "2058")] // https://github.com/ThreeMammals/Ocelot/pull/2058
+    [Trait("Bug", "2059")] // https://github.com/ThreeMammals/Ocelot/issues/2059
     public void Should_return_same_cached_response_when_request_body_changes_and_EnableContentHashing_is_false(bool asGlobalConfig)
     {
         var port = PortFinder.GetRandomPort();
@@ -137,8 +138,8 @@ public sealed class CachingTests : Steps
         };
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options, asGlobalConfig, HttpMethods.Post);
-
-        this.Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
+        this
+            .Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
@@ -154,11 +155,11 @@ public sealed class CachingTests : Steps
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
             .And(x => ThenTheCounterValueShouldBe(1))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
-    [Trait("Issue", "1172")]
+    [Trait("Feat", "1172")] // https://github.com/ThreeMammals/Ocelot/pull/1172
     public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
     {
         var port = PortFinder.GetRandomPort();
@@ -170,30 +171,30 @@ public sealed class CachingTests : Steps
         };
         var configuration = GivenFileConfiguration(port, options);
         var headerExpires = "Expires";
-
         // Add to cache
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloLauraContent, headerExpires, options.TtlSeconds))
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, HelloFromLaura, headerExpires, options.TtlSeconds))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
 
             // Read from cache
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, headerExpires, options.TtlSeconds / 2))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloFromTom, headerExpires, options.TtlSeconds / 2))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .And(x => ThenTheContentLengthIs(HelloFromLaura.Length))
 
             // Clean cache by the header and cache new content
-            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloTomContent, headerExpires, -1))
+            .Given(x => x.GivenTheServiceNowReturns(port, HttpStatusCode.OK, HelloFromTom, headerExpires, -1))
             .And(x => GivenIAddAHeader(options.Header, "123"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
-            .BDDfy();
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromTom))
+            .And(x => ThenTheContentLengthIs(HelloFromTom.Length))
+        .BDDfy();
     }
 
     private FileConfiguration GivenFileConfiguration(int port, FileCacheOptions cacheOptions,
@@ -212,10 +213,7 @@ public sealed class CachingTests : Steps
         return configuration;
     }
 
-    private static void GivenTheCacheExpires()
-    {
-        Thread.Sleep(1000);
-    }
+    private static void GivenTheCacheExpiresIn(int ms) => GivenIWait(ms);
 
     private void GivenTheServiceNowReturns(int port, HttpStatusCode statusCode, string responseBody, string key, object value)
     {

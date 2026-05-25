@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Configuration.File;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -17,14 +15,17 @@ public sealed class PayloadTooLargeTests : Steps
     public void Should_throw_payload_too_large_exception_using_kestrel()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, HttpMethods.Post);
+        var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAServiceRunningOn(port);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        var body = Body();
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(1024))
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
-            .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
-            .BDDfy();
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.RequestEntityTooLarge))
+            .And(x => ThenTheResponseBodyShouldBeEmpty())
+        .BDDfy();
     }
 
     [Fact]
@@ -33,27 +34,18 @@ public sealed class PayloadTooLargeTests : Steps
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Test is unstable for all platforms except Windows OS");
 
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, HttpMethods.Post);
+        var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        GivenThereIsAServiceRunningOn(port);
-        this.Given(x => GivenThereIsAConfiguration(configuration))
+        var body = Body();
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, body))
+            .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningOnHttpSysWithCustomBodyMaxSize(1024))
             .When(x => WhenIPostUrlOnTheApiGateway("/", new ByteArrayContent(Encoding.UTF8.GetBytes(Payload))))
-            .Then(x => ThenTheStatusCodeShouldBe((int)HttpStatusCode.RequestEntityTooLarge))
-            .BDDfy();
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.RequestEntityTooLarge))
+            .And(x => ThenTheResponseBodyShouldBeEmpty())
+        .BDDfy();
     }
-
-    private static FileRoute GivenRoute(int port, string method = null) => new()
-    {
-        DownstreamPathTemplate = "/",
-        DownstreamHostAndPorts = new()
-        {
-            new("localhost", port),
-        },
-        DownstreamScheme = Uri.UriSchemeHttp,
-        UpstreamPathTemplate = "/",
-        UpstreamHttpMethod = [method ?? HttpMethods.Get],
-    };
 
     private Task<int> GivenOcelotIsRunningOnKestrelWithCustomBodyMaxSize(long customBodyMaxSize)
         => GivenOcelotHostIsRunning(

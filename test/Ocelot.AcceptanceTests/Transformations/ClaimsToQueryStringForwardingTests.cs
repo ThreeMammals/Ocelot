@@ -33,12 +33,13 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
     public void Should_return_200_OK_and_forward_claim_as_query_string()
     {
         var port = PortFinder.GetRandomPort();
-        string[] allowedScopes = ["openid", "offline_access", "api"];
-        var route = GivenAuthRoute(port, scopes: allowedScopes);
+        string[] scopes = ["openid", "offline_access", "api"];
+        var route = GivenAuthRoute(port, scopes: scopes);
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
@@ -46,22 +47,23 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
             .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string UserId:1234567890"))
             .And(x => ThenTheQueryStringIs("?CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string"))
-            .BDDfy();
+        .BDDfy();
     }
 
     [Fact]
     public void Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string()
     {
         var port = PortFinder.GetRandomPort();
-        string[] allowedScopes = ["openid", "offline_access", "api"];
-        var route = GivenAuthRoute(port, scopes: allowedScopes);
+        string[] scopes = ["openid", "offline_access", "api"];
+        var route = GivenAuthRoute(port, scopes: scopes);
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
         var testName = TestName();
-        this.Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, Xunit.TestContext.Current.CancellationToken))
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
@@ -69,10 +71,10 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
             .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
-            .Then(x => ThenTheStatusCodeShouldBeOK())
+            .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string UserId:1234567890"))
             .And(x => ThenTheQueryStringIs("?test=1&test=2&CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string"))
-            .BDDfy();
+        .BDDfy();
     }
 
     private string _downstreamQueryString;
