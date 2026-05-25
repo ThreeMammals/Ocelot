@@ -16,8 +16,27 @@ if (builder.Environment.IsDevelopment())
     builder.Logging.AddConsole();
 
 var app = builder.Build();
-app.UseWebSockets();
 
+// Serve static files (e.g., logo)
+app.UseStaticFiles();
+
+// Add middleware to handle "/" path with custom HTML response
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/" && context.Request.Method == "GET")
+    {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        context.Response.ContentType = "text/html; charset=utf-8";
+        var htmlContent = await GetWelcomeHtmlAsync(context.RequestAborted);
+        await context.Response.WriteAsync(htmlContent, context.RequestAborted);
+    }
+    else
+    {
+        await next();
+    }
+});
+
+app.UseWebSockets();
 var wsPipeline = new OcelotPipelineConfiguration
 {
     WebSocketsProxyMiddleware = (context, next) =>
@@ -31,3 +50,9 @@ var wsPipeline = new OcelotPipelineConfiguration
 };
 await app.UseOcelot(wsPipeline);
 await app.RunAsync();
+
+static async Task<string> GetWelcomeHtmlAsync(CancellationToken cancellation)
+{
+    var htmlFilePath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "welcome.html");
+    return await File.ReadAllTextAsync(htmlFilePath, cancellation);
+}

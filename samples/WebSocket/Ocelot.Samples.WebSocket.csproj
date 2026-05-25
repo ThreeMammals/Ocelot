@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\ocelot_logo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot\welcome.html" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

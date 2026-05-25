@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocelot WebSocket Gateway</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 60px 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .welcome-text {
+            color: #555;
+            font-size: 1em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .feature {
+            flex: 1;
+            min-width: 150px;
+            margin: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .feature-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .feature-desc {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .cta {
+            margin-top: 40px;
+        }
+        .cta p {
+            color: #777;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+        .routes-list {
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: left;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #333;
+        }
+        .route-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .route-item:last-child {
+            border-bottom: none;
+        }
+        .method {
+            color: #667eea;
+            font-weight: bold;
+            display: inline-block;
+            width: 45px;
+        }
+        .path {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/ocelot_logo.png" alt="Ocelot Logo" class="logo">
+        <h1>Welcome to WebSocket app</h1>
+        <p class="subtitle">Your WebSocket API Gateway is running!</p>
+        
+        <div class="welcome-text">
+            <p>Welcome to the <strong>Ocelot WebSocket Sample</strong> application.</p>
+            <p>This gateway demonstrates WebSocket proxying with configurable buffer sizes for high-throughput streaming scenarios.</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-title">🚀 Fast</div>
+                <div class="feature-desc">High-performance WebSocket routing</div>
+            </div>
+            <div class="feature">
+                <div class="feature-title">🔒 Secure</div>
+                <div class="feature-desc">Support for WSS (WebSocket Secure)</div>
+            </div>
+            <div class="feature">
+                <div class="feature-title">⚙️ Configurable</div>
+                <div class="feature-desc">Custom buffer sizes per route</div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <p><strong>Available WebSocket Routes:</strong></p>
+            <div class="routes-list">
+                <div class="route-item"><span class="method">WS</span><span class="path">/ws</span></div>
+                <div class="route-item"><span class="method">WSS</span><span class="path">/wss</span></div>
+            </div>
+            <p style="margin-top: 20px; color: #999; font-size: 0.9em;">Check the <code>ocelot.json</code> file to see the WebSocket configuration and add your own routes.</p>
+        </div>
+
+        <p style="margin-top: 30px; color: #999; font-size: 0.85em;">
+            📖 Learn more at <a href="https://github.com/ThreeMammals/Ocelot" style="color: #667eea; text-decoration: none;">github.com/ThreeMammals/Ocelot</a>
+        </p>
+    </div>
+</body>
+</html>
