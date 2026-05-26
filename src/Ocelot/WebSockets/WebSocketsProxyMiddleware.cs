@@ -26,9 +26,7 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
     public const string IgnoredSslWarningFormat = $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{{0}}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{{1}}'.";
     public const string InvalidSchemeWarningFormat = "Invalid scheme has detected which will be replaced! Scheme '{0}' of the downstream '{1}'.";
 
-    public WebSocketsProxyMiddleware(IOcelotLoggerFactory logging,
-        RequestDelegate next,
-        IWebSocketsFactory factory)
+    public WebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
         : base(logging.CreateLogger<WebSocketsProxyMiddleware>())
     {
         _next = next;

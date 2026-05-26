@@ -56,6 +56,6 @@ static Task MyWebSocketsProxyMiddleware(HttpContext context, Func<Task> next)
     Task Next(HttpContext ctx) => next();
     var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
     var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
-    var middleware = new CustomWebSocketsProxyMiddleware(loggerFactory, Next, factory);
+    var middleware = new CustomWebSocketsProxyMiddleware(Next, loggerFactory, factory);
     return middleware.Invoke(context);
 }

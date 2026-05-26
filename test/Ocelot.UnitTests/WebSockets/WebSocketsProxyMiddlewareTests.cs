@@ -38,7 +38,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<WebSocketsProxyMiddleware>())
             .Returns(_logger.Object);
 
-        _middleware = new WebSocketsProxyMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        _middleware = new WebSocketsProxyMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
 
         _client = new Mock<IClientWebSocket>();
         _factory.Setup(x => x.CreateClient()).Returns(_client.Object);
@@ -500,29 +500,29 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     [Fact]
     public void DefaultWebSocketBufferSize_ShouldBe4096()
     {
-        var exposed = new ExposedBufferSizeMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        var exposed = new ExposedBufferSizeMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
         Assert.Equal(4096, exposed.ExposedBufferSize);
     }
 
     [Fact]
     public void DefaultWebSocketBufferSize_CanBeOverriddenBySubclass()
     {
-        var custom = new CustomBufferSizeMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        var custom = new CustomBufferSizeMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
         Assert.Equal(65536, custom.ExposedBufferSize);
     }
 
     private class ExposedBufferSizeMiddleware : WebSocketsProxyMiddleware
     {
-        public ExposedBufferSizeMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
-            : base(logging, next, factory) { }
+        public ExposedBufferSizeMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+            : base(next, logging, factory) { }
 
         public int ExposedBufferSize => DefaultWebSocketBufferSize;
     }
 
     private class CustomBufferSizeMiddleware : ExposedBufferSizeMiddleware
     {
-        public CustomBufferSizeMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
-            : base(logging, next, factory) { }
+        public CustomBufferSizeMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+            : base(next, logging, factory) { }
 
         protected override int DefaultWebSocketBufferSize => 65536;
     }

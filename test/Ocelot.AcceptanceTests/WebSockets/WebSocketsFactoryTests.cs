@@ -67,7 +67,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
                 customMiddlewareInvoked = true;
                 var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
                 var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
-                var middleware = new LargeBufferWebSocketsProxyMiddleware(loggerFactory, _ => next(), factory);
+                var middleware = new LargeBufferWebSocketsProxyMiddleware(_ => next(), loggerFactory, factory);
                 return middleware.Invoke(context);
             },
         };
@@ -92,7 +92,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
     {
         protected override int DefaultWebSocketBufferSize => 65536;
 
-        public LargeBufferWebSocketsProxyMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
-            : base(logging, next, factory) { }
+        public LargeBufferWebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+            : base(next, logging, factory) { }
     }
 }

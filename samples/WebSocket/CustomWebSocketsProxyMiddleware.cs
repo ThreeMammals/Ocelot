@@ -7,6 +7,6 @@ public class CustomWebSocketsProxyMiddleware : WebSocketsProxyMiddleware
 {
     protected override int DefaultWebSocketBufferSize => 65536; // 64 KB for high-throughput streams (e.g. HTTP.sys video streaming)
 
-    public CustomWebSocketsProxyMiddleware(IOcelotLoggerFactory logging, RequestDelegate next, IWebSocketsFactory factory)
-        : base(logging, next, factory) { }
+    public CustomWebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+        : base(next, logging, factory) { }
 }
