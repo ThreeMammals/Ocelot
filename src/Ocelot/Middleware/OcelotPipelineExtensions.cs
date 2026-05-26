@@ -128,6 +128,15 @@ public static class OcelotPipelineExtensions
             ? builder.Use(middleware)
             : builder.UseMiddleware<TMiddleware>();
 
+    private static IApplicationBuilder UseIfNotNull<TMiddlewareBase>(this IApplicationBuilder builder, Type middlewareType)
+        where TMiddlewareBase : OcelotMiddleware
+    {
+        if (middlewareType is null) return builder;
+        if (!middlewareType.BaseType.Equals(typeof(TMiddlewareBase)))
+            throw new Exception($"Unable to start Ocelot, error injecting the {middlewareType.FullName} since it is not {typeof(TMiddlewareBase).FullName}.");
+        return builder.UseMiddleware(middlewareType);
+    }
+
     private static void ConfigureWebSockets(IApplicationBuilder app, OcelotPipelineConfiguration configuration)
     {
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
@@ -135,6 +144,8 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
         app.UseMiddleware<LoadBalancingMiddleware>();
         app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddleware);
+        app
+            .UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddlewareType)
+            .UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddleware);
     }
 }
