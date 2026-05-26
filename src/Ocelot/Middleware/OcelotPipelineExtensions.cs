@@ -135,6 +135,6 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
         app.UseMiddleware<LoadBalancingMiddleware>();
         app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsProxyMiddleware);
+        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddleware);
     }
 }

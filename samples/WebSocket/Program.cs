@@ -41,7 +41,7 @@ app.Use(async (context, next) =>
 
 var wsPipeline = new OcelotPipelineConfiguration
 {
-    WebSocketsProxyMiddleware = MyWebSocketsProxyMiddleware,
+    WebSocketsMiddleware = MyWebSocketsProxyMiddleware,
 };
 await app.UseOcelot(wsPipeline); // IF Ocelot version is 25.0 and greater, internally called app.UseWebSockets() during building of Ocelot pipeline
 await app.RunAsync();

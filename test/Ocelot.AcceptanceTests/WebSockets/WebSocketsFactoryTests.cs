@@ -62,7 +62,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         bool customMiddlewareInvoked = false;
         var pipelineConfig = new OcelotPipelineConfiguration
         {
-            WebSocketsProxyMiddleware = (context, next) =>
+            WebSocketsMiddleware = (context, next) =>
             {
                 customMiddlewareInvoked = true;
                 var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
