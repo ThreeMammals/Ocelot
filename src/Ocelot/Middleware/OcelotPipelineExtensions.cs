@@ -33,17 +33,9 @@ public static class OcelotPipelineExtensions
         // It also sets the Request Id if anything is set globally
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-        // If the request is for websockets upgrade we fork into a different pipeline
-        app.MapWhen(httpContext => httpContext.WebSockets.IsWebSocketRequest,
-            ws =>
-            {
-                ws.UseMiddleware<DownstreamRouteFinderMiddleware>();
-                ws.UseMiddleware<MultiplexingMiddleware>();
-                ws.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
-                ws.UseMiddleware<LoadBalancingMiddleware>();
-                ws.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-                ws.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsProxyMiddleware);
-            });
+        // If the request is for WebSockets upgrade we fork into a different pipeline
+        app.UseWebSockets(); // Adds WebSocketMiddleware, critical for CONNECT HTTP method implementation and WS handshaking (thus IsWebSocketRequest becomes true)
+        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, app => ConfigureWebSockets(app, configuration));
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
@@ -135,4 +127,14 @@ public static class OcelotPipelineExtensions
         where TMiddleware : OcelotMiddleware => middleware != null
             ? builder.Use(middleware)
             : builder.UseMiddleware<TMiddleware>();
+
+    private static void ConfigureWebSockets(IApplicationBuilder app, OcelotPipelineConfiguration configuration)
+    {
+        app.UseMiddleware<DownstreamRouteFinderMiddleware>();
+        app.UseMiddleware<MultiplexingMiddleware>();
+        app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+        app.UseMiddleware<LoadBalancingMiddleware>();
+        app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
+        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsProxyMiddleware);
+    }
 }

@@ -36,12 +36,14 @@ app.Use(async (context, next) =>
     }
 });
 
-app.UseWebSockets();
+// IF Ocelot version is 24.1 and lower
+// app.UseWebSockets();
+
 var wsPipeline = new OcelotPipelineConfiguration
 {
     WebSocketsProxyMiddleware = MyWebSocketsProxyMiddleware,
 };
-await app.UseOcelot(wsPipeline);
+await app.UseOcelot(wsPipeline); // IF Ocelot version is 25.0 and greater, internally called app.UseWebSockets() during building of Ocelot pipeline
 await app.RunAsync();
 
 static async Task<string> GetWelcomeHtmlAsync(CancellationToken cancellation)
