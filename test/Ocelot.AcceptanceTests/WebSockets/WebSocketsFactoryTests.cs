@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.Balancers;
-using Ocelot.Testing.Steps;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
 
 namespace Ocelot.AcceptanceTests.WebSockets;
@@ -50,31 +50,35 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         .BDDfy();
     }
 
-    [Fact]
-    [Trait("Feat", "2386")]
-    [Trait("PR", "2387")]
-    public async Task ShouldProxyWebsocketInputToDownstreamServiceUsingCustomMiddleware()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [Trait("Feat", "2386")] // https://github.com/ThreeMammals/Ocelot/issues/2386
+    [Trait("PR", "2387")] // https://github.com/ThreeMammals/Ocelot/pull/2387
+    public async Task ShouldProxyWebsocketInputToDownstreamServiceUsingCustomMiddleware(bool injectViaType)
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port);
         GivenThereIsAConfiguration(GivenConfiguration(route));
         int ocelotPort = PortFinder.GetRandomPort();
         bool customMiddlewareInvoked = false;
+        Task CreateMiddleware(HttpContext context, Func<Task> next)
+        {
+            customMiddlewareInvoked = true;
+            var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
+            var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
+            var middleware = new LargeBufferWebSocketsProxyMiddleware(_ => next(), loggerFactory, factory);
+            return middleware.Invoke(context);
+        }
         var pipelineConfig = new OcelotPipelineConfiguration
         {
-            WebSocketsMiddleware = (context, next) =>
-            {
-                customMiddlewareInvoked = true;
-                var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
-                var factory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
-                var middleware = new LargeBufferWebSocketsProxyMiddleware(_ => next(), loggerFactory, factory);
-                return middleware.Invoke(context);
-            },
+            WebSocketsMiddlewareType = injectViaType ? typeof(LargeBufferWebSocketsProxyMiddleware) : null,
+            WebSocketsMiddleware = injectViaType ? null : CreateMiddleware,
         };
         await StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig);
         await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancellationToken.None);
         await StartClient(new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri);
-        customMiddlewareInvoked.ShouldBeTrue();
+        customMiddlewareInvoked.ShouldBe(!injectViaType);
         _firstRecieved.Count.ShouldBe(10);
     }
 

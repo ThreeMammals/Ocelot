@@ -249,13 +249,13 @@ public class WebSocketsSteps : AcceptanceSteps
             .UseUrls(url)
             .ConfigureLogging(WithConsole);
         void WithWebSocketsAndConfig(IApplicationBuilder app)
-            => app.UseWebSockets().UseOcelot(pipelineConfig).Wait();
+            => app.UseOcelot(pipelineConfig).Wait(); // internally called UseWebSockets() since version 25.0
         return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
             WithWebSocketsAndConfig, null, ConfigureWebHost, null, null);
     }
 
     protected static void WithWebSockets(IApplicationBuilder app)
-        => app.UseWebSockets().UseOcelot().Wait();
+        => app.UseOcelot().Wait(); // internally called UseWebSockets() since version 25.0
     protected static void WithHttp2(ListenOptions options)
     {
         options.Protocols = HttpProtocols.Http2;
