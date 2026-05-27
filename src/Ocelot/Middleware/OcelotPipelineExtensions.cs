@@ -35,7 +35,7 @@ public static class OcelotPipelineExtensions
 
         // If the request is for WebSockets upgrade we fork into a different pipeline
         app.UseWebSockets(); // Adds WebSocketMiddleware, critical for CONNECT HTTP method implementation and WS handshaking (thus IsWebSocketRequest becomes true)
-        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, app => ConfigureWebSockets(app, configuration));
+        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, app => app.ConfigureWebSockets(configuration));
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
@@ -120,15 +120,15 @@ public static class OcelotPipelineExtensions
         return app.Build();
     }
 
-    private static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
+    public static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         => middleware != null ? builder.Use(middleware) : builder;
 
-    private static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
+    public static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         where TMiddleware : OcelotMiddleware => middleware != null
             ? builder.Use(middleware)
             : builder.UseMiddleware<TMiddleware>();
 
-    private static IApplicationBuilder UseIfNotNull<TMiddlewareBase>(this IApplicationBuilder builder, Type middlewareType)
+    public static IApplicationBuilder UseIfNotNull<TMiddlewareBase>(this IApplicationBuilder builder, Type middlewareType)
         where TMiddlewareBase : OcelotMiddleware
     {
         if (middlewareType is null) return builder;
@@ -137,7 +137,7 @@ public static class OcelotPipelineExtensions
         return builder.UseMiddleware(middlewareType);
     }
 
-    private static void ConfigureWebSockets(IApplicationBuilder app, OcelotPipelineConfiguration configuration)
+    public static void ConfigureWebSockets(this IApplicationBuilder app, OcelotPipelineConfiguration configuration)
     {
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
         app.UseMiddleware<MultiplexingMiddleware>();

@@ -10,10 +10,10 @@ using Ocelot.WebSockets;
 namespace Ocelot.AcceptanceTests.WebSockets;
 
 [Trait("Feat", "212")] // https://github.com/ThreeMammals/Ocelot/issues/212
-[Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
 public sealed class WebSocketsFactoryTests : WebSocketsSteps
 {
     [Fact]
+    [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
     public void ShouldProxyWebsocketInputToDownstreamService()
     {
         var port = PortFinder.GetRandomPort();
@@ -32,6 +32,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
     private void ThenTheReceivedCountIs(int count) => _firstRecieved.Count.ShouldBe(count);
 
     [Fact]
+    [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
     public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
     {
         int port1 = PortFinder.GetRandomPort();
@@ -59,8 +60,9 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port);
-        GivenThereIsAConfiguration(GivenConfiguration(route));
+        var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
+        var ocelotUrl = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
         bool customMiddlewareInvoked = false;
         Task CreateMiddleware(HttpContext context, Func<Task> next)
         {
@@ -75,11 +77,14 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
             WebSocketsMiddlewareType = injectViaType ? typeof(LargeBufferWebSocketsProxyMiddleware) : null,
             WebSocketsMiddleware = injectViaType ? null : CreateMiddleware,
         };
-        await StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig);
-        await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancellationToken.None);
-        await StartClient(new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri);
-        customMiddlewareInvoked.ShouldBe(!injectViaType);
-        _firstRecieved.Count.ShouldBe(10);
+        this
+            .Given(x => GivenThereIsAConfiguration(configuration))
+            .And(x => StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig))
+            .And(x => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancelMe))
+            .When(x => StartClient(ocelotUrl))
+            .Then(x => ThenTheReceivedCountIs(10))
+            .And(x => customMiddlewareInvoked.ShouldBe(!injectViaType, null))
+        .BDDfy();
     }
 
     private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
@@ -94,8 +99,7 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
 
     private sealed class LargeBufferWebSocketsProxyMiddleware : WebSocketsProxyMiddleware
     {
-        protected override int DefaultWebSocketBufferSize => 65536;
-
+        protected override int BufferSize => 65536;
         public LargeBufferWebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
             : base(next, logging, factory) { }
     }
