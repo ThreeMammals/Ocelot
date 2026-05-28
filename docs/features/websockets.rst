@@ -15,7 +15,7 @@ To enable *WebSockets* proxying with Ocelot, you need to do the following in you
   :emphasize-lines: 2
 
   var app = builder.Build();
-  app.UseWebSockets();
+  app.UseWebSockets(); // required for Ocelot 24.x and earlier; called automatically since version 25.0
   await app.UseOcelot();
   await app.RunAsync();
 
@@ -153,7 +153,7 @@ Below is a list of features that will not work:
 3. :doc:`../features/aggregation`
 4. :doc:`../features/ratelimiting`
 5. :doc:`../features/qualityofservice`
-6. :doc:`../features/middlewareinjection`
+6. :doc:`../features/middlewareinjection` (except the :ref:`mi-ocelotpipelineconfiguration-class` ``WebSocketsMiddlewareType`` and ``WebSocketsMiddleware`` properties, see :ref:`Sample <ws-sample>`)
 7. :doc:`../features/headerstransformation`
 8. :doc:`../features/delegatinghandlers`
 9. :doc:`../features/claimstransformation`
@@ -162,6 +162,62 @@ Below is a list of features that will not work:
 12. :doc:`../features/authorization`
 
 We cannot be entirely sure how this feature will behave once it is widely used. Therefore, thorough testing is strongly recommended!
+
+.. _ws-sample:
+
+Sample [#f5]_
+-------------
+
+  | **Project**: `samples <https://github.com/ThreeMammals/Ocelot/tree/main/samples>`_ / `WebSocket <https://github.com/ThreeMammals/Ocelot/tree/main/samples/WebSocket>`_
+  | **Solution**: `Ocelot.Samples.slnx <https://github.com/ThreeMammals/Ocelot/blob/main/Ocelot.Samples.slnx>`_
+
+The ``Ocelot.Samples.WebSocket.csproj`` sample project demonstrates how to proxy *WebSocket* connections with a customized buffer size
+by subclassing `WebSocketsProxyMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs>`_
+and registering it via ``OcelotPipelineConfiguration``:
+
+.. code-block:: csharp
+
+  public class MyWebSocketsProxyMiddleware : WebSocketsProxyMiddleware
+  {
+      protected override int BufferSize => 65536; // 64 KB for high-throughput streams (e.g. HTTP.sys video streaming)
+  
+      public MyWebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+          : base(next, logging, factory) { }
+  }
+
+The custom middleware type is then registered through ``WebSocketsMiddlewareType`` option of the :ref:`mi-ocelotpipelineconfiguration-class`:
+
+.. code-block:: csharp
+
+  var wsPipeline = new OcelotPipelineConfiguration
+  {
+      WebSocketsMiddlewareType = typeof(MyWebSocketsProxyMiddleware),
+  };
+  await app.UseOcelot(wsPipeline);
+
+Alternatively, the same can be achieved with a delegate via ``WebSocketsMiddleware``:
+
+.. code-block:: csharp
+
+  var wsPipeline = new OcelotPipelineConfiguration
+  {
+      WebSocketsMiddleware = (context, next) =>
+      {
+          Task Next(HttpContext ctx) => next();
+          var loggerFactory = context.RequestServices.GetRequiredService<IOcelotLoggerFactory>();
+          var wsFactory = context.RequestServices.GetRequiredService<IWebSocketsFactory>();
+          var middleware = new MyWebSocketsProxyMiddleware(Next, loggerFactory, wsFactory);
+          return middleware.Invoke(context);
+      },
+  };
+  await app.UseOcelot(wsPipeline);
+
+When ``WebSocketsMiddlewareType`` is set, it takes **priority** over ``WebSocketsMiddleware`` and the delegate is ignored.
+For the full reference, see the :ref:`mi-ocelotpipelineconfiguration-class` section in :doc:`../features/middlewareinjection` chapter.
+
+.. note::
+  Starting from Ocelot version `25.0`_, ``app.UseWebSockets()`` is called internally during Ocelot pipeline setup.
+  You no longer need to call it explicitly before ``await app.UseOcelot()``.
 
 Roadmap
 -------
@@ -189,6 +245,7 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
   This "life hack" for self-signed SSL certificates is available starting from version `20.0`_.
   However, it will be either removed or reworked in future releases. For further details, refer to the :ref:`ssl-errors` section.
 .. [#f4] If requested, we might explore options for implementing basic authentication.
+.. [#f5] The :ref:`Sample <ws-sample>` was introduced for issue `2386`_ and implemented in pull request `2387`_, as part of version `25.0`_.
 
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
@@ -199,9 +256,12 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
 .. _1375: https://github.com/ThreeMammals/Ocelot/issues/1375
 .. _1377: https://github.com/ThreeMammals/Ocelot/pull/1377
 .. _1707: https://github.com/ThreeMammals/Ocelot/issues/1707
+.. _2386: https://github.com/ThreeMammals/Ocelot/issues/2386
+.. _2387: https://github.com/ThreeMammals/Ocelot/pull/2387
 .. _5.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/5.3.0
 .. _8.0.7: https://github.com/ThreeMammals/Ocelot/releases/tag/8.0.7
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat

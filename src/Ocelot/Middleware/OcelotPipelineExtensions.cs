@@ -33,17 +33,9 @@ public static class OcelotPipelineExtensions
         // It also sets the Request Id if anything is set globally
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-        // If the request is for websockets upgrade we fork into a different pipeline
-        app.MapWhen(httpContext => httpContext.WebSockets.IsWebSocketRequest,
-            ws =>
-            {
-                ws.UseMiddleware<DownstreamRouteFinderMiddleware>();
-                ws.UseMiddleware<MultiplexingMiddleware>();
-                ws.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
-                ws.UseMiddleware<LoadBalancingMiddleware>();
-                ws.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-                ws.UseMiddleware<WebSocketsProxyMiddleware>();
-            });
+        // If the request is for WebSockets upgrade we fork into a different pipeline
+        app.UseWebSockets(); // Adds WebSocketMiddleware, critical for CONNECT HTTP method implementation and WS handshaking (thus IsWebSocketRequest becomes true)
+        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, app => app.ConfigureWebSockets(configuration));
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
@@ -61,13 +53,9 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<SecurityMiddleware>();
 
         //Expand other branch pipes
-        if (configuration.MapWhenOcelotPipeline != null)
+        foreach (var branch in configuration.MapWhenOcelotPipeline)
         {
-            foreach (var pipeline in configuration.MapWhenOcelotPipeline)
-            {
-                // todo why is this asking for an app app?
-                app.MapWhen(pipeline.Key, pipeline.Value);
-            }
+            app.MapWhen(branch.Key, branch.Value);
         }
 
         // Now we have the ds route we can transform headers and stuff?
@@ -128,11 +116,32 @@ public static class OcelotPipelineExtensions
         return app.Build();
     }
 
-    private static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
+    public static IApplicationBuilder UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
         => middleware != null ? builder.Use(middleware) : builder;
 
-    private static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
-        where TMiddleware : OcelotMiddleware => middleware != null
-            ? builder.Use(middleware)
-            : builder.UseMiddleware<TMiddleware>();
+    public static IApplicationBuilder UseIfNotNull<TMiddleware>(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware, bool addDefault = true)
+        where TMiddleware : OcelotMiddleware
+        => middleware != null ? builder.Use(middleware)
+            : addDefault ? builder.UseMiddleware<TMiddleware>()
+            : builder;
+
+    public static IApplicationBuilder UseIfNotNull<TMiddlewareBase>(this IApplicationBuilder builder, Type middlewareType)
+        where TMiddlewareBase : OcelotMiddleware
+    {
+        if (middlewareType is null) return builder;
+        if (!middlewareType.BaseType.Equals(typeof(TMiddlewareBase)))
+            throw new Exception($"Unable to start Ocelot: error injecting {middlewareType.FullName}, since its base type is not a(n) {typeof(TMiddlewareBase).FullName}!");
+        return builder.UseMiddleware(middlewareType);
+    }
+
+    public static void ConfigureWebSockets(this IApplicationBuilder app, OcelotPipelineConfiguration configuration)
+    {
+        app.UseMiddleware<DownstreamRouteFinderMiddleware>();
+        app.UseMiddleware<MultiplexingMiddleware>();
+        app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
+        app.UseMiddleware<LoadBalancingMiddleware>();
+        app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
+        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddlewareType);
+        app.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddleware, configuration.WebSocketsMiddlewareType is null);
+    }
 }

@@ -242,8 +242,20 @@ public class WebSocketsSteps : AcceptanceSteps
             WithWebSockets, null, ConfigureWebHost, null, null);
     }
 
+    protected Task StartOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices, OcelotPipelineConfiguration pipelineConfig)
+    {
+        var url = DownstreamUrl(port);
+        void ConfigureWebHost(IWebHostBuilder b) => b
+            .UseUrls(url)
+            .ConfigureLogging(WithConsole);
+        void WithWebSocketsAndConfig(IApplicationBuilder app)
+            => app.UseOcelot(pipelineConfig).Wait(); // internally called UseWebSockets() since version 25.0
+        return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
+            WithWebSocketsAndConfig, null, ConfigureWebHost, null, null);
+    }
+
     protected static void WithWebSockets(IApplicationBuilder app)
-        => app.UseWebSockets().UseOcelot().Wait();
+        => app.UseOcelot().Wait(); // internally called UseWebSockets() since version 25.0
     protected static void WithHttp2(ListenOptions options)
     {
         options.Protocols = HttpProtocols.Http2;

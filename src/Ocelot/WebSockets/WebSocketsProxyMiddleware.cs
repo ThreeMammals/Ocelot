@@ -19,16 +19,16 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
     };
 
-    private const int DefaultWebSocketBufferSize = 4096;
+    public const int Default4KBufferSize = 4096;
+    protected virtual int BufferSize => Default4KBufferSize;
+
     private readonly RequestDelegate _next;
     private readonly IWebSocketsFactory _factory;
 
     public const string IgnoredSslWarningFormat = $"You have ignored all SSL warnings by using {nameof(DownstreamRoute.DangerousAcceptAnyServerCertificateValidator)} for this downstream route! {nameof(DownstreamRoute.UpstreamPathTemplate)}: '{{0}}', {nameof(DownstreamRoute.DownstreamPathTemplate)}: '{{1}}'.";
     public const string InvalidSchemeWarningFormat = "Invalid scheme has detected which will be replaced! Scheme '{0}' of the downstream '{1}'.";
 
-    public WebSocketsProxyMiddleware(IOcelotLoggerFactory logging,
-        RequestDelegate next,
-        IWebSocketsFactory factory)
+    public WebSocketsProxyMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
         : base(logging.CreateLogger<WebSocketsProxyMiddleware>())
     {
         _next = next;
@@ -42,10 +42,10 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         await Proxy(context, request, route);
     }
 
-    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
+    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, CancellationToken cancellation)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
-        var buffer = new byte[bufferSize];
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(BufferSize); // TODO Better to add validation or log warning early, a constraint is required.
+        var buffer = new byte[BufferSize];
         while (true)
         {
             WebSocketReceiveResult result = default;
@@ -139,8 +139,8 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
         using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
         await Task.WhenAll(
-            PumpAsync(client.ToWebSocket(), server, DefaultWebSocketBufferSize, context.RequestAborted),
-            PumpAsync(server, client.ToWebSocket(), DefaultWebSocketBufferSize, context.RequestAborted));
+            PumpAsync(client.ToWebSocket(), server, context.RequestAborted),
+            PumpAsync(server, client.ToWebSocket(), context.RequestAborted));
     }
 
     /// <summary>

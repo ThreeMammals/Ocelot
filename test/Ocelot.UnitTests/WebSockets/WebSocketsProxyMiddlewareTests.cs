@@ -38,7 +38,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         _loggerFactory.Setup(x => x.CreateLogger<WebSocketsProxyMiddleware>())
             .Returns(_logger.Object);
 
-        _middleware = new WebSocketsProxyMiddleware(_loggerFactory.Object, _next.Object, _factory.Object);
+        _middleware = new WebSocketsProxyMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
 
         _client = new Mock<IClientWebSocket>();
         _factory.Setup(x => x.CreateClient()).Returns(_client.Object);
@@ -496,4 +496,57 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
             Times.Once());
         Assert.True(closed);
     }
+
+    #region PR 2387 // https://github.com/ThreeMammals/Ocelot/pull/2387
+    [Fact]
+    [Trait("Feat", "2386")] // https://github.com/ThreeMammals/Ocelot/issues/2386
+    public void BufferSize_NoOverride_ShouldBeDefault()
+    {
+        // Arrange, Act
+        var middleware = new MyWebSocketsMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
+
+        // Act
+        var actual = BufferSize(middleware);
+
+        // Assert
+        Assert.Equal(_4K_, actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "2386")] // https://github.com/ThreeMammals/Ocelot/issues/2386
+    public void BufferSize_Overriden_ShouldBe64K()
+    {
+        // Arrange, Act
+        var middleware = new CustomBufferSizeMiddleware(_next.Object, _loggerFactory.Object, _factory.Object);
+
+        // Act
+        var actual = BufferSize(middleware);
+
+        // Assert
+        Assert.Equal(_64K_, actual);
+    }
+
+    private const int _4K_ = WebSocketsProxyMiddleware.Default4KBufferSize;
+    private const int _64K_ = 64 * 1024;
+
+    private static int BufferSize(WebSocketsProxyMiddleware middleware)
+    {
+        var p = middleware.GetType().GetProperty(nameof(BufferSize), BindingFlags.Instance | BindingFlags.NonPublic);
+        return (int)p.GetValue(middleware);
+    }
+
+    private class MyWebSocketsMiddleware : WebSocketsProxyMiddleware
+    {
+        public MyWebSocketsMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+            : base(next, logging, factory) { }
+    }
+
+    private class CustomBufferSizeMiddleware : WebSocketsProxyMiddleware
+    {
+        public CustomBufferSizeMiddleware(RequestDelegate next, IOcelotLoggerFactory logging, IWebSocketsFactory factory)
+            : base(next, logging, factory) { }
+
+        protected override int BufferSize => _64K_;
+    }
+    #endregion PR 2387
 }

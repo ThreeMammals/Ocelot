@@ -44,4 +44,9 @@ public class OcelotPipelineConfiguration
     /// <summary>This is an extension that will branch to different pipes.</summary>
     /// <value>A <see cref="Dictionary{TFunc, TAction}"/> collection.</value>
     public Dictionary<Func<HttpContext, bool>, Action<IApplicationBuilder>> MapWhenOcelotPipeline { get; } = new(); // TODO fix this data structure
+
+    /// <summary>This allows the user to completely override Ocelot's <see cref="WebSockets.WebSocketsProxyMiddleware"/>.</summary>
+    /// <value>A <see cref="Func{T1, T2, T3}"/> delegate object.</value>
+    public Func<HttpContext, Func<Task>, Task> WebSocketsMiddleware { get; set; }
+    public Type WebSocketsMiddlewareType { get; set; }
 }

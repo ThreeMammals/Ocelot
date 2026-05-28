@@ -118,7 +118,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
         Services.TryAddSingleton<IVersionCreator, HttpVersionCreator>();
         Services.TryAddSingleton<IVersionPolicyCreator, HttpVersionPolicyCreator>();
-        Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>();
+        Services.TryAddSingleton<IWebSocketsFactory, WebSocketsFactory>(); // TODO Move to features?
 
         // Add security
         Services.TryAddSingleton<ISecurityOptionsCreator, SecurityOptionsCreator>();
