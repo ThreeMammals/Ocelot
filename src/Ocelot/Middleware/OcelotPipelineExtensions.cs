@@ -53,13 +53,9 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<SecurityMiddleware>();
 
         //Expand other branch pipes
-        if (configuration.MapWhenOcelotPipeline != null)
+        foreach (var branch in configuration.MapWhenOcelotPipeline)
         {
-            foreach (var pipeline in configuration.MapWhenOcelotPipeline)
-            {
-                // todo why is this asking for an app app?
-                app.MapWhen(pipeline.Key, pipeline.Value);
-            }
+            app.MapWhen(branch.Key, branch.Value);
         }
 
         // Now we have the ds route we can transform headers and stuff?

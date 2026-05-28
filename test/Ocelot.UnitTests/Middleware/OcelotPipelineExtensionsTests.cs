@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,6 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.Headers;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -22,7 +22,6 @@ using Ocelot.QueryStrings;
 using Ocelot.RateLimiting;
 using Ocelot.Request.Creator;
 using Ocelot.Request.Mapper;
-using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 using Ocelot.Requester.Middleware;
 using Ocelot.Responder;
@@ -59,29 +58,31 @@ public class OcelotPipelineExtensionsTests : UnitTest
 
     [Fact]
     [Trait("PR", "416")] // https://github.com/ThreeMammals/Ocelot/pull/416
+    [Trait("PR", "510")] // https://github.com/ThreeMammals/Ocelot/pull/510
     public void Should_expand_pipeline()
     {
         // Arrange
         GivenTheDepedenciesAreSetUp();
         var configuration = new OcelotPipelineConfiguration();
-        static bool IsWebSocketRequest(HttpContext c) => c.WebSockets.IsWebSocketRequest;
-        static void ConfigureApp(IApplicationBuilder app)
-        {
-            app.UseMiddleware<DownstreamRouteFinderMiddleware>();
-            app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
-            app.UseMiddleware<LoadBalancingMiddleware>();
-            app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
-            app.UseMiddleware<WebSocketsProxyMiddleware>();
-        }
-        configuration.MapWhenOcelotPipeline.Add(IsWebSocketRequest, ConfigureApp);
+        configuration.MapWhenOcelotPipeline.Add(IsWebSocketRequest, ExpandAppPipeline);
 
         // Act
-        var @delegate = _builder.BuildOcelotPipeline(new OcelotPipelineConfiguration());
+        var @delegate = _builder.BuildOcelotPipeline(configuration);
 
         // Assert
         Assert.NotNull(@delegate);
         Assert.Equal(typeof(ConfigurationMiddleware), @delegate.Target.GetType());
+        var middlewares = ThenMiddlewares(23);
+        Assert.Contains(typeof(ConfigurationMiddleware).FullName, middlewares);
+        Assert.Contains(typeof(HttpRequesterMiddleware).FullName, middlewares);
+        var expectedMiddleware = $"MapWhen[{typeof(TestMiddleware)}]";
+        Assert.Contains(expectedMiddleware, middlewares); // !!!
+        Assert.Equal(0, middlewares.IndexOf(typeof(ConfigurationMiddleware).FullName));
+        Assert.Equal(22, middlewares.IndexOf(typeof(HttpRequesterMiddleware).FullName));
+        Assert.Equal(8, middlewares.IndexOf(expectedMiddleware)); // !!!
     }
+    private static bool IsWebSocketRequest(HttpContext c) => c.WebSockets.IsWebSocketRequest;
+    private static void ExpandAppPipeline(IApplicationBuilder app) => app.UseMiddleware<TestMiddleware>();
 
     #region PR 2387 // https://github.com/ThreeMammals/Ocelot/pull/2387
     [Fact]
@@ -111,7 +112,7 @@ public class OcelotPipelineExtensionsTests : UnitTest
         Assert.Same(_builder, actual);
         var middlewares = ThenMiddlewares(1);
         var middleware = Assert.Single(middlewares);
-        Assert.Equal("OcelotPipelineExtensionsTests.CustomMiddleware", middleware);
+        Assert.Equal("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomMiddleware", middleware);
     }
 
     [Fact]
@@ -143,7 +144,37 @@ public class OcelotPipelineExtensionsTests : UnitTest
         Assert.Same(_builder, actual);
         var middlewares = ThenMiddlewares(1);
         var middleware = Assert.Single(middlewares);
-        Assert.Equal("OcelotPipelineExtensionsTests.CustomMiddleware", middleware);
+        Assert.Equal("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomMiddleware", middleware);
+    }
+
+    [Fact]
+    public void UseIfNotNull_Generic_WithNullMiddleware_AndAddDefaultFalse_ShouldReturnBuilderUnmodified()
+    {
+        // Arrange
+        GivenApplicationBuilder();
+
+        // Act
+        var actual = _builder.UseIfNotNull<TestMiddleware>(NullMiddleware, addDefault: false);
+
+        // Assert
+        Assert.Same(_builder, actual);
+        ThenMiddlewares(0);
+    }
+
+    [Fact]
+    public void UseIfNotNull_Generic_WithValidMiddleware_AndAddDefaultFalse_ShouldRegisterCustomMiddleware()
+    {
+        // Arrange
+        GivenApplicationBuilder();
+
+        // Act
+        var actual = _builder.UseIfNotNull<TestMiddleware>(CustomMiddleware, addDefault: false);
+
+        // Assert
+        Assert.Same(_builder, actual);
+        var middlewares = ThenMiddlewares(1);
+        var middleware = Assert.Single(middlewares);
+        Assert.Equal("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomMiddleware", middleware);
     }
 
     [Fact]
@@ -251,9 +282,9 @@ public class OcelotPipelineExtensionsTests : UnitTest
         // Assert
         var middlewares = ThenMiddlewares(6);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
-        Assert.Contains("OcelotPipelineExtensionsTests.CustomWebSocketMiddleware", middlewares);
+        Assert.Contains("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware", middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
-        Assert.Equal(5, middlewares.IndexOf("OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
+        Assert.Equal(5, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
     }
 
     [Fact]
@@ -272,6 +303,31 @@ public class OcelotPipelineExtensionsTests : UnitTest
         Assert.Contains(typeof(WebSocketsProxyMiddleware).FullName, middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
         Assert.Equal(5, middlewares.IndexOf(typeof(WebSocketsProxyMiddleware).FullName));
+    }
+
+    [Fact]
+    public void ConfigureWebSockets_WithWebSocketsMiddlewareType_AndWebSocketsMiddleware_ShouldPreferType()
+    {
+        // Arrange
+        GivenApplicationBuilder();
+        var configuration = new OcelotPipelineConfiguration
+        {
+            WebSocketsMiddlewareType = typeof(MyWsMiddleware),
+            WebSocketsMiddleware = CustomWebSocketMiddleware
+        };
+
+        // Act
+        _builder.ConfigureWebSockets(configuration);
+
+        // Assert
+        var middlewares = ThenMiddlewares(7);
+        Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
+        Assert.Contains(typeof(MyWsMiddleware).FullName, middlewares);
+        Assert.Contains("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware", middlewares);
+        Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
+        // Both should be registered, Type first then Middleware
+        Assert.Equal(5, middlewares.IndexOf(typeof(MyWsMiddleware).FullName));
+        Assert.Equal(6, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
     }
     #endregion PR 2387
 
@@ -326,11 +382,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private static readonly Func<HttpContext, Func<Task>, Task> NullMiddleware = null;
     private static Task CustomMiddleware(HttpContext context, Func<Task> next) => Task.CompletedTask;
 
-    private class TestMiddleware : OcelotMiddleware
+    public class TestMiddleware : OcelotMiddleware
     {
-        public TestMiddleware(IOcelotLogger logger) : base(logger) { }
+        public TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
+            : base(logging.CreateLogger<TestMiddleware>()) { }
         public Task Invoke(HttpContext _) => Task.CompletedTask;
-
     }
     private class MyWsMiddleware : WebSocketsProxyMiddleware
     {
@@ -349,57 +405,101 @@ public class OcelotPipelineExtensionsTests : UnitTest
         Assert.Equal(count, middlewares.Count);
         return middlewares;
     }
+
     private static string CreateMiddlewareDescription(Func<RequestDelegate, RequestDelegate> middleware)
     {
         if (middleware == null)
             return "<null>";
 
-        // 1. Simple static method (no closure)
         if (middleware.Target == null)
             return middleware.Method.Name;
 
         var target = middleware.Target;
         var method = middleware.Method;
 
-        // 2. Microsoft internal middleware (e.g. UseMiddleware<>, UseRouting, etc.)
+        // 1. Microsoft internal middleware (UseMiddleware<T>, etc.)
         if (method.Name == "CreateMiddleware" && method.DeclaringType?.Namespace?.StartsWith("Microsoft.") == true)
-            return target.ToString(); // usually already nice
+            return target.ToString();
 
-        // 3. Try to unwrap the common Use(Func<HttpContext, Func<Task>, Task>) wrapper
+        // 2. Try to unwrap MapWhen first (highest priority for friendly name)
+        var mapWhenName = TryGetMapWhenDescription(middleware);
+        if (!string.IsNullOrEmpty(mapWhenName))
+            return mapWhenName;
+
+        // 3. Try to unwrap the common Func<HttpContext, Func<Task>, Task> wrapper
         var captured = TryGetCapturedMiddleware(middleware);
-        if (captured is Func<HttpContext, Func<Task>, Task> originalMiddleware)
-        {
-            // Now we have the original middleware the user passed
-            var origMethod = originalMiddleware.Method;
-            var origTarget = originalMiddleware.Target;
-
-            if (origTarget == null)
-                return $"{origMethod.DeclaringType.Name}.{origMethod.Name}"; // static lambda, testing class name + middleware method name
-
-            // If it's a named method
-            if (!origMethod.Name.Contains('<') && !origMethod.Name.StartsWith("b__")) // not compiler-generated
-                return origTarget.GetType().FullName + "." + origMethod.Name;
-
-            // Fallback for inline lambdas
-            return origTarget.GetType().FullName ?? "InlineMiddleware";
-        }
+        if (!string.IsNullOrEmpty(captured))
+            return captured;
 
         // 4. Generic fallback
         return target.GetType().FullName + "." + method.Name;
     }
 
-    private static object TryGetCapturedMiddleware(Func<RequestDelegate, RequestDelegate> middleware)
+    private static string TryGetMapWhenDescription(Func<RequestDelegate, RequestDelegate> middleware)
     {
-        var target = middleware.Target;
-        if (target == null)
+        var targetType = middleware.Target?.GetType();
+        if (targetType == null)
             return null;
 
-        // Look for fields that are Func<HttpContext, Func<Task>, Task>
+        // Check if this is the closure from MapWhenExtensions
+        if (!targetType.FullName?.Contains("MapWhenExtensions+<>c__DisplayClass") == true)
+            return null;
+
+        // Look for the captured MapWhenOptions (the configuration lambda)
+        foreach (var field in targetType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        {
+            MapWhenOptions options;
+            if (field.Name == nameof(options) && field.FieldType == typeof(MapWhenOptions))
+            {
+                options = field.GetValue(middleware.Target) as MapWhenOptions;
+                if (options == null) continue;
+
+                // Now we have the original configuration options (e.g. ExpandAppPipeline)
+                var actionMethod = options.Branch.Method;
+                if (actionMethod.DeclaringType != null)
+                {
+                    string typeName = actionMethod.DeclaringType.FullName;
+                    string methodName = actionMethod.Name;
+
+                    // Clean up compiler-generated names
+                    if (methodName.Contains('<') || methodName.StartsWith("b__"))
+                        methodName = "InlineConfig";
+
+                    return actionMethod.DeclaringType.IsAssignableTo(typeof(OcelotMiddleware))
+                        ? $"MapWhen[{typeName}]"
+                        : $"MapWhen[{typeName}.{methodName}]";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string TryGetCapturedMiddleware(Func<RequestDelegate, RequestDelegate> middleware)
+    {
+        var target = middleware.Target;
+        if (target == null) return null;
+
         var targetType = target.GetType();
         foreach (var field in targetType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
         {
-            if (field.FieldType == typeof(Func<HttpContext, Func<Task>, Task>))
-                return field.GetValue(target);
+            if (field.FieldType != typeof(Func<HttpContext, Func<Task>, Task>))
+                continue;
+
+            var captured = field.GetValue(target);
+            if (captured is Func<HttpContext, Func<Task>, Task> originalMiddleware)
+            {
+                var origMethod = originalMiddleware.Method;
+                var origTarget = originalMiddleware.Target;
+
+                if (origTarget == null)
+                    return $"{origMethod.DeclaringType?.FullName}.{origMethod.Name}";
+
+                if (!origMethod.Name.Contains('<') && !origMethod.Name.StartsWith("b__"))
+                    return origTarget.GetType().FullName + "." + origMethod.Name;
+
+                return origTarget.GetType().FullName ?? "InlineMiddleware";
+            }
         }
 
         return null;
