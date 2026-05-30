@@ -45,28 +45,28 @@ public sealed class PollKubeTests : UnitTest, IDisposable
         _provider = new PollKube(PollingIntervalMs, _factory.Object, _discoveryProvider.Object);
 
         // Act
-        var actual = WhenIGetTheServices(1);
+        var actual = await WhenIGetTheServices(1);
 
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(1, actual.Count);
     }
 
-    private List<Service> WhenIGetTheServices(int expected)
+    private async Task<List<Service>> WhenIGetTheServices(int expected)
     {
         List<Service> services = null;
-        var result = Wait.For(3_000).Until(() =>
+        var result = await Wait.For(3_000).UntilAsync(async (ct) =>
         {
             try
             {
-                services = _provider.GetAsync().GetAwaiter().GetResult();
+                services = await _provider.GetAsync();
                 return services.Count == expected;
             }
             catch (Exception)
             {
                 return false;
             }
-        });
+        }, CancelMe);
         Assert.True(result);
         return services;
     }

@@ -17,7 +17,7 @@ public class RateLimitingSteps : AcceptanceSteps
         {
             var request = new HttpRequestMessage(new(HttpMethods.Get), url);
             request.Headers.Add(clientIdHeader, clientIdHeaderValue);
-            tasks.Add(ocelotClient!.SendAsync(request));
+            tasks.Add(ocelotClient!.SendAsync(request, CancelMe));
         }
         Responses = await Task.WhenAll(tasks);
         response = Responses.Last();

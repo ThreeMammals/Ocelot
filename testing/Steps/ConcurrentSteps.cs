@@ -108,7 +108,7 @@ public class ConcurrentSteps : AcceptanceSteps
             : context.Request.Path.Value;
         bool isMatch = downstreamPath == path;
         context.Response.StatusCode = (int)(isMatch ? statusCode : HttpStatusCode.NotFound);
-        await context.Response.WriteAsync(isMatch ? responseBody : "Not Found");
+        await context.Response.WriteAsync(isMatch ? responseBody : "Not Found", context.RequestAborted);
     };
 
     public static class HeaderNames
@@ -143,13 +143,13 @@ public class ConcurrentSteps : AcceptanceSteps
             response.Headers.Append(HeaderNames.Port, new StringValues(request.Host.Port.ToString()));
             response.Headers.Append(HeaderNames.Counter, new StringValues(count.ToString()));
             response.Headers.Append(HeaderNames.Path, new StringValues(request.Path + request.QueryString));
-            await response.WriteAsync(responseBody);
+            await response.WriteAsync(responseBody, context.RequestAborted);
         }
         catch (Exception exception)
         {
             responseBody = string.Concat(1, CounterSeparator, exception.StackTrace);
             response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            await response.WriteAsync(responseBody);
+            await response.WriteAsync(responseBody, context.RequestAborted);
         }
     };
 
@@ -170,15 +170,15 @@ public class ConcurrentSteps : AcceptanceSteps
             Responses[i] = null;
         }
 
-        Task.WaitAll(Tasks);
+        Task.WaitAll(Tasks, CancelMe);
         return Tasks;
     }
 
     protected const string CounterSeparator = "^:^";
     private async Task GetParallelResponse(string url, int threadIndex)
     {
-        var response = await ocelotClient!.GetAsync(url);
-        var content = await response.Content.ReadAsStringAsync();
+        var response = await ocelotClient!.GetAsync(url, CancelMe);
+        var content = await response.Content.ReadAsStringAsync(CancelMe);
         var counterString = content.Contains(CounterSeparator)
             ? content.Split(CounterSeparator)[0] // let the first fragment is counter value
             : "0";
@@ -194,7 +194,7 @@ public class ConcurrentSteps : AcceptanceSteps
     {
         foreach (var r in Responses)
         {
-            var content = r.Value?.Content.ReadAsStringAsync().Result;
+            var content = r.Value?.Content.ReadAsStringAsync(CancelMe).Result;
             content = content?.Contains(CounterSeparator) == true
                 ? content.Split(CounterSeparator)[1] // remove counter for body comparison
                 : "0";
@@ -211,7 +211,7 @@ public class ConcurrentSteps : AcceptanceSteps
             int port = int.Parse(portHeader);
             int i = Array.IndexOf(ports, port);
             var expectedBody = expected[i];
-            var content = response.Content.ReadAsStringAsync().Result;
+            var content = response.Content.ReadAsStringAsync(CancelMe).Result;
             content = content?.Contains(CounterSeparator) == true
                 ? content.Split(CounterSeparator)[1] // remove counter for body comparison
                 : "0";

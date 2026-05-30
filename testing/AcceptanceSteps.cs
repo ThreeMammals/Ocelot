@@ -187,7 +187,7 @@ public class AcceptanceSteps : IDisposable
         Action<HttpClient>? configureClient)
     {
 #if NET10_0_OR_GREATER
-        return GivenOcelotHostIsRunning(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, configureServer, configureClient)
+        return GivenOcelotHostIsRunning(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, /*configureServer,*/ configureClient)
             .GetAwaiter().GetResult();
 #else
         return GivenOcelotIsRunningInternal(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, configureServer, configureClient);
@@ -203,7 +203,7 @@ public class AcceptanceSteps : IDisposable
         Action<HttpClient>? configureClient)
     {
 #if NET10_0_OR_GREATER
-        return GivenOcelotHostIsRunning(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, configureServer, configureClient);
+        return GivenOcelotHostIsRunning(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, /*configureServer,*/ configureClient);
 #else
         return Task.Run(() => GivenOcelotIsRunningInternal(configureDelegate, configureServices, configureApp, configureWebHost, postConfigureHost, configureServer, configureClient));
 #endif
@@ -250,7 +250,7 @@ public class AcceptanceSteps : IDisposable
         Action<IServiceCollection>? configureServices,
         Action<IApplicationBuilder>? configureApp,
         Action<IWebHostBuilder>? сonfigureWebHost, Action<IWebHostBuilder>? postConfigureHost,
-        Action<TestServer>? configureServer,
+        // Action<TestServer>? configureServer,
         Action<HttpClient>? configureClient)
     {
         int port = PortFinder.GetRandomPort();
@@ -293,7 +293,7 @@ public class AcceptanceSteps : IDisposable
     protected virtual Task MapStatus(HttpContext context)
     {
         context.Response.StatusCode = (int)MapStatus_StatusCode;
-        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty);
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty, context.RequestAborted);
     }
     public virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
     {
@@ -305,7 +305,7 @@ public class AcceptanceSteps : IDisposable
     protected virtual Task MapOK(HttpContext context)
     {
         context.Response.StatusCode = StatusCodes.Status200OK;
-        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty);
+        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty, context.RequestAborted);
     }
     public virtual void GivenThereIsAServiceRunningOnPath(int port, string basePath, [CallerMemberName] string responseBody = "")
     {
@@ -335,7 +335,7 @@ public class AcceptanceSteps : IDisposable
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Add("Cookie", cookie.ToString());
-        return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage);
+        return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage, CancelMe);
     }
     #endregion
 
@@ -388,10 +388,10 @@ public class AcceptanceSteps : IDisposable
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url)
-        => response = await ocelotClient.ShouldNotBeNull().GetAsync(url);
+        => response = await ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
 
     public Task<HttpResponseMessage> WhenImGettingUrlOnTheApiGateway(string url)
-        => ocelotClient.ShouldNotBeNull().GetAsync(url);
+        => ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
 
     public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
     {
@@ -399,7 +399,7 @@ public class AcceptanceSteps : IDisposable
         {
             Content = new StringContent(body),
         };
-        response = await ocelotClient.ShouldNotBeNull().SendAsync(request);
+        response = await ocelotClient.ShouldNotBeNull().SendAsync(request, CancelMe);
     }
 
     public async Task WhenIGetUrlOnTheApiGatewayWithForm(string url, string name, IEnumerable<KeyValuePair<string, string>> values)
@@ -413,36 +413,36 @@ public class AcceptanceSteps : IDisposable
             Content = content,
         };
         ArgumentNullException.ThrowIfNull(ocelotClient);
-        response = await ocelotClient.SendAsync(request);
+        response = await ocelotClient.SendAsync(request, CancelMe);
     }
 
     public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
     {
         ArgumentNullException.ThrowIfNull(ocelotClient);
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        response = await ocelotClient.SendAsync(httpRequestMessage);
+        response = await ocelotClient.SendAsync(httpRequestMessage, CancelMe);
     }
 
     public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
         ArgumentNullException.ThrowIfNull(ocelotClient);
         var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        response = await ocelotClient.SendAsync(request);
+        response = await ocelotClient.SendAsync(request, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content)
     {
         ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content);
-        response = await ocelotClient.PostAsync(url, postContent);
+        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content, string contentType)
     {
         ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
-        response = await ocelotClient.PostAsync(url, postContent);
+        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIDeleteUrlOnTheApiGateway(string url)
-        => response = await ocelotClient.ShouldNotBeNull().DeleteAsync(url);
+        => response = await ocelotClient.ShouldNotBeNull().DeleteAsync(url, CancelMe);
 
     public void GivenIAddAHeader(string key, string value)
     {
@@ -479,19 +479,19 @@ public class AcceptanceSteps : IDisposable
 
     public void ThenTheResponseBodyShouldBe(string expectedBody)
         => response.ShouldNotBeNull()
-        .Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody);
+        .Content.ReadAsStringAsync(CancelMe).GetAwaiter().GetResult().ShouldBe(expectedBody);
     public Task ThenTheResponseBodyShouldBeAsync(string expectedBody)
         => response.ShouldNotBeNull()
-        .Content.ReadAsStringAsync()
-        .ContinueWith(t => t.Result.ShouldBe(expectedBody));
+        .Content.ReadAsStringAsync(CancelMe)
+        .ContinueWith(t => t.Result.ShouldBe(expectedBody), CancelMe);
 
     public void ThenTheResponseBodyShouldBe(string expectedBody, string customMessage)
         => response.ShouldNotBeNull()
-        .Content.ReadAsStringAsync().GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
+        .Content.ReadAsStringAsync(CancelMe).GetAwaiter().GetResult().ShouldBe(expectedBody, customMessage);
     public Task ThenTheResponseBodyShouldBeAsync(string expectedBody, string customMessage)
         => response.ShouldNotBeNull()
-        .Content.ReadAsStringAsync()
-        .ContinueWith(t => t.Result.ShouldBe(expectedBody, customMessage));
+        .Content.ReadAsStringAsync(CancelMe)
+        .ContinueWith(t => t.Result.ShouldBe(expectedBody, customMessage), CancelMe);
 
     public Task ThenTheResponseShouldBeAsync(HttpStatusCode expected, [CallerMemberName] string? expectedBody = null)
     {

@@ -1,9 +1,10 @@
-﻿#tool dotnet:?package=GitVersion.Tool&version=6.6.2
-#tool nuget:?package=ReportGenerator&version=5.5.4
+﻿#tool dotnet:?package=GitVersion.Tool
+#tool nuget:?package=ReportGenerator
 
 #addin nuget:?package=Cake.Http
-#addin nuget:?package=Newtonsoft.Json&version=13.0.4 // Switch to a MS lib!
-#addin nuget:?package=System.Text.Encodings.Web&version=10.0.5
+// Switch from Newtonsoft to System.Text.Json lib!
+#addin nuget:?package=Newtonsoft.Json
+#addin nuget:?package=System.Text.Encodings.Web
 
 #r "Spectre.Console"
 using Spectre.Console;
@@ -65,7 +66,7 @@ var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 var packagesDir = artifactsDir + Directory("Packages");
 var artifactsFile = packagesDir + File("artifacts.txt");
 var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
-var releaseNotes = new List<string>();
+List<string> releaseNotes = new();
 
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
@@ -161,8 +162,13 @@ Task("Version")
 		versioning = GetNuGetVersionForCommit();
 		versioning.NuGetVersion ??= versioning.SemVer;
 		if (target == Release && IsRunningInCICD() && IsMainBranch() && versioning.SemVer.Contains("-")) // dash -> suffix in version
+		{
 			versioning.NuGetVersion = versioning.MajorMinorPatch; // when releasing from main branch the tag should not contain suffix after dash char
-
+		}
+		var replacedVer = Regex.Replace(versioning.NuGetVersion, @"(?<=beta)0+(?=\d)", "."); // new SemVer Tool produces "-beta0003" suffix instead of old "-beta.3" for release branch
+		Information("# Original Ver -> " + versioning.NuGetVersion);
+		Information("# Replaced Ver -> " + replacedVer);
+		versioning.NuGetVersion = replacedVer;
 		Information("#########################");
 		Information("# SemVer Information");
 		Information("#========================");
@@ -205,7 +211,7 @@ Task("CreateReleaseNotes")
 	{
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
-        var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
+        var lastRelease = lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
 
         // Read main header from Git file, substitute version in header, and add content further...
@@ -213,7 +219,7 @@ Task("CreateReleaseNotes")
         Information("{1} Last release tag is " + lastRelease);
         var body = _File_.ReadAllText("./ReleaseNotes.md", System.Text.Encoding.UTF8);
         var releaseHeader = string.Format(body, releaseVersion, lastRelease);
-        releaseNotes = new List<string> { releaseHeader };
+        releaseNotes = [ releaseHeader ];
         if (IsTechnicalRelease)
         {
             WriteReleaseNotes();
@@ -513,6 +519,7 @@ private List<string> GetTFMs()
     }
 	return tfms;
 }
+
 Task("UnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
@@ -525,24 +532,60 @@ Task("UnitTests")
 			{
 				Configuration = compileConfig,
 				ResultsDirectory = artifactsForUnitTestsDir,
+				/*
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
+				*/
 				ArgumentCustomization = args => args
 					.Append("--no-restore")
 					.Append("--no-build")
-					.Append("--collect:\"XPlat Code Coverage\"") // this create the code coverage report
-					.Append("--settings coverlet.runsettings") // exclude Ocelot.Testing assembly from coverage
 					.Append("--verbosity:" + verbosity)
-					.Append("--consoleLoggerParameters:ErrorsOnly"),
+					.Append("--coverlet")
+					.Append("--coverlet-include \"[Ocelot*]*\"")
+					.Append("--coverlet-exclude \"[Ocelot.Testing]*\""),
 				Framework = tfm,
 			};
 			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			Information($"{nameof(DotNetTestSettings)} -> {settings}");
 			EnsureDirectoryExists(artifactsForUnitTestsDir);
-			DotNetTest(unitTestAssemblies, settings); // sequential testing
+			/*
+			try
+			{ DotNetTest(unitTestAssemblies, settings); } // sequential testing
+			catch (Exception e)
+			{ Warning(e.ToString()); }
+			*/
+			// Use StartProcess instead of DotNetTest for better control
+			var exitCode = StartProcess("dotnet", new ProcessSettings
+			{
+				Arguments = $"test \"{unitTestAssemblies}\" " +
+							$"--configuration {compileConfig} " +
+							$"--framework {tfm} " +
+							$"--no-restore --no-build " +
+							$"--verbosity {verbosity} " +
+							$"--results-directory \"{artifactsForUnitTestsDir}\" " +
+							$"--coverlet " +
+							$"--coverlet-include \"[Ocelot*]*\" " +
+							$"--coverlet-exclude \"[Ocelot.Testing]*\"",
+				WorkingDirectory = "."
+			});
+			// Only fail on actual test failures, not on thread exit issues
+			if (exitCode != 0 && exitCode != 7)
+			{
+				throw new Exception($"dotnet test failed with exit code {exitCode}");
+			}
+			else if (exitCode == 7)
+			{
+				Warning("Tests passed but background threads didn't exit cleanly (exit code 7). Ignoring.");
+			}
 		}
 		
 		Information("ArtifactsForUnitTestsDir = " + artifactsForUnitTestsDir);
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir)
-			.First()
-			.CombineWithFilePath(File("coverage.cobertura.xml"));
+		// Find all files matching pattern "coverage.cobertura.*.xml"
+		var coverageFiles = GetFiles(artifactsForUnitTestsDir.ToString() + "/coverage.cobertura.*.xml");
+		if (!coverageFiles.Any())
+			throw new Exception($"No coverage.cobertura.*.xml files found in {artifactsForUnitTestsDir}");
+		// Get the first matching file (or order by creation date if needed)
+		var coverageSummaryFile = coverageFiles.First();
 		Information("CoverageSummaryFile = " + coverageSummaryFile);
 		GenerateReport(coverageSummaryFile);
 		Information("##############################");

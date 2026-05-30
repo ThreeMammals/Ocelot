@@ -42,7 +42,7 @@ public sealed class CacheManagerTests : AuthSteps
             WithBasicConfiguration, // Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate,
             s => WithCacheManagerAndAdministrationForExternalJwtServer(s, AdminPath), // Action<IServiceCollection> configureServices,
             WithUseOcelot, // Action<IApplicationBuilder> configureApp,
-            null, null, null, null);
+            null, null, null);
         bool isExternal = true;
         await GivenThereIsExternalJwtSigningService([OcelotScopes.OcAdmin], CancelMe);
         var token = await GivenIHaveATokenWithUrlPath(

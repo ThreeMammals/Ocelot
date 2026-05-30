@@ -27,7 +27,7 @@ public class TimeoutSteps : AcceptanceSteps
         {
             await Task.Delay(timeout);
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(response);
+            await context.Response.WriteAsync(response, context.RequestAborted);
         }
         handler.GivenThereIsAServiceRunningOn(port, MapBodyWithTimeout);
     }

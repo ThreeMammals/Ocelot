@@ -46,7 +46,7 @@ public sealed class InvalidHeaderValueTests : Steps
                                 null, // Action<IApplicationBuilder> ? configureApp,
                                 null, // Action<IWebHostBuilder> ? сonfigureWebHost,
                                 null, // Action<IWebHostBuilder> ? postConfigureHost,
-                                null, // Action<TestServer> ? configureServer,
+                                // null, // Action<TestServer> ? configureServer,
                                 null); // Action<HttpClient> ? configureClient
 
     private async Task<string> WhenIGetRawAsync(int port, string path, HeadersCollection headers, CancellationToken cancellation)

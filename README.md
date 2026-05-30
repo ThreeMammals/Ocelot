@@ -6,7 +6,7 @@
 [![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
 [![codecov](https://codecov.io/gh/ThreeMammals/Ocelot/branch/develop/graph/badge.svg)](https://codecov.io/gh/ThreeMammals/Ocelot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
-[![NuGet](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=NuGet&color=blue)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
+[![NuGet](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
 <!-- [![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop) -->
 

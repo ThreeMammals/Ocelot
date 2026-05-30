@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - 'release/24.**'
+      - 'release/25.**'
 jobs:
   # Matrix build job having 2 dimensions (os, .NET ver)
   build:

@@ -16,20 +16,10 @@ public sealed class ConfigurationReloadTests : Steps
 
     public ConfigurationReloadTests()
     {
-        _initialConfig = new FileConfiguration
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                RequestIdKey = "initialKey",
-            },
-        };
-        _anotherConfig = new FileConfiguration
-        {
-            GlobalConfiguration = new FileGlobalConfiguration
-            {
-                RequestIdKey = "someOtherKey",
-            },
-        };
+        _initialConfig = GivenConfiguration();
+        _initialConfig.GlobalConfiguration.RequestIdKey = "initialKey";
+        _anotherConfig = GivenConfiguration();
+        _anotherConfig.GlobalConfiguration.RequestIdKey = "someOtherKey";
     }
 
     [Fact]
@@ -45,14 +35,14 @@ public sealed class ConfigurationReloadTests : Steps
 
     private async Task ThenConfigShouldBeWithTimeout(FileConfiguration fileConfig, int timeoutMs)
     {
-        var result = await Wait.For(timeoutMs).UntilAsync(async () =>
+        var result = await Wait.For(timeoutMs).UntilAsync(async (ct) =>
         {
             var internalConfigCreator = OcelotServices.GetService<IInternalConfigurationCreator>();
             var internalConfigRepo = OcelotServices.GetService<IInternalConfigurationRepository>();
             var internalConfig = internalConfigRepo.Get();
             var config = await internalConfigCreator.Create(fileConfig);
             return internalConfig.RequestId == config.Data.RequestId;
-        });
+        }, CancelMe);
         result.ShouldBe(true);
     }
 

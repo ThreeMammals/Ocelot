@@ -11,7 +11,7 @@ Copilot prompt: Github packages. How to create download badge?
 
 A shared library for testing the [Ocelot](https://github.com/ThreeMammals/Ocelot) core library and its [extension packages](https://www.nuget.org/profiles/ThreeMammals), including both acceptance and unit tests.
 
-| Project website | [Ocelot Docs](https://ocelot.readthedocs.io) |
+| Project website | [Ocelot Read the Docs](https://ocelot.readthedocs.io) |
 | --- | --- |
 | Core package | <sub>[![Core package](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&label=Ocelot)](https://www.nuget.org/packages/Ocelot/ "Ocelot package")</sub> |
 | Core repository | <sub>[![Core repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&label=Ocelot)](https://github.com/ThreeMammals/Ocelot/ "Ocelot repository")</sub> |

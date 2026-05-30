@@ -24,8 +24,8 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         this
             .Given(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancelMe))
-            .When(_ => StartClient(ocelotUrl))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync))
+            .When(_ => StartClient(ocelotUrl, CancelMe))
             .Then(_ => ThenTheReceivedCountIs(10))
         .BDDfy();
     }
@@ -44,8 +44,8 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         this
             .Given(_ => GivenThereIsAConfiguration(configuration))
             .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync, CancelMe))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync, CancelMe))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync))
             .When(_ => WhenIStartTheClients(ocelotPort))
             .Then(_ => ThenBothDownstreamServicesAreCalled())
         .BDDfy();
@@ -80,8 +80,8 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         this
             .Given(x => GivenThereIsAConfiguration(configuration))
             .And(x => StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig))
-            .And(x => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync, CancelMe))
-            .When(x => StartClient(ocelotUrl))
+            .And(x => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync))
+            .When(x => StartClient(ocelotUrl, CancelMe))
             .Then(x => ThenTheReceivedCountIs(10))
             .And(x => customMiddlewareInvoked.ShouldBe(!injectViaType, null))
         .BDDfy();

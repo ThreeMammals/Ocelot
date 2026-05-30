@@ -45,7 +45,7 @@ public class WebSocketsSteps : AcceptanceSteps
         _secondRecieved.ForEach(x => x.ShouldBe("chocolate"));
     }
 
-    protected Task GivenWebSocketsServiceIsRunningAsync(int port, string path, Func<WebSocket, CancellationToken, Task> webSocketHandler, CancellationToken token)
+    protected Task GivenWebSocketsServiceIsRunningAsync(int port, string path, Func<WebSocket, CancellationToken, Task> webSocketHandler)
     {
         async Task TheMiddleware(HttpContext context, Func<Task> next)
         {
@@ -57,28 +57,26 @@ public class WebSocketsSteps : AcceptanceSteps
             if (context.WebSockets.IsWebSocketRequest)
             {
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                await webSocketHandler(webSocket, token);
+                await webSocketHandler(webSocket, context.RequestAborted);
             }
             else
             {
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             }
         }
-        void NoOptions(KestrelServerOptions options)
-        {
-        }
+        void NoOptions(KestrelServerOptions options) { }
         var url = DownstreamUrl(port);
         return GivenWebSocketServiceIsRunningOnAsync(url, NoOptions, TheMiddleware);
     }
 
-    protected Task GivenWebSocketsHttp2ServiceIsRunningAsync(int port, Func<WebSocket, CancellationToken, Task> webSocketHandler, CancellationToken token)
+    protected Task GivenWebSocketsHttp2ServiceIsRunningAsync(int port, Func<WebSocket, CancellationToken, Task> webSocketHandler)
     {
         async Task TheMiddleware(HttpContext context, Func<Task> next)
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                await webSocketHandler(webSocket, token);
+                await webSocketHandler(webSocket, context.RequestAborted);
             }
             else
             {
@@ -135,10 +133,10 @@ public class WebSocketsSteps : AcceptanceSteps
         }
     }
 
-    protected async Task StartClient(Uri url)
+    protected async Task StartClient(Uri url, CancellationToken token)
     {
         var client = _factory.CreateClient();
-        await client.ConnectAsync(url, CancellationToken.None);
+        await client.ConnectAsync(url, token);
 
         var sending = Task.Run(async () =>
         {
@@ -146,18 +144,18 @@ public class WebSocketsSteps : AcceptanceSteps
             for (var i = 0; i < 10; i++)
             {
                 var bytes = Encoding.UTF8.GetBytes(line);
-                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
                 await Task.Delay(10);
             }
-            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-        });
+            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
+        }, token);
 
         var receiving = Task.Run(async () =>
         {
             var buffer = new byte[1024 * 4];
             while (true)
             {
-                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), token);
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     _firstRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
@@ -168,21 +166,21 @@ public class WebSocketsSteps : AcceptanceSteps
                     {
                         // Last version, the client state is CloseReceived
                         // Valid states are: Open, CloseReceived, CloseSent
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
                     }
                     break;
                 }
             }
-        });
+        }, token);
 
         await Task.WhenAll(sending, receiving);
     }
 
-    protected async Task StartSecondClient(Uri url)
+    protected async Task StartSecondClient(Uri url, CancellationToken token)
     {
         await Task.Delay(500);
         var client = _factory.CreateClient();
-        await client.ConnectAsync(url, CancellationToken.None);
+        await client.ConnectAsync(url, token);
 
         var sending = Task.Run(async () =>
         {
@@ -190,18 +188,18 @@ public class WebSocketsSteps : AcceptanceSteps
             for (var i = 0; i < 10; i++)
             {
                 var bytes = Encoding.UTF8.GetBytes(line);
-                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
                 await Task.Delay(10);
             }
-            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-        });
+            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
+        }, token);
 
         var receiving = Task.Run(async () =>
         {
             var buffer = new byte[1024 * 4];
             while (true)
             {
-                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), token);
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     _secondRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
@@ -212,12 +210,12 @@ public class WebSocketsSteps : AcceptanceSteps
                     {
                         // Last version, the client state is CloseReceived
                         // Valid states are: Open, CloseReceived, CloseSent
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
                     }
                     break;
                 }
             }
-        });
+        }, token);
 
         await Task.WhenAll(sending, receiving);
     }
@@ -225,8 +223,8 @@ public class WebSocketsSteps : AcceptanceSteps
     protected Task WhenIStartTheClients(int port)
     {
         var url = new UriBuilder(Uri.UriSchemeWs, "localhost", port).Uri;
-        var firstClient = StartClient(url);
-        var secondClient = StartSecondClient(url);
+        var firstClient = StartClient(url, CancelMe);
+        var secondClient = StartSecondClient(url, CancelMe);
         return Task.WhenAll(firstClient, secondClient);
     }
 
@@ -239,7 +237,7 @@ public class WebSocketsSteps : AcceptanceSteps
             .UseUrls(url)
             .ConfigureLogging(WithConsole);
         return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
-            WithWebSockets, null, ConfigureWebHost, null, null);
+            WithWebSockets, null, ConfigureWebHost, null);
     }
 
     protected Task StartOcelotWithWebSockets(int port, Action<IServiceCollection> configureServices, OcelotPipelineConfiguration pipelineConfig)
@@ -251,7 +249,7 @@ public class WebSocketsSteps : AcceptanceSteps
         void WithWebSocketsAndConfig(IApplicationBuilder app)
             => app.UseOcelot(pipelineConfig).Wait(); // internally called UseWebSockets() since version 25.0
         return GivenOcelotHostIsRunning(WithBasicConfiguration, configureServices ?? WithAddOcelot,
-            WithWebSocketsAndConfig, null, ConfigureWebHost, null, null);
+            WithWebSocketsAndConfig, null, ConfigureWebHost, null);
     }
 
     protected static void WithWebSockets(IApplicationBuilder app)
@@ -268,6 +266,6 @@ public class WebSocketsSteps : AcceptanceSteps
         void ConfigureWebHost(IWebHostBuilder b) => b.UseUrls(url)
             .ConfigureLogging(WithConsole)
             .ConfigureKestrel(WithOptions).UseKestrel(); // UseKestrelHttpsConfiguration()
-        return GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, null, ConfigureWebHost, null, null);
+        return GivenOcelotHostIsRunning(WithBasicConfiguration, WithAddOcelot, WithWebSockets, null, ConfigureWebHost, null);
     }
 }

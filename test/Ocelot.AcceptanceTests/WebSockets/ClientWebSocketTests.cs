@@ -72,7 +72,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         var body = Body();
         this
             .Given(x => GivenHttp2Options())
-            .And(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync, CancelMe))
+            .And(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync))
             .And(x => _ws.ConnectAsync(echoEndpoint, invoker, CancelMe))
             .When(x => WhenISendAndReceiveEchoMessage(body))
             .Then(x => ThenEchoShouldBe(Expected(body)))
@@ -133,7 +133,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         using var invoker = new HttpMessageInvoker(handler);
         var body = Body();
         this
-            .Given(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync, CancelMe))
+            .Given(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => StartHttp2OcelotWithWebSockets(ocelotPort))
             .And(x => GivenHttp2Options())

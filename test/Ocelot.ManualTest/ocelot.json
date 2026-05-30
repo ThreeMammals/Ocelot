@@ -119,12 +119,12 @@
 
   "GlobalConfiguration": {
     "RequestIdKey": "ot-traceid",
-    "RateLimitOptions": {
-      "ClientIdHeader": "MyRateLimiting",
-      "QuotaExceededMessage": "Customize Tips!",
-      "RateLimitCounterPrefix": "ocelot",
-      "Keys": ["C1"]
-    },
+    //"RateLimitOptions": {
+    //  "ClientIdHeader": "MyRateLimiting",
+    //  "QuotaExceededMessage": "Customize Tips!",
+    //  "RateLimitCounterPrefix": "ocelot",
+    //  "Keys": ["C1"]
+    //},
     "RateLimitingRules": [
       {
         "Name": "MetadataRule",

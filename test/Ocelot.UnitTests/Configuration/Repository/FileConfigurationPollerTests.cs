@@ -107,19 +107,21 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     public async Task Should_return_early_on_timer_tick_when_polling_is_already_in_progress()
     {
         // Arrange
-        var getCallCount = 0;
+        var callCount = 0;
         _repo.Setup(x => x.Get()).Returns(() =>
         {
-            Interlocked.Increment(ref getCallCount);
+            Interlocked.Increment(ref callCount);
             return _initialFileConfig;
         });
 
-        // Act
+        // Act & Assert, scenario "Return early" -> _polling == true
         await _poller.StartAsync(CancelMe);
-        await Task.Delay(PollingDelayInMs * 3, CancelMe);
+        await Task.Delay((int)(PollingDelayInMs * 0.5), CancelMe); // ~50% of running time of OnTimer
+        Assert.Equal(0, callCount);
 
-        // Assert
-        getCallCount.ShouldBe(0);
+        // Act & Assert, scenario "After completion"
+        await Task.Delay((int)(PollingDelayInMs * 0.55), CancelMe); // ~55% of running time of OnTimer
+        Assert.Equal(1, callCount);
 
         // Cleanup
         await _poller.StopAsync(CancelMe);

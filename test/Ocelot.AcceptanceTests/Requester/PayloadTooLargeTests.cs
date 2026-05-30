@@ -51,7 +51,7 @@ public sealed class PayloadTooLargeTests : Steps
         => GivenOcelotHostIsRunning(
             null, null, null, null,
             host => host.UseKestrel(options => options.Limits.MaxRequestBodySize = customBodyMaxSize),
-            null, null);
+            null);
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -65,7 +65,7 @@ public sealed class PayloadTooLargeTests : Steps
                 .Configure(WithUseOcelot)
                 .UseUrls(ocelotUrl)
                 .UseHttpSys(options => options.MaxRequestBodySize = customBodyMaxSize);
-        return GivenOcelotHostIsRunning(null, null, null, ConfigureHttpSys, null, null,
+        return GivenOcelotHostIsRunning(null, null, null, ConfigureHttpSys, null,
             client => client.BaseAddress = new(ocelotUrl));
     }
 #pragma warning restore CA1416

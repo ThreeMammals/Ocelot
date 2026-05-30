@@ -47,9 +47,14 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         if (_polling)
             return;
 
-        _polling = true;
-        Poll(); // PollAsync().GetAwaiter().GetResult(); // TODO This is not good, TimerCallback must be synchronous
-        _polling = false;
+        try
+        {
+            Poll(); // PollAsync().GetAwaiter().GetResult(); // TODO This is not good, TimerCallback must be synchronous
+        }
+        finally
+        {
+            _polling = false;
+        }
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -76,7 +81,9 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         if (_polling)
             return;
 
+        _polling = true;
         _logger.LogInformation(() => $"{nameof(Poll)}: Started polling");
+
         FileConfiguration configuration;
         try
         {
@@ -112,7 +119,9 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         if (_polling)
             return;
 
+        _polling = true;
         _logger.LogInformation(() => $"{nameof(PollAsync)}: Started polling");
+
         FileConfiguration configuration;
         try
         {
