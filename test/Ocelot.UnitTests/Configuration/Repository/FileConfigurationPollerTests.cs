@@ -108,23 +108,34 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     {
         // Arrange
         var callCount = 0;
+        using var firstPollStarted = new ManualResetEventSlim(false);
+        using var releaseFirstPoll = new ManualResetEventSlim(false);
         _repo.Setup(x => x.Get()).Returns(() =>
         {
-            Interlocked.Increment(ref callCount);
+            if (Interlocked.Increment(ref callCount) == 1)
+            {
+                firstPollStarted.Set();
+                releaseFirstPoll.Wait(TimeSpan.FromSeconds(2));
+            }
+
             return _initialFileConfig;
         });
 
-        // Act & Assert, scenario "Return early" -> _polling == true
-        await _poller.StartAsync(CancelMe);
-        await Task.Delay((int)(PollingDelayInMs * 0.5), CancelMe); // ~50% of running time of OnTimer
-        Assert.Equal(0, callCount);
+        try
+        {
+            // Act
+            await _poller.StartAsync(CancelMe);
+            firstPollStarted.Wait(TimeSpan.FromSeconds(2)).ShouldBeTrue();
+            await Task.Delay(PollingDelayInMs * 2, CancelMe); // allow overlapping tick while first poll is blocked
 
-        // Act & Assert, scenario "After completion"
-        await Task.Delay((int)(PollingDelayInMs * 0.55), CancelMe); // ~55% of running time of OnTimer
-        Assert.Equal(1, callCount);
-
-        // Cleanup
-        await _poller.StopAsync(CancelMe);
+            // Assert
+            Assert.Equal(1, Volatile.Read(ref callCount));
+        }
+        finally
+        {
+            await _poller.StopAsync(CancelMe);
+            releaseFirstPoll.Set();
+        }
     }
 
     [Fact]
@@ -187,7 +198,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         // Arrange: set the private _polling field to true so OnTimer takes the early-return path (line 38)
         var pollingField = typeof(FileConfigurationPoller)
             .GetField("_polling", BindingFlags.Instance | BindingFlags.NonPublic);
-        pollingField!.SetValue(_poller, true);
+        pollingField!.SetValue(_poller, 1);
 
         // Act: invoke the private OnTimer method directly
         var onTimerMethod = typeof(FileConfigurationPoller)
@@ -204,7 +215,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         // Arrange: set the private _polling field to true so PollAsync takes the early-return path (line 103)
         var pollingField = typeof(FileConfigurationPoller)
             .GetField("_polling", BindingFlags.Instance | BindingFlags.NonPublic);
-        pollingField!.SetValue(_poller, true);
+        pollingField!.SetValue(_poller, 1);
 
         // Act
         await _poller.PollAsync(CancelMe);
