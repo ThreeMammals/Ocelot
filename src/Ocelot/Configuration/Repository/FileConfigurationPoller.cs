@@ -57,16 +57,15 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         _timer = new(OnTimer, null, delay, delay); // TODO state could be CancellationToken?
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
         var timer = Interlocked.Exchange(ref _timer, null);
         if (timer is null)
-            return Task.CompletedTask;
+            return;
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         timer.Change(Timeout.Infinite, Timeout.Infinite);
-        DisposeTimer(timer);
-        return Task.CompletedTask;
+        await DisposeTimerAsync(timer, cancellationToken);
     }
 
     public void Poll()
@@ -177,10 +176,22 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
     private void ExitPolling() => Volatile.Write(ref _isPolling, 0);
 
+    private static async Task DisposeTimerAsync(Timer timer, CancellationToken cancellationToken)
+    {
+        using var disposed = new ManualResetEvent(false);
+        if (!timer.Dispose(disposed))
+            return;
+
+        while (!disposed.WaitOne(0))
+            await Task.Delay(10, cancellationToken);
+    }
+
     private static void DisposeTimer(Timer timer)
     {
         using var disposed = new ManualResetEvent(false);
-        timer.Dispose(disposed);
-        disposed.WaitOne(TimeSpan.FromSeconds(2));
+        if (!timer.Dispose(disposed))
+            return;
+
+        disposed.WaitOne();
     }
 }

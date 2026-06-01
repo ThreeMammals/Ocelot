@@ -115,7 +115,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
             if (Interlocked.Increment(ref callCount) == 1)
             {
                 firstPollStarted.Set();
-                releaseFirstPoll.Wait(TimeSpan.FromSeconds(2));
+                Assert.True(releaseFirstPoll.Wait(TimeSpan.FromSeconds(2)), "The first poll was not released in time.");
             }
 
             return _initialFileConfig;
