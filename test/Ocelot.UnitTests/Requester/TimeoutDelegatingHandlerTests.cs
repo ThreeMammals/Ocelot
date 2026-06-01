@@ -19,16 +19,13 @@ public sealed class TimeoutDelegatingHandlerTests : UnitTest
         using var cts = new CancellationTokenSource();
         CancellationToken token = cts.Token;
 
-        // Assert
+        // Act & Assert
         await Assert.ThrowsAsync<TimeoutException>(() => invoker.SendAsync(request, token));
     }
 
     private sealed class DelayedCancellationHandler : HttpMessageHandler
     {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-            return new HttpResponseMessage();
-        }
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously).Task.WaitAsync(cancellationToken);
     }
 }
