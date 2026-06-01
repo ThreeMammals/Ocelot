@@ -22,7 +22,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
     private readonly IFileConfigurationRepository _repo;
     private string _previousAsJson;
     private Timer _timer;
-    private int _polling;
+    private int _isPolling;
     private readonly IFileConfigurationPollerOptions _options;
     private readonly IInternalConfigurationRepository _internalConfigRepo;
     private readonly IInternalConfigurationCreator _internalConfigCreator;
@@ -173,9 +173,9 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         GC.SuppressFinalize(this);
     }
 
-    private bool TryEnterPolling() => Interlocked.CompareExchange(ref _polling, 1, 0) == 0;
+    private bool TryEnterPolling() => Interlocked.CompareExchange(ref _isPolling, 1, 0) == 0;
 
-    private void ExitPolling() => Volatile.Write(ref _polling, 0);
+    private void ExitPolling() => Volatile.Write(ref _isPolling, 0);
 
     private static void DisposeTimer(Timer timer)
     {
