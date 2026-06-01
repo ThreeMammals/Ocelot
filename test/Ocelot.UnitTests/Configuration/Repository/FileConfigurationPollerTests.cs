@@ -133,8 +133,8 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         }
         finally
         {
-            await _poller.StopAsync(CancelMe);
             releaseFirstPoll.Set();
+            await _poller.StopAsync(CancelMe);
         }
     }
 

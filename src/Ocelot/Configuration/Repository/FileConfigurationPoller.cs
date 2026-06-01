@@ -65,7 +65,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         timer.Change(Timeout.Infinite, Timeout.Infinite);
-        timer.Dispose();
+        DisposeTimer(timer);
         return Task.CompletedTask;
     }
 
@@ -168,11 +168,19 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
     public void Dispose()
     {
         var timer = Interlocked.Exchange(ref _timer, null);
-        timer?.Dispose();
+        if (timer is not null)
+            DisposeTimer(timer);
         GC.SuppressFinalize(this);
     }
 
     private bool TryEnterPolling() => Interlocked.CompareExchange(ref _polling, 1, 0) == 0;
 
     private void ExitPolling() => Volatile.Write(ref _polling, 0);
+
+    private static void DisposeTimer(Timer timer)
+    {
+        using var disposed = new ManualResetEvent(false);
+        timer.Dispose(disposed);
+        disposed.WaitOne(TimeSpan.FromSeconds(2));
+    }
 }
