@@ -186,10 +186,99 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     }
 
     [Fact]
+    public async Task StopAsync_Should_wait_for_running_timer_callback_to_complete()
+    {
+        // Arrange
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        using var pollStarted = new ManualResetEventSlim(false);
+        using var releasePoll = new ManualResetEventSlim(false);
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            pollStarted.Set();
+            releasePoll.Wait();
+            return _initialFileConfig;
+        });
+
+        await _poller.StartAsync(CancelMe);
+        Assert.True(pollStarted.Wait(TimeSpan.FromSeconds(2), CancelMe));
+
+        // Act
+        var stopTask = _poller.StopAsync(CancellationToken.None);
+        await Task.Delay(50, CancelMe);
+
+        // Assert
+        Assert.False(stopTask.IsCompleted);
+        releasePoll.Set();
+        await stopTask;
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_throw_when_canceled_while_waiting_for_timer_callback_to_complete()
+    {
+        // Arrange
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        using var pollStarted = new ManualResetEventSlim(false);
+        using var releasePoll = new ManualResetEventSlim(false);
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            pollStarted.Set();
+            releasePoll.Wait();
+            return _initialFileConfig;
+        });
+
+        await _poller.StartAsync(CancelMe);
+        Assert.True(pollStarted.Wait(TimeSpan.FromSeconds(2), CancelMe));
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        try
+        {
+            // Act, Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() => _poller.StopAsync(cts.Token));
+        }
+        finally
+        {
+            releasePoll.Set();
+        }
+    }
+
+    [Fact]
     public void Should_dispose_cleanly_without_starting()
     {
         // Arrange, Act, Assert
         _poller.Dispose(); // when poller is disposed
+    }
+
+    [Fact]
+    public async Task DisposeTimerAsync_Should_return_completed_task_when_timer_is_already_disposed()
+    {
+        // Arrange
+        using var timer = new Timer(_ => { });
+        timer.Dispose();
+        var disposeTimerAsyncMethod = typeof(FileConfigurationPoller)
+            .GetMethod("DisposeTimerAsync", BindingFlags.Static | BindingFlags.NonPublic);
+
+        // Act
+        var disposeTask = (Task)disposeTimerAsyncMethod!.Invoke(null, [timer, CancellationToken.None]);
+        await disposeTask;
+
+        // Assert
+        Assert.True(disposeTask.IsCompletedSuccessfully);
+    }
+
+    [Fact]
+    public void Dispose_Should_not_throw_when_timer_is_already_disposed()
+    {
+        // Arrange
+        using var timer = new Timer(_ => { });
+        timer.Dispose();
+        var timerField = typeof(FileConfigurationPoller)
+            .GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic);
+        timerField!.SetValue(_poller, timer);
+
+        // Act, Assert
+        _poller.Dispose();
     }
 
     [Fact]
