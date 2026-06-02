@@ -378,6 +378,13 @@ public sealed class AggregateTests : Steps
             .And(x => ThenTheResponseBodyShouldBe(expected))
         .BDDfy();
     }
+    private static string FormatFormCollection(IFormCollection reqForm)
+        => new StringBuilder()
+            .Append('"')
+            .AppendJoin(string.Empty, reqForm.Select(x => $"[{x.Key}:{x.Value}]"))
+            .Append('"')
+            .ToString();
+    #endregion PR 2050
 
     [Fact]
     [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
@@ -506,14 +513,6 @@ public sealed class AggregateTests : Steps
         ctx.Response.StatusCode = 200;
         return ctx.Response.WriteAsync("OK-product");
     }
-
-    private static string FormatFormCollection(IFormCollection reqForm)
-        => new StringBuilder()
-            .Append('"')
-            .AppendJoin(string.Empty, reqForm.Select(x => $"[{x.Key}:{x.Value}]"))
-            .Append('"')
-            .ToString();
-    #endregion PR 2050 
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
     {
