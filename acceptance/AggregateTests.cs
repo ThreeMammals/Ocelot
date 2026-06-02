@@ -380,7 +380,7 @@ public sealed class AggregateTests : Steps
     }
 
     [Fact]
-    [Trait("Bug", "2248")]
+    [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
     public void Should_match_downstream_routes_using_route_keys_array()
     {
@@ -406,12 +406,12 @@ public sealed class AggregateTests : Steps
             .And(_ => GivenThereIsAServiceRunningOn(portUser, "/user", MapGetUser))
             .And(_ => GivenThereIsAServiceRunningOn(portProduct, "/product", MapGetProduct))
             .When(_ => WhenIGetUrlOnTheApiGateway("/composite"))
-            .Then(_ => ThenTheStatusCodeShouldBeOK())
+            .Then(_ => ThenTheStatusCodeShouldBeOk())
             .BDDfy();
     }
 
     [Fact]
-    [Trait("Bug", "2248")]
+    [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
     public void Should_expand_jsonpath_array_into_multiple_parameterized_calls()
     {
