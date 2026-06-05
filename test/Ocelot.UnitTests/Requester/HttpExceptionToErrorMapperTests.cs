@@ -99,7 +99,7 @@ public class HttpExceptionToErrorMapperTests
         // Assert
         Assert.IsType<RequestTimedOutError>(error);
         Assert.Equal(25, (int)error.Code);
-        Assert.Equal(503, error.HttpStatusCode);
+        Assert.Equal(504, error.HttpStatusCode);
         Assert.Equal("Timeout making http request, exception: System.TimeoutException: test", error.Message);
     }
 

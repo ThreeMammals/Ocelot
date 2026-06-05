@@ -134,9 +134,9 @@ public class CircuitBreakerDelegatingHandler : DelegatingHandler
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             // Our per-request timeout fired (not the outer cancellation token)
-            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_timeoutMs.Value}ms. Returning {HttpStatusCode.ServiceUnavailable} for route -> {_route.Name()}");
+            _logger.LogWarning(() => $"Request to '{request.RequestUri}' timed out after {_timeoutMs.Value}ms. Returning {HttpStatusCode.GatewayTimeout} for route -> {_route.Name()}");
             _circuitBreaker.RecordFailure();
-            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            return new HttpResponseMessage(HttpStatusCode.GatewayTimeout)
             {
                 Content = new StringContent($"Request timeout for route -> {_route.Name()}"),
                 ReasonPhrase = "Request timeout",

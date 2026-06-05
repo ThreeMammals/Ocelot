@@ -302,7 +302,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
     }
 
     [Fact]
-    public async Task SendAsync_WithTimeout_ExceedsTimeout_Returns503AndRecordsFailure()
+    public async Task SendAsync_WithTimeout_ExceedsTimeout_Returns504AndRecordsFailure()
     {
         const int timeoutMs = 100, serviceDelayMs = 500;
         var opts = new QoSOptions(100, 5000) { Timeout = timeoutMs };
@@ -310,7 +310,7 @@ public class CircuitBreakerDelegatingHandlerTests : UnitTest
 
         var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Get, "http://test/"), CancelMe);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.GatewayTimeout, response.StatusCode);
         Assert.Equal(1, handler.CircuitBreaker.FailureCount);
     }
 

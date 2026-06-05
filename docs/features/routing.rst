@@ -442,6 +442,7 @@ Errors and Gotchas
 .. _Show and tell: https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell
 .. _499 (Client Closed Request): https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.statuscodes.status499clientclosedrequest
 .. _503 (Service Unavailable): https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503
+.. _504 (Gateway Timeout): https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/504
 
 In this section, Ocelot team has gathered user scenarios where routing behavior was unclear or errors appeared in the logs.
 Please note that the failed routing cases listed below do not represent all application configurations.
@@ -458,15 +459,15 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
   As a quick recipe, the Ocelot team recommends ensuring client stability and, if necessary, adjusting the :ref:`config-timeout` strategy:
   either increasing or decreasing the route :ref:`config-timeout` depending on your usage scenario and the behavior of the downstream service.
 
-* **Timeout errors aka 503 status**.
-  According to Ocelot Core's design, HTTP status code `503 (Service Unavailable)`_ is returned in cases involving a ``TimeoutException``.
+* **Timeout errors aka 504 status**.
+  According to Ocelot Core's design, HTTP status code `504 (Gateway Timeout)`_ is returned in cases involving a ``TimeoutException``.
   This status is typically caused by:
 
   A) Slow downstream services that may fail to respond
   B) Large requests forwarded to slow downstream services
 
   As a quick recipe, the Ocelot team recommends increasing the route :ref:`config-timeout` in your configuration.
-  This adjustment can help resolve timeout-related issues with sluggish downstream services, ultimately reducing occurrences of `503 (Service Unavailable)`_.
+  This adjustment can help resolve timeout-related issues with sluggish downstream services, ultimately reducing occurrences of `504 (Gateway Timeout)`_.
 
 .. _break: http://break.do
 

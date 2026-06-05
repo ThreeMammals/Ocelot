@@ -26,9 +26,9 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
 
     [Theory]
     [InlineData(OcelotErrorCode.RequestTimedOutError)]
-    public void Should_return_service_unavailable(OcelotErrorCode errorCode)
+    public void Should_return_gateway_timeout(OcelotErrorCode errorCode)
     {
-        ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.ServiceUnavailable);
+        ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.GatewayTimeout);
     }
 
     [Theory]
@@ -120,7 +120,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     }
 
     [Fact]
-    public void ServiceUnavailableErrorsHaveThirdHighestPriority()
+    public void GatewayTimeoutErrorsHaveThirdHighestPriority()
     {
         var errors = new List<OcelotErrorCode>
         {
@@ -128,7 +128,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
             OcelotErrorCode.RequestTimedOutError,
         };
 
-        ShouldMapErrorsToStatusCode(errors, HttpStatusCode.ServiceUnavailable);
+        ShouldMapErrorsToStatusCode(errors, HttpStatusCode.GatewayTimeout);
     }
 
     [Fact]

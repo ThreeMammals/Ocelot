@@ -30,7 +30,7 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
         // here are mapped the exceptions thrown from Ocelot core application
         if (type == typeof(TimeoutException))
         {
-            return new RequestTimedOutError(exception); // -> 503 Service Unavailable; TODO but it should actually be 504 Gateway Timeout
+            return new RequestTimedOutError(exception); // -> 504 Gateway Timeout
         }
 
         if (type == typeof(OperationCanceledException) || type.IsSubclassOf(typeof(OperationCanceledException)))
