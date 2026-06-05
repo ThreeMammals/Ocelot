@@ -109,6 +109,27 @@ public class ClaimsAuthorizerTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "679")]
+    public void Should_authorize_user_with_url_claim_type()
+    {
+        // Arrange
+        GivenAClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+        {
+            new(ClaimTypes.Role, "Admin"),
+        })));
+        GivenARouteClaimsRequirement(new Dictionary<string, string>
+        {
+            { ClaimTypes.Role, "Admin" },
+        });
+
+        // Act
+        WhenICallTheAuthorizer();
+
+        // Assert
+        ThenTheUserIsAuthorized();
+    }
+
+    [Fact]
     public void Should_not_authorize_user()
     {
         // Arrange
