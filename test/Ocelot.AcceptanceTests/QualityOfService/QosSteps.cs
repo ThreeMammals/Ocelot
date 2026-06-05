@@ -78,7 +78,7 @@ public class QosSteps : TimeoutSteps
             GivenThereIsAServiceRunningOn(ports[i], HttpStatusCode.OK, firstHasTimeout, notFailing);
         }
         await self.WhenIGetUrlOnTheApiGateway(upstreamPath);
-        self.ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable); // OnTimeout
+        self.ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // OnTimeout
         await self.WhenIGetUrlOnTheApiGateway(upstreamPath);
         await self.ThenTheResponseShouldBeAsync(HttpStatusCode.OK);
     }

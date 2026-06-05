@@ -59,7 +59,7 @@ public sealed class QualityOfServiceTests : QosSteps
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(WithQualityOfService))
             .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout))
         .BDDfy();
     }
 
@@ -146,7 +146,7 @@ public sealed class QualityOfServiceTests : QosSteps
             .When(x => WhenIGetUrlOnTheApiGateway("/")) // repeat same request because min MinimumThroughput is 2
             .Then(x => ThenTheResponseShouldBeAsync(HttpStatusCode.OK, "Hello from Laura"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
@@ -204,7 +204,7 @@ public sealed class QualityOfServiceTests : QosSteps
             .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout))
             .When(x => WhenIGetUrlOnTheApiGateway("/working"))
             .Then(x => ThenTheStatusCodeShouldBeOk())
             .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
@@ -235,11 +235,11 @@ public sealed class QualityOfServiceTests : QosSteps
             var route = GivenRoute(port, new(new FileQoSOptions()));
             var configuration = GivenConfiguration(route);
             this
-                .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, defTimeoutMs + 500, body)) // 3.5s > 3s -> ServiceUnavailable
+                .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, defTimeoutMs + 500, body)) // 3.5s > 3s -> GatewayTimeout
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunningAsync(WithQualityOfService))
                 .When(x => WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 3 secs -> Timeout exception aka request cancellation
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 3 secs -> Timeout exception aka request cancellation
             .BDDfy();
         }
         finally
@@ -268,7 +268,7 @@ public sealed class QualityOfServiceTests : QosSteps
             .And(x => GivenOcelotIsRunningAsync(WithQualityOfService))
             .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway())
             .Then(x => ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500)) // (2.0, 2.5) s
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable))
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout))
             .And(x => response.ReasonPhrase.ShouldBe("Request timeout", "Request timeout"))
             .And(x => ThenTheResponseBodyShouldBe("Request timeout for route -> /"))
         .BDDfy();
@@ -292,8 +292,8 @@ public sealed class QualityOfServiceTests : QosSteps
         int globalTimeoutMs = Ms(GlobalTimeoutSeconds);
         var responses = new HttpResponseMessage[2];
         this
-            .Given(x => GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> ServiceUnavailable
-            .Given(x => GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> ServiceUnavailable
+            .Given(x => GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> GatewayTimeout
+            .Given(x => GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> GatewayTimeout
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(WithQualityOfService))
             .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway(
@@ -303,7 +303,7 @@ public sealed class QualityOfServiceTests : QosSteps
             .And(x => ThenTimeoutIsInRange(_watchers[0], globalTimeoutMs, globalTimeoutMs + 500)) // (2.0, 2.5) so assert precisely
             .Then(x => ThenTimeoutIsInRange(_watchers[1], globalTimeoutMs, Ms(DownstreamRoute.DefaultTimeoutSeconds))) // (2.0, 90) so assert roughly
             .And(x => ThenTimeoutIsInRange(_watchers[1], globalTimeoutMs, globalTimeoutMs + 500)) // (2.0, 2.5) so assert precisely
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             .And(x => response.ReasonPhrase.ShouldBe("Request timeout", "Request timeout"))
             // ThenTheResponseBodyShouldBeAsync("Request timeout for route -> /route2");
             .And(x => ResponseBodyShouldStartWith("Request timeout for route -> /route")) // route1 or route2 due to load balancing
