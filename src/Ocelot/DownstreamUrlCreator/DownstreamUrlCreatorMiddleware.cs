@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
@@ -8,7 +9,6 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
-using System.Web;
 
 namespace Ocelot.DownstreamUrlCreator;
 
@@ -95,26 +95,81 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     /// <returns>A <see cref="string"/> object.</returns>
     protected static string MergeQueryStringsWithoutDuplicateValues(string queryString, string newQueryString, List<PlaceholderNameAndValue> placeholders)
     {
-        newQueryString = newQueryString.Replace(QuestionMark, Ampersand);
-        var queries = HttpUtility.ParseQueryString(queryString);
-        var newQueries = HttpUtility.ParseQueryString(newQueryString);
+        var queries = ParseQueryStringPreservingPlus(queryString);
+        var newQueries = ParseQueryStringPreservingPlus(newQueryString);
 
         // Remove old replaced query parameters
         var placeholderKeys = new HashSet<string>(placeholders.Select(p => p.Key));
-        foreach (var queryKey in queries.AllKeys.Where(placeholderKeys.Contains))
+        foreach (var queryKey in queries.Keys.Where(placeholderKeys.Contains).ToArray())
         {
             queries.Remove(queryKey);
         }
 
-        var parameters = newQueries.AllKeys
-            .Where(key => key.IsNotEmpty())
-            .ToDictionary(key => key, key => newQueries[key]);
+        var parameters = newQueries
+            .Where(pair => pair.Key.IsNotEmpty())
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        _ = queries.AllKeys
-            .Where(key => key.IsNotEmpty() && !parameters.ContainsKey(key))
-            .All(key => parameters.TryAdd(key, queries[key]));
+        foreach (var pair in queries.Where(pair => pair.Key.IsNotEmpty() && !parameters.ContainsKey(pair.Key)))
+        {
+            parameters.TryAdd(pair.Key, pair.Value);
+        }
 
         return QueryHelpers.AddQueryString(string.Empty, parameters);
+    }
+
+    private static Dictionary<string, StringValues> ParseQueryStringPreservingPlus(string queryString)
+    {
+        if (string.IsNullOrEmpty(queryString))
+        {
+            return new Dictionary<string, StringValues>();
+        }
+
+        var query = queryString.StartsWith(QuestionMark)
+            ? queryString[1..]
+            : queryString;
+
+        var result = new Dictionary<string, StringValues>();
+        foreach (var segment in query.Split(Ampersand, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var equalsIndex = segment.IndexOf('=');
+            var key = equalsIndex < 0
+                ? segment
+                : segment[..equalsIndex];
+            var value = equalsIndex < 0
+                ? string.Empty
+                : segment[(equalsIndex + 1)..];
+
+            key = UrlDecodePreservingPlus(key);
+            value = UrlDecodePreservingPlus(value);
+
+            if (result.TryGetValue(key, out var existing))
+            {
+                result[key] = StringValues.Concat(existing, value);
+            }
+            else
+            {
+                result.Add(key, value);
+            }
+        }
+
+        return result;
+    }
+
+    private static string UrlDecodePreservingPlus(string value)
+    {
+        if (!value.Contains('%'))
+        {
+            return value;
+        }
+
+        try
+        {
+            return Uri.UnescapeDataString(value);
+        }
+        catch (UriFormatException)
+        {
+            return value;
+        }
     }
 
     /// <summary>
