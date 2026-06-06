@@ -1,8 +1,12 @@
+.. _WebSocketsProxyMiddleware: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs
+
 Websockets
 ==========
 
-    * `WebSockets Standard <https://websockets.spec.whatwg.org/>`_ by WHATWG organization
-    * `The WebSocket Protocol <https://datatracker.ietf.org/doc/html/rfc6455>`_ by Internet Engineering Task Force (IETF) organization
+  * Ocelot Middleware: `WebSocketsProxyMiddleware`_
+  * RFC 6455 Specification: `The WebSocket Protocol <https://datatracker.ietf.org/doc/html/rfc6455>`_ by Internet Engineering Task Force (IETF) organization
+  * JavaScript Living Standard: `WebSockets Standard <https://websockets.spec.whatwg.org/>`_ by WHATWG organization
+  * Mozilla Developer Network: `The WebSocket API (WebSockets) <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_
 
 Ocelot supports proxying `WebSockets <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ [#f1]_ with some extra bits.
 
@@ -172,8 +176,7 @@ Sample [#f5]_
   | **Solution**: `Ocelot.Samples.slnx <https://github.com/ThreeMammals/Ocelot/blob/main/Ocelot.Samples.slnx>`_
 
 The ``Ocelot.Samples.WebSocket.csproj`` sample project demonstrates how to proxy *WebSocket* connections with a customized buffer size
-by subclassing `WebSocketsProxyMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs>`_
-and registering it via ``OcelotPipelineConfiguration``:
+by subclassing `WebSocketsProxyMiddleware`_ and registering it via ``OcelotPipelineConfiguration``:
 
 .. code-block:: csharp
 
@@ -233,8 +236,8 @@ However, feel free to ask questions or explore coding recipes in `Discussions <h
 Additionally, we welcome any bug reports, enhancement suggestions, or proposals related to this feature. |octocat|
 
 .. note::
-  The Ocelot team considers the current implementation of the *WebSockets* feature to be obsolete, as it is based on the `WebSocketsProxyMiddleware <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20WebSocketsProxyMiddleware&type=code>`_ class.
-  *WebSockets* are a part of the ASP.NET Core framework, which includes the native `WebSocketMiddleware <https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.websockets.websocketmiddleware>`_ class.
+  The Ocelot team considers the current implementation of the *WebSockets* feature to be obsolete, as it is based on the `WebSocketsProxyMiddleware`_ class.
+  *WebSockets* are a part of the ASP.NET Core framework, which includes the native `WebSocketMiddleware`_ class.
   We have a strong intention to either migrate or redesign this feature. For more details, see issue `1707`_.
 
 """"
@@ -247,8 +250,9 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
 .. [#f4] If requested, we might explore options for implementing basic authentication.
 .. [#f5] The :ref:`Sample <ws-sample>` was introduced for issue `2386`_ and implemented in pull request `2387`_, as part of version `25.0`_.
 
-.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
-.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
+.. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/WebSocket/Program.cs
+.. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/WebSocket/ocelot.json
+.. _WebSocketMiddleware: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.websockets.websocketmiddleware
 
 .. _212: https://github.com/ThreeMammals/Ocelot/issues/212
 .. _344: https://github.com/ThreeMammals/Ocelot/issues/344
