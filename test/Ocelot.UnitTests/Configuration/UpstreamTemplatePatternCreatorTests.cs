@@ -306,6 +306,41 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
         result.ShouldMatchWithRegex(requestPath, shouldMatch);
     }
 
+    [Theory]
+    [Trait("Bug", "2143")]
+    [InlineData("/v3/Orders/$query", "/v3/Orders/$query", true)]
+    [InlineData("/v3/Orders/$query", "/v3/Orders/query", false)]
+    [InlineData("/api/debug()", "/api/debug()", true)]
+    [InlineData("/api/debug()", "/api/debug", false)]
+    [InlineData("/api/products+orders", "/api/products+orders", true)]
+    [InlineData("/api/products+orders", "/api/productsorders", false)]
+    [InlineData("/api/v1.0/items", "/api/v1.0/items", true)]
+    [InlineData("/api/v1.0/items", "/api/v110/items", false)]
+    [InlineData("/api/v{version}/$metadata", "/api/v1/$metadata", true)]
+    [InlineData("/api/v{version}/$metadata", "/api/v1/metadata", false)]
+    [InlineData("/api/products?$filter={filter}", "/api/products?$filter=a/b", true)]
+    [InlineData("/api/products?$filter={filter}", "/api/products?xfilter=a/b", false)]
+    [InlineData("/orders/$metadata/{everything}", "/orders/$metadata", true)]
+    [InlineData("/orders/$metadata/{everything}", "/orders/$metadata/a/b", true)]
+    [InlineData("/orders/$metadata/{everything}", "/orders/metadata/a", false)]
+    [InlineData("/api/$metadata/.json", "/api/$metadata", true)]
+    [InlineData("/api/$metadata/.json", "/api/$metadata/.json", true)]
+    [InlineData("/api/$metadata/.json", "/api/metadata/.json", false)]
+    public void Should_treat_static_route_special_regex_chars_as_literals(string urlPathTemplate, string requestPath, bool shouldMatch)
+    {
+        // Arrange
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
+
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.ShouldMatchWithRegex(requestPath, shouldMatch);
+    }
+
     [Fact]
     [Trait("Feat", "1348")]
     [Trait("Bug", "2246")]

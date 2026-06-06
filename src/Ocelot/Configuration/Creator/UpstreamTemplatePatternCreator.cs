@@ -13,6 +13,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
     private const string RegExIgnoreCase = "(?i)";
     private const string RegExForwardSlashOnly = "^/$";
     private const string RegExForwardSlashAndOnePlaceHolder = "^/.*";
+    private const string QuerySeparatorPattern = @"(/$|/\?|\?|$)";
     private readonly IOcelotCache<Regex> _cache;
 
     public UpstreamTemplatePatternCreator(IOcelotCache<Regex> cache)
@@ -43,14 +44,15 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         }
 
         var containsQueryString = false;
+        string querySeparator = null;
 
         if (upstreamTemplate.Contains('?'))
         {
             containsQueryString = true;
-            upstreamTemplate = upstreamTemplate.Replace(
-                upstreamTemplate.Contains("/?") ? "/?" : "?",
-                @"(/$|/\?|\?|$)");
+            querySeparator = upstreamTemplate.Contains("/?") ? "/?" : "?";
         }
+
+        upstreamTemplate = EscapeLiteralSegments(upstreamTemplate, placeholders, querySeparator);
 
         for (var i = 0; i < placeholders.Count; i++)
         {
@@ -72,7 +74,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
         }
 
         var index = upstreamTemplate.LastIndexOf('/'); // index of last forward slash
-        if (index < (upstreamTemplate.Length - 1) && upstreamTemplate[index + 1] == '.')
+        if (index < (upstreamTemplate.Length - 1) && StartsWithEscapedDot(upstreamTemplate, index))
         {
             upstreamTemplate = upstreamTemplate[..index] + "(?:|/" + upstreamTemplate[++index..] + ")";
         }
@@ -122,4 +124,76 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
 
     private static bool IsPlaceHolder(string upstreamTemplate, int i)
         => upstreamTemplate[i] == '{';
+
+    private static bool StartsWithEscapedDot(string upstreamTemplate, int slashIndex)
+        => upstreamTemplate[slashIndex + 1] == '.'
+           || (slashIndex < upstreamTemplate.Length - 2
+               && upstreamTemplate[slashIndex + 1] == '\\'
+               && upstreamTemplate[slashIndex + 2] == '.');
+
+    private static string EscapeLiteralSegments(string upstreamTemplate, List<string> placeholders, string querySeparator)
+    {
+        if (placeholders.Count == 0 && string.IsNullOrEmpty(querySeparator))
+        {
+            return Regex.Escape(upstreamTemplate);
+        }
+
+        var builder = new StringBuilder();
+        var index = 0;
+
+        while (index < upstreamTemplate.Length)
+        {
+            var (segmentIndex, segmentLength, segmentValue) = FindNextPreservedSegment(upstreamTemplate, placeholders, querySeparator, index);
+            if (segmentIndex < 0)
+            {
+                builder.Append(Regex.Escape(upstreamTemplate[index..]));
+                break;
+            }
+
+            if (segmentIndex > index)
+            {
+                builder.Append(Regex.Escape(upstreamTemplate[index..segmentIndex]));
+            }
+
+            builder.Append(segmentValue);
+            index = segmentIndex + segmentLength;
+        }
+
+        return builder.ToString();
+    }
+
+    private static (int Index, int Length, string Value) FindNextPreservedSegment(
+        string upstreamTemplate,
+        List<string> placeholders,
+        string querySeparator,
+        int startIndex)
+    {
+        var segmentIndex = -1;
+        var segmentLength = 0;
+        var segmentValue = string.Empty;
+
+        foreach (var candidate in placeholders)
+        {
+            var index = upstreamTemplate.IndexOf(candidate, startIndex, StringComparison.Ordinal);
+            if (index >= 0 && (segmentIndex < 0 || index < segmentIndex))
+            {
+                segmentIndex = index;
+                segmentLength = candidate.Length;
+                segmentValue = candidate;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(querySeparator))
+        {
+            var index = upstreamTemplate.IndexOf(querySeparator, startIndex, StringComparison.Ordinal);
+            if (index >= 0 && (segmentIndex < 0 || index < segmentIndex))
+            {
+                segmentIndex = index;
+                segmentLength = querySeparator.Length;
+                segmentValue = QuerySeparatorPattern;
+            }
+        }
+
+        return (segmentIndex, segmentLength, segmentValue);
+    }
 }
