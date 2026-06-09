@@ -65,6 +65,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         timer.Change(Timeout.Infinite, Timeout.Infinite); // Stop the timer to prevent new callbacks
+        timer.Dispose(); // Dispose to release the background thread
     }
 
     public void Poll()
