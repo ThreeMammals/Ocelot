@@ -14,32 +14,48 @@ namespace Ocelot.Testing.Steps;
 
 public class DiscoverySteps : ConcurrentSteps
 {
-    protected virtual string ServiceName([CallerMemberName] string? serviceName = null)
+    public virtual string ServiceName([CallerMemberName] string? serviceName = null)
         => serviceName ?? GetType().Name;
-    protected virtual string ServiceNamespace() => GetType().Namespace ?? string.Empty;
+    public virtual string ServiceNamespace() => GetType().Namespace ?? string.Empty;
 
-    public FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes)
+    public FileConfiguration GivenStaticRouting(Dictionary<string, IEnumerable<string>> services, params FileRoute[] routes)
     {
-        var config = new FileConfiguration()
+        services ??= [];
+        routes ??= [];
+        var c = GivenConfiguration(routes);
+        c.GlobalConfiguration = new()
         {
-            DynamicRoutes = new(routes),
-            GlobalConfiguration = new()
+            DownstreamScheme = Uri.UriSchemeHttp,
+            ServiceDiscoveryProvider = new()
             {
-                DownstreamScheme = Uri.UriSchemeHttp,
-                ServiceDiscoveryProvider = new()
-                {
-                    Type = nameof(DynamicRoutingDiscoveryProvider),
-                    Host = "doesn't matter for this provider", // it should not be empty due to DownstreamRouteProviderFactory.Get
-                    Port = 1, // see DownstreamRouteProviderFactory.IsServiceDiscovery
-                },
-                LoadBalancerOptions = new(nameof(RoundRobin)),
+                Type = nameof(DynamicRoutingDiscoveryProvider),
+                Host = "doesn't matter for this provider", // it should not be empty due to DownstreamRouteProviderFactory.Get
+                Port = 1, // see DownstreamRouteProviderFactory.IsServiceDiscovery
             },
+            LoadBalancerOptions = new(nameof(RoundRobin)),
+            Metadata = services.ToDictionary(x => x.Key, x => x.Value.Csv()),
         };
-        config.GlobalConfiguration.Metadata = services.ToDictionary(x => x.Key, x => x.Value.Csv());
-        return config;
+        return c;
     }
 
-    protected virtual void GivenDiscoveryMetadata(FileDynamicRoute route, int[] ports)
+    public FileConfiguration GivenDynamicRouting(Dictionary<string, IEnumerable<string>> services, params FileDynamicRoute[] routes) => new()
+    {
+        DynamicRoutes = new(routes),
+        GlobalConfiguration = new()
+        {
+            DownstreamScheme = Uri.UriSchemeHttp,
+            ServiceDiscoveryProvider = new()
+            {
+                Type = nameof(DynamicRoutingDiscoveryProvider),
+                Host = "doesn't matter for this provider", // it should not be empty due to DownstreamRouteProviderFactory.Get
+                Port = 1, // see DownstreamRouteProviderFactory.IsServiceDiscovery
+            },
+            LoadBalancerOptions = new(nameof(RoundRobin)),
+            Metadata = services.ToDictionary(x => x.Key, x => x.Value.Csv()),
+        },
+    };
+
+    public virtual void GivenDiscoveryMetadata(FileRouteBase route, int[] ports)
         => route.Metadata = new Dictionary<string, string>()
         {
             { route.ServiceName, ports.Select(DownstreamUrl).Csv() },
@@ -47,7 +63,7 @@ public class DiscoverySteps : ConcurrentSteps
 
     protected static readonly ServiceDiscoveryFinderDelegate DynamicRoutingDiscoveryFinder = (services, config, route)
         => new DynamicRoutingDiscoveryProvider(services, config, route);
-    protected static void WithDiscovery(IServiceCollection services) => services
+    public virtual void WithDiscovery(IServiceCollection services) => services
         .AddSingleton(DynamicRoutingDiscoveryFinder)
         .AddOcelot();
 }
