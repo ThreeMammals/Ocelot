@@ -395,6 +395,39 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         timer.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task StopAsync_Should_dispose_timer_to_release_background_thread()
+    {
+        // Arrange - start the poller to create a timer
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000); // long delay
+        await _poller.StartAsync(CancelMe);
+        var timerBefore = CurrentTimer();
+        timerBefore.ShouldNotBeNull();
+
+        // Act - stop the poller, which should dispose the timer
+        await _poller.StopAsync(CancelMe);
+
+        // Assert - timer should be null (disposed) and no exception should be thrown
+        var timerAfter = CurrentTimer();
+        timerAfter.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_handle_multiple_calls()
+    {
+        // Arrange - start the poller to create a timer
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000);
+        await _poller.StartAsync(CancelMe);
+
+        // Act - call StopAsync multiple times
+        await _poller.StopAsync(CancelMe);
+        await _poller.StopAsync(CancelMe); // Second call should not throw
+
+        // Assert - timer should remain null
+        var timer = CurrentTimer();
+        timer.ShouldBeNull();
+    }
+
     private static FileConfiguration GivenConfiguration() => new()
     {
         Routes = new()

@@ -1,4 +1,5 @@
 using Ocelot.Infrastructure;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Infrastructure;
 
@@ -33,5 +34,21 @@ public class InMemoryBusTests
 
         // Assert
         called.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Should_create_processing_thread_as_background_thread()
+    {
+        // Arrange
+        var bus = new InMemoryBus<object>();
+
+        // Act - Get the processing thread via reflection
+        var processingField = typeof(InMemoryBus<object>).GetField("_processing", 
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        var thread = processingField?.GetValue(bus) as Thread;
+
+        // Assert - the thread should be marked as background
+        thread.ShouldNotBeNull();
+        thread.IsBackground.ShouldBeTrue();
     }
 }
