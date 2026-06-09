@@ -13,6 +13,7 @@ namespace Ocelot.UnitTests.Kubernetes;
 /// </summary>
 [Trait("Milestone", ".NET 10")]
 [Trait("Release", "25.0.0")]
+[Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
 public sealed class KubeTests : IDisposable
 {
     private readonly Mock<IOcelotLoggerFactory> _factory = new();
@@ -46,7 +47,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_return_empty_list_when_disposed()
     {
         // Arrange
@@ -62,7 +62,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public void Dispose_Should_release_resources_without_throwing()
     {
         // Arrange
@@ -78,7 +77,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public void Dispose_Should_dispose_logger_and_kubeapi()
     {
         // Arrange
@@ -94,7 +92,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_handle_ObjectDisposedException_and_return_empty_list()
     {
         // Arrange
@@ -125,7 +122,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_handle_KubeApiException_and_return_empty_list()
     {
         // Arrange
@@ -153,7 +149,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_handle_HttpRequestException_and_return_empty_list()
     {
         // Arrange
@@ -180,7 +175,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_handle_general_Exception_and_return_empty_list()
     {
         // Arrange
@@ -207,7 +201,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_return_services_when_endpoint_is_valid()
     {
         // Arrange
@@ -245,7 +238,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task GetAsync_Should_return_empty_list_when_endpoint_has_no_subsets()
     {
         // Arrange
@@ -275,7 +267,6 @@ public sealed class KubeTests : IDisposable
     }
 
     [Fact]
-    [Trait("PR", "14")] // https://github.com/ocelotgateway/Ocelot/pull/14
     public async Task BuildServices_Should_return_empty_when_disposed()
     {
         // Arrange
