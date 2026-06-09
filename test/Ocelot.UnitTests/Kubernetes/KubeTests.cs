@@ -5,7 +5,7 @@ using Ocelot.Provider.Kubernetes;
 using Ocelot.Provider.Kubernetes.Interfaces;
 using Ocelot.Values;
 
-namespace Ocelot.AcceptanceTests.ServiceDiscovery;
+namespace Ocelot.UnitTests.Kubernetes;
 
 /// <summary>
 /// Tests for Kube service discovery provider error handling, particularly around 
@@ -13,14 +13,14 @@ namespace Ocelot.AcceptanceTests.ServiceDiscovery;
 /// </summary>
 [Trait("Milestone", ".NET 10")]
 [Trait("Release", "25.0.0")]
-public class KubeErrorHandlingTests : IDisposable
+public sealed class KubeTests : IDisposable
 {
     private readonly Mock<IOcelotLoggerFactory> _factory = new();
     private readonly Mock<IOcelotLogger> _logger = new();
     private readonly Mock<IKubeServiceBuilder> _serviceBuilder = new();
     private readonly KubeRegistryConfiguration _configuration;
 
-    public KubeErrorHandlingTests()
+    public KubeTests()
     {
         _factory.Setup(x => x.CreateLogger<Kube>()).Returns(_logger.Object);
         _configuration = new KubeRegistryConfiguration
