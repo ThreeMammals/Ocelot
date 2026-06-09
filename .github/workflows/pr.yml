@@ -240,7 +240,7 @@ jobs:
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" \
-            --logger "trx;LogFileName=unit-tests.trx" | tee test_output.txt
+            --report-xunit-trx --report-xunit-trx-filename=unit-tests.trx | tee test_output.txt
           if grep -q "failed: 0" test_output.txt; then
             echo "✓ Test run successful"
             exit 0
@@ -253,7 +253,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results-net10
-          path: "**/*.trx"
+          path: "test/Ocelot.UnitTests/bin/Debug/net10.0/unit-tests.trx"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
