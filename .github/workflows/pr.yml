@@ -252,8 +252,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-results-net10
-          path: "test/Ocelot.UnitTests/bin/Debug/net10.0/unit-tests.trx"
+          name: unit-tests-trx
+          path: "test/Ocelot.UnitTests/bin/Debug/**/unit-tests.trx"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
