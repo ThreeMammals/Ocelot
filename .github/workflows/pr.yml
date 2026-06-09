@@ -237,6 +237,8 @@ jobs:
       - name: Build
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
       - name: Unit Tests
+        env:
+          COVERLET_ENABLE_SUMMARY: true
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-output-format cobertura --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
