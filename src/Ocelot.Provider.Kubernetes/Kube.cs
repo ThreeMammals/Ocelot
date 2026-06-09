@@ -65,6 +65,12 @@ public class Kube : IServiceDiscoveryProvider, IDisposable
                 .EndpointsV1()
                 .GetAsync(_configuration.KeyOfServiceInK8s, _configuration.KubeNamespace);
         }
+        catch (ObjectDisposedException ex)
+        {
+            // The _kubeApi was disposed while this operation was in progress.
+            // This can occur during shutdown when Dispose() is called while async operations are still running.
+            _logger.LogError(() => Message($"(provider was disposed during operation)."), ex);
+        }
         catch (KubeApiException ex)
         {
             string Msg()
