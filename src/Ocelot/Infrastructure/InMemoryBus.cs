@@ -10,7 +10,10 @@ public class InMemoryBus<T> : IBus<T>
     {
         _queue = new BlockingCollection<DelayedMessage<T>>();
         _subscriptions = new List<Action<T>>();
-        _processing = new Thread(async () => await Process());
+        _processing = new Thread(async () => await Process())
+        {
+            IsBackground = true
+        };
         _processing.Start();
     }
 

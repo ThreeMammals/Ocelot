@@ -239,7 +239,8 @@ jobs:
       - name: Unit Tests
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
-            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" \
+            --logger "trx;LogFileName=unit-tests.trx" | tee test_output.txt
           if grep -q "failed: 0" test_output.txt; then
             echo "✓ Test run successful"
             exit 0
@@ -247,6 +248,12 @@ jobs:
             echo "✗ Test run failed: No 'failed: 0' found"
             exit 1
           fi
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-net10
+          path: "**/*.trx"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
