@@ -85,7 +85,7 @@ public class OcelotLogger : IOcelotLogger, IDisposable
         try
         {
             _logger.Log(logLevel, default,
-                $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{Environment.NewLine + message}",
+                $"{RequestIdMiddleware.RequestIdName}: {requestId}, {RequestIdMiddleware.PreviousRequestIdName}: {previousRequestId}{message}",
                 exception, NoFormatter);
         }
         catch (ObjectDisposedException)
@@ -98,7 +98,7 @@ public class OcelotLogger : IOcelotLogger, IDisposable
 
     public static string NoFormatter(string state, Exception e) => state;
     public static string ExceptionFormatter(string state, Exception e)
-        => e == null ? state : $"{state}, {Environment.NewLine + nameof(Exception)}: {e}";
+        => e == null ? state : $"{state}, {nameof(Exception)}: {e}";
 
     protected virtual void Dispose(bool disposing)
     {
