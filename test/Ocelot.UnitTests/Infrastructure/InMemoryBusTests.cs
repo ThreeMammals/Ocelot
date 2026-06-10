@@ -3,12 +3,12 @@ using System.Reflection;
 
 namespace Ocelot.UnitTests.Infrastructure;
 
-public class InMemoryBusTests
+public class InMemoryBusTests : UnitTest
 {
     private readonly InMemoryBus<object> _bus = new();
 
     [Fact]
-    public async Task Should_publish_with_delay()
+    public async Task Publish_WithDelay_Published()
     {
         // Arrange
         var called = false;
@@ -16,14 +16,14 @@ public class InMemoryBusTests
 
         // Act
         _bus.Publish(new object(), 1);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await Task.Delay(100, CancelMe);
 
         // Assert
-        called.ShouldBeTrue();
+        Assert.True(called);
     }
 
     [Fact]
-    public void Should_not_be_publish_yet_as_no_delay_in_caller()
+    public void Publish_WithoutDelay_NotYetPublished()
     {
         // Arrange
         var called = false;
@@ -33,22 +33,18 @@ public class InMemoryBusTests
         _bus.Publish(new object(), 1);
 
         // Assert
-        called.ShouldBeFalse();
+        Assert.False(called);
     }
 
     [Fact]
-    public void Should_create_processing_thread_as_background_thread()
+    public void Ctor_ViaReflection_CreatedProcessingThreadAsBackgroundThread()
     {
-        // Arrange
-        var bus = new InMemoryBus<object>();
-
-        // Act - Get the processing thread via reflection
-        var processingField = typeof(InMemoryBus<object>).GetField("_processing", 
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        var thread = processingField?.GetValue(bus) as Thread;
+        // Arrange, Act - Get the processing thread via reflection
+        var processingField = typeof(InMemoryBus<object>).GetField("_processing", BindingFlags.Instance | BindingFlags.NonPublic);
+        var thread = processingField?.GetValue(_bus) as Thread;
 
         // Assert - the thread should be marked as background
-        thread.ShouldNotBeNull();
-        thread.IsBackground.ShouldBeTrue();
+        Assert.NotNull(thread);
+        Assert.True(thread.IsBackground);
     }
 }
