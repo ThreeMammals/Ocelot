@@ -726,7 +726,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         var safeDisposeMethod = typeof(FileConfigurationPoller)
             .GetMethod("SafeDisposeManualResetEvent", 
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        safeDisposeMethod.ShouldNotBeNull();
+        Assert.NotNull(safeDisposeMethod);
 
         // Act: Invoke SafeDisposeManualResetEvent with the disposed event
         safeDisposeMethod.Invoke(_poller, new object[] { disposedEvent });
@@ -838,7 +838,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         var timerField = typeof(FileConfigurationPoller)
             .GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        timerField.ShouldNotBeNull();
+        Assert.NotNull(timerField);
         return timerField.GetValue(_poller) as Timer;
     }
 
