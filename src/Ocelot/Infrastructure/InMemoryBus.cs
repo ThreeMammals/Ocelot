@@ -10,7 +10,10 @@ public class InMemoryBus<T> : IBus<T>
     {
         _queue = new BlockingCollection<DelayedMessage<T>>();
         _subscriptions = new List<Action<T>>();
-        _processing = new Thread(async () => await Process());
+        _processing = new Thread(StartProcessing)
+        {
+            IsBackground = true
+        };
         _processing.Start();
     }
 
@@ -25,12 +28,15 @@ public class InMemoryBus<T> : IBus<T>
         _queue.Add(delayed);
     }
 
-    private async Task Process()
-    {
-        foreach (var delayedMessage in _queue.GetConsumingEnumerable())
-        {
-            await Task.Delay(delayedMessage.Delay);
+    // For delegate void ThreadStart();
+    private void StartProcessing()
+        => Process(CancellationToken.None).GetAwaiter().GetResult();
 
+    private async Task Process(CancellationToken token = default)
+    {
+        foreach (var delayedMessage in _queue.GetConsumingEnumerable(token))
+        {
+            await Task.Delay(delayedMessage.Delay, token);
             foreach (var subscription in _subscriptions)
             {
                 subscription(delayedMessage.Message);
