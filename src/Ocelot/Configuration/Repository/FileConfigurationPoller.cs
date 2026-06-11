@@ -65,7 +65,15 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
 
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         timer.Change(Timeout.Infinite, Timeout.Infinite); // Stop the timer to prevent new callbacks
-        timer.Dispose(); // Dispose to release the background thread
+
+        // Use a WaitHandle to ensure all pending callbacks complete before disposal
+        using var timerStopped = new ManualResetEvent(false);
+        timer.Dispose(timerStopped);
+        // Wait for any in-flight callbacks to finish (with a reasonable timeout)
+        if (!timerStopped.WaitOne(TimeSpan.FromSeconds(5)))
+        {
+            _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Timer disposal did not complete within timeout.");
+        }
     }
 
     public void Poll()

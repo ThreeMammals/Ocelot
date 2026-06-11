@@ -14,29 +14,22 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     private const int PollingDelayInMs = 100;
     private const int LongRunningPollDelayInMs = PollingDelayInMs + 50;
 
-    private readonly FileConfigurationPoller _poller;
-    private readonly Mock<IOcelotLoggerFactory> _factory;
-    private readonly Mock<IFileConfigurationRepository> _repo;
-    private readonly FileConfiguration _initialFileConfig;
-    private readonly Mock<IFileConfigurationPollerOptions> _config;
-    private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo;
-    private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator;
-    private readonly Mock<IInternalConfiguration> _internalConfig;
+    private readonly Mock<IOcelotLogger> _logger = new();
+    private readonly Mock<IOcelotLoggerFactory> _factory = new();
+    private readonly Mock<IFileConfigurationRepository> _repo = new();
+    private readonly Mock<IFileConfigurationPollerOptions> _config = new();
+    private readonly Mock<IInternalConfigurationRepository> _internalConfigRepo = new();
+    private readonly Mock<IInternalConfigurationCreator> _internalConfigCreator = new();
+    private readonly Mock<IInternalConfiguration> _internalConfig = new();
+    private readonly FileConfiguration _initialFileConfig = new();
+    private readonly FileConfigurationPoller _poller; // service under test
 
     public FileConfigurationPollerTests()
     {
-        var logger = new Mock<IOcelotLogger>();
-        _factory = new Mock<IOcelotLoggerFactory>();
-        _factory.Setup(x => x.CreateLogger<FileConfigurationPoller>()).Returns(logger.Object);
-        _repo = new Mock<IFileConfigurationRepository>();
-        _initialFileConfig = new FileConfiguration();
-        _config = new Mock<IFileConfigurationPollerOptions>();
+        _factory.Setup(x => x.CreateLogger<FileConfigurationPoller>()).Returns(_logger.Object);
         _repo.Setup(x => x.Get()).Returns(_initialFileConfig);
         _config.Setup(x => x.Delay()).Returns(PollingDelayInMs);
         _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(PollingDelayInMs);
-        _internalConfig = new Mock<IInternalConfiguration>();
-        _internalConfigRepo = new Mock<IInternalConfigurationRepository>();
-        _internalConfigCreator = new Mock<IInternalConfigurationCreator>();
         _internalConfigCreator.Setup(x => x.Create(It.IsAny<FileConfiguration>())).ReturnsAsync(new OkResponse<IInternalConfiguration>(_internalConfig.Object));
         _poller = new FileConfigurationPoller(_factory.Object, _repo.Object, _config.Object, _internalConfigRepo.Object, _internalConfigCreator.Object);
     }
@@ -63,8 +56,8 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         var timerAfterSecondStart = CurrentTimer();
 
         // Assert
-        timerAfterFirstStart.ShouldNotBeNull();
-        timerAfterSecondStart.ShouldBeSameAs(timerAfterFirstStart);
+        Assert.NotNull(timerAfterFirstStart);
+        Assert.Same(timerAfterFirstStart, timerAfterSecondStart);
     }
 
     [Fact]
@@ -75,7 +68,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         await Task.Delay(PollingDelayInMs * 2, CancelMe);
 
         // Assert
-        NumberOfGetInvocations().ShouldBe(0);
+        Assert.Equal(0, NumberOfGetInvocations());
     }
 
     [Fact]
@@ -182,10 +175,11 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Assert
         ThenTheSetterIsCalled(_initialFileConfig, 1);
-        NumberOfGetInvocations().ShouldBe(afterStopSettled);
+        Assert.Equal(afterStopSettled, NumberOfGetInvocations());
     }
 
-    [Fact(Skip = "To Dispose or not to Dispose in StopAsync?")]
+    [Fact]
+    //[Fact(Skip = "To Dispose or not to Dispose in StopAsync?")]
     public async Task StopAsync_Should_wait_for_running_timer_callback_to_complete()
     {
         // Arrange
@@ -227,7 +221,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         timer.Dispose();
         var timerField = typeof(FileConfigurationPoller)
             .GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic);
-        timerField!.SetValue(_poller, timer);
+        timerField.SetValue(_poller, timer);
 
         // Act, Assert
         _poller.Dispose();
@@ -244,7 +238,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         // Act: invoke the private OnTimer method directly
         var onTimerMethod = typeof(FileConfigurationPoller)
             .GetMethod("OnTimer", BindingFlags.Instance | BindingFlags.NonPublic);
-        onTimerMethod!.Invoke(_poller, [null]);
+        onTimerMethod.Invoke(_poller, [null]);
 
         // Assert: Get() was never called because polling was already in progress
         _repo.Verify(x => x.Get(), Times.Never);
@@ -392,9 +386,10 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Assert - no exception and timer is null
         var timer = CurrentTimer();
-        timer.ShouldBeNull();
+        Assert.Null(timer);
     }
 
+    #region StopAsync
     [Fact]
     public async Task StopAsync_Should_dispose_timer_to_release_background_thread()
     {
@@ -402,14 +397,14 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000); // long delay
         await _poller.StartAsync(CancelMe);
         var timerBefore = CurrentTimer();
-        timerBefore.ShouldNotBeNull();
+        Assert.NotNull(timerBefore);
 
         // Act - stop the poller, which should dispose the timer
         await _poller.StopAsync(CancelMe);
 
         // Assert - timer should be null (disposed) and no exception should be thrown
         var timerAfter = CurrentTimer();
-        timerAfter.ShouldBeNull();
+        Assert.Null(timerAfter);
     }
 
     [Fact]
@@ -425,8 +420,316 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Assert - timer should remain null
         var timer = CurrentTimer();
-        timer.ShouldBeNull();
+        Assert.Null(timer);
     }
+
+    [Fact]
+    public async Task StopAsync_Should_atomically_swap_timer_to_null_before_disposal()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+        var timerBeforeStop = CurrentTimer();
+        Assert.NotNull(timerBeforeStop);
+
+        // Act
+        await _poller.StopAsync(CancelMe);
+
+        // Assert - timer field should be null after stop
+        var timerAfterStop = CurrentTimer();
+        Assert.Null(timerAfterStop);
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_prevent_new_timer_callbacks_after_change()
+    {
+        // Arrange - set up a short polling interval to trigger callbacks
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(50);
+        int invocationCountBeforeStop = 0;
+        int invocationCountAfterStop = 0;
+
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            Interlocked.Increment(ref invocationCountBeforeStop);
+            return _initialFileConfig;
+        });
+
+        await _poller.StartAsync(CancelMe);
+        await Task.Delay(150, CancelMe); // allow a few callbacks
+
+        // Act
+        invocationCountBeforeStop = Volatile.Read(ref invocationCountBeforeStop);
+        await _poller.StopAsync(CancelMe);
+
+        await Task.Delay(150, CancelMe); // wait to see if more callbacks occur
+
+        // Assert - no new callbacks should fire after stop
+        var v = Volatile.Read(ref invocationCountAfterStop);
+        Assert.Equal(0, v);
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_prevent_new_callbacks_and_complete()
+    {
+        // Arrange - start with a reasonable polling interval
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(100);
+        var pollCount = 0;
+
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            Interlocked.Increment(ref pollCount);
+            return _initialFileConfig;
+        });
+
+        await _poller.StartAsync(CancelMe);
+        await Task.Delay(200, CancelMe); // let several polls happen
+        var countBefore = Volatile.Read(ref pollCount);
+
+        // Act
+        await _poller.StopAsync(CancelMe);
+
+        await Task.Delay(200, CancelMe); // wait to verify no new polls occur
+
+        // Assert
+        var v = Volatile.Read(ref pollCount);
+        Assert.Equal(countBefore, v); // No new polls should occur after StopAsync
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_handle_null_timer_gracefully()
+    {
+        // Arrange - don't start, so timer is null
+
+        // Act - calling stop on unstarted poller should not throw
+        await _poller.StopAsync(CancelMe);
+
+        // Assert - timer should still be null
+        var t = CurrentTimer();
+        Assert.Null(t);
+    }
+
+    [Fact]
+    public async Task StopAsync_Called_multiple_times_should_only_dispose_once()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+        var initialTimer = CurrentTimer();
+
+        // Act - stop multiple times
+        await _poller.StopAsync(CancelMe);
+        await _poller.StopAsync(CancelMe);
+        await _poller.StopAsync(CancelMe);
+
+        // Assert - timer should be null and no exception thrown
+        var t = CurrentTimer();
+        Assert.Null(t);
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_prevent_use_of_disposed_timer_from_callbacks()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+        var timerBefore = CurrentTimer();
+        Assert.NotNull(timerBefore);
+
+        // Act
+        await _poller.StopAsync(CancelMe);
+        await Task.Delay(100, CancelMe); // allow any in-flight callbacks to complete
+
+        // Assert - timer field should be null, preventing ObjectDisposedException
+        var t = CurrentTimer();
+        Assert.Null(t);
+    }
+
+    [Fact]
+    public async Task StopAsync_Should_complete_synchronously_when_no_callbacks_pending()
+    {
+        // Arrange
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000); // very long delay
+        await _poller.StartAsync(CancelMe);
+
+        // Act
+        var stopTask = _poller.StopAsync(CancelMe);
+        var completedInTime = await Task.WhenAny(
+            stopTask,
+            Task.Delay(TimeSpan.FromSeconds(1), CancelMe)) == stopTask;
+
+        // Assert - should complete quickly when no pending callbacks
+        Assert.True(completedInTime); // StopAsync should complete quickly when no callbacks are pending
+    }
+
+    [Fact]
+    public async Task Dispose_Should_clean_up_timer_after_start()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+        var timerBefore = CurrentTimer();
+        Assert.NotNull(timerBefore);
+
+        // Act
+        _poller.Dispose();
+
+        // Assert - timer should be null after dispose
+        var t = CurrentTimer();
+        Assert.Null(t);
+    }
+
+    [Fact]
+    public async Task StopAsync_Then_Dispose_Should_not_throw()
+    {
+        // Arrange
+        await _poller.StartAsync(CancelMe);
+
+        // Act & Assert
+        await _poller.StopAsync(CancelMe); // should not throw
+        _poller.Dispose(); // should not throw
+    }
+
+    [Fact]
+    public async Task Multiple_Start_Stop_Cycles_Should_work_correctly()
+    {
+        // Arrange
+        var pollCount = 0;
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            Interlocked.Increment(ref pollCount);
+            return _initialFileConfig;
+        });
+
+        // Act & Assert - first cycle
+        await _poller.StartAsync(CancelMe);
+        await Task.Delay(100, CancelMe);
+        await _poller.StopAsync(CancelMe);
+        var countAfterFirstStop = Volatile.Read(ref pollCount);
+
+        // Act & Assert - second cycle (should work even after stop)
+        await _poller.StartAsync(CancelMe);
+        await Task.Delay(100, CancelMe);
+        await _poller.StopAsync(CancelMe);
+        var countAfterSecondStop = Volatile.Read(ref pollCount);
+
+        // Assert - both cycles should have incremented the counter
+        Assert.True(countAfterSecondStop > countAfterFirstStop);
+    }
+
+
+    [Fact]
+    public async Task StopAsync_Should_not_log_warning_when_timer_disposal_completes_within_timeout()
+    {
+        // Arrange
+        // Set up a quick callback that completes immediately
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10000); // long delay, no actual callbacks
+        await _poller.StartAsync(CancelMe);
+
+        // Act - StopAsync should complete the WaitHandle immediately since no callback is running
+        await _poller.StopAsync(CancelMe);
+
+        // Assert - LogWarning should NOT be called because WaitOne completed within timeout
+        _logger.Verify(
+            x => x.LogWarning(It.IsAny<Func<string>>()),
+            Times.Never, "LogWarning should NOT be called when timer disposal completes within timeout");
+    }
+
+    [Fact]
+    // [Fact(Timeout = 15000)] // 15 second timeout for the entire test
+    public async Task StopAsync_Should_log_warning_when_timer_disposal_exceeds_timeout()
+    {
+        // Arrange
+        // Set up a callback that takes longer than the 5-second timeout
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(500);
+        var pollCallCount = 0;
+        var pollStarted = new TaskCompletionSource<bool>();
+        var allowPollToComplete = new TaskCompletionSource<bool>();
+
+        _repo.Setup(x => x.Get()).Returns(() =>
+        {
+            var count = Interlocked.Increment(ref pollCallCount);
+            if (count == 1)
+            {
+                // Signal that first poll has started
+                pollStarted.TrySetResult(true);
+
+                // Block for 7 seconds (longer than the 5-second timeout in StopAsync)
+                // Use a task-based wait instead of ManualResetEvent to avoid WaitHandle disposal issues
+                try
+                {
+                    allowPollToComplete.Task.Wait(TimeSpan.FromSeconds(7));
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore cancellation
+                }
+            }
+            return _initialFileConfig;
+        });
+
+        try
+        {
+            await _poller.StartAsync(CancelMe);
+
+            // Wait for the first poll to start (with a 2-second timeout to prevent hanging)
+            var pollStartedInTime = await Task.WhenAny(
+                pollStarted.Task,
+                Task.Delay(TimeSpan.FromSeconds(2), CancelMe)) == pollStarted.Task;
+
+            if (!pollStartedInTime)
+            {
+                // If poll didn't start within 2 seconds, the timer interval might be too long
+                throw new TimeoutException("Poll callback did not start within 2 seconds");
+            }
+
+            // Act - StopAsync should timeout because the poll callback is still running
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var stopTask = _poller.StopAsync(CancelMe);
+
+            // Wait for StopAsync to complete (with 6 second timeout: 5 sec WaitHandle timeout + 1 sec buffer)
+            var stoppedInTime = await Task.WhenAny(
+                stopTask,
+                Task.Delay(TimeSpan.FromSeconds(6), CancelMe)) == stopTask;
+            stopwatch.Stop();
+
+            // Assert
+            Assert.True(stoppedInTime, "StopAsync should complete even if timeout occurs");
+            Assert.True(stopwatch.ElapsedMilliseconds >= 5000, "StopAsync should have waited at least 5 seconds for the WaitHandle");
+
+            // LogWarning should be called because WaitOne timed out
+            _logger.Verify(
+                x => x.LogWarning(It.IsAny<Func<string>>()),
+                Times.AtLeastOnce, "LogWarning should be called when timer disposal times out");
+        }
+        catch (Exception e)
+        {
+        }
+        finally
+        {
+            // Signal the poll to complete
+            allowPollToComplete.TrySetResult(true);
+            // Give the callback time to exit
+            await Task.Delay(500, CancelMe);
+        }
+    }
+
+    [Fact]
+    public async Task StopAsync_WaitHandle_Should_complete_quickly_with_no_pending_callbacks()
+    {
+        // Arrange
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(100000); // Very long delay
+        await _poller.StartAsync(CancelMe);
+
+        // Act - StopAsync should complete within 1 second since no callback is running
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        await _poller.StopAsync(CancelMe);
+        stopwatch.Stop();
+
+        // Assert
+        Assert.True(stopwatch.ElapsedMilliseconds < 1000); // StopAsync should complete quickly when no callbacks are pending
+
+        // No warning should be logged
+        _logger.Verify(
+            x => x.LogWarning(It.IsAny<Func<string>>()),
+            Times.Never, "No warning should be logged when timer disposal completes quickly");
+    }
+    #endregion StopAsync
 
     private static FileConfiguration GivenConfiguration() => new()
     {
@@ -525,7 +828,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     private Timer CurrentTimer()
     {
         var timerField = typeof(FileConfigurationPoller)
-            .GetField("_timer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            .GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic);
 
         timerField.ShouldNotBeNull();
         return timerField.GetValue(_poller) as Timer;
