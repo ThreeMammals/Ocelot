@@ -714,6 +714,8 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     #endregion StopAsync
 
     #region SafeDisposeManualResetEvent
+    private MethodInfo SafeDisposeManualResetEvent()
+        => _poller.GetType().GetMethod(nameof(SafeDisposeManualResetEvent), BindingFlags.Instance | BindingFlags.NonPublic);
 
     [Fact]
     public void SafeDisposeManualResetEvent_Should_catch_and_log_exception_when_WaitOne_throws()
@@ -722,21 +724,14 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         var disposedEvent = new ManualResetEvent(false);
         disposedEvent.Dispose();
 
-        // Use reflection to invoke the private SafeDisposeManualResetEvent method
-        var safeDisposeMethod = typeof(FileConfigurationPoller)
-            .GetMethod("SafeDisposeManualResetEvent", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        Assert.NotNull(safeDisposeMethod);
-
         // Act: Invoke SafeDisposeManualResetEvent with the disposed event
-        safeDisposeMethod.Invoke(_poller, new object[] { disposedEvent });
+        SafeDisposeManualResetEvent().Invoke(_poller, [disposedEvent]);
 
         // Assert: Verify that LogWarning was called because WaitOne() threw ObjectDisposedException
         _logger.Verify(
             x => x.LogWarning(It.IsAny<Func<string>>()),
             Times.Once, "LogWarning should be called when WaitOne throws an exception");
     }
-
     #endregion SafeDisposeManualResetEvent
 
     private static FileConfiguration GivenConfiguration() => new()
