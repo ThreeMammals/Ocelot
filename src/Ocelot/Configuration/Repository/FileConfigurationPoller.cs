@@ -67,9 +67,8 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         timer.Change(Timeout.Infinite, Timeout.Infinite); // Stop the timer to prevent new callbacks
 
         // timer.Dispose(WaitHandle) signals the WaitHandle once all pending callbacks complete.
-        // Do NOT use 'using': if WaitOne times out while a callback is still in-flight, the timer
-        // will attempt to signal the handle when the callback eventually finishes. Disposing the
-        // handle early causes an ObjectDisposedException on the ThreadPool thread.
+        // Do NOT use 'using': if WaitOne times out while a callback is still in-flight, the timer will attempt to signal the handle when the callback eventually finishes.
+        // Disposing the handle early causes an ObjectDisposedException on the ThreadPool thread.
         var timerStopped = new ManualResetEvent(false);
         timer.Dispose(timerStopped);
 
@@ -83,20 +82,30 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         {
             _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Timer disposal did not complete within timeout.");
 
-            // Keep timerStopped alive until the timer signals it (when the callback finishes),
-            // to prevent ObjectDisposedException on the ThreadPool thread.
-            _ = Task.Run(() =>
-            {
-                try { timerStopped.WaitOne(); }
-                catch (Exception ex) { _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Unexpected error waiting for timer cleanup: {ex}."); }
-                finally { timerStopped.Dispose(); }
-            });
+            // Keep timerStopped alive until the timer signals it (when the callback finishes), to prevent ObjectDisposedException on the ThreadPool thread.
+            _ = Task.Run(() => SafeDisposeManualResetEvent(timerStopped));
         }
         else
         {
             timerStopped.Dispose();
         }
     }
+
+    private void SafeDisposeManualResetEvent(ManualResetEvent @event)
+    {
+        try
+        {
+            @event.WaitOne();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Unexpected error waiting for timer cleanup: {ex}.");
+        }
+        finally
+        {
+            @event.Dispose();
+        }
+    }   
 
     public void Poll()
     {
