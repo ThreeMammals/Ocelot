@@ -13,6 +13,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 {
     private const int PollingDelayInMs = 100;
     private const int LongRunningPollDelayInMs = PollingDelayInMs + 50;
+    private const int ShortPollingIntervalInMs = 10; // fast interval for tests that need reliable callbacks
 
     private readonly Mock<IOcelotLogger> _logger = new();
     private readonly Mock<IOcelotLoggerFactory> _factory = new();
@@ -596,7 +597,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     public async Task Multiple_Start_Stop_Cycles_Should_work_correctly()
     {
         // Arrange: use a short interval so that at least several callbacks fire within the wait window
-        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10);
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(ShortPollingIntervalInMs);
         var pollCount = 0;
         _repo.Setup(x => x.Get()).Returns(() =>
         {
@@ -606,7 +607,7 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Act & Assert - first cycle
         await _poller.StartAsync(CancelMe);
-        await Task.Delay(200, CancelMe); // 200 ms >> 10 ms interval; guarantees multiple callbacks
+        await Task.Delay(200, CancelMe); // 200 ms >> ShortPollingIntervalInMs; guarantees multiple callbacks
         await _poller.StopAsync(CancelMe);
         var countAfterFirstStop = Volatile.Read(ref pollCount);
 

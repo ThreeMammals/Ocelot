@@ -88,6 +88,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
             _ = Task.Run(() =>
             {
                 try { timerStopped.WaitOne(); }
+                catch (Exception ex) { _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Unexpected error waiting for timer cleanup: {ex}."); }
                 finally { timerStopped.Dispose(); }
             });
         }
