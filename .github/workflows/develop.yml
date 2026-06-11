@@ -52,24 +52,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: |
-        dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 \
-          --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj > test_output.txt 2>&1 || true
-        if grep -q "failed: 0" test_output.txt && grep -q "succeeded:" test_output.txt; then
-          echo "✓ Test run successful"
-          echo "::group::------- Test Output -------"
-          cat test_output.txt
-          echo "::endgroup::"
-          echo "✓ Test run successful"
-          exit 0
-        else
-          echo "✗ Test run failed"
-          echo "::group::------- Test Output -------"
-          cat test_output.txt
-          echo "::endgroup::"
-          echo "✗ Test run failed"
-          exit 1
-        fi
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
       run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
 
@@ -108,22 +91,7 @@ jobs:
       - name: Unit Tests
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
-            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" > test_output.txt 2>&1 || true
-          if grep -q "failed: 0" test_output.txt && grep -q "succeeded:" test_output.txt; then
-            echo "✓ Test run successful"
-            echo "::group::------- Test Output -------"
-            cat test_output.txt
-            echo "::endgroup::"
-            echo "✓ Test run successful"
-            exit 0
-          else
-            echo "✗ Test run failed"
-            echo "::group::------- Test Output -------"
-            cat test_output.txt
-            echo "::endgroup::"
-            echo "✗ Test run failed"
-            exit 1
-          fi
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       # - name: Acceptance Tests
       #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
       - name: Coverage files
