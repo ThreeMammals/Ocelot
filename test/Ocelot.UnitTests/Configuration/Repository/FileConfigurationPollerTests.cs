@@ -179,7 +179,6 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     }
 
     [Fact]
-    //[Fact(Skip = "To Dispose or not to Dispose in StopAsync?")]
     public async Task StopAsync_Should_wait_for_running_timer_callback_to_complete()
     {
         // Arrange
@@ -189,21 +188,29 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         _repo.Setup(x => x.Get()).Returns(() =>
         {
             pollStarted.Set();
-            releasePoll.Wait();
+            releasePoll.Wait(TimeSpan.FromSeconds(10)); // safety timeout to avoid hanging
             return _initialFileConfig;
         });
 
         await _poller.StartAsync(CancelMe);
-        Assert.True(pollStarted.Wait(TimeSpan.FromSeconds(2), CancelMe));
+        Assert.True(pollStarted.Wait(TimeSpan.FromSeconds(2), CancelMe), "Poll should have started within 2 seconds.");
 
-        // Act
-        var stopTask = _poller.StopAsync(CancelMe);
-        await Task.Delay(50, CancelMe);
+        try
+        {
+            // Act: StopAsync is truly async (awaits Task.Run internally), so the returned task
+            // should still be in-progress while the timer callback is blocked.
+            var stopTask = _poller.StopAsync(CancelMe);
+            await Task.Delay(50, CancelMe);
 
-        // Assert
-        Assert.False(stopTask.IsCompleted);
-        releasePoll.Set();
-        await stopTask;
+            // Assert
+            Assert.False(stopTask.IsCompleted, "StopAsync should not complete while the timer callback is still running.");
+            releasePoll.Set();
+            await stopTask; // completes once the callback exits and the timer signals timerStopped
+        }
+        finally
+        {
+            releasePoll.Set(); // ensure the callback is always released even if the test fails early
+        }
     }
 
     [Fact]
@@ -588,7 +595,8 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     [Fact]
     public async Task Multiple_Start_Stop_Cycles_Should_work_correctly()
     {
-        // Arrange
+        // Arrange: use a short interval so that at least several callbacks fire within the wait window
+        _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(10);
         var pollCount = 0;
         _repo.Setup(x => x.Get()).Returns(() =>
         {
@@ -598,18 +606,20 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
 
         // Act & Assert - first cycle
         await _poller.StartAsync(CancelMe);
-        await Task.Delay(100, CancelMe);
+        await Task.Delay(200, CancelMe); // 200 ms >> 10 ms interval; guarantees multiple callbacks
         await _poller.StopAsync(CancelMe);
         var countAfterFirstStop = Volatile.Read(ref pollCount);
 
         // Act & Assert - second cycle (should work even after stop)
         await _poller.StartAsync(CancelMe);
-        await Task.Delay(100, CancelMe);
+        await Task.Delay(200, CancelMe);
         await _poller.StopAsync(CancelMe);
         var countAfterSecondStop = Volatile.Read(ref pollCount);
 
-        // Assert - both cycles should have incremented the counter
-        Assert.True(countAfterSecondStop > countAfterFirstStop);
+        // Assert - second cycle must have produced at least one additional poll
+        Assert.True(
+            countAfterSecondStop > countAfterFirstStop,
+            $"Second cycle should have more polls (after 1st stop: {countAfterFirstStop}, after 2nd stop: {countAfterSecondStop}).");
     }
 
 
@@ -631,81 +641,52 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
     }
 
     [Fact]
-    // [Fact(Timeout = 15000)] // 15 second timeout for the entire test
     public async Task StopAsync_Should_log_warning_when_timer_disposal_exceeds_timeout()
     {
-        // Arrange
-        // Set up a callback that takes longer than the 5-second timeout
+        // Arrange: set up a callback that blocks longer than StopAsync's 5-second internal wait
         _config.Setup(x => x.DelayAsync(It.IsAny<CancellationToken>())).ReturnsAsync(500);
-        var pollCallCount = 0;
-        var pollStarted = new TaskCompletionSource<bool>();
-        var allowPollToComplete = new TaskCompletionSource<bool>();
+        var pollStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowPollToComplete = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         _repo.Setup(x => x.Get()).Returns(() =>
         {
-            var count = Interlocked.Increment(ref pollCallCount);
-            if (count == 1)
-            {
-                // Signal that first poll has started
-                pollStarted.TrySetResult(true);
-
-                // Block for 7 seconds (longer than the 5-second timeout in StopAsync)
-                // Use a task-based wait instead of ManualResetEvent to avoid WaitHandle disposal issues
-                try
-                {
-                    allowPollToComplete.Task.Wait(TimeSpan.FromSeconds(7));
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore cancellation
-                }
-            }
+            pollStarted.TrySetResult(true);
+            // Block for up to 7 seconds (longer than the 5-second timeout inside StopAsync)
+            allowPollToComplete.Task.Wait(TimeSpan.FromSeconds(7));
             return _initialFileConfig;
         });
 
+        await _poller.StartAsync(CancelMe);
+
+        // Wait for the first poll to start
+        Assert.True(
+            await Task.WhenAny(pollStarted.Task, Task.Delay(TimeSpan.FromSeconds(2), CancelMe)) == pollStarted.Task,
+            "Poll callback did not start within 2 seconds.");
+
         try
         {
-            await _poller.StartAsync(CancelMe);
-
-            // Wait for the first poll to start (with a 2-second timeout to prevent hanging)
-            var pollStartedInTime = await Task.WhenAny(
-                pollStarted.Task,
-                Task.Delay(TimeSpan.FromSeconds(2), CancelMe)) == pollStarted.Task;
-
-            if (!pollStartedInTime)
-            {
-                // If poll didn't start within 2 seconds, the timer interval might be too long
-                throw new TimeoutException("Poll callback did not start within 2 seconds");
-            }
-
-            // Act - StopAsync should timeout because the poll callback is still running
+            // Act: StopAsync should time out because the poll callback is still running
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            var stopTask = _poller.StopAsync(CancelMe);
-
-            // Wait for StopAsync to complete (with 6 second timeout: 5 sec WaitHandle timeout + 1 sec buffer)
-            var stoppedInTime = await Task.WhenAny(
-                stopTask,
-                Task.Delay(TimeSpan.FromSeconds(6), CancelMe)) == stopTask;
+            await _poller.StopAsync(CancelMe);
             stopwatch.Stop();
 
-            // Assert
-            Assert.True(stoppedInTime, "StopAsync should complete even if timeout occurs");
-            Assert.True(stopwatch.ElapsedMilliseconds >= 5000, "StopAsync should have waited at least 5 seconds for the WaitHandle");
+            // Assert: StopAsync should complete after roughly 5 seconds (its internal WaitOne timeout)
+            Assert.True(
+                stopwatch.ElapsedMilliseconds >= 4500,
+                $"StopAsync should have waited ~5 s for the timer callback, but elapsed only {stopwatch.ElapsedMilliseconds} ms.");
 
             // LogWarning should be called because WaitOne timed out
             _logger.Verify(
                 x => x.LogWarning(It.IsAny<Func<string>>()),
-                Times.AtLeastOnce, "LogWarning should be called when timer disposal times out");
-        }
-        catch (Exception e)
-        {
+                Times.AtLeastOnce, "LogWarning should be called when timer disposal times out.");
         }
         finally
         {
-            // Signal the poll to complete
+            // Release the blocked callback so its background thread can exit cleanly.
+            // This also allows the production-code background cleanup task to dispose timerStopped
+            // without ObjectDisposedException.
             allowPollToComplete.TrySetResult(true);
-            // Give the callback time to exit
-            await Task.Delay(500, CancelMe);
+            await Task.Delay(500, CancellationToken.None); // give background cleanup time to finish
         }
     }
 

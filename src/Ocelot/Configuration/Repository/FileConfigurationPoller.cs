@@ -66,13 +66,34 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
         _logger.LogInformation(() => $"{nameof(FileConfigurationPoller)} is stopping.");
         timer.Change(Timeout.Infinite, Timeout.Infinite); // Stop the timer to prevent new callbacks
 
-        // Use a WaitHandle to ensure all pending callbacks complete before disposal
-        using var timerStopped = new ManualResetEvent(false);
+        // timer.Dispose(WaitHandle) signals the WaitHandle once all pending callbacks complete.
+        // Do NOT use 'using': if WaitOne times out while a callback is still in-flight, the timer
+        // will attempt to signal the handle when the callback eventually finishes. Disposing the
+        // handle early causes an ObjectDisposedException on the ThreadPool thread.
+        var timerStopped = new ManualResetEvent(false);
         timer.Dispose(timerStopped);
-        // Wait for any in-flight callbacks to finish (with a reasonable timeout)
-        if (!timerStopped.WaitOne(TimeSpan.FromSeconds(5)))
+
+        // Await asynchronously so callers are not blocked while waiting for in-flight callbacks.
+        var completed = await Task.Run(
+            () => timerStopped.WaitOne(TimeSpan.FromSeconds(5)),
+            CancellationToken.None) // do not cancel the wait; we must always let cleanup run
+            .ConfigureAwait(false);
+
+        if (!completed)
         {
             _logger.LogWarning(() => $"{nameof(FileConfigurationPoller)}: Timer disposal did not complete within timeout.");
+
+            // Keep timerStopped alive until the timer signals it (when the callback finishes),
+            // to prevent ObjectDisposedException on the ThreadPool thread.
+            _ = Task.Run(() =>
+            {
+                try { timerStopped.WaitOne(); }
+                finally { timerStopped.Dispose(); }
+            });
+        }
+        else
+        {
+            timerStopped.Dispose();
         }
     }
 
