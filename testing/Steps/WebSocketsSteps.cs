@@ -89,7 +89,7 @@ public class WebSocketsSteps : AcceptanceSteps
         return GivenWebSocketServiceIsRunningOnAsync(url, WithOptions, TheMiddleware);
     }
 
-    protected static async Task EchoAsync(WebSocket ws, CancellationToken token)
+    protected virtual async Task EchoAsync(WebSocket ws, CancellationToken token)
     {
         try
         {
@@ -113,7 +113,7 @@ public class WebSocketsSteps : AcceptanceSteps
         }
     }
 
-    protected static async Task MessageAsync(WebSocket webSocket, CancellationToken token)
+    protected virtual async Task MessageAsync(WebSocket webSocket, CancellationToken token)
     {
         try
         {
@@ -133,90 +133,58 @@ public class WebSocketsSteps : AcceptanceSteps
         }
     }
 
-    protected async Task StartClient(Uri url, CancellationToken token)
+    protected virtual async Task Sending(IClientWebSocket client, CancellationToken token)
+    {
+        var line = "test";
+        for (var i = 0; i < 10; i++)
+        {
+            var bytes = Encoding.UTF8.GetBytes(line);
+            await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
+            await Task.Delay(10, token);
+        }
+        await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
+    }
+    protected virtual async Task Receiving(IClientWebSocket client, List<string> recieved,  CancellationToken token)
+    {
+        var buffer = new byte[1024 * 4];
+        while (true)
+        {
+            var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                recieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
+            }
+            else if (result.MessageType == WebSocketMessageType.Close)
+            {
+                if (client.State != WebSocketState.Closed)
+                {
+                    // Last version, the client state is CloseReceived
+                    // Valid states are: Open, CloseReceived, CloseSent
+                    await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
+                }
+                break;
+            }
+        }
+    }
+
+    protected virtual async Task StartClient(Uri url, CancellationToken token)
     {
         var client = _factory.CreateClient();
         await client.ConnectAsync(url, token);
 
-        var sending = Task.Run(async () =>
-        {
-            var line = "test";
-            for (var i = 0; i < 10; i++)
-            {
-                var bytes = Encoding.UTF8.GetBytes(line);
-                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
-                await Task.Delay(10);
-            }
-            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
-        }, token);
-
-        var receiving = Task.Run(async () =>
-        {
-            var buffer = new byte[1024 * 4];
-            while (true)
-            {
-                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), token);
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    _firstRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                }
-                else if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    if (client.State != WebSocketState.Closed)
-                    {
-                        // Last version, the client state is CloseReceived
-                        // Valid states are: Open, CloseReceived, CloseSent
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
-                    }
-                    break;
-                }
-            }
-        }, token);
-
+        var sending = Sending(client, token);
+        var receiving = Receiving(client, _firstRecieved, token);
         await Task.WhenAll(sending, receiving);
     }
 
     protected async Task StartSecondClient(Uri url, CancellationToken token)
     {
-        await Task.Delay(500);
+        await Task.Delay(500, token);
         var client = _factory.CreateClient();
         await client.ConnectAsync(url, token);
 
-        var sending = Task.Run(async () =>
-        {
-            var line = "test";
-            for (var i = 0; i < 10; i++)
-            {
-                var bytes = Encoding.UTF8.GetBytes(line);
-                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
-                await Task.Delay(10);
-            }
-            await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
-        }, token);
-
-        var receiving = Task.Run(async () =>
-        {
-            var buffer = new byte[1024 * 4];
-            while (true)
-            {
-                var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), token);
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    _secondRecieved.Add(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                }
-                else if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    if (client.State != WebSocketState.Closed)
-                    {
-                        // Last version, the client state is CloseReceived
-                        // Valid states are: Open, CloseReceived, CloseSent
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, token);
-                    }
-                    break;
-                }
-            }
-        }, token);
-
+        var sending = Sending(client, token);
+        var receiving = Receiving(client, _secondRecieved, token);
         await Task.WhenAll(sending, receiving);
     }
 
