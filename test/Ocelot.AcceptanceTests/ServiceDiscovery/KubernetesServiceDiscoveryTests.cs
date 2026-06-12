@@ -583,8 +583,8 @@ public sealed class KubernetesServiceDiscoveryTests : DiscoverySteps
         }
     }
 
-    protected override string ServiceName([CallerMemberName] string serviceName = null) => serviceName ?? nameof(KubernetesServiceDiscoveryTests);
-    protected override string ServiceNamespace() => nameof(KubernetesServiceDiscoveryTests);
+    public override string ServiceName([CallerMemberName] string serviceName = null) => serviceName ?? nameof(KubernetesServiceDiscoveryTests);
+    public override string ServiceNamespace() => nameof(KubernetesServiceDiscoveryTests);
 }
 
 internal class FakeKubeServiceCreator : KubeServiceCreator
