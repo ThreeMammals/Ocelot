@@ -563,12 +563,12 @@ public class DynamicRoutingTests : DiscoverySteps
             .AddSingleton(DynamicRoutingDiscoveryFinder)
             .AddOcelot().AddQualityOfService(); // Built-in feat, not Polly
 
-    private static void WithDiscoveryAndRequesterTesting(IServiceCollection services)
+    private void WithDiscoveryAndRequesterTesting(IServiceCollection services)
     {
         WithDiscovery(services);
         RequesterSteps.WithRequesterTesting(services, false);
     }
-    private static Action<IServiceCollection> WithDiscoveryAndJwtBearerAuthentication(AuthenticationSteps steps)
+    private Action<IServiceCollection> WithDiscoveryAndJwtBearerAuthentication(AuthenticationSteps steps)
     {
         Action<IServiceCollection> ocelotServices = WithDiscovery;
         void withJwtBearerAuthentication(IServiceCollection services)
@@ -602,6 +602,6 @@ public class DynamicRoutingTests : DiscoverySteps
         }
     }
 
-    protected override string ServiceNamespace() => nameof(DynamicRoutingTests);
+    public override string ServiceNamespace() => nameof(DynamicRoutingTests);
     public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 }
