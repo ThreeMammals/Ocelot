@@ -23,7 +23,7 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />

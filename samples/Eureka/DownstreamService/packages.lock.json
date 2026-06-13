@@ -4,9 +4,9 @@
     "net10.0": {
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q=="
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "mD4f7hUvjXEbLAnROibQswbYguGnfzN17gtkuqAHU1a0gJsqe7LXtV+0tItJsYrCBBpPYHiHFlLtjzG2ZEt5uQ=="
       },
       "ocelot.samples.web": {
         "type": "Project"
@@ -15,23 +15,23 @@
     "net8.0": {
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q==",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "mD4f7hUvjXEbLAnROibQswbYguGnfzN17gtkuqAHU1a0gJsqe7LXtV+0tItJsYrCBBpPYHiHFlLtjzG2ZEt5uQ==",
         "dependencies": {
-          "System.IO.Pipelines": "10.0.8",
-          "System.Text.Encodings.Web": "10.0.8"
+          "System.IO.Pipelines": "10.0.9",
+          "System.Text.Encodings.Web": "10.0.9"
         }
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
-        "resolved": "10.0.8",
-        "contentHash": "STVNTIVd+UrYvSo31D2tOOTs19IThdjGDN14FS3/NZb4PWsVakAg/VT4sq+JYWGP/GtazzvXwebWL6LPBAwnFQ=="
+        "resolved": "10.0.9",
+        "contentHash": "raEAXJHu1ERuQnLhfaMUhK19A+i/CLHH5tFWi+azKxq2O4kzgvdeNuZTzMzyT7pyM1+zE2Pqb2g/DXJsuPp/LQ=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "10.0.8",
-        "contentHash": "HvFIJXM/CMTRu6PBQmjukQZ/O32Vx5fOEYZs0kq0OD5s9vJQ19KHLWCVmnfh3gNC7pbYomm06tzOTgJBflr/nQ=="
+        "resolved": "10.0.9",
+        "contentHash": "65bbI+LWcVgq1mzPtv6bJF+ZXeeIawld/puK9ixD1l3gJGM2IU4gkYbZoKLVjsXJXbrZqSRf86RlKf1TcCTY1Q=="
       },
       "ocelot.samples.web": {
         "type": "Project"
@@ -40,23 +40,23 @@
     "net9.0": {
       "System.Text.Json": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "/fysUDkD7oFGaRPoA7IaFs0wRoO3GlwlCNq2P+xWZqxLy1R4cktRSKfMjJDy9ymS4grL7IDVdt8de8L9a0z55Q==",
+        "requested": "[10.0.9, )",
+        "resolved": "10.0.9",
+        "contentHash": "mD4f7hUvjXEbLAnROibQswbYguGnfzN17gtkuqAHU1a0gJsqe7LXtV+0tItJsYrCBBpPYHiHFlLtjzG2ZEt5uQ==",
         "dependencies": {
-          "System.IO.Pipelines": "10.0.8",
-          "System.Text.Encodings.Web": "10.0.8"
+          "System.IO.Pipelines": "10.0.9",
+          "System.Text.Encodings.Web": "10.0.9"
         }
       },
       "System.IO.Pipelines": {
         "type": "Transitive",
-        "resolved": "10.0.8",
-        "contentHash": "STVNTIVd+UrYvSo31D2tOOTs19IThdjGDN14FS3/NZb4PWsVakAg/VT4sq+JYWGP/GtazzvXwebWL6LPBAwnFQ=="
+        "resolved": "10.0.9",
+        "contentHash": "raEAXJHu1ERuQnLhfaMUhK19A+i/CLHH5tFWi+azKxq2O4kzgvdeNuZTzMzyT7pyM1+zE2Pqb2g/DXJsuPp/LQ=="
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "10.0.8",
-        "contentHash": "HvFIJXM/CMTRu6PBQmjukQZ/O32Vx5fOEYZs0kq0OD5s9vJQ19KHLWCVmnfh3gNC7pbYomm06tzOTgJBflr/nQ=="
+        "resolved": "10.0.9",
+        "contentHash": "65bbI+LWcVgq1mzPtv6bJF+ZXeeIawld/puK9ixD1l3gJGM2IU4gkYbZoKLVjsXJXbrZqSRf86RlKf1TcCTY1Q=="
       },
       "ocelot.samples.web": {
         "type": "Project"
