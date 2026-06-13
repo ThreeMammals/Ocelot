@@ -4,9 +4,9 @@
     "net10.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.4.268, )",
-        "resolved": "11.4.268",
-        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
+        "requested": "[12.0.997-beta, )",
+        "resolved": "12.0.997-beta",
+        "contentHash": "xhQzCdm3cbRmn9T1ReSTjJjPNmf2aNWyz83RfDqV09PoY5nVahAVlXzjaxE8Vbjm4e2LNp8H9jPBpQImYqUjyQ=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",
@@ -77,9 +77,9 @@
     "net8.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.4.268, )",
-        "resolved": "11.4.268",
-        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
+        "requested": "[12.0.997-beta, )",
+        "resolved": "12.0.997-beta",
+        "contentHash": "xhQzCdm3cbRmn9T1ReSTjJjPNmf2aNWyz83RfDqV09PoY5nVahAVlXzjaxE8Vbjm4e2LNp8H9jPBpQImYqUjyQ=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",
@@ -150,9 +150,9 @@
     "net9.0": {
       "Microsoft.ServiceFabric": {
         "type": "Direct",
-        "requested": "[11.4.268, )",
-        "resolved": "11.4.268",
-        "contentHash": "a0GiNhUiUEH2syvYOWqfVkvWANqJDc2uzZsr1gQFDXl9wzC21Fc4grXQJCty49uff6UE6TKhEYe1gFOxMo9C1A=="
+        "requested": "[12.0.997-beta, )",
+        "resolved": "12.0.997-beta",
+        "contentHash": "xhQzCdm3cbRmn9T1ReSTjJjPNmf2aNWyz83RfDqV09PoY5nVahAVlXzjaxE8Vbjm4e2LNp8H9jPBpQImYqUjyQ=="
       },
       "Microsoft.ServiceFabric.AspNetCore.Kestrel": {
         "type": "Direct",

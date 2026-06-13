@@ -587,42 +587,42 @@
       },
       "Microsoft.AspNetCore.Authentication.JwtBearer": {
         "type": "Transitive",
-        "resolved": "8.0.27",
-        "contentHash": "OMYSRCQQyj2b2RxjIJqMg2kSRvN1X5VDk3tCHcR/gzQPMMiLQ04zUUH12ObFFdLj2zZAQq1E2A+owJCyKXXUrw==",
+        "resolved": "8.0.28",
+        "contentHash": "+G3RdPYOgWkeB+CCIsLHTmIUjqMeoqRG7VKMOL1cGrXJeXtDP6UN1V2NVKn4ucLAjo3yfPdA6VUmbiXpfHxwpQ==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.1.2"
         }
       },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
-        "resolved": "8.0.27",
-        "contentHash": "5XKQsrL+QQOg7+ptHxUr81yer1HaG2SEloi+Hg3ugFOGsUdWEQsu5l70+Ngb/K6ArLjpPDBzr1G849v7L3OD4w==",
+        "resolved": "8.0.28",
+        "contentHash": "q7z6lq3EZ/fJ8YykC/5HSEB0/7huCJB0DSftVUPQsc9GCxWRxbOWpxl2nXX7NPDhxnD8qAFMDHFd9jopzqPikA==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.3"
         }
       },
       "Microsoft.AspNetCore.MiddlewareAnalysis": {
         "type": "Transitive",
-        "resolved": "8.0.27",
-        "contentHash": "IS0BgZKuCod8s5mS6wNSPTUh3rNj9UPoump64B2+xAHD2kP8QcIuhBBTGEyB28iouKXCAxunAms1qMawH9nfyg==",
+        "resolved": "8.0.28",
+        "contentHash": "3M9MfC3M8MGK0Q4P5IiXe4ePOCrog5EAHmhqdf1zDpnxl5c514lFIULqO6C9y8OnXpvZetl8jdR5v7VTpbQLoQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
         }
       },
       "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
         "type": "Transitive",
-        "resolved": "8.0.27",
-        "contentHash": "OetnlefI1WPfMDsJ5LzaVfCwZDCIkMACVUYkC+F6UxyuNYMwaKjfCgWMzpvi4UfqQFXpFGrQ/5RzPwGLf7P7qQ==",
+        "resolved": "8.0.28",
+        "contentHash": "nOFHGrKz0w2uzzm0BvfkeIK9JwmKEBsNnZOhs0WWufAafyJxr4eEE+UjPOO4/Bj4c9a6Z58L39ZUGAKgNOmN7w==",
         "dependencies": {
-          "Microsoft.AspNetCore.JsonPatch": "8.0.27",
+          "Microsoft.AspNetCore.JsonPatch": "8.0.28",
           "Newtonsoft.Json": "13.0.3",
           "Newtonsoft.Json.Bson": "1.0.2"
         }
       },
       "Microsoft.AspNetCore.TestHost": {
         "type": "Transitive",
-        "resolved": "8.0.27",
-        "contentHash": "qsPVul3TnViYzInVZUvCeRt7Xvpi7D3MrScjMshJ4WGboy3Xt/aq8TX2QzUyAZn/ncDmPpR8lPCPBI0U74/Ttg==",
+        "resolved": "8.0.28",
+        "contentHash": "FHTpo8WQAyrWe/WJZCuP0glAbH2djt4aOAIyO9X5VPFlqFyYFMc5J7i26hvr53D79mlAkjaEz4NJ+QF/0ABG5g==",
         "dependencies": {
           "System.IO.Pipelines": "8.0.0"
         }
@@ -1025,17 +1025,17 @@
         "dependencies": {
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
-          "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.27, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.27, )",
+          "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.28, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.28, )",
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       },
       "ocelot.testing": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.27, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.27, )",
-          "Microsoft.AspNetCore.TestHost": "[8.0.27, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.28, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.28, )",
+          "Microsoft.AspNetCore.TestHost": "[8.0.28, )",
           "Moq": "[4.20.72, )",
           "Ocelot": "[0.0.0-dev, )",
           "Shouldly": "[4.3.0, )",
@@ -1131,42 +1131,42 @@
       },
       "Microsoft.AspNetCore.Authentication.JwtBearer": {
         "type": "Transitive",
-        "resolved": "9.0.16",
-        "contentHash": "/AvOo4HZY3w1Th2EDzKd5qWBSi2rIREKUQnyEpxs758zG0eu8cCd9qdHuHjiRX1ngaAqasNWlXgf3AwbXtIrIw==",
+        "resolved": "9.0.17",
+        "contentHash": "q9vNiBMoJpyYSjDunMW2VO6NYpvyTBG5k5gKmb5HAiG0eV5xJLuzHrMKns70fdmdxYOHJ3+7zthj0uyH4lKIfA==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.0.1"
         }
       },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
-        "resolved": "9.0.16",
-        "contentHash": "SSoUYqlzHk/c7yIg+373TnZRQ/AEbOJn7KCOyz0KrslR+Nj9SX0biBuhqu2TBNM2A/8QJtL5wWr7kEq9SHJ2eA==",
+        "resolved": "9.0.17",
+        "contentHash": "qpObrbEJfSbShMhmfm77In9VM03iLeyzvAdkyE1dsSxgN67Q8+u7OUkC3njfmU7v8yW66+I5GXhyEtsTV3/cWw==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.3"
         }
       },
       "Microsoft.AspNetCore.MiddlewareAnalysis": {
         "type": "Transitive",
-        "resolved": "9.0.16",
-        "contentHash": "NQYeYA5cgzz5qIbJH4riPlgX9Q/MgWRaGUDofLR2zjR3JLBVcWM3EF3HMSj3QDQZOian+Ok6kDE4x/W8QKsvHw==",
+        "resolved": "9.0.17",
+        "contentHash": "DJWaI7EZs7uYStGOLEU4jtWsv7wP+YHM72Ie1miURY9Tcgxsc1fliWgxVtRuTp8CEx/z0c9QXMLizF0kkhmDSQ==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.16"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.17"
         }
       },
       "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
         "type": "Transitive",
-        "resolved": "9.0.16",
-        "contentHash": "ZmVOJDmKDqkMaMN9z17MPOxok3WGS/c8uBEKYwtQvElvyFm3zV8w4gURi9EMpdmyRU/h471wPi5kkehWwUpnCw==",
+        "resolved": "9.0.17",
+        "contentHash": "SaTAW2hyHygRSMxD6AUbXBuOEdgeZ7DwLSObLv0PCz9XJB0bcOz1HbAWOIkx1Ckb8Jt/zQmsEiBTrDb/XyZOOg==",
         "dependencies": {
-          "Microsoft.AspNetCore.JsonPatch": "9.0.16",
+          "Microsoft.AspNetCore.JsonPatch": "9.0.17",
           "Newtonsoft.Json": "13.0.3",
           "Newtonsoft.Json.Bson": "1.0.2"
         }
       },
       "Microsoft.AspNetCore.TestHost": {
         "type": "Transitive",
-        "resolved": "9.0.16",
-        "contentHash": "b57L8gFplki+q8HL8hP9f0XKbuWwBJATVwoR6YvDJSlIUtIuhWQJhDzjX6wMbEBapwhD6bP7PmkwTj4nu8UMKg=="
+        "resolved": "9.0.17",
+        "contentHash": "LgEmlWAfPZi31C5lMVs4at7ojcXTp7nXbSdqYnphIunYmX2S6pMKmBxjRcBK1Mcne4rw8PtOI7Ddk8Hg8nGvIQ=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Transitive",
@@ -1548,17 +1548,17 @@
         "dependencies": {
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
-          "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.16, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.16, )",
+          "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.17, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.17, )",
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       },
       "ocelot.testing": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "[9.0.16, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.16, )",
-          "Microsoft.AspNetCore.TestHost": "[9.0.16, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[9.0.17, )",
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.17, )",
+          "Microsoft.AspNetCore.TestHost": "[9.0.17, )",
           "Moq": "[4.20.72, )",
           "Ocelot": "[0.0.0-dev, )",
           "Shouldly": "[4.3.0, )",

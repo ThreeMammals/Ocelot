@@ -50,13 +50,13 @@
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 8.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="8.0.27" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.27" />
+    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="8.0.28" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.28" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 9.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="9.0.16" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.16" />
+    <PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="9.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.17" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 10.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">

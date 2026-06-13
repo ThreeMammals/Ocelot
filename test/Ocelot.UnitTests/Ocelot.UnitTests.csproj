@@ -33,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.MTP" Version="10.0.1" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" /><!--See MockWebSocket-->
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.108" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.128" />
     <!-- Microsoft -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.9" />
@@ -43,16 +43,16 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Reactive.Testing" Version="7.0.0-preview.15" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="7.0.0-preview.20" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 8.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.27" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.28" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 9.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.16" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.17" />
   </ItemGroup>
   <!-- Conditionally obtain references for the .NET 10.0 target -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
