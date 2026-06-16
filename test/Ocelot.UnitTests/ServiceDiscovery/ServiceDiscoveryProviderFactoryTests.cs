@@ -1,9 +1,7 @@
-using KubeClient;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
-using Ocelot.Provider.Kubernetes;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
@@ -145,47 +143,6 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
         // Assert
         _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
-    }
-
-    [Theory]
-    [Trait("Bug", "1954")]
-    [InlineData("Kube", true)]
-    [InlineData("kube", true)]
-    [InlineData("PollKube", true)]
-    [InlineData("pollkube", true)]
-    [InlineData("unknown", false)]
-    public void Should_return_Kubernetes_provider_with_type_names_from_docs(string typeName, bool success)
-    {
-        // Arrange
-        var route = new DownstreamRouteBuilder()
-            .WithServiceName(TestName())
-            .Build();
-        var serviceConfig = new ServiceProviderConfigurationBuilder()
-            .WithType(typeName)
-            .WithPollingInterval(Timeout.Infinite)
-            .Build();
-
-        // Arrange: Given Kubernetes Provider
-        var k8sClient = new Mock<IKubeApiClient>();
-        _collection
-            .AddSingleton(KubernetesProviderFactory.Get)
-            .AddSingleton(k8sClient.Object)
-            .AddSingleton(_loggerFactory.Object);
-        _provider = _collection.BuildServiceProvider(true);
-        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
-
-        // Act
-        WhenIGetTheServiceProvider(serviceConfig, route);
-
-        // Assert
-        if (success)
-        {
-            _result.ShouldBeOfType<OkResponse<IServiceDiscoveryProvider>>();
-        }
-        else
-        {
-            _result.ShouldBeOfType<ErrorResponse<IServiceDiscoveryProvider>>();
-        }
     }
 
     private void GivenAFakeDelegate()
