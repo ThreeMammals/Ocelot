@@ -35,10 +35,9 @@ public static class Retry
         int retryTimes = DefaultRetryTimes, int waitTime = DefaultWaitTimeMilliseconds,
         IOcelotLogger logger = null)
     {
+        ArgumentNullException.ThrowIfNull(operation);
         if (waitTime < 0)
-        {
             waitTime = 0; // 0 means no thread sleeping
-        }
 
         for (int n = 1; n < retryTimes; n++)
         {
@@ -87,17 +86,21 @@ public static class Retry
         int retryTimes = DefaultRetryTimes, int waitTime = DefaultWaitTimeMilliseconds, // retrying options
         IOcelotLogger logger = null) // static injections
     {
+        ArgumentNullException.ThrowIfNull(operation);
+        if (waitTime < 0)
+            waitTime = 0; // 0 means no delaying
+
         for (int n = 1; n < retryTimes; n++)
         {
             TResult result;
             try
             {
-                result = await operation?.Invoke();
+                result = await operation.Invoke();
             }
             catch (Exception e)
             {
                 logger?.LogError(() => GetMessage(operation, n, $"Caught exception of the {e.GetType()} type -> Message: {e.Message}."), e);
-                await (waitTime > 0 ? Task.Delay(waitTime) : Task.CompletedTask);
+                await Task.Delay(waitTime);
                 continue; // the result is unknown, so continue to retry
             }
 
@@ -105,7 +108,7 @@ public static class Retry
             if (predicate?.Invoke(result) == true)
             {
                 logger?.LogWarning(() => GetMessage(operation, n, $"The predicate has identified erroneous state in the returned result. For further details, implement logging of the result's value or properties within the predicate method."));
-                await (waitTime > 0 ? Task.Delay(waitTime) : Task.CompletedTask);
+                await Task.Delay(waitTime);
                 continue; // on erroneous state
             }
 
@@ -115,6 +118,6 @@ public static class Retry
 
         // Last retry should generate native exception or other erroneous state(s)
         logger?.LogDebug(() => GetMessage(operation, retryTimes, $"Retrying lastly..."));
-        return await operation?.Invoke(); // also final result must be analyzed in the upper context
+        return await operation.Invoke(); // also final result must be analyzed in the upper context
     }
 }
