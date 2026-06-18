@@ -1,7 +1,7 @@
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _24.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 .. _.NET 10: https://github.com/ThreeMammals/Ocelot/milestone/13
 .. _Globality: https://github.com/ThreeMammals/Ocelot/milestone/9
@@ -30,6 +30,7 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 Release Notes
 -------------
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
+.. _Ocelot.Discovery.KubeClient: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/
 .. _Obsolete attributes: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code
 
   | Release Tag: `25.0.0`_
@@ -42,7 +43,7 @@ Release Notes
 .. This deprecation process will be completed in the upcoming `.NET 10`_ release.
 .. With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
-.. On top of that, this release brings a great enhancement to the :doc:`../features/kubernetes` provider, also known as the `Ocelot.Provider.Kubernetes`_ package.
+.. On top of that, this release brings a great enhancement to the :doc:`../features/kubernetes` provider, also known as the `Ocelot.Discovery.KubeClient`_ package.
 
 .. What's New?
 .. -----------
@@ -70,7 +71,7 @@ Release Notes
 
 .. - :doc:`../features/kubernetes`: The ":ref:`Kubernetes provider based on watch requests <k8s-watchkube-provider>`" feature by `@kick2nick`_ in pull request `2174`_.
 
-..   The `Ocelot.Provider.Kubernetes`_ package now features a new :ref:`WatchKube provider <k8s-watchkube-provider>` for :doc:`Kubernetes <../features/kubernetes>` service discovery.
+..   The `Ocelot.Discovery.KubeClient`_ package now features a new :ref:`WatchKube provider <k8s-watchkube-provider>` for :doc:`Kubernetes <../features/kubernetes>` service discovery.
 ..   This provider is a great fit for high-load environments where the older :ref:`Kube <k8s-kube-provider>` and :ref:`PollKube <k8s-pollkube-provider>` providers struggle to handle heavy traffic, often leading to increased log errors, HTTP 500 issues, and potential Ocelot instance failures.
 ..   ``WatchKube`` is the next step in the evolution of these providers, leveraging the reactive capabilities of the `KubeClient`_ API.
 ..   For guidance on choosing the right provider for your Kubernetes setup, check out the ":ref:`k8s-comparing-providers`" section.
