@@ -484,6 +484,34 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         Assert.Equal(TestName(), actual.GlobalConfiguration.RequestIdKey);
     }
     #endregion
+
+    [Fact]
+    public void GetMergedOcelotJson_WhenMultipleFilesExist_ShouldSkipPrimaryConfigFileDuringMerge()
+    {
+        // Arrange
+        GivenTheEnvironmentIs(TestID);
+
+        // Create multiple config files including the primary one
+        var primaryConfig = new FileConfiguration { Routes = [GetRoute("Primary")] };
+        var primaryFile = CreateConfigFile(TestID, "primary", primaryConfig);
+        GivenMultipleConfigurationFiles(TestID);
+
+        // Act
+        var json = ConfigurationBuilderExtensions.GetMergedOcelotJson(TestID, _hostingEnvironment.Object,
+            fileConfiguration: null, primaryFile, null, null);
+
+        // Assert
+        var actual = JsonConvert.DeserializeObject<FileConfiguration>(json);
+        Assert.Equal(TestName(), actual.GlobalConfiguration.RequestIdKey);
+
+        // The primary config file (ocelot.json) should be skipped during merge when multiple files exist
+        // So the "Primary" route should NOT appear in the merged configuration
+        Assert.DoesNotContain(actual.Routes, x => x.Key == "Primary");
+
+        // But routes from other sub-configurations should be present
+        Assert.Contains(actual.Routes, x => x.Key == "A");
+        Assert.Contains(actual.Routes, x => x.Key == "B");
+    }
 }
 
 public class ConfigurationBuilderExtensionsTestsBase : FileUnitTest
