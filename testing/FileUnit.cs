@@ -1,4 +1,6 @@
-﻿namespace Ocelot.Testing;
+﻿using Ocelot.DependencyInjection;
+
+namespace Ocelot.Testing;
 
 public class FileUnit : Unit, IDisposable
 {
@@ -16,15 +18,10 @@ public class FileUnit : Unit, IDisposable
         Directory.CreateDirectory(folder);
         folders = [folder];
 
-        primaryConfigFileName = Path.Combine(folder, /*ConfigurationBuilderExtensions.PrimaryConfigFile*/ "ocelot.json");
-        globalConfigFileName = Path.Combine(folder, /*ConfigurationBuilderExtensions.GlobalConfigFile*/ "ocelot.global.json");
-        environmentConfigFileName = Path.Combine(folder, string.Format(/*ConfigurationBuilderExtensions.EnvironmentConfigFile*/"ocelot.{0}.json", EnvironmentName()));
-        files =
-        [
-            primaryConfigFileName,
-            globalConfigFileName,
-            environmentConfigFileName,
-        ];
+        primaryConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile); // ocelot.json
+        globalConfigFileName = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile); // ocelot.global.json
+        environmentConfigFileName = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, EnvironmentName())); // ocelot.{0}.json
+        files = [primaryConfigFileName, globalConfigFileName, environmentConfigFileName];
     }
 
     protected virtual string EnvironmentName() => TestID;
