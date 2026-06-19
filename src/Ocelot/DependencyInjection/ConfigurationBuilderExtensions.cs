@@ -99,7 +99,7 @@ public static partial class ConfigurationBuilderExtensions
     [GeneratedRegex(@"^ocelot\.(.*?)\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline, RegexGlobal.DefaultMatchTimeoutMilliseconds, "en-US")]
     private static partial Regex SubConfigRegex();
 
-    private static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
+    public static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
         FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
     {
         // All versions of overloaded AddOcelot methods call this GetMergedOcelotJson one, so we improve Regex performance by cache increasing.
@@ -202,7 +202,7 @@ public static partial class ConfigurationBuilderExtensions
     {
         var primary = primaryFile ?? PrimaryConfigFile;
         File.WriteAllText(primary, json);
-        return builder?.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
+        return builder.AddJsonFile(primary, optional ?? false, reloadOnChange ?? false);
     }
 
     /// <summary>
