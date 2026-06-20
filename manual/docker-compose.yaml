@@ -17,7 +17,7 @@ services:
       target: builder
       args:
         build_configuration: Release
-    command: run -c Release --project test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj 0 1 2 3 4
+    command: run -c Release --project benchmark/Ocelot.Benchmarks.csproj 0 1 2 3 4
 
   manual-test:
     build: .
