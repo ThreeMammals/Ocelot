@@ -25,7 +25,7 @@
     <PackageReference Include="ZstdNet" Version="1.5.7" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
 

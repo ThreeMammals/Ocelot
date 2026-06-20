@@ -17,7 +17,7 @@
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.csproj" />
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>

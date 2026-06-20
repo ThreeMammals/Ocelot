@@ -37,7 +37,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.csproj" />
     <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
 </Project>

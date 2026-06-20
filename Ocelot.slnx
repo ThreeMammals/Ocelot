@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="src/Ocelot/Ocelot.csproj" />
+  <Project Path="src/Ocelot.csproj" />
   <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
   <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />
   <Project Path="test/Ocelot.ManualTest/Ocelot.ManualTest.csproj" />

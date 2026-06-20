@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\src\Ocelot.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
