@@ -1,6 +1,6 @@
 <Solution>
+  <Project Path="acceptance/Ocelot.Acceptance.csproj" />
   <Project Path="src/Ocelot.csproj" />
-  <Project Path="test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj" />
   <Project Path="test/Ocelot.Benchmarks/Ocelot.Benchmarks.csproj" />
   <Project Path="test/Ocelot.ManualTest/Ocelot.ManualTest.csproj" />
   <Project Path="testing/Ocelot.Testing.csproj" />
