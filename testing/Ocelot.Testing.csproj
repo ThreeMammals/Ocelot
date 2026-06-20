@@ -29,7 +29,7 @@
   <ItemGroup>
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" Link=".package\LICENSE.md" />
     <None Include="README.md" Pack="true" PackagePath="\" Link=".package\README.md" />
-    <None Include="..\ocelot_icon.png" Pack="true" PackagePath="\" Link=".package\ocelot_icon.png" />
+    <None Include="..\.config\ocelot_icon.png" Pack="true" PackagePath="\" Link=".package\ocelot_icon.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-[![Ocelot Logo](/ocelot_icon.png)](https://github.com/ThreeMammals/Ocelot/ "Go to Ocelot repository")
+[![Ocelot Logo](/.config/ocelot_icon.png)](https://github.com/ThreeMammals/Ocelot/ "Go to Ocelot repository")
 # Ocelot.Testing
 [![Release Package](https://github.com/ThreeMammals/Ocelot.Testing/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot.Testing/actions/workflows/release.yml)
 [![Publish Package](https://github.com/ThreeMammals/Ocelot.Testing/actions/workflows/publish.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot.Testing/actions/workflows/publish.yml)
