@@ -13,12 +13,12 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <CodeAnalysisRuleSet>..\..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot.csproj" />
-    <ProjectReference Include="..\..\testing\Ocelot.Testing.csproj" />
+    <ProjectReference Include="..\src\Ocelot.csproj" />
+    <ProjectReference Include="..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
