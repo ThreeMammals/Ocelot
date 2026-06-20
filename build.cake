@@ -821,12 +821,18 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
-    GitVersion(new GitVersionSettings{
+    GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
         UpdateAssemblyInfo = false,
         OutputType = GitVersionOutput.BuildServer,
 		Verbosity = IsRunningInCICD() ? GitVersionVerbosity.Minimal : GitVersionVerbosity.Normal,
     });
-    return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
+    return GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
+		OutputType = GitVersionOutput.Json
+	});
 }
 
 /// Updates project version in all of our projects
