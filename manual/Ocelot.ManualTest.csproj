@@ -7,7 +7,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>Exe</OutputType>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>

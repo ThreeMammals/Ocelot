@@ -19,7 +19,6 @@ COPY unit/Ocelot.UnitTests.csproj unit/Ocelot.UnitTests.csproj
 
 RUN dotnet restore
 # Now we add the rest of the source and run a complete build... --no-restore is used because nuget should be resolved at this point
-COPY codeanalysis.ruleset codeanalysis.ruleset
 COPY src src
 COPY acceptance acceptance
 COPY benchmark benchmark

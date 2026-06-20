@@ -17,7 +17,6 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
-    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
     <Company>Three Mammals</Company>

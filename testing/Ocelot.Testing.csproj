@@ -23,7 +23,6 @@
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
-    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
