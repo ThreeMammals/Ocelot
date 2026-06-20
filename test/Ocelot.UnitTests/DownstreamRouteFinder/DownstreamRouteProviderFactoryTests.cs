@@ -30,6 +30,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
         services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
+        services.AddSingleton<IDownstreamServiceFinder, DownstreamServiceFinder>();
         Features.AddOcelotHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         var provider = services.BuildServiceProvider(true);
         _logger = new Mock<IOcelotLogger>();
