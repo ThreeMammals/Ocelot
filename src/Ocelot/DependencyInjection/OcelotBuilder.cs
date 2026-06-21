@@ -77,6 +77,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
         Services.AddSingleton<ILoadBalancerCreator, CookieStickySessionsCreator>();
         Services.AddSingleton<ILoadBalancerCreator, LeastConnectionCreator>();
+        Services.TryAddSingleton<IStickySessionStorage, InMemoryStickySessionStorage>();
         Services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
         Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
         Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
