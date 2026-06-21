@@ -571,13 +571,10 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
     "MaxConnectionsPerServer": 2147483647, // max integer
     "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
-    "UseProxy": false,
-    "UseTracing": false
-  }
-
-.. list-table::
-    :widths: 25 75
-    :header-rows: 1
+    "UseTracing": true,
+    "MaxConnectionsPerServer": 100,
+    "EnableMultipleHttp2Connections": false
+  },
 
     * - *Option*
       - *Description*
@@ -625,6 +622,9 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
 
   4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
   Since version `24.1`_, global configuration is supported for both static and dynamic routes.
+
+* **EnableMultipleHttp2Connections** Gets or sets a value that indicates whether additional HTTP/2 connections can be established to the same server. 
+    true if additional HTTP/2 connections are allowed to be created; otherwise, false.
 
 .. _ssl-errors:
 
@@ -708,6 +708,11 @@ HTTP2 version policy
     "DownstreamHttpVersion": "2.0",
     "DownstreamHttpVersionPolicy": "", // empty or not defined
     "DangerousAcceptAnyServerCertificateValidator": true
+    "DownstreamHttpVersionPolicy": "", // empty
+    "DangerousAcceptAnyServerCertificateValidator": true,
+    "HttpHandlerOptions":{
+        "EnableMultipleHttp2Connections": true
+    }
   }
 
 **And** you configure global settings to use :ref:`hosting-gotchas-kestrel` with this snippet:
@@ -738,7 +743,10 @@ Therefore, the ``DownstreamHttpVersionPolicy`` should be defined as follows:
 
   {
     "DownstreamHttpVersion": "2.0",
-    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher" // !
+    "DownstreamHttpVersionPolicy": "RequestVersionOrHigher", // !
+    "HttpHandlerOptions":{
+        "EnableMultipleHttp2Connections": true
+    }
   }
 
 Dependency Injection
