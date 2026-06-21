@@ -325,6 +325,37 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(hasTracer && !isDef, actual.UseTracing); // the useTracing parameter takes absolute priority
     }
 
+    [Fact]
+    [Trait("Feat", "657")]
+    public void Should_create_options_with_useDefaultCredentials_false_as_default()
+    {
+        // Arrange
+        FileHttpHandlerOptions opts = new();
+
+        // Act
+        var actual = _creator.Create(opts);
+
+        // Assert
+        Assert.False(actual.UseDefaultCredentials);
+    }
+
+    [Fact]
+    [Trait("Feat", "657")]
+    public void Should_create_options_with_UseDefaultCredentials_true_if_set()
+    {
+        // Arrange
+        FileHttpHandlerOptions opts = new()
+        {
+            UseDefaultCredentials = true,
+        };
+
+        // Act
+        var actual = _creator.Create(opts);
+
+        // Assert
+        Assert.True(actual.UseDefaultCredentials);
+    }
+
     private static FileHttpHandlerOptions RouteOptions() => new()
     {
         AllowAutoRedirect = true,
