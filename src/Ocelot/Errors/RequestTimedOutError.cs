@@ -6,6 +6,6 @@ public class RequestTimedOutError : Error
 {
     public RequestTimedOutError(Exception exception)
         : base($"Timeout making http request, exception: {exception}",
-            OcelotErrorCode.RequestTimedOutError, StatusCodes.Status503ServiceUnavailable)
+            OcelotErrorCode.RequestTimedOutError, StatusCodes.Status504GatewayTimeout)
     { }
 }

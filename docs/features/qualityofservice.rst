@@ -173,7 +173,7 @@ An optional per-request timeout can be configured independently of or alongside 
   }
 
 When a request exceeds ``Timeout`` milliseconds, it is cancelled.
-A ``503 Service Unavailable`` response is returned, and the event is recorded as a circuit-breaker failure.
+A ``504 Gateway Timeout`` response is returned, and the event is recorded as a circuit-breaker failure.
 
 Setting ``Timeout`` to ``0`` or a negative value disables the timeout.
 To disable the per-request timeout entirely, omit the ``Timeout`` option or set it to ``0``.
