@@ -628,9 +628,11 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 
     [Theory]
     [Trait("Bug", "2116")]
-    [InlineData("api/debug()")] // no query
-    [InlineData("api/debug%28%29")] // debug()
-    public async Task ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath)
+    [InlineData("api/debug()", "api/debug()")] // no query
+    [InlineData("api/debug%28%29", "api/debug%28%29")] // debug()
+    [InlineData(@"api/debug()?special=(\,*,+,?,|,{,},[,],(,),^,$,.,#, ,)&2=(2)&3=[3]&4={4}",
+        @"api/debug()?special=(%5C,*,%2B,%3F,%7C,%7B,%7D,%5B,%5D,(,),%5E,$,.,%23,%20,)&2=(2)&3=%5B3%5D&4=%7B4%7D")] // query with special chars
+    public async Task ShouldNotFailToHandleUrlWithSpecialRegexChars(string urlPath, string expectedUrlPath)
     {
         // Arrange
         var withGetMethod = new List<string> { "Get" };
@@ -657,7 +659,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{urlPath}");
+        ThenTheDownstreamRequestUriIs($"http://localhost:5000/routed/{expectedUrlPath}");
         Assert.Equal((int)HttpStatusCode.OK, _httpContext.Response.StatusCode);
     }
 
@@ -683,7 +685,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var config = new ServiceProviderConfigurationBuilder()
             .Build();
         GivenTheDownStreamRouteIs(new DownstreamRouteHolder(
-            [ new(placeholder, "123") ],
+            [new(placeholder, "123")],
             new(downstreamRoute, HttpMethod.Get)
         ));
         GivenTheDownstreamRequestUriIs(url);
