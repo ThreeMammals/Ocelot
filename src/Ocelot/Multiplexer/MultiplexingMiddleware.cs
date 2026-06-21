@@ -219,6 +219,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
                 Body = bodyStream,
                 ContentLength = from.ContentLength,
                 ContentType = from.ContentType,
+                Form = from.Form,
                 Host = from.Host,
                 Method = from.Method,
                 Path = from.Path,

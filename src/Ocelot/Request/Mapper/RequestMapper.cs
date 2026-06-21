@@ -25,10 +25,12 @@ public class RequestMapper : IRequestMapper
         return requestMessage;
     }
 
+    private static bool IsMultipartContentType(string contentType)
+        => !string.IsNullOrEmpty(contentType)
+            && contentType.Contains("multipart/form-data", StringComparison.OrdinalIgnoreCase);
+
     private static HttpContent MapContent(HttpRequest request)
     {
-        HttpContent content;
-
         // No content if we have no body or if the request has no content according to RFC 2616 section 4.3
         if (request.Body == null
             || (!request.ContentLength.HasValue && StringValues.IsNullOrEmpty(request.Headers.TransferEncoding)))
@@ -36,9 +38,37 @@ public class RequestMapper : IRequestMapper
             return null;
         }
 
-        content = request.ContentLength is 0
-            ? new ByteArrayContent(Array.Empty<byte>()) 
-            : new StreamHttpContent(request.HttpContext);
+        HttpContent content;
+        if (IsMultipartContentType(request.ContentType))
+        {
+            MultipartFormDataContent formContent = new();
+            content = formContent;
+            if (request.Form?.Files != null)
+            {
+                foreach (var f in request.Form.Files)
+                {
+                    using var memStream = new MemoryStream();
+                    f.CopyTo(memStream);
+                    var fileContent = new ByteArrayContent(memStream.ToArray());
+                    formContent.Add(fileContent, f.Name, f.FileName);
+                }
+            }
+
+            if (request.Form != null)
+            {
+                foreach (var key in request.Form.Keys)
+                {
+                    var strContent = new StringContent(request.Form[key]);
+                    formContent.Add(strContent, key);
+                }
+            }
+        }
+        else
+        {
+            content = request.ContentLength is 0
+                ? new ByteArrayContent(Array.Empty<byte>())
+                : new StreamHttpContent(request.HttpContext);
+        }
 
         AddContentHeaders(request, content);
 
