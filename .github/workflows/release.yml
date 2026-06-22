@@ -53,9 +53,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings ./.config/coverlet.runsettings ./unit/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings ./.config/coverlet.runsettings ./acceptance/Ocelot.Acceptance.csproj
 
   release-cake:
     needs: build

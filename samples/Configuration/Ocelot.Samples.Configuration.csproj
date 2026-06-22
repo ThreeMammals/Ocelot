@@ -20,7 +20,7 @@
     <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ocelot\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.csproj" />
     <ProjectReference Include="..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
 </Project>

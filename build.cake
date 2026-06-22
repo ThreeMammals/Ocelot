@@ -52,11 +52,11 @@ var artifactsDir = Directory("artifacts"); // build artifacts
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
-var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
+var unitTestAssemblies = @"./unit/Ocelot.UnitTests.csproj";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
-var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj";
+var acceptanceTestAssemblies = @"./acceptance/Ocelot.Acceptance.csproj";
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -533,7 +533,7 @@ Task("UnitTests")
 				Configuration = compileConfig,
 				ResultsDirectory = artifactsForUnitTestsDir,
 				/*
-          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
 				*/
 				ArgumentCustomization = args => args
@@ -821,12 +821,18 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
-    GitVersion(new GitVersionSettings{
+    GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
         UpdateAssemblyInfo = false,
         OutputType = GitVersionOutput.BuildServer,
 		Verbosity = IsRunningInCICD() ? GitVersionVerbosity.Minimal : GitVersionVerbosity.Normal,
     });
-    return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
+    return GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
+		OutputType = GitVersionOutput.Json
+	});
 }
 
 /// Updates project version in all of our projects
