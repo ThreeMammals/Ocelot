@@ -33,12 +33,7 @@ That is basically it, with a bunch of other features!
 
 ## Install
 Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net8.0`, `net10.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^1]
-
-Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using NuGet package manager:
-```powershell
-Install-Package Ocelot
-```
-Or via the .NET CLI:
+Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using the .NET CLI:
 ```shell
 dotnet add package Ocelot
 ```
@@ -84,6 +79,142 @@ Feature groups are explained in the table below
 
 > Ocelot customizations can be configured using [Metadata](https://ocelot.readthedocs.io/en/latest/features/metadata.html), developed with [Delegating Handlers](https://ocelot.readthedocs.io/en/latest/features/delegatinghandlers.html), and in advanced scenarios, they can be developed and then configured with [Middleware Injection](https://ocelot.readthedocs.io/en/latest/features/middlewareinjection.html).
 For further details, refer to the [Documentation](#documentation).
+
+## :file_folder: Repository Structure
+
+Welcome to Ocelot's **minimalist folder organization**! Our repository follows a clean, flat structure that makes it easy to navigate and contribute. Here's where everything lives:
+
+### :dart: Quick Overview
+
+```
+Ocelot/
+├── 📦 src/                 # Main library source code (Ocelot NuGet package)
+│   ├── Configuration/       # Configuration system & builders
+│   ├── DependencyInjection/ # IoC setup & extension methods
+│   ├── Authentication/      # Auth middleware & schemes
+│   ├── RateLimiting/        # Rate limiting policies
+│   ├── Routing/             # Core routing logic
+│   └── ...                  # Other features (Caching, Load Balancing, etc.)
+│
+├── 🧪 unit/                    # Unit tests (fast, isolated tests)
+│   └── Ocelot.UnitTests.csproj  # Component-level test suite
+│
+├── ✅ acceptance/              # Integration tests (end-to-end scenarios)
+│   └── Ocelot.Acceptance.csproj # Full pipeline test suite
+│
+├── 📊 benchmark/               # Performance benchmarking
+│   └── Ocelot.Benchmarks.csproj # Using BenchmarkDotNet
+│
+├── 🚀 manual/                  # Manual testing & demo apps
+│   └── Ocelot.ManualTest.csproj # Sample applications
+│
+├── 🛠️ testing/                 # Shared test infrastructure (Ocelot.Testing NuGet package)
+│   └── Ocelot.Testing.csproj    # Common test utilities & helpers
+│
+├── 📖 docs/                    # Documentation source files (https://ocelot.readthedocs.io website)
+│   ├── *.rst files              # reStructuredText documentation
+│   └── make.* scripts           # Terminal build scripts for generating HTML docs
+│
+├── 📚 samples/                 # Example projects & demonstrations
+│
+├── ⚙️ .config/                 # Build & versioning configuration
+│   └── dotnet-tools.json        # CI and local building tools configuration
+│
+├── 🔧 .github/                 # GitHub-specific settings
+│   ├── steps/                   # CI/CD terminal scripts for GitHub Actions steps
+│   ├── workflows/               # CI/CD pipelines (GitHub Actions)
+│   └── *.md files               # Markdown configuration supporting GitHub process
+│
+└── 📋 Root Configuration       # Solution & project files
+    ├── Ocelot.slnx              # Visual Studio 2026+ solution (Ocelot development)
+    ├── Ocelot.Samples.slnx      # Visual Studio 2026+ solution (Ocelot samples)
+    ├── .editorconfig            # Code style & formatting rules
+    ├── build.cake               # Cake build automation (Release workflow only)
+    └── ReleaseNotes.md          # Template for release notes (used in GitHub Actions)
+```
+
+### :book: Folder Guide
+
+| Folder | Purpose | Who Uses It |
+|--------|---------|------------|
+| **[src](./src)** | Production source code for the Ocelot library | Core contributors, feature developers |
+| **[unit](./unit)** | Fast unit tests for individual components | All test writers, feature developers |
+| **[acceptance](./acceptance)** | Comprehensive integration & end-to-end tests | QA engineers, integration specialists |
+| **[benchmark](./benchmark)** | Performance measurement projects | Performance engineers, optimization team |
+| **[manual](./manual)** | Manual testing apps and code examples | QA team, demonstrations |
+| **[testing](./testing)** | Shared test utilities, base classes, helpers | Everyone writing tests |
+| **[docs](./docs)** | Documentation source (reStructuredText format) | Documentation maintainers |
+| **[samples](./samples)** | Example projects showing Ocelot features in action | Developers learning Ocelot, solution architects |
+| **[.config](./.config)** | Build scripts and version configuration | DevOps, release managers |
+| **[.github](./.github)** | CI/CD workflows and GitHub settings | DevOps, automation engineers |
+
+### :world_map: Where to Find Things
+
+<details>
+<summary><b>:memo: I want to...</b></summary>
+
+**See examples?**
+- Check `samples/` for complete working projects
+- Each sample demonstrates different Ocelot features
+- Great starting point for learning best practices
+
+**Add a new feature**
+- Create your feature directory under `src/`
+- Write unit tests in `unit/`
+- Add integration & end-to-end tests in `acceptance/`
+- Update docs in `docs/`
+
+**Fix a bug**
+- Find the component in `src/`
+- Create a test that reproduces the issue (in `unit/` or `acceptance/`)
+- Fix the bug
+- Verify the test passes
+
+**Write tests**
+- **Unit tests** → `unit/` (test individual methods/classes)
+- **Integration tests** → `acceptance/` (test workflows across components)
+- **End-to-end tests** → `acceptance/` (test complete user scenarios for HTTP conveyor)
+- **Shared utilities** → Check `testing/` for available base classes
+
+**Improve performance**
+- Add benchmarks in `benchmark/`
+- Compare before/after results
+- Document findings in PR description
+
+**Update documentation**
+- Edit `.rst` files in `docs/`
+- Build locally: `cd docs && make html`
+- Preview in `docs/_build/html/index.html`
+
+**Configure CI/CD**
+- GitHub Actions workflows in `.github/workflows/`
+- Build config in `.config/` and in `build.cake`
+- Cake build scripts in `build.cake`
+
+**Understand code layout**
+- Entry point: `src/DependencyInjection/ConfigurationBuilderExtensions.cs`
+- Core routing: `src/Routing/`
+- Middleware pipeline: `src/Middleware/`
+
+</details>
+
+### :rocket: Getting Started
+
+1. **New to Ocelot?** 
+   - Start with `src/DependencyInjection/` to understand the startup flow
+   - Read `docs/` for architecture and feature documentation
+
+2. **Want to run tests?**
+   - **Unit tests**: `dotnet test unit/Ocelot.UnitTests.csproj --verbosity quiet`
+   - **Acceptance tests**: `dotnet test acceptance/Ocelot.Acceptance.csproj`
+
+3. **Need to benchmark?**
+   - `cd benchmark && dotnet run -c Release`
+
+4. **[Contributing?](#contributing)** 
+   - Place code in appropriate folder (usually `src/FeatureName/`)
+   - Add tests in parallel structure under `unit/` or `acceptance/`
+   - Submit a pull request! :tada:
 
 ## Contributing
 You can see what we are working on in the [backlog](https://github.com/ThreeMammals/Ocelot/issues).
