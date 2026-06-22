@@ -2,7 +2,7 @@
 echo "Hello from Bash"
 date
 
-CRT_FILE="./test/Ocelot.AcceptanceTests/mycert2.crt"
+CRT_FILE="./acceptance/mycert2.crt"
 
 if [ ! -f "$CRT_FILE" ]; then
   echo "Error: Certificate file not found: $CRT_FILE"
