@@ -52,9 +52,9 @@ jobs:
     - name: Build
       run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./unit/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
 
   coverage:
     needs: build
@@ -90,10 +90,10 @@ jobs:
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
       - name: Unit Tests
         run: |
-          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       # - name: Acceptance Tests
-      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
       - name: Coverage files
         id: coverage
         run: ./.github/steps/prepare-coveralls.sh # net10.0 Debug

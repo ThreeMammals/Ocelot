@@ -52,11 +52,11 @@ var artifactsDir = Directory("artifacts"); // build artifacts
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
-var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
+var unitTestAssemblies = @"./unit/Ocelot.UnitTests.csproj";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
-var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj";
+var acceptanceTestAssemblies = @"./acceptance/Ocelot.Acceptance.csproj";
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -533,7 +533,7 @@ Task("UnitTests")
 				Configuration = compileConfig,
 				ResultsDirectory = artifactsForUnitTestsDir,
 				/*
-          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj \
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
 				*/
 				ArgumentCustomization = args => args
