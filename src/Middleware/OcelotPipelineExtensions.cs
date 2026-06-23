@@ -138,6 +138,7 @@ public static class OcelotPipelineExtensions
     {
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
         app.UseMiddleware<MultiplexingMiddleware>();
+        app.UseMiddleware<SecurityMiddleware>(); // fix #2403: enforce IP allow/block lists on WebSocket upgrades
         app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
         app.UseMiddleware<LoadBalancingMiddleware>();
         app.UseMiddleware<DownstreamUrlCreatorMiddleware>();

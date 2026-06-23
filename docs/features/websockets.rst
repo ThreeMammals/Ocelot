@@ -139,6 +139,7 @@ Supported
 1. :doc:`../features/routing`
 2. :doc:`../features/loadbalancer`
 3. :doc:`../features/servicediscovery`
+4. :ref:`routing-security-options` — IP allowed/blocked lists are enforced on the *WebSocket* upgrade request.
 
 This means you can configure your downstream services to run *WebSockets* and either:
 
