@@ -31,9 +31,13 @@ jobs:
   #       dotnet-version: ${{ matrix.dotnet-version }}.x
   #       cache: true
   #       cache-dependency-path: |
-  #         samples/**/packages.lock.json
-  #         src/**/packages.lock.json
-  #         test/**/packages.lock.json
+  #         acceptance/packages.lock.json
+  #         benchmark/packages.lock.json
+  #         manual/packages.lock.json
+  #         src/packages.lock.json
+  #         testing/packages.lock.json
+  #         unit/packages.lock.json
+  #       # samples/**/packages.lock.json
   #   - name: .NET Info
   #     run: dotnet --info
   #   - name: Add DNS-records
@@ -71,9 +75,13 @@ jobs:
   #         dotnet-version: ${{ matrix.dotnet-version }}.x
   #         cache: true
   #         cache-dependency-path: |
-  #           samples/**/packages.lock.json
-  #           src/**/packages.lock.json
-  #           test/**/packages.lock.json
+  #           acceptance/packages.lock.json
+  #           benchmark/packages.lock.json
+  #           manual/packages.lock.json
+  #           src/packages.lock.json
+  #           testing/packages.lock.json
+  #           unit/packages.lock.json
+  #         # samples/**/packages.lock.json
   #     - name: .NET Info
   #       run: dotnet --info
   #     - name: Add DNS-records
@@ -107,9 +115,13 @@ jobs:
   #         dotnet-version: ${{ matrix.dotnet-version }}.x
   #         cache: true
   #         cache-dependency-path: |
-  #           samples/**/packages.lock.json
-  #           src/**/packages.lock.json
-  #           test/**/packages.lock.json
+  #           acceptance/packages.lock.json
+  #           benchmark/packages.lock.json
+  #           manual/packages.lock.json
+  #           src/packages.lock.json
+  #           testing/packages.lock.json
+  #           unit/packages.lock.json
+  #         # samples/**/packages.lock.json
   #     - name: .NET Info
   #       run: dotnet --info
   #     - name: Add DNS-records
@@ -177,9 +189,13 @@ jobs:
   #       dotnet-version: ${{ steps.scripts.outputs.version }}.x
   #       cache: true
   #       cache-dependency-path: |
-  #         samples/**/packages.lock.json
-  #         src/**/packages.lock.json
-  #         test/**/packages.lock.json
+  #         acceptance/packages.lock.json
+  #         benchmark/packages.lock.json
+  #         manual/packages.lock.json
+  #         src/packages.lock.json
+  #         testing/packages.lock.json
+  #         unit/packages.lock.json
+  #       # samples/**/packages.lock.json
   #   - name: .NET Info
   #     run: dotnet --info
   #   - name: Add DNS-records
@@ -223,13 +239,17 @@ jobs:
           dotnet-version: 10.x
           cache: true
           cache-dependency-path: |
-            samples/**/packages.lock.json
-            src/**/packages.lock.json
-            test/**/packages.lock.json
+            acceptance/packages.lock.json
+            benchmark/packages.lock.json
+            manual/packages.lock.json
+            src/packages.lock.json
+            testing/packages.lock.json
+            unit/packages.lock.json
+          # samples/**/packages.lock.json
       - name: .NET Info
         run: dotnet --info
       - name: Add DNS-records
-        run: ./.github/steps/ubuntu.add-dns-records.sh  
+        run: ./.github/steps/ubuntu.add-dns-records.sh
       - name: Install certificate
         run: ./.github/steps/ubuntu.install-certificate.sh
       - name: Restore
@@ -244,7 +264,7 @@ jobs:
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/prepare-coveralls.sh # net10.0 Debug
+        run: ./.github/steps/coverage.sh # net10.0 Debug
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2
