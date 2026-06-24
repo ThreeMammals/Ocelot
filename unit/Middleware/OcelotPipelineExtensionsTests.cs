@@ -331,6 +331,24 @@ public class OcelotPipelineExtensionsTests : UnitTest
     }
     #endregion PR 2387
 
+    [Fact]
+    [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
+    [Trait("PR", "2406")] // https://github.com/ThreeMammals/Ocelot/pull/2406
+    public void ConfigureWebSockets_ShouldRegisterSecurityMiddleware()
+    {
+        // Arrange
+        GivenApplicationBuilder();
+        var configuration = new OcelotPipelineConfiguration();
+
+        // Act
+        _builder.ConfigureWebSockets(configuration);
+
+        // Assert
+        var middlewares = ThenMiddlewares(7);
+        Assert.Contains(typeof(SecurityMiddleware).FullName, middlewares);
+        Assert.Equal(2, middlewares.IndexOf(typeof(SecurityMiddleware).FullName));
+    }
+
     private void GivenTheDepedenciesAreSetUp()
     {
         var services = new ServiceCollection();
@@ -382,10 +400,9 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private static readonly Func<HttpContext, Func<Task>, Task> NullMiddleware = null;
     private static Task CustomMiddleware(HttpContext context, Func<Task> next) => Task.CompletedTask;
 
-    public class TestMiddleware : OcelotMiddleware
+    public class TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
+        : OcelotMiddleware(logging.CreateLogger<TestMiddleware>())
     {
-        public TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
-            : base(logging.CreateLogger<TestMiddleware>()) { }
         public Task Invoke(HttpContext _) => Task.CompletedTask;
     }
     private class MyWsMiddleware : WebSocketsProxyMiddleware

@@ -28,7 +28,7 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
             .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
             .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
             .When(_ => WhenIConnect(ws, gateway))
-            .Then(_ => ThenTheUpgradeIsRejected())
+            .Then(_ => ThenTheUpgradeIsRejected(ws))
         .BDDfy();
     }
 
@@ -48,8 +48,9 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
             .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
             .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
             .When(_ => WhenIConnect(ws, gateway))
-            .Then(_ => ThenTheUpgradeSucceeds())
+            .Then(_ => ThenTheUpgradeSucceeds(ws))
             .And(_ => ThenTheDownstreamEchoesMessage(ws))
+            .And(_ => ThenTheWsClientHasBeenClosedSuccessfully(ws))
         .BDDfy();
     }
 
@@ -57,10 +58,26 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
         => _connect = await Record.ExceptionAsync(() => ws.ConnectAsync(gateway, CancelMe));
 
     // A blocked upgrade returns a non-101 status, so ConnectAsync throws WebSocketException (it never bypasses to OK).
-    private void ThenTheUpgradeIsRejected() => _connect.ShouldBeOfType<WebSocketException>();
+    private void ThenTheUpgradeIsRejected(ClientWebSocket ws)
+    {
+        ws.State.ShouldBe(WebSocketState.Closed);
+        _connect.ShouldBeOfType<WebSocketException>();
+        _connect.Message.ShouldNotBe("The server returned status code '200' when status code '101' was expected.");
+        _connect.StackTrace.ShouldNotContain("System.Net.WebSockets.WebSocketHandle.ValidateResponse(HttpResponseMessage response, String secValue)");
+    }
 
     // An allowed IP passes SecurityMiddleware, so the upgrade completes (101) and ConnectAsync does not throw.
-    private void ThenTheUpgradeSucceeds() => _connect.ShouldBeNull();
+    private void ThenTheUpgradeSucceeds(ClientWebSocket ws)
+    {
+        _connect.ShouldBeNull();
+        ws.State.ShouldBe(WebSocketState.Open);
+    }
+    private static void ThenTheWsClientHasBeenClosedSuccessfully(ClientWebSocket ws)
+    {
+        ws.State.ShouldBe(WebSocketState.Closed);
+        ws.CloseStatus.ShouldBe(WebSocketCloseStatus.NormalClosure);
+        ws.HttpStatusCode.ShouldBe(HttpStatusCode.SwitchingProtocols);// double check
+    }
 
     // Security passed and the request reached the WS proxy: a round-trip echo confirms end-to-end proxying still works.
     private async Task ThenTheDownstreamEchoesMessage(ClientWebSocket ws)
