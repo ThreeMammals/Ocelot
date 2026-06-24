@@ -13,10 +13,10 @@ DOTNET_TFM="${1:-net10.0}"
 BUILD_CONFIGURATION="${2:-Debug}"
 
 echo "::group::Listing $DOTNET_TFM build folder for $BUILD_CONFIGURATION configuration"
-ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
+ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
 echo "::endgroup::"
 
-coverage_folder=$(ls -d "./test/Ocelot.UnitTests/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
+coverage_folder=$(ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
 echo "Detected first folder : $coverage_folder"
 
 echo "::group::TestResults files are ..."

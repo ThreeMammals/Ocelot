@@ -39,9 +39,13 @@ jobs:
         dotnet-version: ${{ steps.scripts.outputs.version }}.x
         cache: true
         cache-dependency-path: |
-          samples/**/packages.lock.json
-          src/**/packages.lock.json
-          test/**/packages.lock.json
+          acceptance/packages.lock.json
+          benchmark/packages.lock.json
+          manual/packages.lock.json
+          src/packages.lock.json
+          testing/packages.lock.json
+          unit/packages.lock.json
+        # samples/**/packages.lock.json
     - name: .NET Info
       run: dotnet --info
     - name: Add DNS-records
@@ -90,9 +94,13 @@ jobs:
           dotnet-version: 10.x
           cache: true
           cache-dependency-path: |
-            samples/**/packages.lock.json
-            src/**/packages.lock.json
-            test/**/packages.lock.json
+            acceptance/packages.lock.json
+            benchmark/packages.lock.json
+            manual/packages.lock.json
+            src/packages.lock.json
+            testing/packages.lock.json
+            unit/packages.lock.json
+          # samples/**/packages.lock.json
       - name: Cake Build
         uses: cake-build/cake-action@v3
         with:
@@ -103,7 +111,7 @@ jobs:
           # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/prepare-coveralls.sh
+        run: ./.github/steps/coverage.sh
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2
