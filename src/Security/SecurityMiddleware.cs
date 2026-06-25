@@ -33,6 +33,15 @@ public class SecurityMiddleware : OcelotMiddleware
                 }
 
                 httpContext.Items.UpsertErrors(result.Errors);
+
+                // The WebSocket pipeline has no ResponderMiddleware to translate this error into a status code,
+                // so the upgrade would otherwise complete as 200 OK. Per RFC 6455 (§4.1) a declined upgrade must
+                // return a non-101 status, so reject it with 403 Forbidden. fix #2403
+                if (httpContext.WebSockets.IsWebSocketRequest)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+                }
+
                 return;
             }
         }
