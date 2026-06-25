@@ -24,6 +24,7 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
         var gateway = new UriBuilder(Uri.UriSchemeWs, "localhost", ports[1]).Uri;
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        ws.Options.CollectHttpResponseDetails = true; // capture the handshake status so HttpStatusCode is populated
         this.Given(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync))
             .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
             .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
@@ -44,6 +45,7 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
         var gateway = new UriBuilder(Uri.UriSchemeWs, "localhost", ports[1]).Uri;
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        ws.Options.CollectHttpResponseDetails = true; // capture the handshake status so HttpStatusCode is populated
         this.Given(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync))
             .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
             .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
@@ -57,13 +59,13 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
     private async Task WhenIConnect(ClientWebSocket ws, Uri gateway)
         => _connect = await Record.ExceptionAsync(() => ws.ConnectAsync(gateway, CancelMe));
 
-    // A blocked upgrade returns a non-101 status, so ConnectAsync throws WebSocketException (it never bypasses to OK).
+    // Per RFC 6455 (§4.1), a declined upgrade is answered with a non-101 HTTP status (403 Forbidden here),
+    // so ConnectAsync throws WebSocketException and the client reads the status via HttpStatusCode.
     private void ThenTheUpgradeIsRejected(ClientWebSocket ws)
     {
-        ws.State.ShouldBe(WebSocketState.Closed);
         _connect.ShouldBeOfType<WebSocketException>();
-        _connect.Message.ShouldNotBe("The server returned status code '200' when status code '101' was expected.");
-        _connect.StackTrace.ShouldNotContain("System.Net.WebSockets.WebSocketHandle.ValidateResponse(HttpResponseMessage response, String secValue)");
+        ws.State.ShouldBe(WebSocketState.Closed);
+        ws.HttpStatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     // An allowed IP passes SecurityMiddleware, so the upgrade completes (101) and ConnectAsync does not throw.
@@ -76,7 +78,8 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
     {
         ws.State.ShouldBe(WebSocketState.Closed);
         ws.CloseStatus.ShouldBe(WebSocketCloseStatus.NormalClosure);
-        ws.HttpStatusCode.ShouldBe(HttpStatusCode.SwitchingProtocols);// double check
+        // My mistake: I forgot to enable CollectHttpResponseDetails, so HttpStatusCode read 0 though Ocelot returns 101.
+        ws.HttpStatusCode.ShouldBe(HttpStatusCode.SwitchingProtocols);
     }
 
     // Security passed and the request reached the WS proxy: a round-trip echo confirms end-to-end proxying still works.
