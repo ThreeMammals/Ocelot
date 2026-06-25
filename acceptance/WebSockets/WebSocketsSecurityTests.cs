@@ -65,7 +65,8 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
     {
         _connect.ShouldBeOfType<WebSocketException>();
         ws.State.ShouldBe(WebSocketState.Closed);
-        ws.HttpStatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        ws.HttpStatusCode.ShouldBe(HttpStatusCode.Forbidden); // ws.Options.CollectHttpResponseDetails
+        _connect.Message.ShouldBe("The server returned status code '403' when status code '101' was expected.");
     }
 
     // An allowed IP passes SecurityMiddleware, so the upgrade completes (101) and ConnectAsync does not throw.
@@ -78,8 +79,7 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
     {
         ws.State.ShouldBe(WebSocketState.Closed);
         ws.CloseStatus.ShouldBe(WebSocketCloseStatus.NormalClosure);
-        // My mistake: I forgot to enable CollectHttpResponseDetails, so HttpStatusCode read 0 though Ocelot returns 101.
-        ws.HttpStatusCode.ShouldBe(HttpStatusCode.SwitchingProtocols);
+        ws.HttpStatusCode.ShouldBe(HttpStatusCode.SwitchingProtocols); // ws.Options.CollectHttpResponseDetails
     }
 
     // Security passed and the request reached the WS proxy: a round-trip echo confirms end-to-end proxying still works.
