@@ -19,7 +19,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     [InlineData(OcelotErrorCode.ScopeNotAuthorizedError)]
     [InlineData(OcelotErrorCode.UnauthorizedError)]
     [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)]
-    [InlineData(OcelotErrorCode.IpSecurityError)]
+    [InlineData(OcelotErrorCode.SecurityError)]
     public void Should_return_forbidden(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Forbidden);
