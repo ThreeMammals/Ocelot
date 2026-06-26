@@ -44,7 +44,7 @@ public sealed class SecurityOptionsTests: Steps
             .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
             .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized)) // TODO 401? WTF? It must be 403 Forbidden :)
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
             .And(x => ThenTheResponseBodyShouldBeEmpty())
             .And(x => ThenTheResponseHeaderExists(ForwardedHeadersDefaults.XForwardedForHeaderName, false))
         .BDDfy();
@@ -92,7 +92,7 @@ public sealed class SecurityOptionsTests: Steps
             .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
             .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
             .And(x => ThenTheResponseBodyShouldBeEmpty())
         .BDDfy();
     }
@@ -141,7 +141,7 @@ public sealed class SecurityOptionsTests: Steps
             .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
             .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
             .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
             .And(x => ThenTheResponseBodyShouldBeEmpty())
         .BDDfy();
     }

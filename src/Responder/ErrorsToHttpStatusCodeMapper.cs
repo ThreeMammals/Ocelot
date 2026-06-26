@@ -16,7 +16,8 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
             || e.Code == OcelotErrorCode.ClaimValueNotAuthorizedError
             || e.Code == OcelotErrorCode.ScopeNotAuthorizedError
             || e.Code == OcelotErrorCode.UserDoesNotHaveClaimError
-            || e.Code == OcelotErrorCode.CannotFindClaimError))
+            || e.Code == OcelotErrorCode.CannotFindClaimError
+            || e.Code == OcelotErrorCode.IpSecurityError))
         {
             return StatusCodes.Status403Forbidden;
         }

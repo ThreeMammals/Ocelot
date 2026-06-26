@@ -45,4 +45,5 @@ public enum OcelotErrorCode
     ErrorInvokingLoadBalancerCreator = 40,
     PayloadTooLargeError = 41,
     BadRequestError = 42,
+    IpSecurityError = 43,
 }
