@@ -45,7 +45,11 @@ Client Error Responses
     `RFC 7230`_ specifies that when a server encounters invalid or unparsable request data, it should respond with a `400 Bad Request`_ status code.
 
 - `401 Unauthorized`_: If the authentication middleware runs and the user is not authenticated.
-- `403 Forbidden`_: If the authorization middleware runs and the user is unauthorized, if the claim value is not authorized, if the scope is not authorized, if the user does not have the required claim, or if the claim cannot be found.
+- `403 Forbidden`_ is returned by:
+
+  * :doc:`../features/authorization` middleware, when the user is unauthorized, a claim or scope is invalid, or a required claim is missing or not found.
+  * :ref:`Security <routing-security-options>` middleware, when it runs based on :ref:`Security Options <routing-security-options>` and the upstream client IP is not allowed or is blocked by ``IPSecurityPolicy`` (or another ``ISecurityPolicy``).
+
 - `404 Not Found`_: If a downstream route cannot be found, or if Ocelot is unable to map an internal error code to an HTTP status code.
 - `499 Client Closed Request`_: If the request is canceled by the client.
 
