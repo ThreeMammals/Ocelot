@@ -50,7 +50,7 @@ public static class OcelotPipelineExtensions
         app.UseMiddleware<MultiplexingMiddleware>();
 
         // This security module, IP whitelist blacklist, extended security mechanism
-        app.UseMiddleware<SecurityMiddleware>();
+        app.UseMiddleware<SecurityMiddleware>(); // TODO Consider moving this before MultiplexingMiddleware
 
         //Expand other branch pipes
         foreach (var branch in configuration.MapWhenOcelotPipeline)
@@ -138,6 +138,7 @@ public static class OcelotPipelineExtensions
     {
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
         app.UseMiddleware<MultiplexingMiddleware>();
+        app.UseMiddleware<SecurityMiddleware>(); // TODO Consider moving this before MultiplexingMiddleware
         app.UseMiddleware<DownstreamRequestInitialiserMiddleware>();
         app.UseMiddleware<LoadBalancingMiddleware>();
         app.UseMiddleware<DownstreamUrlCreatorMiddleware>();

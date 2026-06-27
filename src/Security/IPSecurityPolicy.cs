@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using Ocelot.Middleware;
 using Ocelot.Responses;
 
 namespace Ocelot.Security;
@@ -12,26 +11,18 @@ public class IPSecurityPolicy : ISecurityPolicy
         var clientIp = context.Connection.RemoteIpAddress;
         var options = downstreamRoute.SecurityOptions;
         if (options == null || clientIp == null)
-        {
             return new OkResponse();
+
+        if (options.IPBlockedList.Count > 0 && options.IPBlockedList.Contains(clientIp.ToString()))
+        {
+            var error = new SecurityError($"Access denied: client IP {clientIp} is blocked.");
+            return new ErrorResponse(error);
         }
 
-        if (options.IPBlockedList?.Count > 0)
+        if (options.IPAllowedList.Count > 0 && !options.IPAllowedList.Contains(clientIp.ToString()))
         {
-            if (options.IPBlockedList.Contains(clientIp.ToString()))
-            {
-                var error = new UnauthenticatedError($"This request rejects access to {clientIp} IP"); // TODO 401? WTF? It must be 403 Forbidden :) LoL We should not require any authentication!
-                return new ErrorResponse(error);
-            }
-        }
-
-        if (options.IPAllowedList?.Count > 0)
-        {
-            if (!options.IPAllowedList.Contains(clientIp.ToString()))
-            {
-                var error = new UnauthenticatedError($"{clientIp} does not allow access, the request is invalid"); // TODO 403 Forbidden
-                return new ErrorResponse(error);
-            }
+            var error = new SecurityError($"Access denied: client IP {clientIp} is not in the allow list.");
+            return new ErrorResponse(error);
         }
 
         return new OkResponse();

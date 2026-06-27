@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Security;
 
@@ -57,6 +59,57 @@ public sealed class SecurityMiddlewareTests : UnitTest
 
         // Assert: security not passed
         _httpContext.Items.Errors().Count.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
+    [Trait("PR", "2406")] // https://github.com/ThreeMammals/Ocelot/pull/2406
+    public void HandleWebSocketErrors_Sets403ForWebSocketRequest()
+    {
+        // Arrange
+        var context = CreateHttpContextWithWebSocket(isWebSocketRequest: true);
+        var errors = new List<Error> { new SecurityError("WebSocket security violation") };
+
+        // Act
+        HandleWebSocketErrors(context, errors);
+
+        // Assert
+        Assert.Equal(403, context.Response.StatusCode);
+    }
+
+    [Fact]
+    [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
+    [Trait("PR", "2406")] // https://github.com/ThreeMammals/Ocelot/pull/2406
+    public void HandleWebSocketErrors_DoesNotChangeStatusForNonWebSocketRequest()
+    {
+        // Arrange
+        var context = CreateHttpContextWithWebSocket(isWebSocketRequest: false);
+        context.Response.StatusCode = 200;
+        var errors = new List<Error> { new SecurityError("Regular HTTP security violation") };
+
+        // Act
+        HandleWebSocketErrors(context, errors);
+
+        // Assert
+        Assert.Equal(200, context.Response.StatusCode); // unchanged
+    }
+
+    private static HttpContext CreateHttpContextWithWebSocket(bool isWebSocketRequest)
+    {
+        var context = new DefaultHttpContext();
+
+        var webSocketFeature = new Mock<IHttpWebSocketFeature>();
+        webSocketFeature.Setup(f => f.IsWebSocketRequest).Returns(isWebSocketRequest);
+
+        context.Features.Set(webSocketFeature.Object);
+        return context;
+    }
+
+    private void HandleWebSocketErrors(HttpContext context, List<Error> errors)
+    {
+        var method = typeof(SecurityMiddleware)
+            .GetMethod(nameof(HandleWebSocketErrors), BindingFlags.NonPublic | BindingFlags.Static);
+        method.Invoke(null, [context, errors]);
     }
 
     private void GivenPassingSecurityVerification()

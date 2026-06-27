@@ -19,6 +19,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
     [InlineData(OcelotErrorCode.ScopeNotAuthorizedError)]
     [InlineData(OcelotErrorCode.UnauthorizedError)]
     [InlineData(OcelotErrorCode.UserDoesNotHaveClaimError)]
+    [InlineData(OcelotErrorCode.SecurityError)]
     public void Should_return_forbidden(OcelotErrorCode errorCode)
     {
         ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.Forbidden);
@@ -137,7 +138,7 @@ public class ErrorsToHttpStatusCodeMapperTests : UnitTest
         // If this test fails then it's because the number of error codes has changed.
         // You should make the appropriate changes to the test cases here to ensure
         // they cover all the error codes, and then modify this assertion.
-        Enum.GetNames<OcelotErrorCode>().Length.ShouldBe(43,
+        Enum.GetNames<OcelotErrorCode>().Length.ShouldBe(44,
             "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
     }
 

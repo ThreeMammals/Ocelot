@@ -236,11 +236,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         _builder.ConfigureWebSockets(configuration);
 
         // Assert
-        var middlewares = ThenMiddlewares(6);
+        var middlewares = ThenMiddlewares(7);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
         Assert.Contains(typeof(WebSocketsProxyMiddleware).FullName, middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
-        Assert.Equal(5, middlewares.IndexOf(typeof(WebSocketsProxyMiddleware).FullName));
+        Assert.Equal(6, middlewares.IndexOf(typeof(WebSocketsProxyMiddleware).FullName));
     }
 
     [Fact]
@@ -257,11 +257,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         _builder.ConfigureWebSockets(configuration);
 
         // Assert
-        var middlewares = ThenMiddlewares(6);
+        var middlewares = ThenMiddlewares(7);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
         Assert.Contains(typeof(MyWsMiddleware).FullName, middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
-        Assert.Equal(5, middlewares.IndexOf(typeof(MyWsMiddleware).FullName));
+        Assert.Equal(6, middlewares.IndexOf(typeof(MyWsMiddleware).FullName));
     }
 
     private static Task CustomWebSocketMiddleware(HttpContext context, Func<Task> next) => next();
@@ -280,11 +280,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         _builder.ConfigureWebSockets(configuration);
 
         // Assert
-        var middlewares = ThenMiddlewares(6);
+        var middlewares = ThenMiddlewares(7);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
         Assert.Contains("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware", middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
-        Assert.Equal(5, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
+        Assert.Equal(6, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
     }
 
     [Fact]
@@ -298,11 +298,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
         _builder.ConfigureWebSockets(noOptions);
 
         // Assert
-        var middlewares = ThenMiddlewares(6);
+        var middlewares = ThenMiddlewares(7);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
         Assert.Contains(typeof(WebSocketsProxyMiddleware).FullName, middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
-        Assert.Equal(5, middlewares.IndexOf(typeof(WebSocketsProxyMiddleware).FullName));
+        Assert.Equal(6, middlewares.IndexOf(typeof(WebSocketsProxyMiddleware).FullName));
     }
 
     [Fact]
@@ -320,16 +320,34 @@ public class OcelotPipelineExtensionsTests : UnitTest
         _builder.ConfigureWebSockets(configuration);
 
         // Assert
-        var middlewares = ThenMiddlewares(7);
+        var middlewares = ThenMiddlewares(8);
         Assert.Contains(typeof(DownstreamRouteFinderMiddleware).FullName, middlewares);
         Assert.Contains(typeof(MyWsMiddleware).FullName, middlewares);
         Assert.Contains("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware", middlewares);
         Assert.Equal(0, middlewares.IndexOf(typeof(DownstreamRouteFinderMiddleware).FullName));
         // Both should be registered, Type first then Middleware
-        Assert.Equal(5, middlewares.IndexOf(typeof(MyWsMiddleware).FullName));
-        Assert.Equal(6, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
+        Assert.Equal(6, middlewares.IndexOf(typeof(MyWsMiddleware).FullName));
+        Assert.Equal(7, middlewares.IndexOf("Ocelot.UnitTests.Middleware.OcelotPipelineExtensionsTests.CustomWebSocketMiddleware"));
     }
     #endregion PR 2387
+
+    [Fact]
+    [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
+    [Trait("PR", "2406")] // https://github.com/ThreeMammals/Ocelot/pull/2406
+    public void ConfigureWebSockets_ShouldRegisterSecurityMiddleware()
+    {
+        // Arrange
+        GivenApplicationBuilder();
+        var configuration = new OcelotPipelineConfiguration();
+
+        // Act
+        _builder.ConfigureWebSockets(configuration);
+
+        // Assert
+        var middlewares = ThenMiddlewares(7);
+        Assert.Contains(typeof(SecurityMiddleware).FullName, middlewares);
+        Assert.Equal(2, middlewares.IndexOf(typeof(SecurityMiddleware).FullName));
+    }
 
     private void GivenTheDepedenciesAreSetUp()
     {
@@ -382,10 +400,9 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private static readonly Func<HttpContext, Func<Task>, Task> NullMiddleware = null;
     private static Task CustomMiddleware(HttpContext context, Func<Task> next) => Task.CompletedTask;
 
-    public class TestMiddleware : OcelotMiddleware
+    public class TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
+        : OcelotMiddleware(logging.CreateLogger<TestMiddleware>())
     {
-        public TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
-            : base(logging.CreateLogger<TestMiddleware>()) { }
         public Task Invoke(HttpContext _) => Task.CompletedTask;
     }
     private class MyWsMiddleware : WebSocketsProxyMiddleware
