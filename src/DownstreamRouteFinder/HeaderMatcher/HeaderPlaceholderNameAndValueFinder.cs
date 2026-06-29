@@ -16,7 +16,7 @@ public class HeaderPlaceholderNameAndValueFinder : IHeaderPlaceholderNameAndValu
             var placeholders = matches
                 .SelectMany(g => g.Groups as IEnumerable<Group>)
                 .Where(g => g.Name != "0")
-                .Select(g => new PlaceholderNameAndValue(string.Concat('{', g.Name, '}'), g.Value));
+                .Select(g => new PlaceholderNameAndValue(g.Name, g.Value, true));
             result.AddRange(placeholders);
         }
 

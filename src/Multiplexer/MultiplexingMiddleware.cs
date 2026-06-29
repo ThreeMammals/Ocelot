@@ -171,7 +171,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         {
             var tPnv = new List<PlaceholderNameAndValue>(httpContext.Items.TemplatePlaceholderNameAndValues())
             {
-                new('{' + matchAdvancedAgg.Parameter + '}', value),
+                new(matchAdvancedAgg.Parameter, value, true),
             };
             processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
         }

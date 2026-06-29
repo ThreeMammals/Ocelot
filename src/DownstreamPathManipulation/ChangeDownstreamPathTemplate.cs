@@ -23,25 +23,18 @@ public class ChangeDownstreamPathTemplate : IChangeDownstreamPathTemplate
         foreach (var config in claimsToThings)
         {
             var value = _claimsParser.GetValue(claims, config.NewKey, config.Delimiter, config.Index);
-
             if (value.IsError)
-            {
                 return new ErrorResponse(value.Errors);
-            }
 
-            var placeholderName = $"{{{config.ExistingKey}}}";
+            var placeholder = new PlaceholderNameAndValue(config.ExistingKey, value.Data, true);
 
-            if (!downstreamPathTemplate.Value.Contains(placeholderName))
-            {
-                return new ErrorResponse(new CouldNotFindPlaceholderError(placeholderName));
-            }
+            if (!downstreamPathTemplate.Value.Contains(placeholder.Name))
+                return new ErrorResponse(new CouldNotFindPlaceholderError(placeholder.Name));
 
-            if (placeholders.Any(ph => ph.Name == placeholderName))
-            {
-                placeholders.RemoveAll(ph => ph.Name == placeholderName);
-            }
+            if (placeholders.Any(ph => ph.Name == placeholder.Name)) // TODO Implement equality operators and IEquatable
+                placeholders.RemoveAll(ph => ph.Name == placeholder.Name);
 
-            placeholders.Add(new PlaceholderNameAndValue(placeholderName, value.Data));
+            placeholders.Add(placeholder);
         }
 
         return new OkResponse();
