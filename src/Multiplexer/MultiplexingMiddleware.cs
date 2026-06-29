@@ -257,7 +257,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
             return Task.CompletedTask;
         }
 
-        // ensure each context retains its correct aggregate key for proper response mapping
+        // Ensure each context retains its correct aggregate key for proper response mapping
         if (route.DownstreamRouteConfig != null && route.DownstreamRouteConfig.Count > 0)
         {
             for (int i = 0; i < contexts.Count && i < route.DownstreamRouteConfig.Count; i++)
