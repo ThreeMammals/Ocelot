@@ -284,20 +284,11 @@ public sealed class HeaderTests : Steps
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunningAsync(pipeline))
             .When(x => WhenIGetUrlOnTheApiGateway("/route1"))
-            .Then(x => ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
-X-Forwarded-Host: http://ocelot.net
-X-Forwarded-Proto: https
-Ot-Route: Raman"))
+            .Then(x => ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Raman"))
             .When(x => WhenIGetUrlOnTheApiGateway("/route2"))
-            .Then(x => ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
-X-Forwarded-Host: http://ocelot.net
-X-Forwarded-Proto: https
-Ot-Route: Mark"))
+            .Then(x => ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Mark"))
             .When(x => WhenIGetUrlOnTheApiGateway("/route3"))
-            .Then(x => ThenTheResponseBodyShouldBe(@$"X-Forwarded-For: {ocelotIP}
-X-Forwarded-Host: http://ocelot.net
-X-Forwarded-Proto: https
-Ot-Route: ?"))
+            .Then(x => ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: ?"))
         .BDDfy();
     }
 
