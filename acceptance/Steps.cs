@@ -7,6 +7,8 @@ namespace Ocelot.AcceptanceTests;
 
 public class Steps : AcceptanceSteps
 {
+    protected static readonly string NL = Environment.NewLine;
+
     public Steps() : base()
     {
         BddfyConfig.Configure();

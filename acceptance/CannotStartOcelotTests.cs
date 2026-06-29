@@ -5,7 +5,6 @@ namespace Ocelot.AcceptanceTests;
 /// </summary>
 public class CannotStartOcelotTests : Steps
 {
-    private static readonly string NL = Environment.NewLine;
     private Exception _ex;
 
     [Fact]
