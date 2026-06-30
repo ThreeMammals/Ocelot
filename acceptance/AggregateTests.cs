@@ -392,15 +392,16 @@ public sealed class AggregateTests : Steps
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
     public void Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
     {
+        const string id = "id"; // placeholder
         var commentsPort = PortFinder.GetRandomPort();
         var usersPort = PortFinder.GetRandomPort();
         var comments = GivenAggRoute(commentsPort, "comments", "/comments", "/comments");
-        var user = GivenAggRoute(usersPort, "user", "/users/{userId}", "/users/{userId}");
+        var user = GivenAggRoute(usersPort, "user", $"/users/{{{id}}}", $"/users/{{{id}}}");
         var configuration = GivenConfiguration(comments, user);
         var aggregate = configuration.Aggregates[0];
         aggregate.UpstreamPathTemplate = "/aggregatecommentuser";
         aggregate.RouteKeysConfig = [
-            new("user", "$[*].userId", "userId")
+            new(user.Key, "$[*].userId", id)
         ];
 
         const string CommentsResponseContent = "[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}]";

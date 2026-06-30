@@ -242,6 +242,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return target;
     }
 
+    public const string CurrentAggregateRouteKeyItem = "CurrentAggregateRouteKey";
     protected virtual Task MapAsync(HttpContext context, Route route, List<HttpContext> contexts)
     {
         if (route.DownstreamRoute.Count == 1)
@@ -253,7 +254,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
             for (int i = 0; i < contexts.Count && i < route.DownstreamRouteConfig.Count; i++)
             {
                 var key = route.DownstreamRouteConfig[i].RouteKey;
-                contexts[i].Items["CurrentAggregateRouteKey"] = key;
+                contexts[i].Items[CurrentAggregateRouteKeyItem] = key;
             }
         }
 

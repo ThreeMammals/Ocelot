@@ -449,6 +449,30 @@ public class UrlPathPlaceholderNameAndValueFinderTests : UnitTest
         ThenTheTemplatesVariablesAre(expectedTemplates.ToArray());
     }
 
+    [Fact]
+    [Trait("PR", "2328")]
+    public void Should_return_catch_all_query_placeholder_when_template_has_catch_all_query()
+    {
+        // Arrange, Act
+        _result = _finder.Find("/api/test", "?filter=active", "/api/test?{everything}");
+
+        // Assert - should hit the early return in the if (isCatchAllQuery) block
+        ThenSinglePlaceholderIs("{everything}", Empty);
+    }
+
+    [Theory]
+    [Trait("PR", "2328")]
+    [InlineData("/api/test", "", "/api/test?{query}")]
+    [InlineData("/api/test", "?other=1", "/api/test?{query}")]
+    public void Should_handle_catch_all_query_with_various_inputs(string path, string query, string template)
+    {
+        // Arrange, Act
+        _result = _finder.Find(path, query, template);
+
+        // Assert
+        ThenSinglePlaceholderIs("{query}", Empty);
+    }
+
     private void ThenSinglePlaceholderIs(string expectedName, string expectedValue)
     {
         var item = _result.Data.Single(t => t.Name == expectedName);
