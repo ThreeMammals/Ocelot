@@ -67,7 +67,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder().Build();
 
         // Arrange
-        GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
+        GivenUser("test", "Copy", TestName());
 
         // Act
         var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -91,7 +91,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         }
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(2));
 
         // Act
@@ -114,7 +114,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         }
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Copy_Context_If_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
@@ -133,7 +133,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         _middleware = mock.Object;
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Call_ProcessSingleRoute_Once_If_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
@@ -156,7 +156,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_If_More_Than_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
@@ -179,7 +179,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(routesCount, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Create_As_Many_Contexts_As_Routes_And_Map_Is_Called_Once));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
@@ -200,7 +200,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_Or_Map_If_No_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(0));
 
         // Act
@@ -227,7 +227,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         // Arrange
         var mock = MockMiddlewareFactory(null, null);
-        GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
 
         // Act
@@ -248,21 +248,16 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(If_Using_3_Routes_WithAggregator_ProcessSingleRoute_Is_Never_Called_Map_Once_And_Pipeline_3_Times));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenRoutesWithAggregator());
 
         // Act
         await _middleware.Invoke(_httpContext);
 
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>());
-
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>());
         mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.IsAny<List<HttpContext>>());
-
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
         _count.ShouldBe(3);
     }
     
@@ -271,7 +266,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     [Trait("PR", "2328")]
     public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls()
     {
-        RequestDelegate responder = context =>
+        Task responder(HttpContext context)
         {
             var json = @"[{""userId"":1},{""userId"":2}]";
             context.Items.Add("DownstreamResponse",
@@ -281,20 +276,19 @@ public class MultiplexingMiddlewareTests : UnitTest
                 context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
             _count++;
             return Task.CompletedTask;
-        };
+        }
 
         var mock = MockMiddlewareFactory(null, responder);
-
         var route = new Route
         {
             DownstreamRoute =
             [
                 new DownstreamRouteBuilder().WithKey("comments").Build(),
-            new DownstreamRouteBuilder().WithKey("user").Build()
+                new DownstreamRouteBuilder().WithKey("user").Build()
             ],
             DownstreamRouteConfig =
             [
-                new AggregateRouteConfig { RouteKey = "user", JsonPath = "$[*].userId", Parameter = "userId" }
+                new("user", "$[*].userId", "userId")
             ],
             Aggregator = "TestAggregator",
         };
@@ -305,9 +299,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         _count.ShouldBe(3);
         mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
     }
     
     [Fact]
@@ -325,10 +317,9 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         _count.ShouldBe(3);
 
-        aggregator.Verify(a => a.Aggregate(
-            It.IsAny<Route>(),
-            It.IsAny<HttpContext>(),
-            It.IsAny<List<HttpContext>>()), Times.Once());
+        aggregator.Verify(
+            a => a.Aggregate(It.IsAny<Route>(), It.IsAny<HttpContext>(), It.IsAny<List<HttpContext>>()),
+            Times.Once());
     }
 
     private RequestDelegate AggregateRequestDelegateFactory()
@@ -351,20 +342,12 @@ public class MultiplexingMiddlewareTests : UnitTest
     private Mock<MultiplexingMiddleware> MockMiddlewareFactory(int? downstreamRoutesCount, RequestDelegate requestDelegate)
     {
         requestDelegate ??= Next;
-
         var mock = new Mock<MultiplexingMiddleware>(requestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
-
-        mock.Protected().Setup<Task>("MapAsync",
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount)
-        ).Returns(Task.CompletedTask).Verifiable();
-
-        mock.Protected().Setup<Task>("ProcessSingleRouteAsync",
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>()
-        ).Returns(Task.CompletedTask).Verifiable();
-
+        mock.Protected().Setup<Task>("MapAsync", ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(),
+            downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount))
+            .Returns(Task.CompletedTask).Verifiable();
+        mock.Protected().Setup<Task>("ProcessSingleRouteAsync", ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>())
+            .Returns(Task.CompletedTask).Verifiable();
         _middleware = mock.Object;
         return mock;
     }
@@ -409,8 +392,8 @@ public class MultiplexingMiddlewareTests : UnitTest
         {
             DownstreamRoute = [route1, route2, route3],
             DownstreamRouteConfig = [
-                new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-                new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
+                new("UserDetails", "$[*].writerId", "userId"),
+                new("PostDetails", "$[*].postId", "postId"),
             ],
             Aggregator = "TestAggregator",
         };

@@ -162,18 +162,18 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <summary>
     /// Processing a route with aggregation.
     /// </summary>
-    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
-        JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
+    private List<Task<HttpContext>> ProcessRouteWithComplexAggregation(
+        AggregateRouteConfig matchAdvancedAgg, JToken jObject, HttpContext context, DownstreamRoute route)
     {
         var processing = new List<Task<HttpContext>>();
         var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
         foreach (var value in values)
         {
-            var tPnv = new List<PlaceholderNameAndValue>(httpContext.Items.TemplatePlaceholderNameAndValues())
+            var lPnv = new List<PlaceholderNameAndValue>(context.Items.TemplatePlaceholderNameAndValues())
             {
                 new(matchAdvancedAgg.Parameter, value, true),
             };
-            processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
+            processing.Add(ProcessRouteAsync(context, route, lPnv));
         }
 
         return processing;
@@ -250,15 +250,13 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return target;
     }
 
-    protected virtual Task MapAsync(HttpContext httpContext, Route route, List<HttpContext> contexts)
+    protected virtual Task MapAsync(HttpContext context, Route route, List<HttpContext> contexts)
     {
         if (route.DownstreamRoute.Count == 1)
-        {
             return Task.CompletedTask;
-        }
 
         // Ensure each context retains its correct aggregate key for proper response mapping
-        if (route.DownstreamRouteConfig != null && route.DownstreamRouteConfig.Count > 0)
+        if (route.DownstreamRouteConfig?.Count > 0)
         {
             for (int i = 0; i < contexts.Count && i < route.DownstreamRouteConfig.Count; i++)
             {
@@ -268,7 +266,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         }
 
         var aggregator = _factory.Get(route);
-        return aggregator.Aggregate(route, httpContext, contexts);
+        return aggregator.Aggregate(route, context, contexts);
     }
 
     protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)
