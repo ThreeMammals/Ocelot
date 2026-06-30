@@ -26,47 +26,39 @@ public class MultiplexingMiddleware : OcelotMiddleware
         _next = next;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
-        var downstreamRouteHolder = httpContext.Items.DownstreamRouteHolder();
+        var downstreamRouteHolder = context.Items.DownstreamRouteHolder();
         var route = downstreamRouteHolder.Route;
         var downstreamRoutes = route.DownstreamRoute;
 
         // Case 1: if websocket request or single downstream route
-        if (ShouldProcessSingleRoute(httpContext, downstreamRoutes))
+        if (ShouldProcessSingleRoute(context, downstreamRoutes))
         {
-            await ProcessSingleRouteAsync(httpContext, downstreamRoutes[0]);
+            await ProcessSingleRouteAsync(context, downstreamRoutes[0]);
             return;
         }
 
         // Case 2: if no downstream routes
         if (downstreamRoutes.Count == 0)
-        {
             return;
-        }
 
         // Case 3: if multiple downstream routes
         var routeKeysConfigs = route.DownstreamRouteConfig;
         if (routeKeysConfigs == null || routeKeysConfigs.Count == 0)
         {
-            await ProcessRoutesAsync(httpContext, route);
+            await ProcessRoutesAsync(context, route);
             return;
         }
 
         // Case 4: if multiple downstream routes with route keys
-        var mainResponseContext = await ProcessMainRouteAsync(httpContext, downstreamRoutes[0]);
-        if (mainResponseContext == null)
-        {
-            return;
-        }
-
-        var responsesContexts = await ProcessRoutesWithRouteKeysAsync(httpContext, downstreamRoutes, routeKeysConfigs, mainResponseContext);
+        var mainResponseContext = context;
+        await ProcessMainRouteAsync(context, downstreamRoutes[0]);
+        var responsesContexts = await ProcessRoutesWithRouteKeysAsync(context, downstreamRoutes, routeKeysConfigs, mainResponseContext);
         if (responsesContexts.Length == 0)
-        {
             return;
-        }
 
-        await MapResponsesAsync(httpContext, route, mainResponseContext, responsesContexts);
+        await MapResponsesAsync(context, route, mainResponseContext, responsesContexts);
     }
 
     /// <summary>
@@ -113,11 +105,10 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="context">The http context.</param>
     /// <param name="route">The first route, the main route.</param>
     /// <returns>The updated http context.</returns>
-    private async Task<HttpContext> ProcessMainRouteAsync(HttpContext context, DownstreamRoute route)
+    private Task ProcessMainRouteAsync(HttpContext context, DownstreamRoute route)
     {
         context.Items.UpsertDownstreamRoute(route);
-        await _next.Invoke(context);
-        return context;
+        return _next.Invoke(context);
     }
 
     /// <summary>
@@ -140,10 +131,11 @@ public class MultiplexingMiddleware : OcelotMiddleware
             if (matchAdvancedAgg != null)
             {
                 processing.AddRange(ProcessRouteWithComplexAggregation(matchAdvancedAgg, jObject, context, downstreamRoute));
-                continue;
             }
-
-            processing.Add(ProcessRouteAsync(context, downstreamRoute));
+            else
+            {
+                processing.Add(ProcessRouteAsync(context, downstreamRoute));
+            }
         }
 
         return await Task.WhenAll(processing);
@@ -162,16 +154,19 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <summary>
     /// Processing a route with aggregation.
     /// </summary>
-    private IEnumerable<Task<HttpContext>> ProcessRouteWithComplexAggregation(AggregateRouteConfig matchAdvancedAgg,
-        JToken jObject, HttpContext httpContext, DownstreamRoute downstreamRoute)
+    private List<Task<HttpContext>> ProcessRouteWithComplexAggregation(
+        AggregateRouteConfig matchAdvancedAgg, JToken jObject, HttpContext context, DownstreamRoute route)
     {
         var processing = new List<Task<HttpContext>>();
         var values = jObject.SelectTokens(matchAdvancedAgg.JsonPath).Select(s => s.ToString()).Distinct();
         foreach (var value in values)
         {
-            var tPnv = httpContext.Items.TemplatePlaceholderNameAndValues();
-            tPnv.Add(new PlaceholderNameAndValue('{' + matchAdvancedAgg.Parameter + '}', value));
-            processing.Add(ProcessRouteAsync(httpContext, downstreamRoute, tPnv));
+            var tPnv = context.Items.TemplatePlaceholderNameAndValues();
+            var lPnv = new List<PlaceholderNameAndValue>(tPnv)
+            {
+                new(matchAdvancedAgg.Parameter, value, true)
+            };
+            processing.Add(ProcessRouteAsync(context, route, lPnv));
         }
 
         return processing;
@@ -198,8 +193,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     {
         target.Items.Add(RequestIdString, source.Items[RequestIdString]);
         target.Items.SetIInternalConfiguration(source.Items.IInternalConfiguration());
-        target.Items.UpsertTemplatePlaceholderNameAndValues(placeholders ??
-                                                            source.Items.TemplatePlaceholderNameAndValues());
+        target.Items.UpsertTemplatePlaceholderNameAndValues(placeholders ?? source.Items.TemplatePlaceholderNameAndValues());
     }
 
     /// <summary>
@@ -248,15 +242,24 @@ public class MultiplexingMiddleware : OcelotMiddleware
         return target;
     }
 
-    protected virtual Task MapAsync(HttpContext httpContext, Route route, List<HttpContext> contexts)
+    public const string CurrentAggregateRouteKeyItem = "CurrentAggregateRouteKey";
+    protected virtual Task MapAsync(HttpContext context, Route route, List<HttpContext> contexts)
     {
         if (route.DownstreamRoute.Count == 1)
-        {
             return Task.CompletedTask;
+
+        // Ensure each context retains its correct aggregate key for proper response mapping
+        if (route.DownstreamRouteConfig?.Count > 0)
+        {
+            for (int i = 0; i < contexts.Count && i < route.DownstreamRouteConfig.Count; i++)
+            {
+                var key = route.DownstreamRouteConfig[i].RouteKey;
+                contexts[i].Items[CurrentAggregateRouteKeyItem] = key;
+            }
         }
 
         var aggregator = _factory.Get(route);
-        return aggregator.Aggregate(route, httpContext, contexts);
+        return aggregator.Aggregate(route, context, contexts);
     }
 
     protected virtual async Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)

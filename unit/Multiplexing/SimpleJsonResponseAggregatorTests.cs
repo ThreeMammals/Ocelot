@@ -35,7 +35,7 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         {
             DownstreamRoute = downstreamRoutes,
             DownstreamRouteConfig = [
-                new(){RouteKey = "UserDetails",JsonPath = "$[*].writerId",Parameter = "userId"},
+                new("UserDetails", "$[*].writerId", "userId")
             ],
         };
 

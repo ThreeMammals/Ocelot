@@ -26,18 +26,16 @@ public partial class UrlPathPlaceholderNameAndValueFinder : IPlaceholderNameAndV
     /// <returns>A <see cref="List{PlaceholderNameAndValue}"/> object, where T is <see cref="PlaceholderNameAndValue"/>: the list of the placeholders with their matching values.</returns>
     public Response<List<PlaceholderNameAndValue>> Find(string path, string query, string pathTemplate)
     {
-        (bool isCatchAllQuery, string catchAllQueryPlaceholder) = IsCatchAllQuery(pathTemplate);
+        (bool isCatchAllQuery, string catchAllQueryKey) = IsCatchAllQuery(pathTemplate);
         if (isCatchAllQuery)
         {
-            return new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>
-            {
-                new($"{LeftBrace}{catchAllQueryPlaceholder}{RightBrace}", string.Empty),
-            });
+            var catchAll = new PlaceholderNameAndValue(catchAllQueryKey, string.Empty, true);
+            return new OkResponse<List<PlaceholderNameAndValue>>([catchAll]);
         }
 
         // Find matching groups from path and query
         var placeholders = FindGroups(path, query, pathTemplate)
-            .Select(g => new PlaceholderNameAndValue($"{LeftBrace}{g.Name}{RightBrace}", g.Value))
+            .Select(g => new PlaceholderNameAndValue(g.Name, g.Value, true))
             .ToList();
         return new OkResponse<List<PlaceholderNameAndValue>>(placeholders);
     }

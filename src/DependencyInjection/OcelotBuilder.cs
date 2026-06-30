@@ -107,7 +107,7 @@ public class OcelotBuilder : IOcelotBuilder
         // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
         Services.AddHttpContextAccessor();
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
-        Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>();
+        Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>(); // TODO Move to features as AddOcelotAggregation
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
         Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
         Services.TryAddSingleton<IPlaceholders, Placeholders>();

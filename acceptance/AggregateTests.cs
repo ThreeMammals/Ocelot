@@ -69,11 +69,11 @@ public sealed class AggregateTests : Steps
         var route2 = GivenAggRoute(port2, "UserDetails", "/UserDetails/{userId}", "/users/{userId}");
         var route3 = GivenAggRoute(port3, "PostDetails", "/PostDetails/{postId}", "/posts/{postId}");
         var configuration = GivenConfiguration(route1, route2, route3);
-        configuration.Aggregates[0].RouteKeysConfig = new()
-        {
-            new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-            new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
-        };
+        configuration.Aggregates[0].RouteKeysConfig =
+        [
+            new("UserDetails", "$[*].writerId", "userId"),
+            new("PostDetails", "$[*].postId", "postId"),
+        ];
         var userDetailsResponseContent = @"{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""}";
         var postDetailsResponseContent = @"{""id"":1,""title"":""post1""}";
         var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
@@ -385,13 +385,55 @@ public sealed class AggregateTests : Steps
             .AppendJoin(string.Empty, reqForm.Select(x => $"[{x.Key}:{x.Value}]"))
             .Append('"')
             .ToString();
-    #endregion PR 2050 
+    #endregion PR 2050
+
+    [Fact]
+    [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
+    [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
+    public void Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
+    {
+        const string id = "id"; // placeholder
+        var commentsPort = PortFinder.GetRandomPort();
+        var usersPort = PortFinder.GetRandomPort();
+        var comments = GivenAggRoute(commentsPort, "comments", "/comments", "/comments");
+        var user = GivenAggRoute(usersPort, "user", $"/users/{{{id}}}", $"/users/{{{id}}}");
+        var configuration = GivenConfiguration(comments, user);
+        var aggregate = configuration.Aggregates[0];
+        aggregate.UpstreamPathTemplate = "/aggregatecommentuser";
+        aggregate.RouteKeysConfig = [
+            new(user.Key, "$[*].userId", id)
+        ];
+
+        const string CommentsResponseContent = "[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}]";
+        RequestDelegate MapJson = (ctx) =>
+        {
+            var parts = ctx.Request.Path.Value?.Trim('/').Split('/');
+            var ok = parts?.Length == 2 && parts[0] == "users" && int.TryParse(parts[1], out var id);
+            ctx.Response.StatusCode = ok ? (int)HttpStatusCode.OK : (int)HttpStatusCode.BadRequest;
+            ctx.Response.ContentType = "application/json";
+            return ctx.Response.WriteAsync(ok
+                ? $"{{\"id\":{parts![1]},\"name\":\"User-{parts[1]}\"}}"
+                : "{\"error\":\"bad id\"}");
+        };
+        var expected =
+            "{\"comments\":[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}],\"user\":[{\"id\":1,\"name\":\"User-1\"},{\"id\":2,\"name\":\"User-2\"}]}";
+
+        this.Given(x => GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent))
+            .Given(x => GivenThereIsAServiceRunningOn(usersPort, "/", MapJson))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunning())
+            .When(_ => WhenIGetUrlOnTheApiGateway("/aggregatecommentuser"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Response.StatusCode = (int)statusCode;
+            context.Response.ContentType = "application/json";
             return context.Response.WriteAsync(responseBody);
         });
     }
@@ -472,7 +514,7 @@ public sealed class AggregateTests : Steps
             {
                 UpstreamPathTemplate = "/",
                 UpstreamHost = "localhost",
-                RouteKeys = new(routes.Select(r => r.Key)), // [ "Laura", "Tom" ],
+                RouteKeys = [.. routes.Select(r => r.Key)], // [ "Laura", "Tom" ],
             });
         return conf;
     }

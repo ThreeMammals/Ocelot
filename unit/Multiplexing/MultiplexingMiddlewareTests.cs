@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -67,7 +67,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var route = new DownstreamRouteBuilder().Build();
 
         // Arrange
-        GivenUser("test", "Copy", nameof(CreateThreadContextAsync_CopyUser_ToTarget));
+        GivenUser("test", "Copy", TestName());
 
         // Act
         var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -91,7 +91,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         }
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Invoke_ContextUser_ForwardedToDownstreamContext));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(2));
 
         // Act
@@ -114,14 +114,14 @@ public class MultiplexingMiddlewareTests : UnitTest
         }
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Copy_Context_If_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        _count.ShouldBe(1);
+        Assert.Equal(1, _count);
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         _middleware = mock.Object;
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Call_ProcessSingleRoute_Once_If_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(1));
 
         // Act
@@ -141,8 +141,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>());
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>());
     }
 
     [Theory]
@@ -156,7 +155,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_If_More_Than_One_Downstream_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
@@ -164,8 +163,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>());
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>());
     }
 
     [Theory]
@@ -179,18 +177,15 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(routesCount, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Create_As_Many_Contexts_As_Routes_And_Map_Is_Called_Once));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(routesCount));
 
         // Act
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.Is<List<HttpContext>>(list => list.Count == routesCount)
-        );
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.Is<List<HttpContext>>(list => list.Count == routesCount));
     }
 
     [Fact]
@@ -200,7 +195,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, null);
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(Should_Not_Call_ProcessSingleRoute_Or_Map_If_No_Route));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(0));
 
         // Act
@@ -208,13 +203,10 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>());
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>());
 
-        mock.Protected().Verify<Task>("MapAsync", Times.Never(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.IsAny<List<HttpContext>>());
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
     }
 
     [Theory]
@@ -227,7 +219,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         // Arrange
         var mock = MockMiddlewareFactory(null, null);
-        GivenUser("test", "Invoke", nameof(Should_Call_CloneRequestBodyAsync_Each_Time_Per_Requests));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenDefaultRoute(numberOfRoutes));
 
         // Act
@@ -236,9 +228,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         // Assert
         mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
             numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
-            ItExpr.IsAny<HttpRequest>(),
-            ItExpr.IsAny<DownstreamRoute>(),
-            ItExpr.IsAny<CancellationToken>());
+            ItExpr.IsAny<HttpRequest>(), ItExpr.IsAny<DownstreamRoute>(), ItExpr.IsAny<CancellationToken>());
     }
 
     [Fact]
@@ -248,22 +238,201 @@ public class MultiplexingMiddlewareTests : UnitTest
         var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
 
         // Arrange
-        GivenUser("test", "Invoke", nameof(If_Using_3_Routes_WithAggregator_ProcessSingleRoute_Is_Never_Called_Map_Once_And_Pipeline_3_Times));
+        GivenUser("test", "Invoke", TestName());
         GivenTheFollowing(GivenRoutesWithAggregator());
 
         // Act
         await _middleware.Invoke(_httpContext);
 
+        // Assert
         mock.Protected().Verify<Task>("ProcessSingleRouteAsync", Times.Never(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>());
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>());
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+        Assert.Equal(3, _count);
+    }
 
-        mock.Protected().Verify<Task>("MapAsync", Times.Once(),
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            ItExpr.IsAny<List<HttpContext>>());
+    [Fact]
+    [Trait("PR", "1826")]
+    [Trait("PR", "2328")]
+    public async Task Invoke_When_ProcessRoutesWithRouteKeysAsync_ReturnedEmptyList_ShouldEarlyExitWithoutMultiplexing()
+    {
+        // Arrange
+        var mock = MockMiddlewareFactory(null, UsersResponder);
+        var route = new Route
+        {
+            DownstreamRoute =
+            [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+                new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig =
+            [
+                new("invalid", "$[*].userId", "userId")
+            ],
+            Aggregator = "TestAggregator",
+        };
+        GivenTheFollowing(route);
 
-        _count.ShouldBe(3);
+        HttpContext[] empty = [];
+        mock.Protected()
+            .Setup<Task<HttpContext[]>>("ProcessRoutesWithRouteKeysAsync",
+                ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<IEnumerable<DownstreamRoute>>(), ItExpr.IsAny<IReadOnlyCollection<AggregateRouteConfig>>(), ItExpr.IsAny<HttpContext>())
+            .ReturnsAsync(empty);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.Equal(1, _count); // Next was called (no multiplexing)
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(), // MapResponsesAsync was not called
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+    }
+
+    [Fact]
+    [Trait("PR", "1826")]
+    [Trait("PR", "2328")]
+    public async Task Invoke_When_Invalid_ComplexAggKey_ProcessRoutesWithRouteKeysAsync_Should_Call_Users_Twice_And_MapTheirResponses()
+    {
+        // Arrange
+        var mock = MockMiddlewareFactory(null, UsersResponder);
+        var route = new Route
+        {
+            DownstreamRoute =
+            [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+                new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig =
+            [
+                new("invalid", "$[*].userId", "userId")
+            ],
+            Aggregator = "TestAggregator",
+        };
+        GivenTheFollowing(route);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.Equal(2, _count); // 2 calls of UsersResponder
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(), // MapResponsesAsync was called
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+    }
+
+    private Task UsersResponder(HttpContext context)
+    {
+        var json = @"[{""userId"":1},{""userId"":2}]";
+        context.Items.Add("DownstreamResponse",
+            new DownstreamResponse(new StringContent(json, Encoding.UTF8, "application/json"),
+                HttpStatusCode.OK, new List<Header>(), "test"));
+        if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
+            context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
+        _count++;
+        return Task.CompletedTask;
+    }
+
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls()
+    {
+        // Arrange
+        var mock = MockMiddlewareFactory(null, UsersResponder);
+        var route = new Route
+        {
+            DownstreamRoute =
+            [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+                new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig =
+            [
+                new("user", "$[*].userId", "userId")
+            ],
+            Aggregator = "TestAggregator",
+        };
+        GivenTheFollowing(route);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.Equal(3, _count);
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
+    }
+    
+    [Fact]
+    [Trait("Bug", "2248")]
+    [Trait("PR", "2328")]
+    public async Task Should_verify_each_context_has_aggregate_key()
+    {
+        // Arrange
+        var route = GivenRoutesWithAggregator();
+        GivenTheFollowing(route);
+        _middleware = new MultiplexingMiddleware(AggregateRequestDelegateFactory(), loggerFactory.Object, factory.Object);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.Equal(3, _count);
+        aggregator.Verify(
+            a => a.Aggregate(It.IsAny<Route>(), It.IsAny<HttpContext>(), It.IsAny<List<HttpContext>>()),
+            Times.Once());
+    }
+
+    private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+
+    [Fact]
+    [Trait("PR", "1826")]
+    [Trait("PR", "2328")]
+    public async Task MapAsync_Should_Return_CompletedTask_When_Only_One_DownstreamRoute()
+    {
+        // Arrange
+        var route = GivenDefaultRoute(1); // 1 downstream route
+        var contexts = new List<HttpContext> { new DefaultHttpContext() };
+
+        // Act
+        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+
+        // Assert
+        Assert.True(actual.IsCompleted);
+        Assert.Same(Task.CompletedTask, actual);
+    }
+
+    [Theory]
+    [Trait("PR", "2328")]
+    [InlineData(0, 2)]   // contexts.Count == 0 → no loop iterations
+    [InlineData(2, 0)]   // DownstreamRouteConfig.Count == 0 → skip if
+    [InlineData(2, 3)]   // contexts < config → loop runs 2 times
+    [InlineData(3, 2)]   // contexts > config → loop runs 2 times (short-circuit on i < config.Count)
+    public async Task MapAsync_Should_Set_AggregateKeys_Correctly_For_Different_Counts(int contextsCount, int configCount)
+    {
+        // Arrange
+        var from = GivenRoutesWithAggregator(); // base with config
+        var route = new Route()
+        {
+            DownstreamRoute = [.. from.DownstreamRoute],
+            DownstreamRouteConfig = [.. Enumerable.Range(0, configCount)
+                .Select(i => new AggregateRouteConfig($"key{i}", "$[*].id", $"param{i}"))
+            ],
+            Aggregator = from.Aggregator,
+        };
+        var contexts = Enumerable.Range(0, contextsCount)
+            .Select(_ => new DefaultHttpContext() as HttpContext)
+            .ToList();
+
+        // Act
+        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+
+        // Assert - verify keys were set where expected
+        Assert.NotNull(actual);
+        for (int i = 0; i < Math.Min(contextsCount, configCount); i++)
+        {
+            contexts[i].Items[MultiplexingMiddleware.CurrentAggregateRouteKeyItem].ShouldBe($"key{i}");
+        }
     }
 
     private RequestDelegate AggregateRequestDelegateFactory()
@@ -286,20 +455,12 @@ public class MultiplexingMiddlewareTests : UnitTest
     private Mock<MultiplexingMiddleware> MockMiddlewareFactory(int? downstreamRoutesCount, RequestDelegate requestDelegate)
     {
         requestDelegate ??= Next;
-
         var mock = new Mock<MultiplexingMiddleware>(requestDelegate, loggerFactory.Object, factory.Object) { CallBase = true };
-
-        mock.Protected().Setup<Task>("MapAsync",
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<Route>(),
-            downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount)
-        ).Returns(Task.CompletedTask).Verifiable();
-
-        mock.Protected().Setup<Task>("ProcessSingleRouteAsync",
-            ItExpr.IsAny<HttpContext>(),
-            ItExpr.IsAny<DownstreamRoute>()
-        ).Returns(Task.CompletedTask).Verifiable();
-
+        mock.Protected().Setup<Task>(nameof(MapAsync), ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(),
+            downstreamRoutesCount == null ? ItExpr.IsAny<List<HttpContext>>() : ItExpr.Is<List<HttpContext>>(list => list.Count == downstreamRoutesCount))
+            .Returns(Task.CompletedTask).Verifiable();
+        mock.Protected().Setup<Task>("ProcessSingleRouteAsync", ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<DownstreamRoute>())
+            .Returns(Task.CompletedTask).Verifiable();
         _middleware = mock.Object;
         return mock;
     }
@@ -344,8 +505,8 @@ public class MultiplexingMiddlewareTests : UnitTest
         {
             DownstreamRoute = [route1, route2, route3],
             DownstreamRouteConfig = [
-                new AggregateRouteConfig { RouteKey = "UserDetails", JsonPath = "$[*].writerId", Parameter = "userId" },
-                new AggregateRouteConfig { RouteKey = "PostDetails", JsonPath = "$[*].postId", Parameter = "postId" },
+                new("UserDetails", "$[*].writerId", "userId"),
+                new("PostDetails", "$[*].postId", "postId"),
             ],
             Aggregator = "TestAggregator",
         };

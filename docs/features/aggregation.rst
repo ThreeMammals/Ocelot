@@ -1,5 +1,8 @@
 Aggregation
 ===========
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 *Aggregation*, also known as HTTP response data aggregation, is a well-known Backend for Frontend pattern of Microservices architecture.
 
@@ -12,8 +15,10 @@ Ocelot allows you to specify *Aggregate Routes* [#f1]_ that combine multiple nor
 This is particularly useful when a client is making multiple requests to a server that could be consolidated into one.
 This feature supports the implementation of a Backend for Frontend (BFF) architecture using Ocelot.
 
-Configuration
--------------
+.. _agg-simple:
+
+Simple Aggregation
+------------------
 
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 
@@ -78,7 +83,7 @@ The resulting object is plain JSON without any formatting or additional spaces.
   **Note 3**: If your downstream services return a ``404`` `Not Found <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404>`_, the aggregate will simply return nothing for that downstream service.
   It will not change the aggregate response to a ``404``, even if all the downstream services return a ``404``.
 
-.. _agg-complex-aggregation:
+.. _agg-complex:
 
 Complex Aggregation [#f2]_
 --------------------------
@@ -149,6 +154,125 @@ The final configuration is as follows:
       }
     ]
   }
+
+Sample
+^^^^^^
+
+Ocelot supports *complex aggregation* where a response from one service can drive multiple parameterized calls to another service.
+This is especially useful when you have array responses containing IDs that need to be expanded into multiple downstream calls (e.g., fetch user details for each userId in a comments array).
+
+You can now configure this behaviour declaratively using the ``RouteKeysConfig`` array on an Aggregate route.
+
+.. code-block:: json
+  :emphasize-lines: 7-13
+
+  {
+    "Aggregates": [
+      {
+        "UpstreamPathTemplate": "/agg-commentuser",
+        "Aggregator": "MyAggregator", // for custom aggregators only, it defaults to the default aggregator if not specified
+        "RouteKeys": [ "comments", "user" ], // order matters!
+        "RouteKeysConfig": [
+          {
+            "RouteKey": "user",
+            "JsonPath": "$[*].userId",
+            "Parameter": "userId" // "user" route placeholder name
+          }
+        ]
+      }
+    ],
+    "Routes": [
+      {
+        "DownstreamPathTemplate": "/users/{userId}",
+        "UpstreamPathTemplate": "/users/{userId}", // the placeholder name must match the "Parameter" in the RouteKeysConfig
+        "Key": "user",
+        // ...
+      },
+      {
+        "DownstreamPathTemplate": "/comments",
+        "UpstreamPathTemplate": "/comments",
+        "Key": "comments",
+        // ...
+      }
+    ]
+  }
+
+How it works:
+
+1. Ocelot calls the ``comments`` route first.
+2. It extracts values using the ``JsonPath`` (supports arrays).
+3. For each distinct value, it creates a new parameterized call to the ``user`` route (replacing ``{userId}``).
+4. All responses are passed to your custom aggregator (or the default one).
+5. The ``CurrentAggregateRouteKey`` item is set on each context for mapping back in the aggregator if needed.
+
+Example ``JsonPath`` scenarios:
+
+- ``$[*].userId`` → expands array of objects
+- ``$.user.id`` → single value
+- ``$..id`` → deep search (use carefully)
+
+Aggregate Manually?
+^^^^^^^^^^^^^^^^^^^
+  *This is a pilot feature introduced in version 25.0!*
+
+You can implement a :ref:`custom aggregator <agg-custom>` that handles the expanded responses:
+
+.. code-block:: csharp
+
+  public class MyComplexAggregator : IResponseAggregator
+  {
+      private const string CurrentAggregateRouteKey = MultiplexingMiddleware.CurrentAggregateRouteKeyItem;
+
+      public async Task Aggregate(Route route, HttpContext context, List<HttpContext> contexts)
+      {
+          // contexts will contain one entry per expanded call
+          var comments = await contexts.First(c => c.Items[CurrentAggregateRouteKey]?.ToString() == "comments")
+              .GetDownstreamResponse().Content.ReadAsStringAsync();
+
+          var users = contexts.Where(c => c.Items[CurrentAggregateRouteKey]?.ToString() == "user")
+              .Select(...);
+
+          // Combine as needed
+      }
+  }
+
+And configuration will look like:
+
+.. code-block:: json
+
+  {
+    "Aggregates": [
+      {
+        "UpstreamPathTemplate": "/aggregate-2",
+        "UpstreamHttpMethod": [ "Get" ],
+        "Aggregator": "MyComplexAggregator", // !!!
+        "RouteKeys": [ "comments", "user" ]
+        // "RouteKeysConfig": [] // Do NOT define!
+      }
+    ],
+  }
+
+Finally, replace the default ``SimpleJsonResponseAggregator`` service in the DI container:
+
+.. code-block:: csharp
+  :emphasize-lines: 6
+
+  using Ocelot.Multiplexer;
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .Services.RemoveAll<IResponseAggregator>()
+      .AddSingleton<IResponseAggregator, MyComplexAggregator>();
+
+.. note::
+ 1. You do not specify ``RouteKeysConfig`` options; instead, you manually combine data in the ``MyComplexAggregator.Aggregate`` method.
+ 2. Use custom aggregators for *complex aggregation* at your own risk. 
+
+.. warning::
+   Complex aggregation via custom aggregators is a pilot feature available since version `25.0`_.
+   Its quality has not been proven by thorough testing, and it may contain bugs.
+  
+.. _agg-custom:
 
 Custom Aggregators
 ------------------
@@ -277,17 +401,26 @@ Gotchas
 
 """"
 
-.. [#f1] This feature was requested as part of issue `79`_, and further improvements were made as part of issue `298`_. A significant refactoring and revision of the `Multiplexer <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Multiplexer>`_ design was carried out on March 4, 2024, in version `23.1`_. See pull requests `1462`_ and `1826`_ for more details.
-.. [#f2] The ":ref:`Complex Aggregation <agg-complex-aggregation>`" feature is still in its early stages, but it enables searching for data based on an initial request. This feature was requested as part of issue `661`_, introduced in pull request `704`_, and released in version `13.4`_.
-.. [#f3] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f1] This feature was requested as part of issue `79`_, and further improvements were made as part of issue `298`_.
+  A significant refactoring and revision of the `Multiplexer <https://github.com/ThreeMammals/Ocelot/tree/develop/src/Multiplexer>`_ design was carried out on March 4, 2024, in version `23.1`_.
+  See pull requests `1462`_ and `1826`_ for more details.
+.. [#f2] The ":ref:`Complex Aggregation <agg-complex>`" feature is still in its early stages, but it enables searching for data based on an initial request.
+   This feature was requested as part of issue `661`_, introduced in pull request `704`_, and released in version `13.4`_.
+   Since then, its quality has been ensured in issue `2248`_, stabilized in pull request `2328`_, and the patch was rolled out in version `25.0`_.
+.. [#f3] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container.
+  You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`.
+  See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 
 .. _79: https://github.com/ThreeMammals/Ocelot/issues/79
 .. _298: https://github.com/ThreeMammals/Ocelot/issues/298
 .. _661: https://github.com/ThreeMammals/Ocelot/issues/661
+.. _2248: https://github.com/ThreeMammals/Ocelot/issues/2248
 
 .. _704: https://github.com/ThreeMammals/Ocelot/pull/704
 .. _1462: https://github.com/ThreeMammals/Ocelot/pull/1462
 .. _1826: https://github.com/ThreeMammals/Ocelot/pull/1826
+.. _2328: https://github.com/ThreeMammals/Ocelot/pull/2328
 
 .. _13.4: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
 .. _23.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
