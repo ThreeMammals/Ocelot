@@ -42,10 +42,10 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         await Proxy(context, request, route);
     }
 
-    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, CancellationToken cancellation)
+    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(BufferSize); // TODO Better to add validation or log warning early, a constraint is required.
-        var buffer = new byte[BufferSize];
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize); // TODO Better to add validation or log warning early, a constraint is required.
+        var buffer = new byte[bufferSize];
         while (true)
         {
             WebSocketReceiveResult result = default;
@@ -96,7 +96,7 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
-        var bufferSize = route.WebSocketBufferSize ?? DefaultWebSocketBufferSize;
+        int bufferSize = route.WebSocketBufferSize ?? Default4KBufferSize;
         client.Options.SetBuffer(bufferSize, bufferSize);
 
         if (route.DangerousAcceptAnyServerCertificateValidator)

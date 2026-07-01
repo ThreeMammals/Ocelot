@@ -82,7 +82,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         await _middleware.Invoke(_context.Object);
 
         // Assert
-        _client.VerifyGet(x => x.Options, Times.Exactly(3));
+        _client.VerifyGet(x => x.Options, Times.Exactly(4));
         options.Verify(x => x.AddSubProtocol(It.IsAny<string>()), Times.Exactly(3));
         Assert.Equal(3, actualProtos.Count);
     }
@@ -109,7 +109,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         await _middleware.Invoke(_context.Object);
 
         // Assert
-        _client.VerifyGet(x => x.Options, Times.Exactly(1));
+        _client.VerifyGet(x => x.Options, Times.Exactly(2));
         options.Verify(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1));
         Assert.Single(actual);
         Assert.True(actual.ContainsKey("TestMe"));
@@ -138,7 +138,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         await _middleware.Invoke(_context.Object);
 
         // Assert
-        _client.VerifyGet(x => x.Options, Times.Exactly(1));
+        _client.VerifyGet(x => x.Options, Times.Exactly(2));
         options.Verify(x => x.SetRequestHeader(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1));
         Assert.Empty(actual);
     }
