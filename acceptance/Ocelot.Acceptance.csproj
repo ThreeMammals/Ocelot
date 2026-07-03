@@ -25,6 +25,17 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- ConfigurationBuilderExtensionsTests.Should_merge_routes_custom_properties -->
+    <None Update="Configuration\1183\ocelot.global.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\1183\ocelot.xservices.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\1183\ocelot.yservices.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!-- END OF ConfigurationBuilderExtensionsTests.Should_merge_routes_custom_properties -->
     <None Update="mycert.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

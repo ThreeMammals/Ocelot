@@ -11,7 +11,7 @@ public class ConfigurationBuilderExtensionsTests : Steps
     [Fact]
     public void Should_merge_routes_custom_properties()
     {
-        var folder = "MergeConfiguration"; // TODO Convert to dynamic temp test folder instead of static one
+        var folder = Path.Combine("Configuration", "1183"); // TODO Convert to dynamic temp test folder instead of static one
         this.Given(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
             .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
             .And(x => ShouldMergeWithCustomPropertyInXservices())
