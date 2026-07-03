@@ -1,18 +1,18 @@
-.. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
 .. role::  htm(raw)
     :format: html
 .. role:: pdf(raw)
    :format: latex pdflatex
 
 ##############
-Ocelot `24.1`_
+Ocelot `25.0`_
 ##############
 
 Thanks for taking a look at the Ocelot documentation!
 Please use the left hand **Navigation** sidebar to get around, or see the :htm:`<a class="reference internal" href="#toc"><span class="std std-ref">Table of Contents</span></a> below.` :pdf:`\textbf{Table of Contents} above.`
 
 The team recommends that newcomers to Ocelot's world start with the ":doc:`Introduction <../introduction/bigpicture>`" chapters.
-For seasoned fans of Ocelot with a Production environment, it is advised to always consult the :ref:`release-notes` in the :doc:`../releasenotes` section before upgrading the app to the latest `24.1`_ version.
+For seasoned fans of Ocelot with a Production environment, it is advised to always consult the :ref:`release-notes` in the :doc:`../releasenotes` section before upgrading the app to the latest `25.0`_ version.
 
 All **Features** are listed in alphabetical order.
 The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.

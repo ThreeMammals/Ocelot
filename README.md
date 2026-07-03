@@ -2,11 +2,13 @@
 
 [![Release Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
 [![Development Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=latest)
-[![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=main)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=main)
+[![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop)
+[![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
+[![codecov](https://codecov.io/gh/ThreeMammals/Ocelot/branch/develop/graph/badge.svg)](https://codecov.io/gh/ThreeMammals/Ocelot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
-[![NuGet](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=NuGet&color=blue)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
+[![NuGet](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
+<!-- [![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop) -->
 
 [~docspassing]: https://img.shields.io/badge/Docs-passing-44CC11?style=flat-square
 [~docsfailing]: https://img.shields.io/badge/Docs-failing-red?style=flat-square
@@ -30,13 +32,8 @@ There is a piece of middleware that maps the `HttpResponseMessage` onto the `Htt
 That is basically it, with a bunch of other features!
 
 ## Install
-Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net8.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^1]
-
-Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using NuGet package manager:
-```powershell
-Install-Package Ocelot
-```
-Or via the .NET CLI:
+Ocelot is designed to work with [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/) and it targets `net9.0` [STS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) and `net8.0`, `net10.0` [LTS](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types) target framework monikers ([TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks)). [^1]
+Install [Ocelot](https://www.nuget.org/packages/Ocelot) package and its dependencies using the .NET CLI:
 ```shell
 dotnet add package Ocelot
 ```
@@ -83,6 +80,142 @@ Feature groups are explained in the table below
 > Ocelot customizations can be configured using [Metadata](https://ocelot.readthedocs.io/en/latest/features/metadata.html), developed with [Delegating Handlers](https://ocelot.readthedocs.io/en/latest/features/delegatinghandlers.html), and in advanced scenarios, they can be developed and then configured with [Middleware Injection](https://ocelot.readthedocs.io/en/latest/features/middlewareinjection.html).
 For further details, refer to the [Documentation](#documentation).
 
+## :file_folder: Repository Structure
+
+Welcome to Ocelot's **minimalist folder organization**! Our repository follows a clean, flat structure that makes it easy to navigate and contribute. Here's where everything lives:
+
+### :dart: Quick Overview
+
+```
+Ocelot/
+├── 📦 src/                 # Main library source code (Ocelot NuGet package)
+│   ├── Configuration/       # Configuration system & builders
+│   ├── DependencyInjection/ # IoC setup & extension methods
+│   ├── Authentication/      # Auth middleware & schemes
+│   ├── RateLimiting/        # Rate limiting policies
+│   ├── Routing/             # Core routing logic
+│   └── ...                  # Other features (Caching, Load Balancing, etc.)
+│
+├── 🧪 unit/                    # Unit tests (fast, isolated tests)
+│   └── Ocelot.UnitTests.csproj  # Component-level test suite
+│
+├── ✅ acceptance/              # Integration tests (end-to-end scenarios)
+│   └── Ocelot.Acceptance.csproj # Full pipeline test suite
+│
+├── 📊 benchmark/               # Performance benchmarking
+│   └── Ocelot.Benchmarks.csproj # Using BenchmarkDotNet
+│
+├── 🚀 manual/                  # Manual testing & demo apps
+│   └── Ocelot.ManualTest.csproj # Sample applications
+│
+├── 🛠️ testing/                 # Shared test infrastructure (Ocelot.Testing NuGet package)
+│   └── Ocelot.Testing.csproj    # Common test utilities & helpers
+│
+├── 📖 docs/                    # Documentation source files (https://ocelot.readthedocs.io website)
+│   ├── *.rst files              # reStructuredText documentation
+│   └── make.* scripts           # Terminal build scripts for generating HTML docs
+│
+├── 📚 samples/                 # Example projects & demonstrations
+│
+├── ⚙️ .config/                 # Build & versioning configuration
+│   └── dotnet-tools.json        # CI and local building tools configuration
+│
+├── 🔧 .github/                 # GitHub-specific settings
+│   ├── steps/                   # CI/CD terminal scripts for GitHub Actions steps
+│   ├── workflows/               # CI/CD pipelines (GitHub Actions)
+│   └── *.md files               # Markdown configuration supporting GitHub process
+│
+└── 📋 Root Configuration       # Solution & project files
+    ├── Ocelot.slnx              # Visual Studio 2026+ solution (Ocelot development)
+    ├── Ocelot.Samples.slnx      # Visual Studio 2026+ solution (Ocelot samples)
+    ├── .editorconfig            # Code style & formatting rules
+    ├── build.cake               # Cake build automation (Release workflow only)
+    └── ReleaseNotes.md          # Template for release notes (used in GitHub Actions)
+```
+
+### :book: Folder Guide
+
+| Folder | Purpose | Who Uses It |
+|--------|---------|------------|
+| **[src](./src)** | Production source code for the Ocelot library | Core contributors, feature developers |
+| **[unit](./unit)** | Fast unit tests for individual components | All test writers, feature developers |
+| **[acceptance](./acceptance)** | Comprehensive integration & end-to-end tests | QA engineers, integration specialists |
+| **[benchmark](./benchmark)** | Performance measurement projects | Performance engineers, optimization team |
+| **[manual](./manual)** | Manual testing apps and code examples | QA team, demonstrations |
+| **[testing](./testing)** | Shared test utilities, base classes, helpers | Everyone writing tests |
+| **[docs](./docs)** | Documentation source (reStructuredText format) | Documentation maintainers |
+| **[samples](./samples)** | Example projects showing Ocelot features in action | Developers learning Ocelot, solution architects |
+| **[.config](./.config)** | Build scripts and version configuration | DevOps, release managers |
+| **[.github](./.github)** | CI/CD workflows and GitHub settings | DevOps, automation engineers |
+
+### :world_map: Where to Find Things
+
+<details>
+<summary><b>:memo: I want to...</b></summary>
+
+**See examples?**
+- Check `samples/` for complete working projects
+- Each sample demonstrates different Ocelot features
+- Great starting point for learning best practices
+
+**Add a new feature**
+- Create your feature directory under `src/`
+- Write unit tests in `unit/`
+- Add integration & end-to-end tests in `acceptance/`
+- Update docs in `docs/`
+
+**Fix a bug**
+- Find the component in `src/`
+- Create a test that reproduces the issue (in `unit/` or `acceptance/`)
+- Fix the bug
+- Verify the test passes
+
+**Write tests**
+- **Unit tests** → `unit/` (test individual methods/classes)
+- **Integration tests** → `acceptance/` (test workflows across components)
+- **End-to-end tests** → `acceptance/` (test complete user scenarios for HTTP conveyor)
+- **Shared utilities** → Check `testing/` for available base classes
+
+**Improve performance**
+- Add benchmarks in `benchmark/`
+- Compare before/after results
+- Document findings in PR description
+
+**Update documentation**
+- Edit `.rst` files in `docs/`
+- Build locally: `cd docs && make html`
+- Preview in `docs/_build/html/index.html`
+
+**Configure CI/CD**
+- GitHub Actions workflows in `.github/workflows/`
+- Build config in `.config/` and in `build.cake`
+- Cake build scripts in `build.cake`
+
+**Understand code layout**
+- Entry point: `src/DependencyInjection/ConfigurationBuilderExtensions.cs`
+- Core routing: `src/Routing/`
+- Middleware pipeline: `src/Middleware/`
+
+</details>
+
+### :rocket: Getting Started
+
+1. **New to Ocelot?** 
+   - Start with `src/DependencyInjection/` to understand the startup flow
+   - Read `docs/` for architecture and feature documentation
+
+2. **Want to run tests?**
+   - **Unit tests**: `dotnet test unit/Ocelot.UnitTests.csproj --verbosity quiet`
+   - **Acceptance tests**: `dotnet test acceptance/Ocelot.Acceptance.csproj`
+
+3. **Need to benchmark?**
+   - `cd benchmark && dotnet run -c Release`
+
+4. **[Contributing?](#contributing)** 
+   - Place code in appropriate folder (usually `src/FeatureName/`)
+   - Add tests in parallel structure under `unit/` or `acceptance/`
+   - Submit a pull request! :tada:
+
 ## Contributing
 You can see what we are working on in the [backlog](https://github.com/ThreeMammals/Ocelot/issues).
 We love to receive contributions from the community, so please keep them coming.
@@ -107,10 +240,11 @@ If you want to contribute for the first time, we suggest looking at a [![label: 
 [~goodfirstissue]: https://img.shields.io/badge/-good%20first%20issue-ffc4d8.svg
 
 ### Notes
-[^1]: Starting with version [21](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0) and higher, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to migrate to the currently supported [.NET 8 and 9](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) frameworks. Also, new features will be available for all .NET SDKs that we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
+[^1]: Starting with version [21](https://github.com/ThreeMammals/Ocelot/releases/tag/21.0.0) and higher, the solution's code base supports [Multitargeting](https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-multitargeting-overview) as SDK-style projects. It should be easier for teams to migrate to the currently supported [.NET 8, 9 and 10](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) frameworks. Also, new features will be available for all .NET SDKs that we support via multitargeting. Find out more here: [Target frameworks in SDK-style projects](https://learn.microsoft.com/en-us/dotnet/standard/frameworks)
 [^2]: [Ocelot Guru](https://gurubase.io/g/ocelot) is an unofficial tool to get answers regarding Ocelot: please consider it an advanced search tool. Thus, we have an official [Questions & Answers](https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a) category in the [Discussions](https://github.com/ThreeMammals/Ocelot/discussions) space.
-[^3]: Retry policies only via [Polly](https://github.com//App-vNext/Polly) library referenced within the [Ocelot.Provider.Polly](https://www.nuget.org/packages/Ocelot.Provider.Polly) extension package.
+[^3]: Retry policies only via [Polly](https://github.com//App-vNext/Polly) library referenced within the [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly) extension package, a former [Ocelot.Provider.Polly](https://www.nuget.org/packages/Ocelot.Provider.Polly) package.
 [^4]: Previously, the [Aggregation](https://ocelot.readthedocs.io/en/latest/features/aggregation.html) feature was called [Request Aggregation](https://ocelot.readthedocs.io/en/23.4.3/features/requestaggregation.html) in versions [23.4.3](https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3) and earlier. Internally, within the Ocelot team, this feature is referred to as [Multiplexer](https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Multiplexer).
-[^5]: Ocelot supports the following service discovery providers: (**1**) [Consul](https://www.consul.io) through the [Ocelot.Provider.Consul](https://www.nuget.org/packages/Ocelot.Provider.Consul) extension package, (**2**) [Kubernetes](https://kubernetes.io) via the [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) extension package, and (**3**) [Netflix Eureka](https://spring.io/projects/spring-cloud-netflix), which utilizes the [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka) package referenced within the [Ocelot.Provider.Eureka](https://www.nuget.org/packages/Ocelot.Provider.Eureka) extension package. Additionally, Ocelot supports (**4**) Azure [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) for service discovery, along with special modes such as [Dynamic Routing](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#dynamic-routing) and [Custom Providers](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#custom-providers).
+[^5]: Ocelot supports the following service discovery providers: (**1**) [Consul](https://www.consul.io) through the [Ocelot.Discovery.Consul](https://www.nuget.org/packages/Ocelot.Discovery.Consul) extension package, (**2**) [Kubernetes](https://kubernetes.io) via the [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes) extension package, and (**3**) [Netflix Eureka](https://spring.io/projects/spring-cloud-netflix), which utilizes the [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka) package referenced within the [Ocelot.Discovery.Eureka](https://www.nuget.org/packages/Ocelot.Discovery.Eureka) extension package. Additionally, Ocelot supports (**4**) Azure [Service Fabric](https://azure.microsoft.com/en-us/products/service-fabric/) for service discovery, along with special modes such as [Dynamic Routing](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#dynamic-routing) and [Custom Providers](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#custom-providers).
 [^6]: Ocelot does not directly support [GraphQL](https://graphql.org/). Developers can easily integrate the [GraphQL for .NET](https://github.com/graphql-dotnet/graphql-dotnet) library. 
 [^7]: See all [labels](https://github.com/ThreeMammals/Ocelot/issues/labels) for the repository, which are useful for searching and filtering.
+

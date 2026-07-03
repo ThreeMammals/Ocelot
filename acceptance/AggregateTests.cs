@@ -1,0 +1,539 @@
+//using IdentityServer4.AccessTokenValidation;
+//using IdentityServer4.Extensions;
+//using IdentityServer4.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Ocelot.AcceptanceTests.Authentication;
+using Ocelot.Configuration.File;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Multiplexer;
+using System.Text;
+
+namespace Ocelot.AcceptanceTests;
+
+public sealed class AggregateTests : Steps
+{
+    private readonly string[] _downstreamPaths;
+
+    public AggregateTests()
+    {
+        _downstreamPaths = new string[3];
+    }
+
+    [Fact]
+    [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
+    public void Should_fix_issue_597()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port, "key1", "/key1data/{userid}", "/api/values?MailId={userid}");
+        var route2 = GivenAggRoute(port, "key2", "/key2data/{userid}", "/api/values?MailId={userid}");
+        var route3 = GivenAggRoute(port, "key3", "/key3data/{userid}", "/api/values?MailId={userid}");
+        var route4 = GivenAggRoute(port, "key4", "/key4data/{userid}", "/api/values?MailId={userid}");
+        var configuration = GivenConfiguration(route1, route2, route3, route4);
+        configuration.Aggregates[0].UpstreamPathTemplate = "/EmpDetail/IN/{userid}";
+        configuration.Aggregates[0].UpstreamHost = null;
+        configuration.Aggregates.Add(new()
+        {
+            RouteKeys = ["key1", "key2"],
+            UpstreamPathTemplate = "/EmpDetail/US/{userid}",
+        });
+        configuration.GlobalConfiguration.RequestIdKey = "CorrelationID";
+        var expected = "{\"key1\":some_data,\"key2\":some_data}";
+        Scenario<AggregateTests>()
+            .Given(x => GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
+    [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
+    public void Should_return_response_200_with_advanced_aggregate_configs()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var port3 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Comments", "/Comments", "/");
+        var route2 = GivenAggRoute(port2, "UserDetails", "/UserDetails/{userId}", "/users/{userId}");
+        var route3 = GivenAggRoute(port3, "PostDetails", "/PostDetails/{postId}", "/posts/{postId}");
+        var configuration = GivenConfiguration(route1, route2, route3);
+        configuration.Aggregates[0].RouteKeysConfig =
+        [
+            new("UserDetails", "$[*].writerId", "userId"),
+            new("PostDetails", "$[*].postId", "postId"),
+        ];
+        var userDetailsResponseContent = @"{""id"":1,""firstName"":""abolfazl"",""lastName"":""rajabpour""}";
+        var postDetailsResponseContent = @"{""id"":1,""title"":""post1""}";
+        var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
+
+        var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
+            .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
+    [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
+    public void Should_return_response_200_with_simple_url_user_defined_aggregate()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        configuration.Aggregates[0].Aggregator = nameof(FakeDefinedAggregator);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    public void Should_return_response_200_with_simple_url()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    public void Should_return_response_200_with_simple_url_one_service_404()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    public void Should_return_response_200_with_simple_url_both_service_404()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}"))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    public void Should_be_thread_safe()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Laura", "/laura");
+        var route2 = GivenAggRoute(port2, "Tom", "/tom");
+        var configuration = GivenConfiguration(route1, route2);
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
+        .BDDfy();
+    }
+
+    private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+    {
+        var numberOfRequests = 100;
+        var aggregateUrl = "/";
+        var aggregateExpected = "{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}";
+        var tomUrl = "/tom";
+        var tomExpected = "{Hello from Tom}";
+        var lauraUrl = "/laura";
+        var lauraExpected = "{Hello from Laura}";
+
+        var aggregateTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            aggregateTasks[i] = Fire(aggregateUrl, aggregateExpected, random);
+        }
+
+        var tomTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            tomTasks[i] = Fire(tomUrl, tomExpected, random);
+        }
+
+        var lauraTasks = new Task[numberOfRequests];
+        for (var i = 0; i < numberOfRequests; i++)
+        {
+            lauraTasks[i] = Fire(lauraUrl, lauraExpected, random);
+        }
+
+        Task.WaitAll(lauraTasks);
+        Task.WaitAll(tomTasks);
+        Task.WaitAll(aggregateTasks);
+    }
+
+    private async Task Fire(string url, string expectedBody, Random random)
+    {
+        var request = new HttpRequestMessage(new HttpMethod("GET"), url);
+        await Task.Delay(random.Next(0, 2));
+        var response = await ocelotClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+        content.ShouldBe(expectedBody);
+    }
+
+    [Fact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
+    [Trait("Bug", "1396")] // https://github.com/ThreeMammals/Ocelot/issues/1396
+    [Trait("PR", "1462")] // https://github.com/ThreeMammals/Ocelot/pull/1462
+    public void Should_return_response_200_with_user_forwarding()
+    {
+    //    var port1 = PortFinder.GetRandomPort();
+    //    var port2 = PortFinder.GetRandomPort();
+    //    var port3 = PortFinder.GetRandomPort();
+    //    var route1 = GivenRouteWithKey(port1, "/laura", "Laura");
+    //    var route2 = GivenRouteWithKey(port2, "/tom", "Tom");
+    //    var configuration = GivenConfiguration(route1, route2);
+    //    var identityServerUrl = $"{Uri.UriSchemeHttp}://localhost:{port3}";
+    //    void configureOptions(IdentityServerAuthenticationOptions o)
+    //    {
+    //        o.Authority = identityServerUrl;
+    //        o.ApiName = "api";
+    //        o.RequireHttpsMetadata = false;
+    //        o.SupportedTokens = SupportedTokens.Both;
+    //        o.ApiSecret = "secret";
+    //        o.ForwardDefault = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+    //    }
+    //    Action<IServiceCollection> configureServices = s =>
+    //    {
+    //        s.AddOcelot();
+    //        s.AddMvcCore(mvc =>
+    //        {
+    //            var policy = new AuthorizationPolicyBuilder()
+    //                .RequireAuthenticatedUser()
+    //                .RequireClaim("scope", "api")
+    //                .Build();
+    //            mvc.Filters.Add(new AuthorizeFilter(policy));
+    //        });
+    //        s.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+    //            .AddIdentityServerAuthentication(configureOptions);
+    //    };
+    //    var count = 0;
+    //    var actualContexts = new HttpContext[2];
+    //    Action<IApplicationBuilder> configureApp = async (app) =>
+    //    {
+    //        var configuration = new OcelotPipelineConfiguration
+    //        {
+    //            PreErrorResponderMiddleware = async (context, next) =>
+    //            {
+    //                var auth = await context.AuthenticateAsync();
+    //                context.User = (auth.Succeeded && auth.Principal?.IsAuthenticated() == true)
+    //                    ? auth.Principal : null;
+    //                await next.Invoke();
+    //            },
+    //            AuthorizationMiddleware = (context, next) =>
+    //            {
+    //                actualContexts[count++] = context;
+    //                return next.Invoke();
+    //            },
+    //        };
+    //        await app.UseOcelot(configuration);
+    //    };
+    //    using (var auth = new AuthenticationTests())
+    //    {
+    //        this.Given(x => auth.GivenThereIsAnIdentityServerOn(identityServerUrl, AccessTokenType.Jwt))
+    //            .And(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
+    //            .And(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
+    //            .And(x => auth.GivenToken(identityServerUrl))
+    //            .And(x => auth.GivenThereIsAConfiguration(configuration))
+    //            .And(x => auth.GivenOcelotIsRunning(configureServices, configureApp))
+    //            .And(x => auth.GivenIHaveAddedATokenToMyRequest())
+    //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
+    //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+    //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
+    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
+    //            .BDDfy();
+    }
+
+    //    // Assert
+    //    for (var i = 0; i < actualContexts.Length; i++)
+    //    {
+    //        var ctx = actualContexts[i].ShouldNotBeNull();
+    //        ctx.Items.DownstreamRoute().Key.ShouldBe(configuration.Routes[i].Key);
+    //        var user = ctx.User.ShouldNotBeNull();
+    //        user.IsAuthenticated().ShouldBeTrue();
+    //        user.Claims.Count().ShouldBeGreaterThan(1);
+    //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
+    //    }
+    //}
+
+    #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
+    [Fact]
+    [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
+    public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(port2, "Service2", "/Service2", "/Sub2");
+        var configuration = GivenConfiguration(route1, route2);
+        var requestBody = @"{""id"":1,""response"":""fromBody-#REPLACESTRING#""}";
+        var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
+        var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
+        var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
+    public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
+    {
+        var port1 = PortFinder.GetRandomPort();
+        var port2 = PortFinder.GetRandomPort();
+        var route1 = GivenAggRoute(port1, "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(port2, "Service2", "/Service2", "/Sub2");
+        var configuration = GivenConfiguration(route1, route2);
+        var formValues = new[]
+        {
+            new KeyValuePair<string, string>("param1", "value1"),
+            new KeyValuePair<string, string>("param2", "from-form-REPLACESTRING"),
+        };
+        var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
+        var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
+        var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
+        this
+            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
+            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
+
+    private static string FormatFormCollection(IFormCollection reqForm)
+        => new StringBuilder()
+            .Append('"')
+            .AppendJoin(string.Empty, reqForm.Select(x => $"[{x.Key}:{x.Value}]"))
+            .Append('"')
+            .ToString();
+    #endregion PR 2050
+
+    [Fact]
+    [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
+    [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
+    public void Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
+    {
+        const string id = "id"; // placeholder
+        var commentsPort = PortFinder.GetRandomPort();
+        var usersPort = PortFinder.GetRandomPort();
+        var comments = GivenAggRoute(commentsPort, "comments", "/comments", "/comments");
+        var user = GivenAggRoute(usersPort, "user", $"/users/{{{id}}}", $"/users/{{{id}}}");
+        var configuration = GivenConfiguration(comments, user);
+        var aggregate = configuration.Aggregates[0];
+        aggregate.UpstreamPathTemplate = "/aggregatecommentuser";
+        aggregate.RouteKeysConfig = [
+            new(user.Key, "$[*].userId", id)
+        ];
+
+        const string CommentsResponseContent = "[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}]";
+        RequestDelegate MapJson = (ctx) =>
+        {
+            var parts = ctx.Request.Path.Value?.Trim('/').Split('/');
+            var ok = parts?.Length == 2 && parts[0] == "users" && int.TryParse(parts[1], out var id);
+            ctx.Response.StatusCode = ok ? (int)HttpStatusCode.OK : (int)HttpStatusCode.BadRequest;
+            ctx.Response.ContentType = "application/json";
+            return ctx.Response.WriteAsync(ok
+                ? $"{{\"id\":{parts![1]},\"name\":\"User-{parts[1]}\"}}"
+                : "{\"error\":\"bad id\"}");
+        };
+        var expected =
+            "{\"comments\":[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}],\"user\":[{\"id\":1,\"name\":\"User-1\"},{\"id\":2,\"name\":\"User-2\"}]}";
+
+        this.Given(x => GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent))
+            .Given(x => GivenThereIsAServiceRunningOn(usersPort, "/", MapJson))
+            .And(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => GivenOcelotIsRunning())
+            .When(_ => WhenIGetUrlOnTheApiGateway("/aggregatecommentuser"))
+            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => ThenTheResponseBodyShouldBe(expected))
+        .BDDfy();
+    }
+
+    private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, context =>
+        {
+            context.Response.StatusCode = (int)statusCode;
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsync(responseBody);
+        });
+    }
+
+    private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, string responseBody)
+        => GivenServiceIsRunning(index, port, basePath, statusCode,
+            async context =>
+            {
+                await context.Response.WriteAsync(responseBody);
+            });
+
+    private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<string, string> responseFromBody)
+        => GivenServiceIsRunning(index, port, basePath, statusCode,
+            async context =>
+            {
+                var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                var responseBody = responseFromBody(requestBody);
+                await context.Response.WriteAsync(responseBody);
+            });
+
+    private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Func<IFormCollection, string> responseFromForm)
+        => GivenServiceIsRunning(index, port, basePath, statusCode,
+            async context =>
+            {
+                var responseBody = responseFromForm(context.Request.Form);
+                await context.Response.WriteAsync(responseBody);
+            });
+
+    private void GivenServiceIsRunning(int index, int port, string basePath, int statusCode, Action<HttpContext> processContext)
+    {
+        handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
+        {
+            _downstreamPaths[index] = !string.IsNullOrEmpty(context.Request.PathBase.Value)
+                ? context.Request.PathBase.Value
+                : context.Request.Path.Value;
+
+            if (_downstreamPaths[index] != basePath)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await context.Response.WriteAsync("downstream path doesn't match base path");
+            }
+            else
+            {
+                context.Response.StatusCode = statusCode;
+                processContext?.Invoke(context);
+            }
+        });
+    }
+
+    private void GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<TAggregator, TDependency>()
+        where TAggregator : class, IDefinedAggregator
+        where TDependency : class
+    {
+        static void WithSpecificAggregators(IServiceCollection services) => services
+            .AddSingleton<TDependency>()
+            .AddOcelot()
+            .AddSingletonDefinedAggregator<TAggregator>();
+        GivenOcelotIsRunning(WithSpecificAggregators);
+    }
+
+    private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPathOne, string expectedDownstreamPath)
+    {
+        _downstreamPaths[0].ShouldBe(expectedDownstreamPathOne);
+        _downstreamPaths[1].ShouldBe(expectedDownstreamPath);
+    }
+
+    private FileRoute GivenAggRoute(int port, string key, string upstream = null, string downstream = null)
+    {
+        var r = GivenRoute(port, upstream, downstream);
+        r.Key = key;
+        return r;
+    }
+
+    public override FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    {
+        var conf = base.GivenConfiguration(routes);
+        conf.Aggregates.Add(new()
+            {
+                UpstreamPathTemplate = "/",
+                UpstreamHost = "localhost",
+                RouteKeys = [.. routes.Select(r => r.Key)], // [ "Laura", "Tom" ],
+            });
+        return conf;
+    }
+}
+
+public class FakeDep { }
+
+public class FakeDefinedAggregator : IDefinedAggregator
+{
+    public FakeDefinedAggregator(FakeDep dep) { }
+
+    public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
+    {
+        var one = await responses[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
+        var two = await responses[1].Items.DownstreamResponse().Content.ReadAsStringAsync();
+
+        var merge = $"{one}, {two}";
+        merge = merge.Replace("Hello", "Bye").Replace("{", "").Replace("}", "");
+        var headers = responses.SelectMany(x => x.Items.DownstreamResponse().Headers).ToList();
+        return new DownstreamResponse(new StringContent(merge), HttpStatusCode.OK, headers, "some reason");
+    }
+}

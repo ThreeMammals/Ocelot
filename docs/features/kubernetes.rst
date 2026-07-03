@@ -15,7 +15,8 @@
 
 .. _KubeClient: https://www.nuget.org/packages/KubeClient
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
-.. _package: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
+.. _Ocelot.Discovery.KubeClient: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
+.. _package: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
 
 |K8sLogo| Kubernetes (K8s) [#f1]_
 =================================
@@ -26,9 +27,6 @@
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in pull request `1134`_ because the service did not load balance as expected.
 
-Our NuGet `Ocelot.Provider.Kubernetes`_ extension package is based on the `KubeClient`_ package.
-For a comprehensive understanding, it is essential refer to the `KubeClient`_ documentation.
-
 .. _k8s-install:
 
 Install
@@ -38,7 +36,16 @@ The first thing you need to do is install the `package`_ that provides |logo-kub
 
 .. code-block:: powershell
 
-    Install-Package Ocelot.Provider.Kubernetes
+    dotnet add package Ocelot.Discovery.KubeClient
+
+.. note::
+  Our NuGet `Ocelot.Discovery.KubeClient`_ extension package is based on the `KubeClient`_ package.
+  For a comprehensive understanding, it is essential refer to the `KubeClient`_ documentation.
+
+.. warning::
+  Prior to version `25.0`_, the package was named `Ocelot.Provider.Kubernetes`_.
+  If you are using version `24.1`_ or earlier, install the `Ocelot.Provider.Kubernetes`_ package.
+  For version `25.0`_ and later, the package ID is `Ocelot.Discovery.KubeClient`_.
 
 ``AddKubernetes(bool)`` method
 ------------------------------
@@ -388,3 +395,4 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
