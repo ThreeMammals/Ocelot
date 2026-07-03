@@ -212,15 +212,14 @@ Depending on your build scenario, `Ocelot`_ *testing* can be performed as follow
 
    .. code-block:: shell
 
-      dotnet test -f net8.0 ./Ocelot.sln
+      dotnet test -f net10.0 ./Ocelot.slnx
 
    Or run tests separately per project:
 
    .. code-block:: shell
 
-      dotnet test -f net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj  # Unit tests only
-      dotnet test -f net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj  # Integration tests only
-      dotnet test -f net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj  # Acceptance tests only
+      dotnet test -f net10.0 ./unit/Ocelot.UnitTests.csproj  # Unit tests only
+      dotnet test -f net10.0 ./acceptance/Ocelot.Acceptance.csproj  # Acceptance tests only
 
 2. Run ``dotnet cake`` command: ``dotnet cake --target=Tests`` to perform all tests (unit, integration and acceptance).
    Or run tests separately per *testing* project:
@@ -228,7 +227,6 @@ Depending on your build scenario, `Ocelot`_ *testing* can be performed as follow
    .. code-block:: shell
 
       dotnet cake --target=UnitTests # unit tests only
-      dotnet cake --target=IntegrationTests # integration tests only
       dotnet cake --target=AcceptanceTests # acceptance tests only
 
 :ref:`b-with-docker`: This approach is not recommended.
