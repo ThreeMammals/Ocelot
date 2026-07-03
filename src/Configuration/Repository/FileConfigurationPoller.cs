@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Repository;
@@ -122,7 +123,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
             }
             catch (Exception e)
             {
-                _logger.LogWarning(() => $"{nameof(Poll)}: Error getting {nameof(FileConfiguration)} -> {e}.");
+                _logger.LogWarning(() => $"{nameof(Poll)}: Error getting {nameof(FileConfiguration)} -> {e.AllMessages}.");
                 return;
             }
 
@@ -165,7 +166,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
             }
             catch (Exception e)
             {
-                _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e}.");
+                _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e.AllMessages}.");
                 return;
             }
 

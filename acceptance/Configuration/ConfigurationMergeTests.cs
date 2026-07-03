@@ -43,7 +43,6 @@ public sealed class ConfigurationMergeTests : Steps
     [Theory]
     [Trait("Bug", "2084")] // https://github.com/ThreeMammals/Ocelot/issues/2084
     [Trait("Release", "23.3.4")] // https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.4
-    [Trait("Bug", "2084")] // https://github.com/ThreeMammals/Ocelot/issues/2084
     [InlineData(MergeOcelotJson.ToFile, true)]
     [InlineData(MergeOcelotJson.ToMemory, false)]
     public void ShouldRunWithGlobalConfigMerged_WithImplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)

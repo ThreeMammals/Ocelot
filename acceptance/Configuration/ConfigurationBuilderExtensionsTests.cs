@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
+using Ocelot.AcceptanceTests;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Configuration;
 
 public class ConfigurationBuilderExtensionsTests : Steps
 {
@@ -21,8 +22,6 @@ public class ConfigurationBuilderExtensionsTests : Steps
     }
 
     private void GivenOcelotIsRunningWithMultipleConfigs(string folder)
-
-        // => StartOcelot((context, config) => config.AddOcelot(folder, context.HostingEnvironment), "Env");
         => GivenOcelotIsRunning((context, config) => config.AddOcelot(folder, context.HostingEnvironment));
 
     private async Task ThenConfigContentShouldHaveThreeRoutes(string folder)

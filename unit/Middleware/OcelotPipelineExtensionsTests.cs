@@ -400,10 +400,11 @@ public class OcelotPipelineExtensionsTests : UnitTest
     private static readonly Func<HttpContext, Func<Task>, Task> NullMiddleware = null;
     private static Task CustomMiddleware(HttpContext context, Func<Task> next) => Task.CompletedTask;
 
-    public class TestMiddleware(RequestDelegate _, IOcelotLoggerFactory logging)
+    public class TestMiddleware(RequestDelegate next, IOcelotLoggerFactory logging)
         : OcelotMiddleware(logging.CreateLogger<TestMiddleware>())
     {
-        public Task Invoke(HttpContext _) => Task.CompletedTask;
+        private readonly RequestDelegate _next = next;
+        public Task Invoke(HttpContext c) => _next.Invoke(c);
     }
     private class MyWsMiddleware : WebSocketsProxyMiddleware
     {
