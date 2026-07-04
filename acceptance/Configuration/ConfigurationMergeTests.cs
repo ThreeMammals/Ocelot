@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -24,6 +25,7 @@ public sealed class ConfigurationMergeTests : Steps
     [Theory]
     [Trait("Bug", "1216")] // https://github.com/ThreeMammals/Ocelot/issues/1216
     [Trait("Feat", "1227")] // https://github.com/ThreeMammals/Ocelot/pull/1227
+    [Trait("Release", "23.2.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
     [InlineData(MergeOcelotJson.ToFile, true)]
     [InlineData(MergeOcelotJson.ToMemory, false)]
     public void ShouldRunWithGlobalConfigMerged_WithExplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
@@ -78,6 +80,22 @@ public sealed class ConfigurationMergeTests : Steps
             .And(x => ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName))
         .BDDfy();
     }
+
+    [Fact]
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public void Should_merge_routes_custom_properties_via_JToken()
+    {
+        var folder = Path.Combine("Configuration", "1183"); // TODO Convert to dynamic temp test folder instead of static one
+        this.Given(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
+            .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
+            .And(x => ShouldMergeWithCustomPropertyInXservices())
+            .And(x => ShouldMergeWithCustomGlobalProperty())
+            .And(x => ShouldMergeWithCustomPropertyInYservices())
+        .BDDfy();
+    }
+
     private static void ThenPrimaryConfigFileExistsInTheFolder(string folder, bool fileExist)
     {
         var actualLocation = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
@@ -120,9 +138,56 @@ public sealed class ConfigurationMergeTests : Steps
         Key = testName + suffix,
         UpstreamPathTemplate = "/" + suffix,
         UpstreamHttpMethod = [ nameof(FileRoute.UpstreamHttpMethod) + suffix ],
-        DownstreamHostAndPorts = new()
-        {
-            new(nameof(FileHostAndPort.Host) + suffix, 80),
-        },
+        DownstreamHostAndPorts = [ new(nameof(FileHostAndPort.Host) + suffix, 80) ],
     };
+
+    #region PR 1183
+    private JObject _config;
+    private void GivenOcelotIsRunningWithMultipleConfigs(string folder)
+        => GivenOcelotIsRunning((context, config) => config.AddOcelot(folder, context.HostingEnvironment));
+
+    private async Task ThenConfigContentShouldHaveThreeRoutes(string folder)
+    {
+        const int three = 3;
+        var mergedConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        File.Exists(mergedConfigFile).ShouldBeTrue();
+        var lines = await File.ReadAllTextAsync(mergedConfigFile);
+        _config = JObject.Parse(lines).ShouldNotBeNull();
+        var routes = _config[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
+        routes.Children().Count().ShouldBe(three);
+    }
+
+    private void ShouldMergeWithCustomPropertyInXservices()
+    {
+        var customPropertyX = PropertyShouldExist("CustomStrategyProperty");
+        customPropertyX["GET"].ShouldNotBeNull();
+        customPropertyX["GET"].Children().Count().ShouldBe(1);
+        customPropertyX["GET"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodA");
+        customPropertyX["POST"].ShouldNotBeNull();
+        customPropertyX["POST"].Children().Count().ShouldBe(1);
+        customPropertyX["POST"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodB");
+    }
+
+    private void ShouldMergeWithCustomGlobalProperty()
+    {
+        var customPropertyGlobal = PropertyShouldExist("SomethingMore");
+        customPropertyGlobal.ShouldBe("something");
+    }
+
+    private void ShouldMergeWithCustomPropertyInYservices()
+    {
+        var customPropertyY = PropertyShouldExist("MyCustomProperty");
+        customPropertyY.ShouldBeAssignableTo(typeof(JArray));
+        customPropertyY.Count().ShouldBe(1);
+        customPropertyY.First().ShouldBe("myValue");
+    }
+
+    private JToken PropertyShouldExist(string propertyName)
+    {
+        var routeWithProperty = _config[nameof(FileConfiguration.Routes)].Children()
+            .SingleOrDefault(route => route[propertyName] != null)
+            .ShouldNotBeNull();
+        return routeWithProperty[propertyName].ShouldNotBeNull();
+    }
+    #endregion PR 1183
 }

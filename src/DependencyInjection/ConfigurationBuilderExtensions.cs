@@ -229,9 +229,7 @@ public static partial class ConfigurationBuilderExtensions
     private static void MergeConfig(JToken to, JToken from, bool isGlobal)
     {
         if (isGlobal)
-        {
             MergeConfigSection(to, from, nameof(FileConfiguration.GlobalConfiguration));
-        }
 
         MergeConfigSection(to, from, nameof(FileConfiguration.Aggregates));
         MergeConfigSection(to, from, nameof(FileConfiguration.Routes));
@@ -243,18 +241,12 @@ public static partial class ConfigurationBuilderExtensions
         var destination = to.GetSection(sectionName);
         var source = from.GetSection(sectionName);
         if (source == null || destination == null)
-        {
             return;
-        }
 
         if (source is JObject)
-        {
             to.SetSection(sectionName, source);
-        }
         else if (source is JArray)
-        {
             (destination as JArray).Merge(source);
-        }
     }
 
     public static JToken GetSection(this JToken token, string name)
@@ -271,12 +263,8 @@ public static partial class ConfigurationBuilderExtensions
         var prop = obj?.Properties()
             .FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (prop != null)
-        {
             prop.Value = value;
-        }
         else
-        {
             obj.Add(name, value);
-        }
     }
 }

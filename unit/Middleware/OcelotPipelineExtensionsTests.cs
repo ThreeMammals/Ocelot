@@ -404,7 +404,7 @@ public class OcelotPipelineExtensionsTests : UnitTest
         : OcelotMiddleware(logging.CreateLogger<TestMiddleware>())
     {
         private readonly RequestDelegate _next = next;
-        public Task Invoke(HttpContext c) => _next.Invoke(c);
+        public Task Invoke(HttpContext c) => _next?.Invoke(c);
     }
     private class MyWsMiddleware : WebSocketsProxyMiddleware
     {
