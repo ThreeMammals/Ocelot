@@ -23,4 +23,13 @@ public static class ExceptionExtensions
     /// <returns>A <see langword="string" /> with all messages inside.</returns>
     public static string GetMessages(this Exception ex)
         => AllMessages(ex).ToString();
+
+    /// <summary>
+    /// Converts an exception to a <see langword="string" /> containing the type name (without namespace) and all inner exception messages.
+    /// </summary>
+    /// <remarks>Format: "{type_name}: {messages}"</remarks>
+    /// <param name="ex">The exception to convert.</param>
+    /// <returns>A <see langword="string" /> containing the type name and all exception messages.</returns>
+    public static string ToShortString(this Exception ex)
+        => $"{ex.GetType().Name}: {GetMessages(ex)}";
 }

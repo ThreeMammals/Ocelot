@@ -123,7 +123,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
             }
             catch (Exception e)
             {
-                _logger.LogWarning(() => $"{nameof(Poll)}: Error getting {nameof(FileConfiguration)} -> {e.AllMessages}.");
+                _logger.LogWarning(() => $"{nameof(Poll)}: Error getting {nameof(FileConfiguration)} -> {e}.");
                 return;
             }
 
@@ -166,7 +166,7 @@ public class FileConfigurationPoller : IFileConfigurationPoller, IHostedService,
             }
             catch (Exception e)
             {
-                _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e.AllMessages}.");
+                _logger.LogWarning(() => $"{nameof(PollAsync)}: Error getting {nameof(FileConfiguration)} -> {e}.");
                 return;
             }
 

@@ -68,7 +68,7 @@ public class FileConfigurationControllerTests : UnitTest
         var badRequest = result as BadRequestObjectResult;
         Assert.IsType<string>(badRequest.Value);
         string msg = badRequest.Value as string;
-        Assert.Equal($"Get failed{NL}", msg);
+        Assert.Equal("Exception: Get failed" + NL, msg);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class FileConfigurationControllerTests : UnitTest
         var actual = result as BadRequestObjectResult;
         Assert.IsType<string>(actual.Value);
         var msg = actual.Value as string;
-        Assert.Equal($"Service failed{NL}", msg);
+        Assert.Equal("Exception: Service failed" + NL, msg);
     }
 
     private class FakeError : Error

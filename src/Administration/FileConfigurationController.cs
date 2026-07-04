@@ -32,7 +32,7 @@ public class FileConfigurationController : Controller
         }
         catch (Exception e)
         {
-            return BadRequest(e.GetMessages());
+            return BadRequest(e.ToShortString());
         }
 
         return (configuration is null)
@@ -50,7 +50,7 @@ public class FileConfigurationController : Controller
         }
         catch (Exception e)
         {
-            return BadRequest(e.GetMessages());
+            return BadRequest(e.ToShortString());
         }
     }
 }
