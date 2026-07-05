@@ -139,10 +139,10 @@ public static partial class ConfigurationBuilderExtensions
             }
 
             var lines = File.ReadAllText(file.FullName);
-            dynamic config = JToken.Parse(lines);
+            dynamic fromConfig = JToken.Parse(lines);
             bool isGlobal = file.Name.Equals(globalFileInfo.Name, StringComparison.OrdinalIgnoreCase) &&
                 file.FullName.Equals(globalFileInfo.FullName, StringComparison.OrdinalIgnoreCase);
-            MergeConfig(fcMerged, config, isGlobal);
+            OcelotMergeConfiguration(fcMerged, fromConfig, isGlobal);
         }
 
         return ((JObject)fcMerged).ToString();
@@ -204,7 +204,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="optional">The 2nd argument of the AddJsonFile.</param>
     /// <param name="reloadOnChange">The 3rd argument of the AddJsonFile.</param>
     /// <returns>An <see cref="IConfigurationBuilder"/> object.</returns>
-    private static IConfigurationBuilder AddOcelotJsonFile(IConfigurationBuilder builder, string json,
+    public static IConfigurationBuilder AddOcelotJsonFile(this IConfigurationBuilder builder, string json,
         string primaryFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
     {
         var primary = primaryFile ?? PrimaryConfigFile;
@@ -226,30 +226,32 @@ public static partial class ConfigurationBuilderExtensions
         string primaryFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
         => builder.AddJsonFile(primaryFile ?? PrimaryConfigFile, optional ?? false, reloadOnChange ?? false);
 
-    private static void MergeConfig(JToken to, JToken from, bool isGlobal)
+    public static void OcelotMergeConfiguration(this JToken to, JToken from, bool isGlobal)
     {
         if (isGlobal)
-            MergeConfigSection(to, from, nameof(FileConfiguration.GlobalConfiguration));
+            to.OcelotMergeConfigurationSection(from, nameof(FileConfiguration.GlobalConfiguration));
 
-        MergeConfigSection(to, from, nameof(FileConfiguration.Aggregates));
-        MergeConfigSection(to, from, nameof(FileConfiguration.Routes));
-        MergeConfigSection(to, from, nameof(FileConfiguration.DynamicRoutes));
+        to.OcelotMergeConfigurationSection(from, nameof(FileConfiguration.Aggregates))
+          .OcelotMergeConfigurationSection(from, nameof(FileConfiguration.Routes))
+          .OcelotMergeConfigurationSection(from, nameof(FileConfiguration.DynamicRoutes));
     }
 
-    private static void MergeConfigSection(JToken to, JToken from, string sectionName)
+    public static JToken OcelotMergeConfigurationSection(this JToken to, JToken from, string sectionName)
     {
-        var destination = to.GetSection(sectionName);
-        var source = from.GetSection(sectionName);
+        var destination = to.OcelotGetSection(sectionName);
+        var source = from.OcelotGetSection(sectionName);
         if (source == null || destination == null)
-            return;
+            return to;
 
         if (source is JObject)
-            to.SetSection(sectionName, source);
+            to.OcelotSetSection(sectionName, source);
         else if (source is JArray)
             (destination as JArray).Merge(source);
+
+        return to;
     }
 
-    public static JToken GetSection(this JToken token, string name)
+    public static JToken OcelotGetSection(this JToken token, string name)
     {
         var obj = token as JObject;
         return obj?.Properties()
@@ -257,7 +259,7 @@ public static partial class ConfigurationBuilderExtensions
             ?.Value;
     }
 
-    public static void SetSection(this JToken to, string name, JToken value)
+    public static void OcelotSetSection(this JToken to, string name, JToken value)
     {
         JObject obj = to as JObject;
         var prop = obj?.Properties()

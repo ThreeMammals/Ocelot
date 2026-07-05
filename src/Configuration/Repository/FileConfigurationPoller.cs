@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
-using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 
 namespace Ocelot.Configuration.Repository;
