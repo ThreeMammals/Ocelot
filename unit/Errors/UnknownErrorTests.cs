@@ -1,11 +1,25 @@
-﻿using Ocelot.Errors;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
 
 namespace Ocelot.UnitTests.Errors;
 
 public class UnknownErrorTests
 {
     [Fact]
-    public void Constructor_SetsCorrectErrorCode_AndStatusCode()
+    public void DefaultConstructor_SetsCorrectProperties()
+    {
+        // Act
+        var error = new UnknownError();
+
+        // Assert
+        Assert.Equal(string.Empty, error.Message);
+        Assert.Equal(OcelotErrorCode.UnknownError, error.Code);
+        Assert.Equal(StatusCodes.Status500InternalServerError, error.HttpStatusCode);
+        Assert.Null(error.Exception);
+    }
+
+    [Fact]
+    public void MessageConstructor_SetsCorrectProperties()
     {
         // Arrange
         const string expectedMessage = "An unknown error occurred during configuration loading";
@@ -16,12 +30,28 @@ public class UnknownErrorTests
         // Assert
         Assert.Equal(expectedMessage, error.Message);
         Assert.Equal(OcelotErrorCode.UnknownError, error.Code);
-        Assert.Equal(0, error.HttpStatusCode);
+        Assert.Equal(StatusCodes.Status500InternalServerError, error.HttpStatusCode);
         Assert.Null(error.Exception);
     }
 
     [Fact]
-    public void ToString_ReturnsCorrectFormat()
+    public void ExceptionConstructor_SetsCorrectProperties()
+    {
+        // Arrange
+        var innerException = new InvalidOperationException("Test inner exception");
+
+        // Act
+        var error = new UnknownError(innerException);
+
+        // Assert
+        Assert.Equal("Test inner exception", error.Message); // Assuming base uses exception.Message
+        Assert.Equal(OcelotErrorCode.UnknownError, error.Code);
+        Assert.Equal(StatusCodes.Status500InternalServerError, error.HttpStatusCode);
+        Assert.Same(innerException, error.Exception);
+    }
+
+    [Fact]
+    public void ToString_ReturnsCorrectFormat_ForMessageConstructor()
     {
         // Arrange
         const string message = "Test unknown error";
@@ -35,6 +65,19 @@ public class UnknownErrorTests
     }
 
     [Fact]
+    public void ToString_ReturnsCorrectFormat_ForDefaultConstructor()
+    {
+        // Arrange
+        var error = new UnknownError();
+
+        // Act
+        var result = error.ToString();
+
+        // Assert
+        Assert.Equal("UnknownError: ", result);
+    }
+
+    [Fact]
     public void Inherits_From_Error_BaseClass()
     {
         // Act
@@ -42,5 +85,19 @@ public class UnknownErrorTests
 
         // Assert
         Assert.IsAssignableFrom<Error>(error);
+    }
+
+    [Fact]
+    public void ExceptionConstructor_NullArgument_ThrownArgumentNullException()
+    {
+        // Arrange
+        Exception exception = null;
+
+        // Act
+        var actual = Assert.Throws<ArgumentNullException>(
+            () => new UnknownError(exception));
+
+        // Assert
+        Assert.Equal(nameof(exception), actual.ParamName);
     }
 }
