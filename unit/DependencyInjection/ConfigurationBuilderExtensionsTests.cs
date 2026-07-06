@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,9 @@ namespace Ocelot.UnitTests.DependencyInjection;
 public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderExtensionsTestsBase
 {
     private IConfigurationRoot _configRoot;
+    private readonly ITestOutputHelper _output;
+    public ConfigurationBuilderExtensionsTests(ITestOutputHelper output)
+        => _output = output;
 
     //protected override string EnvironmentName()
     //    => _hostingEnvironment?.Object?.EnvironmentName ?? base.EnvironmentName();
@@ -32,6 +36,12 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     }
 
     [Fact]
+    [Trait("Feat", "1228")] // https://github.com/ThreeMammals/Ocelot/issues/1228
+    [Trait("Feat", "1235")] // https://github.com/ThreeMammals/Ocelot/issues/1235
+    [Trait("Bug", "1247")] // https://github.com/ThreeMammals/Ocelot/issues/1247
+    [Trait("PR", "1569")] // https://github.com/ThreeMammals/Ocelot/pull/1569
+    [Trait("Commit", "4d245ec")] // https://github.com/ThreeMammals/Ocelot/commit/4d245ec7fa89b35189c8e2082238ddf1f590dcf8
+    [Trait("Release", "20.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
     public void Should_store_given_configurations_when_provided_file_configuration_object()
     {
         // Arrange
@@ -39,7 +49,9 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         var configuration = GivenCombinedFileConfigurationObject();
 
         // Act
-        WhenIAddOcelotConfigurationWithCombinedFileConfiguration(configuration);
+        _configRoot = new ConfigurationBuilder()
+            .AddOcelot(configuration, primaryConfigFileName, false, false)
+            .Build();
 
         // Assert
         ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(true, configuration);
@@ -125,13 +137,6 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         var config = ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(false);
         Assert.NotNull(config);
         Assert.Equal(TestName(), config.GlobalConfiguration.RequestIdKey);
-    }
-
-    private void WhenIAddOcelotConfigurationWithCombinedFileConfiguration(FileConfiguration configuration)
-    {
-        _configRoot = new ConfigurationBuilder()
-            .AddOcelot(configuration, primaryConfigFileName, false, false)
-            .Build();
     }
 
     private void WhenIAddOcelotConfiguration(string folder, MergeOcelotJson mergeOcelotJson = MergeOcelotJson.ToFile)
@@ -495,6 +500,291 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         // But routes from other sub-configurations should be present
         Assert.Contains(actual.Routes, x => x.Key == "A");
         Assert.Contains(actual.Routes, x => x.Key == "B");
+    }
+
+    [Fact]
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public void GetMergedOcelotJson_GuardSchema_WhenInvalidSchema_ShouldInitializeTopLevelCollections()
+    {
+        // Arrange
+        GivenTheEnvironmentIs(TestID);
+        var configuration = new FileConfiguration
+        {
+            Aggregates = null,
+            Routes = null,
+            DynamicRoutes = null,
+            GlobalConfiguration = null,
+        };
+
+        // Act
+        var json = ConfigurationBuilderExtensions.GetMergedOcelotJson(TestID, _hostingEnvironment.Object, fileConfiguration: configuration);
+
+        // Assert
+        Assert.NotEmpty(json);
+        Assert.NotNull(configuration.Aggregates);
+        Assert.NotNull(configuration.Routes);
+        Assert.NotNull(configuration.DynamicRoutes);
+        Assert.NotNull(configuration.GlobalConfiguration);
+        dynamic actual = JObject.Parse(json);
+        Assert.NotNull(actual.GlobalConfiguration);
+        Assert.IsType<JObject>(actual.GlobalConfiguration);
+        AssertJArray(actual.Aggregates);
+        AssertJArray(actual.Routes);
+        AssertJArray(actual.DynamicRoutes);
+        static void AssertJArray(dynamic obj)
+        {
+            Assert.NotNull(obj);
+            Assert.IsType<JArray>(obj);
+            JArray arr = obj as JArray;
+            Assert.Empty(arr);
+        }
+    }
+
+    [Fact]
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public void AddOcelot_JObject_SerializedToFile()
+    {
+        // Arrange
+        GivenTheEnvironmentIs(TestID);
+        var configuration = GivenCombinedFileConfigurationObject();
+        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+        JObject jobjConfiguration = JObject.Parse(json);
+
+        // Act
+        _configRoot = new ConfigurationBuilder()
+            .AddOcelot(jobjConfiguration, primaryConfigFileName, null, null)
+            .Build();
+
+        // Assert
+        ThenTheConfigsAreMergedAndAddedInApplicationConfiguration(true, configuration);
+        TheOcelotPrimaryConfigFileExists();
+        var actual = _configRoot["GlobalConfiguration:RequestIdKey"];
+        Assert.Equal(TestName(), actual);
+    }
+
+    [Fact]
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public void OcelotMergeConfigurationSection_WhenSourceSectionIsNeitherJObjectNorJArray_DoesNothingAndReturnsTargetUnchanged()
+    {
+        // Arrange
+        var target = JObject.Parse(@"
+        {
+          ""Routes"": [
+            { ""Key"": ""route1"" }
+          ],
+          ""GlobalConfiguration"": {
+            ""BaseUrl"": ""https://ocelot.net""
+          }
+        }");
+
+        var source = JObject.Parse(@"
+        {
+          ""Routes"": ""this-is-a-string-not-array-or-object"",  // Deliberately not JArray / JObject
+          ""GlobalConfiguration"": 12345                         // Deliberately not JObject / JArray
+        }");
+
+        // Act
+        var result = target.OcelotMergeConfigurationSection(source, "Routes");
+        result = result.OcelotMergeConfigurationSection(source, "GlobalConfiguration");
+
+        // Assert
+        Assert.Same(target, result); // Should return the original target (fluent)
+
+        // Routes section should remain unchanged
+        var routesAfter = target.OcelotGetSection("Routes") as JArray;
+        Assert.NotNull(routesAfter);
+        Assert.Single(routesAfter);
+        Assert.Equal("route1", routesAfter[0]["Key"].Value<string>());
+
+        // GlobalConfiguration section should remain unchanged
+        var globalAfter = target.OcelotGetSection("GlobalConfiguration") as JObject;
+        Assert.NotNull(globalAfter);
+        Assert.Equal("https://ocelot.net", globalAfter["BaseUrl"].Value<string>());
+    }
+
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public class OcelotGetSection : UnitTest
+    {
+        [Fact]
+        public void OcelotGetSection_AllLogicalBranches()
+        {
+            const string myProp = "MyProp";
+
+            // Scenario 1: obj var is null after casting to JObject
+            string json = null;
+            JToken token = null; // JToken.Parse(jsonInput);
+            var result = token.OcelotGetSection(myProp);
+            Assert.Null(result);
+
+            // Scenario 2: obj not null but property not found
+            json = "{}";
+            token = JToken.Parse(json);
+            result = token.OcelotGetSection(myProp);
+            Assert.Null(result);
+
+            // Scenario 3: property found but value is null
+            json = @"{""MyProp"": null}";
+            token = JToken.Parse(json);
+            result = token.OcelotGetSection(myProp);
+            Assert.NotNull(result);
+            Assert.Equal(null, result.Value<int?>());
+
+            // Scenario 4: property found with integer value
+            json = @"{""MyProp"": 123}";
+            token = JToken.Parse(json);
+            result = token.OcelotGetSection(myProp);
+            Assert.NotNull(result);
+            Assert.Equal(123, result.Value<int>());
+        }
+
+        [Fact]
+        public void OcelotGetSection_CaseInsensitiveLookup_WorksCorrectly()
+        {
+            // Arrange
+            var token = JObject.Parse(@"{ ""routes"": [1,2,3], ""GLOBALCONFIGURATION"": { ""BaseUrl"": ""https://ocelot.net"" } }");
+
+            // Act & Assert
+            Assert.NotNull(token.OcelotGetSection("Routes"));
+            Assert.NotNull(token.OcelotGetSection("routes"));
+            Assert.NotNull(token.OcelotGetSection("ROUTES"));
+            Assert.NotNull(token.OcelotGetSection("GlobalConfiguration"));
+            Assert.NotNull(token.OcelotGetSection("globalconfiguration"));
+        }
+    }
+
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public class OcelotSetSection : UnitTest
+    {
+        [Fact]
+        public void OcelotSetSection_NullTarget_DoesNothing()
+        {
+            JToken to = null;
+
+            // Act
+            to.OcelotSetSection(TestName(), JValue.CreateString(TestID));
+
+            Assert.Null(to); // Still null, no exception
+        }
+
+        [Fact]
+        public void OcelotSetSection_NonJObjectTarget_DoesNothing()
+        {
+            var array = new JArray { 1, 2, 3 };
+
+            // Act
+            array.OcelotSetSection(TestName(), JValue.CreateString(TestID));
+
+            Assert.Equal(3, array.Count);
+            Assert.Contains(1, array);
+            Assert.Contains(2, array);
+            Assert.Contains(3, array);
+            var jtoken = array.OcelotGetSection(TestName());
+            Assert.Null(jtoken);
+        }
+
+        [Theory]
+        [InlineData("section")]
+        [InlineData("SECTION")]
+        [InlineData("SeCtIoN")]
+        public void OcelotSetSection_ExistingProperty_UpdatesValue_CaseInsensitive(string propertyName)
+        {
+            var jObj = JObject.Parse("""{ "section": "oldValue", "other": 42 }""");
+
+            // Act
+            jObj.OcelotSetSection(propertyName, JValue.CreateString(TestID));
+
+            Assert.Equal(TestID, (string)jObj["section"]);
+            Assert.Equal(42, (int)jObj["other"]); // Other properties unchanged
+        }
+
+        [Fact]
+        public void OcelotSetSection_NewProperty_AddsIt()
+        {
+            var jObj = new JObject();
+            var newSection = TestName();
+
+            // Act
+            jObj.OcelotSetSection(newSection, JValue.CreateString(TestID));
+
+            Assert.Equal(TestID, (string)jObj[newSection]);
+            Assert.Single(jObj.Properties());
+        }
+
+        [Fact]
+        public void OcelotSetSection_UpdatesComplexValue()
+        {
+            var jObj = JObject.Parse("""{ "config": { "enabled": false } }""");
+            var newValue = JObject.Parse("""{ "enabled": true, "timeout": 30 }""");
+
+            // Act
+            jObj.OcelotSetSection("config", newValue);
+
+            Assert.True((bool)jObj["config"]["enabled"]!);
+            Assert.Equal(30, (int)jObj["config"]["timeout"]!);
+        }
+
+        [Fact]
+        public void OcelotSetSection_NullValue_SetsNull()
+        {
+            var jObj = JObject.Parse("""{ "data": "something" }""");
+
+            // Act
+            jObj.OcelotSetSection("data", null);
+
+            var actual = jObj["data"];
+            Assert.NotNull(actual);
+            Assert.True(((JValue)actual).Type == JTokenType.Null);
+            Assert.Null(actual.Value<string>());
+        }
+
+        [Fact]
+        public void OcelotSetSection_EmptyName_AddsProperty()
+        {
+            var jObj = new JObject();
+
+            // Act
+            jObj.OcelotSetSection("", JValue.CreateString("emptyNameValue"));
+
+            Assert.Equal("emptyNameValue", (string)jObj[""]);
+        }
+
+        [Fact]
+        public void OcelotSetSection_NullName_ThrowsOrHandlesGracefully()
+        {
+            var jObj = new JObject();
+
+            // Newtonsoft.Json behavior: Add with null name throws ArgumentNullException
+            Assert.Throws<ArgumentNullException>(() =>
+                jObj.OcelotSetSection(null, JValue.CreateString("value")));
+        }
+
+        [Theory]
+        [InlineData("value", JTokenType.String)]
+        [InlineData(123, JTokenType.Integer)]
+        [InlineData(true, JTokenType.Boolean)]
+        [InlineData(null, JTokenType.Null)]
+        public void OcelotSetSection_AcceptsVariousValueTypes(object rawValue, JTokenType expectedType)
+        {
+            var jObj = new JObject();
+            JToken value = rawValue is null ? null : JToken.FromObject(rawValue);
+
+            // Act
+            jObj.OcelotSetSection(TestName(), value);
+
+            var actual = jObj[TestName()];
+            Assert.NotNull(actual);
+            Assert.Equal(expectedType, actual.Type);
+        }
     }
 }
 

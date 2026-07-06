@@ -127,10 +127,8 @@ public static partial class ConfigurationBuilderExtensions
             .ToArray();
 
         fileConfiguration ??= new FileConfiguration();
+        GuardSchema(fileConfiguration);
         dynamic fcMerged = JObject.FromObject(fileConfiguration);
-        fcMerged.GlobalConfiguration ??= new JObject();
-        fcMerged.Aggregates ??= new JArray();
-        fcMerged.Routes ??= new JArray();
 
         primaryFile ??= Path.Join(folder, PrimaryConfigFile);
         globalFile ??= Path.Join(folder, GlobalConfigFile);
@@ -153,6 +151,13 @@ public static partial class ConfigurationBuilderExtensions
         }
 
         return ((JObject)fcMerged).ToString();
+    }
+    private static void GuardSchema(FileConfiguration configuration)
+    {
+        configuration.Aggregates ??= [];
+        configuration.Routes ??= [];
+        configuration.DynamicRoutes ??= [];
+        configuration.GlobalConfiguration ??= new();
     }
 
     /// <summary>
@@ -300,7 +305,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <returns>The section as <see cref="JToken"/> if found; otherwise <see langword="null"/>.</returns>
     public static JToken OcelotGetSection(this JToken token, string name)
     {
-        var obj = token as JObject;
+        JObject obj = token as JObject;
         return obj?.Properties()
             .FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
             ?.Value;
@@ -313,8 +318,10 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="value">The value to assign to the section.</param>
     public static void OcelotSetSection(this JToken to, string name, JToken value)
     {
-        JObject obj = to as JObject;
-        var prop = obj?.Properties()
+        if (to is not JObject obj)
+            return;
+
+        var prop = obj.Properties()
             .FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (prop != null)
             prop.Value = value;
