@@ -17,20 +17,6 @@ public static partial class ConfigurationBuilderExtensions
     public const string GlobalConfigFile = "ocelot.global.json";
     public const string EnvironmentConfigFile = "ocelot.{0}.json";
 
-    [Obsolete("Please set BaseUrl in ocelot.json GlobalConfiguration.BaseUrl")]
-    public static IConfigurationBuilder AddOcelotBaseUrl(this IConfigurationBuilder builder, string baseUrl)
-    {
-        var memorySource = new MemoryConfigurationSource
-        {
-            InitialData = new List<KeyValuePair<string, string>>
-            {
-                new("BaseUrl", baseUrl),
-            },
-        };
-
-        return builder.Add(memorySource);
-    }
-
     /// <summary>
     /// Adds Ocelot configuration by environment, reading the required files from the default path.
     /// </summary>

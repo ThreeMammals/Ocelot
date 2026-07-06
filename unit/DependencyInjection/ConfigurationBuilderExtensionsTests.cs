@@ -9,26 +9,10 @@ namespace Ocelot.UnitTests.DependencyInjection;
 
 public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderExtensionsTestsBase
 {
-    private IConfigurationRoot _configuration;
     private IConfigurationRoot _configRoot;
 
     //protected override string EnvironmentName()
     //    => _hostingEnvironment?.Object?.EnvironmentName ?? base.EnvironmentName();
-
-    [Fact]
-    public void Should_add_base_url_to_config()
-    {
-        // Arrange
-        _configuration = new ConfigurationBuilder()
-            .AddOcelotBaseUrl("test")
-            .Build();
-
-        // Act
-        var actual = _configuration.GetValue("BaseUrl", string.Empty);
-
-        // Assert
-        Assert.Equal("test", actual);
-    }
 
     [Fact]
     [Trait("Bug", "1216")] // https://github.com/ThreeMammals/Ocelot/issues/1216
