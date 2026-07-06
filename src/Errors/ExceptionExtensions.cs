@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Infrastructure.Extensions;
+﻿namespace Ocelot.Errors;
 
 public static class ExceptionExtensions
 {
@@ -11,9 +11,11 @@ public static class ExceptionExtensions
     public static StringBuilder AllMessages(this Exception ex, StringBuilder builder = null)
     {
         builder ??= new StringBuilder();
-        return ex.InnerException != null
-                ? AllMessages(ex.InnerException, builder)
-                : builder.AppendLine(ex.Message);
+        if (ex?.Message != null)
+            builder.AppendLine(ex.Message);
+        return ex?.InnerException != null
+            ? AllMessages(ex.InnerException, builder)
+            : builder;
     }
 
     /// <summary>
@@ -31,5 +33,6 @@ public static class ExceptionExtensions
     /// <param name="ex">The exception to convert.</param>
     /// <returns>A <see langword="string" /> containing the type name and all exception messages.</returns>
     public static string ToShortString(this Exception ex)
-        => $"{ex.GetType().Name}: {GetMessages(ex)}";
+        => ex is null ? string.Empty
+            : $"{ex.GetType().Name}: {GetMessages(ex)}";
 }

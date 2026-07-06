@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
-using Ocelot.Infrastructure.Extensions;
+using Ocelot.Errors;
 
 namespace Ocelot.Administration;
 
