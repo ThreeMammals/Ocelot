@@ -40,6 +40,47 @@ Then, in your `ocelot.json`_, add the following to proxy a route using *WebSocke
 With this configuration, Ocelot will match any *WebSockets* traffic that comes in on / and proxy it to ``localhost:5001/ws``.
 For clarity, Ocelot will receive messages from the upstream client, proxy them to the downstream service, receive messages from the downstream service, and then proxy them back to the upstream client.
 
+.. _ws-buffer-size:
+
+Buffer Size [#f7]_
+-------------------
+
+By default, Ocelot proxies *WebSockets* traffic through a 4096-byte (4 KB) buffer.
+For high-throughput routes, such as video or audio streaming, a larger buffer reduces the number of kernel transitions per second and can significantly improve throughput.
+
+The buffer size can be overridden per route via the ``WebSocket.BufferSize`` option:
+
+.. code-block:: json
+  :emphasize-lines: 6-8
+
+  {
+    "UpstreamPathTemplate": "/",
+    "DownstreamPathTemplate": "/ws",
+    "DownstreamScheme": "ws",
+    "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5001 } ],
+    "WebSocket": {
+      "BufferSize": 65536
+    }
+  }
+
+It can also be set as a global default under ``GlobalConfiguration``, applied to every route that does not define its own ``WebSocket.BufferSize``:
+
+.. code-block:: json
+  :emphasize-lines: 3-5
+
+  {
+    "GlobalConfiguration": {
+      "WebSocket": {
+        "BufferSize": 65536
+      }
+    }
+  }
+
+Precedence, from highest to lowest: the route-level ``WebSocket.BufferSize``, then the global ``WebSocket.BufferSize``, then the middleware's own ``BufferSize`` virtual property (4096 bytes by default; see the :ref:`Sample <ws-sample>` section below for overriding it in code).
+This option is honored for both statically configured ``Routes`` and ``DynamicRoutes`` (service discovery).
+
+A configured ``BufferSize`` of zero or a negative value fails configuration validation at startup (or reload), rather than surfacing as a runtime error on the first *WebSocket* connection through that route.
+
 Handy Links
 -----------
 
@@ -252,6 +293,7 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
   The ":ref:`Security Options <routing-security-options>`" feature has been supported since version `25.0`_, as a result of fixing bug `2403`_ in pull request `2406`_.
 .. [#f5] If requested, we might explore options for implementing basic authentication.
 .. [#f6] The :ref:`Sample <ws-sample>` was introduced for issue `2386`_ and implemented in pull request `2387`_, as part of version `25.0`_.
+.. [#f7] The ":ref:`Buffer Size <ws-buffer-size>`" per-route and global options were introduced for issue `2386`_ (phase 2) and implemented in pull request `2390`_, as part of version `25.0`_.
 
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/WebSocket/Program.cs
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/WebSocket/ocelot.json
@@ -265,6 +307,7 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
 .. _1707: https://github.com/ThreeMammals/Ocelot/issues/1707
 .. _2386: https://github.com/ThreeMammals/Ocelot/issues/2386
 .. _2387: https://github.com/ThreeMammals/Ocelot/pull/2387
+.. _2390: https://github.com/ThreeMammals/Ocelot/pull/2390
 .. _2403: https://github.com/ThreeMammals/Ocelot/issues/2403
 .. _2406: https://github.com/ThreeMammals/Ocelot/pull/2406
 

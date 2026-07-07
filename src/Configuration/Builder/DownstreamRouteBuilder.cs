@@ -33,7 +33,7 @@ public class DownstreamRouteBuilder
     private List<AddHeader> _addHeadersToDownstream;
     private List<AddHeader> _addHeadersToUpstream;
     private bool _dangerousAcceptAnyServerCertificateValidator;
-    private int? _webSocketBufferSize;
+    private WebSocketOptions _webSocket;
     private SecurityOptions _securityOptions;
     private string _downstreamHttpMethod;
     private Version _downstreamHttpVersion;
@@ -218,9 +218,9 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithWebSocketBufferSize(int? webSocketBufferSize)
+    public DownstreamRouteBuilder WithWebSocketOptions(WebSocketOptions webSocket)
     {
-        _webSocketBufferSize = webSocketBufferSize;
+        _webSocket = webSocket;
         return this;
     }
 
@@ -296,6 +296,6 @@ public class DownstreamRouteBuilder
             _upstreamHeaders,
             _metadataOptions,
             _timeout,
-            _webSocketBufferSize);
+            _webSocket);
     }
 }

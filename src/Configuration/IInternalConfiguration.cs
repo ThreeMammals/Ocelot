@@ -17,4 +17,5 @@ public interface IInternalConfiguration
     Route[] Routes { get; }
     ServiceProviderConfiguration ServiceProviderConfiguration { get; }
     int? Timeout { get; }
+    WebSocketOptions WebSocket { get; }
 }

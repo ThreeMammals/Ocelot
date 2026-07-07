@@ -32,7 +32,6 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
     public Dictionary<string, string> AddQueriesToRequest { get; set; }
     public Dictionary<string, string> ChangeDownstreamPathTemplate { get; set; }
     public bool DangerousAcceptAnyServerCertificateValidator { get; set; }
-    public int? WebSocketBufferSize { get; set; }
     public List<string> DelegatingHandlers { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public List<FileHostAndPort> DownstreamHostAndPorts { get; set; }
@@ -70,7 +69,6 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         to.AuthenticationOptions = from.AuthenticationOptions is null ? null : new(from.AuthenticationOptions);
         to.ChangeDownstreamPathTemplate = new(from.ChangeDownstreamPathTemplate);
         to.DangerousAcceptAnyServerCertificateValidator = from.DangerousAcceptAnyServerCertificateValidator;
-        to.WebSocketBufferSize = from.WebSocketBufferSize;
         to.DelegatingHandlers = new(from.DelegatingHandlers);
         to.DownstreamHeaderTransform = new Dictionary<string, string>(from.DownstreamHeaderTransform);
         to.DownstreamHostAndPorts = from.DownstreamHostAndPorts.Select(x => new FileHostAndPort(x)).ToList();
@@ -101,6 +99,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         to.UpstreamHost = from.UpstreamHost;
         to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
+        to.WebSocket = from.WebSocket is null ? null : new(from.WebSocket);
     }
 
     public override string ToString()

@@ -96,7 +96,7 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
-        int bufferSize = route.WebSocketBufferSize ?? Default4KBufferSize;
+        int bufferSize = route.WebSocket?.BufferSize ?? BufferSize;
         client.Options.SetBuffer(bufferSize, bufferSize);
 
         if (route.DangerousAcceptAnyServerCertificateValidator)

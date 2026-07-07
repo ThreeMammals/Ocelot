@@ -281,7 +281,7 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
         var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri.UriSchemeWs}://localhost:12345");
         var downstream = new DownstreamRequest(request);
         var route = new DownstreamRouteBuilder()
-            .WithWebSocketBufferSize(bufferSize)
+            .WithWebSocketOptions(new WebSocketOptions(bufferSize))
             .Build();
         _context.SetupGet(x => x.Items).Returns(new Dictionary<object, object>
         {
