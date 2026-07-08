@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
@@ -70,7 +69,7 @@ public static partial class ConfigurationBuilderExtensions
     public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env, MergeOcelotJson mergeTo,
         string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
     {
-        var json = GetMergedOcelotJson(folder, env, null, primaryConfigFile, globalConfigFile, environmentConfigFile);
+        var json = GetMergedOcelotJson(builder, folder, env, null, primaryConfigFile, globalConfigFile, environmentConfigFile);
         primaryConfigFile ??= Path.Join(folder, PrimaryConfigFile); // if not specified, merge & write back to the same folder
         return ApplyMergeOcelotJsonOption(builder, mergeTo, json, primaryConfigFile, optional, reloadOnChange);
     }
@@ -98,6 +97,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <para>Supports splitting configuration across files for better maintainability (e.g., routes in separate files, global settings, environment overrides).</para>
     /// <para>Regex cache size is optimized for performance (see <see cref="RegexGlobal.RegexCacheSize"/>).</para>
     /// </remarks>
+    /// <param name="builder">Configuration builder.</param>
     /// <param name="folder">The root folder where configuration files are located.</param>
     /// <param name="env">The web hosting environment used to determine the environment-specific config file name.</param>
     /// <param name="fileConfiguration">Optional base <see cref="FileConfiguration"/> to start merging from.
@@ -107,7 +107,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="globalFile">Optional full path to the global configuration file (defaults to <c>ocelot.global.json</c> in the given folder).</param>
     /// <param name="environmentFile">Optional full path to the environment-specific configuration file (defaults to <c>ocelot.{EnvironmentName}.json</c>).</param>
     /// <returns>A JSON <see cref="string"/> containing the fully merged Ocelot configuration (ready to be written to file or added as a memory source).</returns>
-    public static string GetMergedOcelotJson(string folder, IWebHostEnvironment env,
+    public static string GetMergedOcelotJson(this IConfigurationBuilder builder, string folder, IWebHostEnvironment env,
         FileConfiguration fileConfiguration = null, string primaryFile = null, string globalFile = null, string environmentFile = null)
     {
         // All versions of overloaded AddOcelot methods call this GetMergedOcelotJson one, so we improve Regex performance by cache increasing.
@@ -150,7 +150,11 @@ public static partial class ConfigurationBuilderExtensions
             OcelotMergeConfiguration(fcMerged, fromConfig, isGlobal);
         }
 
-        return ((JObject)fcMerged).ToString();
+        JObject jobj = (JObject)fcMerged;
+        builder.Properties[MergedConfigJObjectKey] = MergedConfigJObject = jobj;
+        var json = jobj.ToString();
+        builder.Properties[MergedConfigJsonKey] = MergedConfigJson = json;
+        return json; // returning for attachment to an IConfigurationProvider (IConfiguration), as either in-memory or file source
     }
     private static void GuardSchema(FileConfiguration configuration)
     {
@@ -216,7 +220,7 @@ public static partial class ConfigurationBuilderExtensions
     public static IConfigurationBuilder AddOcelot(this IConfigurationBuilder builder, FileConfiguration fileConfiguration, IWebHostEnvironment env, MergeOcelotJson mergeTo,
         string primaryConfigFile = null, string globalConfigFile = null, string environmentConfigFile = null, bool? optional = null, bool? reloadOnChange = null) // optional injections
     {
-        var json = GetMergedOcelotJson(".", env, fileConfiguration, primaryConfigFile, globalConfigFile, environmentConfigFile);
+        var json = GetMergedOcelotJson(builder, ".", env, fileConfiguration, primaryConfigFile, globalConfigFile, environmentConfigFile);
         return ApplyMergeOcelotJsonOption(builder, mergeTo, json, primaryConfigFile, optional, reloadOnChange);
     }
 
@@ -268,11 +272,11 @@ public static partial class ConfigurationBuilderExtensions
     public static void OcelotMergeConfiguration(this JToken to, JToken from, bool isGlobal)
     {
         if (isGlobal)
-            to.OcelotMergeConfigurationSection(from, nameof(FileConfiguration.GlobalConfiguration));
+            to.OcelotJMergeSection(from, nameof(FileConfiguration.GlobalConfiguration));
 
-        to.OcelotMergeConfigurationSection(from, nameof(FileConfiguration.Aggregates))
-          .OcelotMergeConfigurationSection(from, nameof(FileConfiguration.Routes))
-          .OcelotMergeConfigurationSection(from, nameof(FileConfiguration.DynamicRoutes));
+        to.OcelotJMergeSection(from, nameof(FileConfiguration.Aggregates))
+          .OcelotJMergeSection(from, nameof(FileConfiguration.Routes))
+          .OcelotJMergeSection(from, nameof(FileConfiguration.DynamicRoutes));
     }
 
     /// <summary>Merges a single named section from source to target Newtonsoft's <see cref="JToken"/>.</summary>
@@ -284,15 +288,15 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="from">The source <see cref="JToken"/>.</param>
     /// <param name="sectionName">Name of the section to merge (case-insensitive).</param>
     /// <returns>The original target <see cref="JToken"/> to allow method chaining.</returns>
-    public static JToken OcelotMergeConfigurationSection(this JToken to, JToken from, string sectionName)
+    public static JToken OcelotJMergeSection(this JToken to, JToken from, string sectionName)
     {
-        var destination = to.OcelotGetSection(sectionName);
-        var source = from.OcelotGetSection(sectionName);
+        var destination = to.OcelotJSection(sectionName);
+        var source = from.OcelotJSection(sectionName);
         if (source == null || destination == null)
             return to;
 
         if (source is JObject)
-            to.OcelotSetSection(sectionName, source);
+            to.OcelotJSetSection(sectionName, source);
         else if (source is JArray)
             (destination as JArray).Merge(source);
 
@@ -303,7 +307,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="token">The <see cref="JToken"/> (typically a <see cref="JObject"/> containing Ocelot configuration).</param>
     /// <param name="name">The name of the section to retrieve (e.g. "Routes", "GlobalConfiguration").</param>
     /// <returns>The section as <see cref="JToken"/> if found; otherwise <see langword="null"/>.</returns>
-    public static JToken OcelotGetSection(this JToken token, string name)
+    public static JToken OcelotJSection(this JToken token, string name)
     {
         JObject obj = token as JObject;
         return obj?.Properties()
@@ -316,7 +320,7 @@ public static partial class ConfigurationBuilderExtensions
     /// <param name="to">The target <see cref="JToken"/> (must be a <see cref="JObject"/>).</param>
     /// <param name="name">The name of the section/property to set.</param>
     /// <param name="value">The value to assign to the section.</param>
-    public static void OcelotSetSection(this JToken to, string name, JToken value)
+    public static void OcelotJSetSection(this JToken to, string name, JToken value)
     {
         if (to is not JObject obj)
             return;
@@ -327,5 +331,49 @@ public static partial class ConfigurationBuilderExtensions
             prop.Value = value;
         else
             obj.Add(name, value);
+    }
+
+    internal static readonly string MergedConfigJsonKey = typeof(ConfigurationBuilderExtensions).FullName + ".JSON";
+    internal static readonly string MergedConfigJObjectKey = typeof(ConfigurationBuilderExtensions).FullName + ".JObject";
+    internal static string MergedConfigJson { get; private set; }
+    internal static JObject MergedConfigJObject { get; private set; }
+
+    public static string OcelotJson(this IConfigurationBuilder builder)
+        => builder.Properties[MergedConfigJsonKey] as string;
+    public static JObject OcelotJObject(this IConfigurationBuilder builder)
+        => builder.Properties[MergedConfigJObjectKey] as JObject;
+    public static JArray OcelotJRoutes(this IConfigurationBuilder builder)
+        => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+    public static JObject OcelotJGlobalConfiguration(this IConfigurationBuilder builder)
+        => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
+
+    public static JObject OcelotJRoute(this IConfigurationBuilder builder,
+        string upstreamPathTemplate = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        key ??= string.Empty;
+        upstreamPathTemplate ??= string.Empty;
+        JArray routes = builder.OcelotJRoutes() ?? [];
+        JToken jt = routes
+            .FirstOrDefault(r =>
+                upstreamPathTemplate.Equals(r[nameof(FileRoute.UpstreamPathTemplate)]?.ToString(), comparison) ||
+                key.Equals(r[nameof(FileRoute.Key)]?.ToString(), comparison));
+        return jt as JObject;
+    }
+
+    public static T OcelotJGlobalProperty<T>(this IConfigurationBuilder builder, string propertyPath)
+    {
+        JObject global = builder.OcelotJGlobalConfiguration() ?? [];
+        JToken prop = global.SelectToken(propertyPath);
+        return prop is null ? default : prop.ToObject<T>();
+    }
+
+    public static T OcelotJProperty<T>(this IConfigurationBuilder builder, string propertyPath,
+        string upstreamPathTemplate = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        JObject route = builder.OcelotJRoute(upstreamPathTemplate, key, comparison);
+        JToken prop = route?.SelectToken(propertyPath);
+        return prop is not null && prop.Type != JTokenType.Null
+            ? prop.ToObject<T>()
+            : OcelotJGlobalProperty<T>(builder, propertyPath);
     }
 }

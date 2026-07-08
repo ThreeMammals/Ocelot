@@ -15,6 +15,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://api.test.com"
+    "BaseUrl": "https://ocelot.net",
+    "GlobalCustomProperty": 1183 // number of pull request LoL :D
   }
 }

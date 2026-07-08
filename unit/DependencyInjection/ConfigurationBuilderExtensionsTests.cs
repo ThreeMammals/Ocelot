@@ -484,9 +484,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         var primaryConfig = new FileConfiguration { Routes = [GetRoute("Primary")] };
         var primaryFile = CreateConfigFile(TestID, "primary", primaryConfig);
         GivenMultipleConfigurationFiles(TestID);
+        var builder = new ConfigurationBuilder();
 
         // Act
-        var json = ConfigurationBuilderExtensions.GetMergedOcelotJson(TestID, _hostingEnvironment.Object,
+        var json = builder.GetMergedOcelotJson(TestID, _hostingEnvironment.Object,
             fileConfiguration: null, primaryFile, null, null);
 
         // Assert
@@ -517,9 +518,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             DynamicRoutes = null,
             GlobalConfiguration = null,
         };
+        var builder = new ConfigurationBuilder();
 
         // Act
-        var json = ConfigurationBuilderExtensions.GetMergedOcelotJson(TestID, _hostingEnvironment.Object, fileConfiguration: configuration);
+        var json = builder.GetMergedOcelotJson(TestID, _hostingEnvironment.Object, fileConfiguration: configuration);
 
         // Assert
         Assert.NotEmpty(json);
@@ -570,7 +572,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
     [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
     [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-    public void OcelotMergeConfigurationSection_WhenSourceSectionIsNeitherJObjectNorJArray_DoesNothingAndReturnsTargetUnchanged()
+    public void OcelotJMergeSection_WhenSourceSectionIsNeitherJObjectNorJArray_DoesNothingAndReturnsTargetUnchanged()
     {
         // Arrange
         var target = JObject.Parse(@"
@@ -590,20 +592,20 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         }");
 
         // Act
-        var result = target.OcelotMergeConfigurationSection(source, "Routes");
-        result = result.OcelotMergeConfigurationSection(source, "GlobalConfiguration");
+        var result = target.OcelotJMergeSection(source, "Routes");
+        result = result.OcelotJMergeSection(source, "GlobalConfiguration");
 
         // Assert
         Assert.Same(target, result); // Should return the original target (fluent)
 
         // Routes section should remain unchanged
-        var routesAfter = target.OcelotGetSection("Routes") as JArray;
+        var routesAfter = target.OcelotJSection("Routes") as JArray;
         Assert.NotNull(routesAfter);
         Assert.Single(routesAfter);
         Assert.Equal("route1", routesAfter[0]["Key"].Value<string>());
 
         // GlobalConfiguration section should remain unchanged
-        var globalAfter = target.OcelotGetSection("GlobalConfiguration") as JObject;
+        var globalAfter = target.OcelotJSection("GlobalConfiguration") as JObject;
         Assert.NotNull(globalAfter);
         Assert.Equal("https://ocelot.net", globalAfter["BaseUrl"].Value<string>());
     }
@@ -611,84 +613,84 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
     [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
     [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-    public class OcelotGetSection : UnitTest
+    public class OcelotJSection : UnitTest
     {
         [Fact]
-        public void OcelotGetSection_AllLogicalBranches()
+        public void OcelotJSection_AllLogicalBranches()
         {
             const string myProp = "MyProp";
 
             // Scenario 1: obj var is null after casting to JObject
             string json = null;
             JToken token = null; // JToken.Parse(jsonInput);
-            var result = token.OcelotGetSection(myProp);
+            var result = token.OcelotJSection(myProp);
             Assert.Null(result);
 
             // Scenario 2: obj not null but property not found
             json = "{}";
             token = JToken.Parse(json);
-            result = token.OcelotGetSection(myProp);
+            result = token.OcelotJSection(myProp);
             Assert.Null(result);
 
             // Scenario 3: property found but value is null
             json = @"{""MyProp"": null}";
             token = JToken.Parse(json);
-            result = token.OcelotGetSection(myProp);
+            result = token.OcelotJSection(myProp);
             Assert.NotNull(result);
             Assert.Equal(null, result.Value<int?>());
 
             // Scenario 4: property found with integer value
             json = @"{""MyProp"": 123}";
             token = JToken.Parse(json);
-            result = token.OcelotGetSection(myProp);
+            result = token.OcelotJSection(myProp);
             Assert.NotNull(result);
             Assert.Equal(123, result.Value<int>());
         }
 
         [Fact]
-        public void OcelotGetSection_CaseInsensitiveLookup_WorksCorrectly()
+        public void OcelotJSection_CaseInsensitiveLookup_WorksCorrectly()
         {
             // Arrange
             var token = JObject.Parse(@"{ ""routes"": [1,2,3], ""GLOBALCONFIGURATION"": { ""BaseUrl"": ""https://ocelot.net"" } }");
 
             // Act & Assert
-            Assert.NotNull(token.OcelotGetSection("Routes"));
-            Assert.NotNull(token.OcelotGetSection("routes"));
-            Assert.NotNull(token.OcelotGetSection("ROUTES"));
-            Assert.NotNull(token.OcelotGetSection("GlobalConfiguration"));
-            Assert.NotNull(token.OcelotGetSection("globalconfiguration"));
+            Assert.NotNull(token.OcelotJSection("Routes"));
+            Assert.NotNull(token.OcelotJSection("routes"));
+            Assert.NotNull(token.OcelotJSection("ROUTES"));
+            Assert.NotNull(token.OcelotJSection("GlobalConfiguration"));
+            Assert.NotNull(token.OcelotJSection("globalconfiguration"));
         }
     }
 
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
     [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
     [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-    public class OcelotSetSection : UnitTest
+    public class OcelotJSetSection : UnitTest
     {
         [Fact]
-        public void OcelotSetSection_NullTarget_DoesNothing()
+        public void OcelotJSetSection_NullTarget_DoesNothing()
         {
             JToken to = null;
 
             // Act
-            to.OcelotSetSection(TestName(), JValue.CreateString(TestID));
+            to.OcelotJSetSection(TestName(), JValue.CreateString(TestID));
 
             Assert.Null(to); // Still null, no exception
         }
 
         [Fact]
-        public void OcelotSetSection_NonJObjectTarget_DoesNothing()
+        public void OcelotJSetSection_NonJObjectTarget_DoesNothing()
         {
             var array = new JArray { 1, 2, 3 };
 
             // Act
-            array.OcelotSetSection(TestName(), JValue.CreateString(TestID));
+            array.OcelotJSetSection(TestName(), JValue.CreateString(TestID));
 
             Assert.Equal(3, array.Count);
             Assert.Contains(1, array);
             Assert.Contains(2, array);
             Assert.Contains(3, array);
-            var jtoken = array.OcelotGetSection(TestName());
+            var jtoken = array.OcelotJSection(TestName());
             Assert.Null(jtoken);
         }
 
@@ -696,50 +698,50 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [InlineData("section")]
         [InlineData("SECTION")]
         [InlineData("SeCtIoN")]
-        public void OcelotSetSection_ExistingProperty_UpdatesValue_CaseInsensitive(string propertyName)
+        public void OcelotJSetSection_ExistingProperty_UpdatesValue_CaseInsensitive(string propertyName)
         {
             var jObj = JObject.Parse("""{ "section": "oldValue", "other": 42 }""");
 
             // Act
-            jObj.OcelotSetSection(propertyName, JValue.CreateString(TestID));
+            jObj.OcelotJSetSection(propertyName, JValue.CreateString(TestID));
 
             Assert.Equal(TestID, (string)jObj["section"]);
             Assert.Equal(42, (int)jObj["other"]); // Other properties unchanged
         }
 
         [Fact]
-        public void OcelotSetSection_NewProperty_AddsIt()
+        public void OcelotJSetSection_NewProperty_AddsIt()
         {
             var jObj = new JObject();
             var newSection = TestName();
 
             // Act
-            jObj.OcelotSetSection(newSection, JValue.CreateString(TestID));
+            jObj.OcelotJSetSection(newSection, JValue.CreateString(TestID));
 
             Assert.Equal(TestID, (string)jObj[newSection]);
             Assert.Single(jObj.Properties());
         }
 
         [Fact]
-        public void OcelotSetSection_UpdatesComplexValue()
+        public void OcelotJSetSection_UpdatesComplexValue()
         {
             var jObj = JObject.Parse("""{ "config": { "enabled": false } }""");
             var newValue = JObject.Parse("""{ "enabled": true, "timeout": 30 }""");
 
             // Act
-            jObj.OcelotSetSection("config", newValue);
+            jObj.OcelotJSetSection("config", newValue);
 
             Assert.True((bool)jObj["config"]["enabled"]!);
             Assert.Equal(30, (int)jObj["config"]["timeout"]!);
         }
 
         [Fact]
-        public void OcelotSetSection_NullValue_SetsNull()
+        public void OcelotJSetSection_NullValue_SetsNull()
         {
             var jObj = JObject.Parse("""{ "data": "something" }""");
 
             // Act
-            jObj.OcelotSetSection("data", null);
+            jObj.OcelotJSetSection("data", null);
 
             var actual = jObj["data"];
             Assert.NotNull(actual);
@@ -748,24 +750,24 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         }
 
         [Fact]
-        public void OcelotSetSection_EmptyName_AddsProperty()
+        public void OcelotJSetSection_EmptyName_AddsProperty()
         {
             var jObj = new JObject();
 
             // Act
-            jObj.OcelotSetSection("", JValue.CreateString("emptyNameValue"));
+            jObj.OcelotJSetSection("", JValue.CreateString("emptyNameValue"));
 
             Assert.Equal("emptyNameValue", (string)jObj[""]);
         }
 
         [Fact]
-        public void OcelotSetSection_NullName_ThrowsOrHandlesGracefully()
+        public void OcelotJSetSection_NullName_ThrowsOrHandlesGracefully()
         {
             var jObj = new JObject();
 
             // Newtonsoft.Json behavior: Add with null name throws ArgumentNullException
             Assert.Throws<ArgumentNullException>(() =>
-                jObj.OcelotSetSection(null, JValue.CreateString("value")));
+                jObj.OcelotJSetSection(null, JValue.CreateString("value")));
         }
 
         [Theory]
@@ -773,13 +775,13 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [InlineData(123, JTokenType.Integer)]
         [InlineData(true, JTokenType.Boolean)]
         [InlineData(null, JTokenType.Null)]
-        public void OcelotSetSection_AcceptsVariousValueTypes(object rawValue, JTokenType expectedType)
+        public void OcelotJSetSection_AcceptsVariousValueTypes(object rawValue, JTokenType expectedType)
         {
             var jObj = new JObject();
             JToken value = rawValue is null ? null : JToken.FromObject(rawValue);
 
             // Act
-            jObj.OcelotSetSection(TestName(), value);
+            jObj.OcelotJSetSection(TestName(), value);
 
             var actual = jObj[TestName()];
             Assert.NotNull(actual);

@@ -91,8 +91,8 @@ public sealed class ConfigurationMergeTests : Steps
         this.Given(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
             .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
             .And(x => ShouldMergeWithCustomPropertyInXservices())
-            .And(x => ShouldMergeWithCustomGlobalProperty())
             .And(x => ShouldMergeWithCustomPropertyInYservices())
+            .And(x => ShouldMergeWithCustomGlobalProperty())
         .BDDfy();
     }
 
@@ -142,7 +142,7 @@ public sealed class ConfigurationMergeTests : Steps
     };
 
     #region PR 1183
-    private JObject _config;
+    private JObject _configJObject;
     private void GivenOcelotIsRunningWithMultipleConfigs(string folder)
         => GivenOcelotIsRunning((context, config) => config.AddOcelot(folder, context.HostingEnvironment));
 
@@ -152,8 +152,8 @@ public sealed class ConfigurationMergeTests : Steps
         var mergedConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         File.Exists(mergedConfigFile).ShouldBeTrue();
         var lines = await File.ReadAllTextAsync(mergedConfigFile);
-        _config = JObject.Parse(lines).ShouldNotBeNull();
-        var routes = _config[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
+        _configJObject = JObject.Parse(lines).ShouldNotBeNull();
+        var routes = _configJObject[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
         routes.Children().Count().ShouldBe(three);
     }
 
@@ -170,8 +170,22 @@ public sealed class ConfigurationMergeTests : Steps
 
     private void ShouldMergeWithCustomGlobalProperty()
     {
-        var customPropertyGlobal = PropertyShouldExist("SomethingMore");
+        // in Routes
+        JToken customPropertyGlobal = PropertyShouldExist("SomethingMore");
         customPropertyGlobal.ShouldBe("something");
+        // in GlobalConfiguration via IConfiguration
+        IConfiguration config = OcelotServices.GetService<IConfiguration>().ShouldNotBeNull();
+        string actual = config["GlobalConfiguration:BaseUrl"];
+        actual.ShouldNotBeNull().ShouldBe("https://ocelot.net");
+        actual = config["GlobalConfiguration:GlobalCustomProperty"];
+        actual.ShouldNotBeNull().ShouldBe("1183");
+        int prNo = config.GetValue<int>("GlobalConfiguration:GlobalCustomProperty");
+        prNo.ShouldBe(1183);
+        // in GlobalConfiguration via Newtonsoft's JObject
+        JToken jtGlobalConfig = _configJObject["GlobalConfiguration"].ShouldNotBeNull();
+        JToken jtGlobalCustomProperty = jtGlobalConfig["GlobalCustomProperty"].ShouldNotBeNull();
+        jtGlobalCustomProperty.Value<string>().ShouldBe("1183");
+        jtGlobalCustomProperty.Value<int>().ShouldBe(1183);
     }
 
     private void ShouldMergeWithCustomPropertyInYservices()
@@ -184,7 +198,7 @@ public sealed class ConfigurationMergeTests : Steps
 
     private JToken PropertyShouldExist(string propertyName)
     {
-        var routeWithProperty = _config[nameof(FileConfiguration.Routes)].Children()
+        var routeWithProperty = _configJObject[nameof(FileConfiguration.Routes)].Children()
             .SingleOrDefault(route => route[propertyName] != null)
             .ShouldNotBeNull();
         return routeWithProperty[propertyName].ShouldNotBeNull();
