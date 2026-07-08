@@ -56,7 +56,7 @@ public sealed class ConfigurationMergeTests : Steps
         var routeBConfig = GivenConfiguration(GetRoute("B"));
         var environmentConfig = GivenConfiguration(GetRoute("Env"));
         environmentConfig.GlobalConfiguration = null;
-        var folder = "GatewayConfiguration-" + TestID;
+        var folder = Path.Combine(nameof(Ocelot.AcceptanceTests.Configuration), TestID);
         Folders.Add(Directory.CreateDirectory(folder).FullName);
         var globalPath = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
         var routeAPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "A"));
@@ -85,15 +85,96 @@ public sealed class ConfigurationMergeTests : Steps
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
     [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
     [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-    public void Should_merge_routes_custom_properties_via_JToken()
+    public async Task ShouldMergeStaticRoutesCustomPropertiesViaNewtonsoftJtoken()
     {
-        var folder = Path.Combine("Configuration", "1183"); // TODO Convert to dynamic temp test folder instead of static one
-        this.Given(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
+        var folder = Path.Combine(nameof(Ocelot.AcceptanceTests.Configuration), TestID);
+        Folders.Add(Directory.CreateDirectory(folder).FullName);
+        var globalPath = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        var ocelotGlobalJson = @"
+{
+  ""Routes"": [
+    {
+      ""DownstreamPathTemplate"": ""/{global}"",
+      ""DownstreamScheme"": ""http"",
+      ""DownstreamHostAndPorts"": [
+        {
+          ""Host"": ""localhost"",
+          ""Port"": 24012
+        }
+      ],
+      ""UpstreamPathTemplate"": ""/{global}"",
+      ""UpstreamHttpMethod"": [ ""Get"" ],
+      ""SomethingMore"": ""something"" // custom property
+    }
+  ],
+  ""GlobalConfiguration"": {
+    ""BaseUrl"": ""https://ocelot.net"",
+    ""GlobalCustomProperty"": 1183 // number of pull request LoL :D
+  }
+}";
+        var xServicesPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "xservices"));
+        var ocelotXServicesJson = @"
+{
+  ""Routes"": [
+    {
+      ""DownstreamPathTemplate"": ""/xservice.svc/serviceMethodA/byNumber/{number}"",
+      ""UpstreamPathTemplate"": ""/gw/serviceMethodA/byNumber/{number}"",
+      ""UpstreamHttpMethod"": [
+        ""Get"",
+        ""Post""
+      ],
+      ""DownstreamScheme"": ""http"",
+      ""DownstreamHostAndPorts"": [
+        {
+          ""Host"": ""host"",
+          ""Port"": 80
+        }
+      ],
+      // custom properties below
+      ""CustomStrategyProperty"": {
+        ""GET"": [
+          ""SomeCustomStrategyMethodA""
+        ],
+        ""POST"": [
+          ""SomeCustomStrategyMethodB""
+        ]
+      }
+    }
+  ]
+}";
+        var yServicesPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "yservices"));
+        var ocelotYServicesJson = @"
+{
+  ""Routes"": [
+    {
+      ""DownstreamPathTemplate"": ""/b/{action}"",
+      ""DownstreamScheme"": ""http"",
+      ""DownstreamHostAndPorts"": [
+        {
+          ""Host"": ""localhost"",
+          ""Port"": 34234
+        }
+      ],
+      ""UpstreamPathTemplate"": ""/b/{action}"",
+      ""UpstreamHttpMethod"": [ ""Get"" ],
+      ""MyCustomProperty"": [ ""myValue"" ] // custom property
+    }
+  ]
+}";
+        this.Given(x => GivenIWriteAConfiguration(globalPath, ocelotGlobalJson))
+            .And(x => GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson))
+            .And(x => GivenIWriteAConfiguration(yServicesPath, ocelotYServicesJson))
+            .When(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
             .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
             .And(x => ShouldMergeWithCustomPropertyInXservices())
             .And(x => ShouldMergeWithCustomPropertyInYservices())
             .And(x => ShouldMergeWithCustomGlobalProperty())
         .BDDfy();
+    }
+    private Task GivenIWriteAConfiguration(string fpath, string ocelotJson)
+    {
+        Files.Add(fpath);
+        return File.WriteAllTextAsync(fpath, ocelotJson, CancelMe);
     }
 
     private static void ThenPrimaryConfigFileExistsInTheFolder(string folder, bool fileExist)
