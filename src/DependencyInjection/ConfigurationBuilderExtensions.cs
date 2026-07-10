@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.DependencyInjection;
 
@@ -344,6 +345,10 @@ public static partial class ConfigurationBuilderExtensions
         => builder.Properties[MergedConfigJObjectKey] as JObject;
     public static JArray OcelotJRoutes(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+    public static JArray OcelotJDynamicRoutes(this IConfigurationBuilder builder)
+        => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.DynamicRoutes)) as JArray;
+    public static JArray OcelotJAggregates(this IConfigurationBuilder builder)
+        => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.Aggregates)) as JArray;
     public static JObject OcelotJGlobalConfiguration(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
 
@@ -357,6 +362,29 @@ public static partial class ConfigurationBuilderExtensions
             .FirstOrDefault(r =>
                 upstreamPathTemplate.Equals(r[nameof(FileRoute.UpstreamPathTemplate)]?.ToString(), comparison) ||
                 key.Equals(r[nameof(FileRoute.Key)]?.ToString(), comparison));
+        return jt as JObject;
+    }
+
+    public static JObject OcelotJDynamicRoute(this IConfigurationBuilder builder,
+        string serviceName = null, string serviceNamespace = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        key ??= string.Empty;
+        serviceName ??= string.Empty;
+        serviceNamespace ??= string.Empty;
+        JArray routes = builder.OcelotJDynamicRoutes() ?? [];
+        JToken jt = routes.FirstOrDefault(r =>
+            (serviceNamespace.IsEmpty() && serviceName.Equals(r[nameof(FileDynamicRoute.ServiceName)]?.ToString(), comparison)) ||
+            (serviceNamespace.IsNotEmpty() && serviceName.Equals(r[nameof(FileDynamicRoute.ServiceName)]?.ToString(), comparison) && serviceNamespace.Equals(r[nameof(FileDynamicRoute.ServiceNamespace)]?.ToString(), comparison)) ||
+            key.Equals(r[nameof(FileDynamicRoute.Key)]?.ToString(), comparison));
+        return jt as JObject;
+    }
+
+    public static JObject OcelotJAggregate(this IConfigurationBuilder builder, string upstreamPathTemplate, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        upstreamPathTemplate ??= string.Empty;
+        JArray routes = builder.OcelotJAggregates() ?? [];
+        JToken jt = routes.FirstOrDefault(r =>
+            upstreamPathTemplate.Equals(r[nameof(FileAggregateRoute.UpstreamPathTemplate)]?.ToString(), comparison));
         return jt as JObject;
     }
 
@@ -375,5 +403,15 @@ public static partial class ConfigurationBuilderExtensions
         return prop is not null && prop.Type != JTokenType.Null
             ? prop.ToObject<T>()
             : OcelotJGlobalProperty<T>(builder, propertyPath);
+    }
+
+    public static T OcelotJProperty<T>(this JObject route, string propertyPath, JObject globalConfiguration = null)
+    {
+        globalConfiguration ??= MergedConfigJObject.OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
+        JToken prop = route?.SelectToken(propertyPath);
+        JToken glob = globalConfiguration.SelectToken(propertyPath);
+        return prop is not null && prop.Type != JTokenType.Null
+            ? prop.ToObject<T>()
+            : glob.ToObject<T>();
     }
 }

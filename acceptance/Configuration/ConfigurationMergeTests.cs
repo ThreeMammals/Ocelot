@@ -6,20 +6,21 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
+using Ocelot.Testing.Steps;
 using System.Runtime.CompilerServices;
 
 namespace Ocelot.AcceptanceTests.Configuration;
 
-public sealed class ConfigurationMergeTests : Steps
+public sealed class ConfigurationMergeTests : DiscoverySteps
 {
     private readonly FileConfiguration _initialGlobalConfig;
-    private readonly string _globalConfigFileName;
+    private string _folder;
 
     public ConfigurationMergeTests() : base()
     {
         _initialGlobalConfig = new();
-        _globalConfigFileName = $"{TestID}-{ConfigurationBuilderExtensions.GlobalConfigFile}";
-        Files.Add(_globalConfigFileName);
+        _folder = Path.Combine(nameof(Configuration), TestID);
+        Folders.Add(Directory.CreateDirectory(_folder).FullName);
     }
 
     [Theory]
@@ -31,9 +32,11 @@ public sealed class ConfigurationMergeTests : Steps
     public void ShouldRunWithGlobalConfigMerged_WithExplicitGlobalConfigFileParameter(MergeOcelotJson where, bool fileExist)
     {
         Arrange();
+        var globalConfigFileName = $"{TestID}-{ConfigurationBuilderExtensions.GlobalConfigFile}";
+        Files.Add(globalConfigFileName);
         Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate = (context, config) => config
             .SetBasePath(context.HostingEnvironment.ContentRootPath)
-            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, _globalConfigFileName, null, false, false);
+            .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, globalConfigFileName, null, false, false);
         var testName = TestName();
         this
             .Given(x => GivenOcelotIsRunning(configureDelegate))
@@ -56,15 +59,13 @@ public sealed class ConfigurationMergeTests : Steps
         var routeBConfig = GivenConfiguration(GetRoute("B"));
         var environmentConfig = GivenConfiguration(GetRoute("Env"));
         environmentConfig.GlobalConfiguration = null;
-        var folder = Path.Combine(nameof(Ocelot.AcceptanceTests.Configuration), TestID);
-        Folders.Add(Directory.CreateDirectory(folder).FullName);
-        var globalPath = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
-        var routeAPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "A"));
-        var routeBPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "B"));
-        var environmentPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "Env"));
+        var globalPath = Path.Combine(_folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        var routeAPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "A"));
+        var routeBPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "B"));
+        var environmentPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "Env"));
         Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate = (context, config) => config
                 .SetBasePath(context.HostingEnvironment.ContentRootPath)
-                .AddOcelot(folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
+                .AddOcelot(_folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
                 .AddJsonFile(environmentPath);
         var testName = TestName();
         this
@@ -75,7 +76,7 @@ public sealed class ConfigurationMergeTests : Steps
             .When(x => GivenOcelotIsRunning(configureDelegate, null, null, null, host => host.UseEnvironment("Env"), null, null)) // Act
             .Then(x => TheOcelotPrimaryConfigFileExists(false))
             .And(x => ThenGlobalConfigurationHasBeenMerged(testName))
-            .And(x => ThenPrimaryConfigFileExistsInTheFolder(folder, fileExist))
+            .And(x => ThenPrimaryConfigFileExistsInTheFolder(_folder, fileExist))
             .And(x => ThenConfigurationExistsInTheInternalConfigurationRepository())
             .And(x => ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName))
         .BDDfy();
@@ -87,9 +88,7 @@ public sealed class ConfigurationMergeTests : Steps
     [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
     public async Task ShouldMergeStaticRoutesCustomPropertiesViaNewtonsoftJtoken()
     {
-        var folder = Path.Combine(nameof(Ocelot.AcceptanceTests.Configuration), TestID);
-        Folders.Add(Directory.CreateDirectory(folder).FullName);
-        var globalPath = Path.Combine(folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        var globalPath = Path.Combine(_folder, ConfigurationBuilderExtensions.GlobalConfigFile);
         var ocelotGlobalJson = @"
 {
   ""Routes"": [
@@ -112,7 +111,7 @@ public sealed class ConfigurationMergeTests : Steps
     ""GlobalCustomProperty"": 1183 // number of pull request LoL :D
   }
 }";
-        var xServicesPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "xservices"));
+        var xServicesPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "xservices"));
         var ocelotXServicesJson = @"
 {
   ""Routes"": [
@@ -142,7 +141,7 @@ public sealed class ConfigurationMergeTests : Steps
     }
   ]
 }";
-        var yServicesPath = Path.Combine(folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "yservices"));
+        var yServicesPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "yservices"));
         var ocelotYServicesJson = @"
 {
   ""Routes"": [
@@ -164,13 +163,120 @@ public sealed class ConfigurationMergeTests : Steps
         this.Given(x => GivenIWriteAConfiguration(globalPath, ocelotGlobalJson))
             .And(x => GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson))
             .And(x => GivenIWriteAConfiguration(yServicesPath, ocelotYServicesJson))
-            .When(x => GivenOcelotIsRunningWithMultipleConfigs(folder))
-            .Then(x => ThenConfigContentShouldHaveThreeRoutes(folder))
-            .And(x => ShouldMergeWithCustomPropertyInXservices())
-            .And(x => ShouldMergeWithCustomPropertyInYservices())
-            .And(x => ShouldMergeWithCustomGlobalProperty())
+            .When(x => GivenOcelotIsRunning(WithConfigurationFolder))
+            .Then(x => ThenConfigContentShouldHaveANumberOfRoutes(_folder, 3, 0))
+            .And(x => ShouldMergeWithCustomPropertyInXservices("/gw/serviceMethodA/byNumber/{number}"))
+            .And(x => ShouldMergeWithCustomPropertyInYservices("/b/{action}"))
+            .And(x => ShouldMergeWithCustomGlobalProperty("/{global}"))
         .BDDfy();
     }
+
+    [Fact]
+    [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
+    [Trait("PR", "1183")] // https://github.com/ThreeMammals/Ocelot/pull/1183
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+    public async Task ShouldMergeDynamicRoutesCustomPropertiesViaNewtonsoftJtoken()
+    {
+        var globalPath = Path.Combine(_folder, ConfigurationBuilderExtensions.GlobalConfigFile);
+        var ocelotGlobalJson = @"
+{
+  // 'Routes': [], // must be empty to enable dynamic routing!
+  'DynamicRoutes': [
+    // overriding goes here, but in another ocelot.X.json files
+  ],
+  'GlobalConfiguration': {
+    'BaseUrl': 'https://api.ocelot.net',
+    'ServiceDiscoveryProvider': {
+      'Host': 'my-consul.ocelot.net',
+      'Port': 8555,
+      'Type': 'Consul',
+      'Namespace': 'ShouldMergeDynamicRoutesCustomPropertiesViaNewtonsoftJtoken',
+      'MyDiscovery': 'I use Consul to manage services and have switched Ocelot to dynamic routing mode.' // custom property
+    },
+    'CacheOptions': {
+      'TtlSeconds': 300,
+      'TtlMinutes': 777 // custom property: I'd like to specify TTL in minutes 😄
+    },
+    'RateLimitOptions': {
+      'ClientIdHeader': 'Bla-bla-client',
+      'QuotaMessage': 'No Way!', // 😆
+      'MyOpinionMessage': 'Why is the rate-limiting feature so boring in Ocelot? 😏' // custom property, :)
+    },
+    // custom options
+    'MyOptions': {
+      'Country': 'United Kingdom',
+      'Town': 'Liskeard',
+      'HighTemp': 37 // record-breaking peak of 37.3°C in June 26th!!! 😲
+    },
+  }
+}";
+        Action ShouldMergeWithCustomPropertyInGlobalConfiguration = () =>
+        {
+            var global = _configJObject.OcelotJSection(nameof(FileConfiguration.GlobalConfiguration));
+            var sdpOptions = global["ServiceDiscoveryProvider"];
+            sdpOptions["Host"].ToString().ShouldBe("my-consul.ocelot.net");
+            sdpOptions["Namespace"].ShouldBe(nameof(ShouldMergeDynamicRoutesCustomPropertiesViaNewtonsoftJtoken));
+            sdpOptions["MyDiscovery"].Value<string>().ShouldBe("I use Consul to manage services and have switched Ocelot to dynamic routing mode.");
+            global["CacheOptions"]["TtlMinutes"].Value<int>().ShouldBe(777);
+            global["RateLimitOptions"]["MyOpinionMessage"].Value<string>().ShouldBe("Why is the rate-limiting feature so boring in Ocelot? 😏");
+            var myOptions = global["MyOptions"].ShouldNotBeNull();
+            myOptions["Country"].ToString().ShouldBe("United Kingdom");
+            myOptions["Town"].ToString().ShouldBe("Liskeard");
+            myOptions["HighTemp"].Value<int>().ShouldBe(37);
+        };
+
+        var xServicesPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "X"));
+        var ocelotXServicesJson = @"
+{
+  'DynamicRoutes': [
+    {
+      'ServiceName': 'product',
+      'ServiceNamespace': 'MyNamespace',
+      'RateLimitOptions': {
+        'Limit': 5,
+        'Period': '1s',
+        'Wait': '1.5s' // hybrid fixed window
+      }
+    },
+    {
+      'ServiceName': 'notification',
+      'LoadBalancerOptions': {
+        'Type': 'MyAlgorithm',
+        'HighLoad': 1000 // per second
+      },
+      'MyCustomDynamicProperty': 'https://my-cluster.ocelot.net',
+      'MyCustomOptions': {
+        'Enabled': false
+      }
+    }
+  ],
+}";
+        Action ShouldMergeWithCustomPropertyInNotificationService = () =>
+        {
+            var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.DynamicRoutes)) as JArray;
+            var route = routes.SingleOrDefault(r => r["ServiceName"].Value<string>() == "notification");
+            var lbOptions = route["LoadBalancerOptions"];
+            var lbo = lbOptions.ToObject<FileLoadBalancerOptions>().ShouldNotBeNull();
+            lbo.Type.ShouldBe("MyAlgorithm");
+            lbOptions["Type"].ShouldBe("MyAlgorithm");
+            lbOptions["HighLoad"].Value<int>().ShouldBe(1000);
+            route["MyCustomDynamicProperty"].Value<string>().ShouldBe("https://my-cluster.ocelot.net");
+            var myCustomOptions = route["MyCustomOptions"].ToObject<MyCustomOptions>().ShouldNotBeNull();
+            myCustomOptions.Enabled.ShouldBeFalse();
+        };
+        this.Given(x => GivenIWriteAConfiguration(globalPath, ocelotGlobalJson))
+            .And(x => GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson))
+            .When(x => GivenOcelotIsRunning(WithConfigurationFolder, WithDiscovery)) // We need to configure discovery to suppress Ocelot's startup validation errors
+            .Then(x => ThenConfigContentShouldHaveANumberOfRoutes(_folder, 0, 2))
+            .And(x => ShouldMergeWithCustomPropertyInGlobalConfiguration.Invoke())
+            .And(x => ShouldMergeWithCustomPropertyInNotificationService.Invoke())
+        .BDDfy();
+    }
+    class MyCustomOptions
+    {
+        public bool Enabled { get; set; }
+    }
+
     private Task GivenIWriteAConfiguration(string fpath, string ocelotJson)
     {
         Files.Add(fpath);
@@ -224,23 +330,29 @@ public sealed class ConfigurationMergeTests : Steps
 
     #region PR 1183
     private JObject _configJObject;
-    private void GivenOcelotIsRunningWithMultipleConfigs(string folder)
-        => GivenOcelotIsRunning((context, config) => config.AddOcelot(folder, context.HostingEnvironment));
+    private void WithConfigurationFolder(WebHostBuilderContext context, IConfigurationBuilder builder) => builder
+        .AddOcelot(_folder, context.HostingEnvironment);
+    public override void WithDiscovery(IServiceCollection services) => services
+        .AddSingleton(DynamicRoutingDiscoveryFinder)
+        .AddOcelot();
 
-    private async Task ThenConfigContentShouldHaveThreeRoutes(string folder)
+    private async Task ThenConfigContentShouldHaveANumberOfRoutes(string folder, int staticRoutesCount, int dynamicRoutesCount)
     {
-        const int three = 3;
         var mergedConfigFile = Path.Combine(folder, ConfigurationBuilderExtensions.PrimaryConfigFile);
         File.Exists(mergedConfigFile).ShouldBeTrue();
         var lines = await File.ReadAllTextAsync(mergedConfigFile);
         _configJObject = JObject.Parse(lines).ShouldNotBeNull();
-        var routes = _configJObject[nameof(FileConfiguration.Routes)].ShouldNotBeNull();
-        routes.Children().Count().ShouldBe(three);
+        var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.Routes)).ShouldNotBeNull();
+        routes.Children().Count().ShouldBe(staticRoutesCount);
+        var dynamicRoutes = _configJObject.OcelotJSection(nameof(FileConfiguration.DynamicRoutes)).ShouldNotBeNull();
+        dynamicRoutes.Children().Count().ShouldBe(dynamicRoutesCount);
     }
 
-    private void ShouldMergeWithCustomPropertyInXservices()
+    private void ShouldMergeWithCustomPropertyInXservices(string upstreamPath)
     {
-        var customPropertyX = PropertyShouldExist("CustomStrategyProperty");
+        var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+        var route = routes.SingleOrDefault(r => r["UpstreamPathTemplate"].Value<string>() == upstreamPath);
+        var customPropertyX = route["CustomStrategyProperty"];
         customPropertyX["GET"].ShouldNotBeNull();
         customPropertyX["GET"].Children().Count().ShouldBe(1);
         customPropertyX["GET"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodA");
@@ -249,19 +361,17 @@ public sealed class ConfigurationMergeTests : Steps
         customPropertyX["POST"].Children().FirstOrDefault().ShouldBe("SomeCustomStrategyMethodB");
     }
 
-    private void ShouldMergeWithCustomGlobalProperty()
+    private void ShouldMergeWithCustomGlobalProperty(string upstreamPath)
     {
         // in Routes
-        JToken customPropertyGlobal = PropertyShouldExist("SomethingMore");
-        customPropertyGlobal.ShouldBe("something");
+        var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+        var route = routes.SingleOrDefault(r => r["UpstreamPathTemplate"].Value<string>() == upstreamPath);
+        JToken customPropertyGlobal = route["SomethingMore"];
+        customPropertyGlobal.Value<string>().ShouldBe("something");
         // in GlobalConfiguration via IConfiguration
         IConfiguration config = OcelotServices.GetService<IConfiguration>().ShouldNotBeNull();
-        string actual = config["GlobalConfiguration:BaseUrl"];
-        actual.ShouldNotBeNull().ShouldBe("https://ocelot.net");
-        actual = config["GlobalConfiguration:GlobalCustomProperty"];
-        actual.ShouldNotBeNull().ShouldBe("1183");
-        int prNo = config.GetValue<int>("GlobalConfiguration:GlobalCustomProperty");
-        prNo.ShouldBe(1183);
+        config.OcelotGlobalProperty<string>("BaseUrl").ShouldBe("https://ocelot.net");
+        config.OcelotGlobalProperty<int>("GlobalCustomProperty").ShouldBe(1183);
         // in GlobalConfiguration via Newtonsoft's JObject
         JToken jtGlobalConfig = _configJObject["GlobalConfiguration"].ShouldNotBeNull();
         JToken jtGlobalCustomProperty = jtGlobalConfig["GlobalCustomProperty"].ShouldNotBeNull();
@@ -269,20 +379,14 @@ public sealed class ConfigurationMergeTests : Steps
         jtGlobalCustomProperty.Value<int>().ShouldBe(1183);
     }
 
-    private void ShouldMergeWithCustomPropertyInYservices()
+    private void ShouldMergeWithCustomPropertyInYservices(string upstreamPath)
     {
-        var customPropertyY = PropertyShouldExist("MyCustomProperty");
-        customPropertyY.ShouldBeAssignableTo(typeof(JArray));
+        var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+        var route = routes.SingleOrDefault(r => r["UpstreamPathTemplate"].Value<string>() == upstreamPath);
+        JToken customPropertyY = route["MyCustomProperty"];
+        customPropertyY.ShouldBeAssignableTo<JArray>();
         customPropertyY.Count().ShouldBe(1);
         customPropertyY.First().ShouldBe("myValue");
-    }
-
-    private JToken PropertyShouldExist(string propertyName)
-    {
-        var routeWithProperty = _configJObject[nameof(FileConfiguration.Routes)].Children()
-            .SingleOrDefault(route => route[propertyName] != null)
-            .ShouldNotBeNull();
-        return routeWithProperty[propertyName].ShouldNotBeNull();
     }
     #endregion PR 1183
 }

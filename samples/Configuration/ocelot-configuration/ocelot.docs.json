@@ -10,7 +10,10 @@
           "Host": "ocelot.readthedocs.io",
           "Port": 443
         }
-      ]
+      ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": false
+      }
     },
     {
       "UpstreamHttpMethod": [ "Get" ],
@@ -22,7 +25,10 @@
           "Host": "ocelot.readthedocs.io",
           "Port": 443
         }
-      ]
+      ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": false
+      }
     }
   ]
 }
