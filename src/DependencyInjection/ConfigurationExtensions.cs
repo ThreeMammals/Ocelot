@@ -63,7 +63,8 @@ public static class ConfigurationExtensions
     public static T OcelotProperty<T>(this IConfiguration configuration, string propertyName, IConfigurationSection current = null)
     {
         current ??= OcelotRoutes(configuration);
-        return OcelotSection(configuration, propertyName, current).Get<T>();
+        var property = OcelotSection(configuration, propertyName, current);
+        return property is not null ? property.Get<T>() : default;
     }
 
     public static IConfigurationSection OcelotGlobalSection(this IConfiguration configuration, string sectionName)
