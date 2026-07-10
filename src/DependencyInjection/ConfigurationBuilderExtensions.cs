@@ -409,9 +409,12 @@ public static partial class ConfigurationBuilderExtensions
     {
         globalConfiguration ??= MergedConfigJObject.OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
         JToken prop = route?.SelectToken(propertyPath);
-        JToken glob = globalConfiguration.SelectToken(propertyPath);
-        return prop is not null && prop.Type != JTokenType.Null
-            ? prop.ToObject<T>()
-            : glob.ToObject<T>();
+        JToken glob = globalConfiguration?.SelectToken(propertyPath);
+        if (prop is not null && prop.Type != JTokenType.Null)
+            return prop.ToObject<T>();
+
+        return glob is not null && glob.Type != JTokenType.Null
+            ? glob.ToObject<T>()
+            : default;
     }
 }
