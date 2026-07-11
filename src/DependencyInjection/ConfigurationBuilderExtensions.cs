@@ -13,8 +13,19 @@ namespace Ocelot.DependencyInjection;
 /// </summary>
 public static partial class ConfigurationBuilderExtensions
 {
+    /// <summary>
+    /// Gets the default name of the primary Ocelot configuration file.
+    /// </summary>
     public const string PrimaryConfigFile = "ocelot.json";
+
+    /// <summary>
+    /// Gets the default name of the global Ocelot configuration file.
+    /// </summary>
     public const string GlobalConfigFile = "ocelot.global.json";
+
+    /// <summary>
+    /// Gets the default pattern for environment-specific Ocelot configuration files.
+    /// </summary>
     public const string EnvironmentConfigFile = "ocelot.{0}.json";
 
     /// <summary>
@@ -336,22 +347,73 @@ public static partial class ConfigurationBuilderExtensions
 
     internal static readonly string MergedConfigJsonKey = typeof(ConfigurationBuilderExtensions).FullName + ".JSON";
     internal static readonly string MergedConfigJObjectKey = typeof(ConfigurationBuilderExtensions).FullName + ".JObject";
+
+    /// <summary>
+    /// Gets the merged Ocelot JSON payload cached on the configuration builder.
+    /// </summary>
     internal static string MergedConfigJson { get; private set; }
+
+    /// <summary>
+    /// Gets the merged Ocelot JSON object cached on the configuration builder.
+    /// </summary>
     internal static JObject MergedConfigJObject { get; private set; }
 
+    /// <summary>
+    /// Gets the merged Ocelot JSON payload previously cached on the configuration builder.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The merged JSON payload as a string, or <see langword="null"/> if no merged payload has been cached.</returns>
     public static string OcelotJson(this IConfigurationBuilder builder)
         => builder.Properties[MergedConfigJsonKey] as string;
+
+    /// <summary>
+    /// Gets the merged Ocelot JSON object previously cached on the configuration builder.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The merged JSON object, or <see langword="null"/> if no merged payload has been cached.</returns>
     public static JObject OcelotJObject(this IConfigurationBuilder builder)
         => builder.Properties[MergedConfigJObjectKey] as JObject;
+
+    /// <summary>
+    /// Gets the routes section from the merged Ocelot configuration.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The routes section as a <see cref="JArray"/>, or <see langword="null"/> if it is not present.</returns>
     public static JArray OcelotJRoutes(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.Routes)) as JArray;
+
+    /// <summary>
+    /// Gets the dynamic routes section from the merged Ocelot configuration.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The dynamic routes section as a <see cref="JArray"/>, or <see langword="null"/> if it is not present.</returns>
     public static JArray OcelotJDynamicRoutes(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.DynamicRoutes)) as JArray;
+
+    /// <summary>
+    /// Gets the aggregates section from the merged Ocelot configuration.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The aggregates section as a <see cref="JArray"/>, or <see langword="null"/> if it is not present.</returns>
     public static JArray OcelotJAggregates(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.Aggregates)) as JArray;
+
+    /// <summary>
+    /// Gets the global configuration section from the merged Ocelot configuration.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <returns>The global configuration section as a <see cref="JObject"/>, or <see langword="null"/> if it is not present.</returns>
     public static JObject OcelotJGlobalConfiguration(this IConfigurationBuilder builder)
         => builder.OcelotJObject().OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
 
+    /// <summary>
+    /// Finds the first route object matching the specified upstream path template or key.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <param name="upstreamPathTemplate">The upstream path template to match.</param>
+    /// <param name="key">The route key to match.</param>
+    /// <param name="comparison">The string comparison mode used when evaluating the route values.</param>
+    /// <returns>The matching route as a <see cref="JObject"/>, or <see langword="null"/> if no route matches.</returns>
     public static JObject OcelotJRoute(this IConfigurationBuilder builder,
         string upstreamPathTemplate = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {
@@ -365,6 +427,15 @@ public static partial class ConfigurationBuilderExtensions
         return jt as JObject;
     }
 
+    /// <summary>
+    /// Finds the first dynamic route object matching the specified service name, namespace, or key.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <param name="serviceName">The service name to match.</param>
+    /// <param name="serviceNamespace">The service namespace to match.</param>
+    /// <param name="key">The dynamic route key to match.</param>
+    /// <param name="comparison">The string comparison mode used when evaluating the route values.</param>
+    /// <returns>The matching dynamic route as a <see cref="JObject"/>, or <see langword="null"/> if no dynamic route matches.</returns>
     public static JObject OcelotJDynamicRoute(this IConfigurationBuilder builder,
         string serviceName = null, string serviceNamespace = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {
@@ -379,6 +450,13 @@ public static partial class ConfigurationBuilderExtensions
         return jt as JObject;
     }
 
+    /// <summary>
+    /// Finds the first aggregate route object matching the specified upstream path template.
+    /// </summary>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <param name="upstreamPathTemplate">The upstream path template to match.</param>
+    /// <param name="comparison">The string comparison mode used when evaluating the aggregate route values.</param>
+    /// <returns>The matching aggregate route as a <see cref="JObject"/>, or <see langword="null"/> if no aggregate route matches.</returns>
     public static JObject OcelotJAggregate(this IConfigurationBuilder builder, string upstreamPathTemplate, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {
         upstreamPathTemplate ??= string.Empty;
@@ -388,6 +466,13 @@ public static partial class ConfigurationBuilderExtensions
         return jt as JObject;
     }
 
+    /// <summary>
+    /// Gets a strongly typed value from the global configuration section using a JSONPath expression.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to deserialize.</typeparam>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <param name="propertyPath">The JSONPath expression used to locate the property.</param>
+    /// <returns>The property value if found; otherwise, the <see langword="default"/> value for <typeparamref name="T"/>.</returns>
     public static T OcelotJGlobalProperty<T>(this IConfigurationBuilder builder, string propertyPath)
     {
         JObject global = builder.OcelotJGlobalConfiguration() ?? [];
@@ -395,6 +480,16 @@ public static partial class ConfigurationBuilderExtensions
         return prop is null ? default : prop.ToObject<T>();
     }
 
+    /// <summary>
+    /// Gets a strongly typed value from the matching route, falling back to the global configuration section when necessary.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to deserialize.</typeparam>
+    /// <param name="builder">The configuration builder that stores the merged Ocelot configuration.</param>
+    /// <param name="propertyPath">The JSONPath expression used to locate the property.</param>
+    /// <param name="upstreamPathTemplate">The upstream path template used to locate the route.</param>
+    /// <param name="key">The route key used to locate the route.</param>
+    /// <param name="comparison">The string comparison mode used when evaluating the route values.</param>
+    /// <returns>The property value if found; otherwise, the <see langword="default"/> value for <typeparamref name="T"/>.</returns>
     public static T OcelotJProperty<T>(this IConfigurationBuilder builder, string propertyPath,
         string upstreamPathTemplate = null, string key = null, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {
@@ -405,6 +500,14 @@ public static partial class ConfigurationBuilderExtensions
             : OcelotJGlobalProperty<T>(builder, propertyPath);
     }
 
+    /// <summary>
+    /// Gets a strongly typed value from the specified route or from the supplied global configuration section.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to deserialize.</typeparam>
+    /// <param name="route">The route object to inspect.</param>
+    /// <param name="propertyPath">The JSONPath expression used to locate the property.</param>
+    /// <param name="globalConfiguration">The optional global configuration section to use as a fallback.</param>
+    /// <returns>The property value if found; otherwise, the <see langword="default"/> value for <typeparamref name="T"/>.</returns>
     public static T OcelotJProperty<T>(this JObject route, string propertyPath, JObject globalConfiguration = null)
     {
         globalConfiguration ??= MergedConfigJObject.OcelotJSection(nameof(FileConfiguration.GlobalConfiguration)) as JObject;
