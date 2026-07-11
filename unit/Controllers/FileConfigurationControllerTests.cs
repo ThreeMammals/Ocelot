@@ -66,7 +66,9 @@ public class FileConfigurationControllerTests : UnitTest
         // Assert
         result.ShouldBeOfType<BadRequestObjectResult>();
         var badRequest = result as BadRequestObjectResult;
-        Assert.IsType<Exception>(badRequest.Value);
+        Assert.IsType<string>(badRequest.Value);
+        string msg = badRequest.Value as string;
+        Assert.Equal("Exception: Get failed" + NL, msg);
     }
 
     [Fact]
@@ -114,7 +116,9 @@ public class FileConfigurationControllerTests : UnitTest
         _setter.Verify(x => x.SetAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
         result.ShouldBeOfType<BadRequestObjectResult>();
         var actual = result as BadRequestObjectResult;
-        Assert.StartsWith("System.Exception: Service failed", actual.Value.ToString());
+        Assert.IsType<string>(actual.Value);
+        var msg = actual.Value as string;
+        Assert.Equal("Exception: Service failed" + NL, msg);
     }
 
     private class FakeError : Error

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
+using Ocelot.Errors;
 
 namespace Ocelot.Administration;
 
@@ -21,7 +22,7 @@ public class FileConfigurationController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<ActionResult> Get(CancellationToken cancellationToken)
     {
         FileConfiguration configuration;
         try
@@ -30,7 +31,7 @@ public class FileConfigurationController : Controller
         }
         catch (Exception e)
         {
-            return BadRequest(e);
+            return BadRequest(e.ToShortString());
         }
 
         return (configuration is null)
@@ -39,7 +40,7 @@ public class FileConfigurationController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] FileConfiguration configuration, CancellationToken cancellationToken)
+    public async Task<ActionResult> Post([FromBody] FileConfiguration configuration, CancellationToken cancellationToken)
     {
         try
         {
@@ -48,7 +49,7 @@ public class FileConfigurationController : Controller
         }
         catch (Exception e)
         {
-            return BadRequest(e.ToString());
+            return BadRequest(e.ToShortString());
         }
     }
 }
