@@ -1,3 +1,11 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Ocelot.Authentication.Extensions.ApiKey;
+using Ocelot.Configuration.File;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,13 +14,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Ocelot.Authentication.Extensions.ApiKey;
-using Ocelot.Configuration.File;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -408,6 +409,34 @@ namespace Ocelot.AcceptanceTests
         {
             _serviceHandler.Dispose();
             _steps.Dispose();
+        }
+
+        public void GivenOcelotIsRunning(Action<ApiKeyAuthenticationOptions> options, string authenticationProviderKey)
+        {
+            _webHostBuilder = new WebHostBuilder();
+            _webHostBuilder
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                    var env = hostingContext.HostingEnvironment;
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
+                    config.AddEnvironmentVariables();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddOcelot();
+                    s.AddAuthentication()
+                        .AddApiKey(authenticationProviderKey, options);
+                })
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
+            _ocelotClient = _ocelotServer.CreateClient();
         }
     }
 
