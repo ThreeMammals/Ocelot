@@ -6,7 +6,7 @@
 
 ## Quick Summary Table
 
-| Package | Latest Release | Pre-Release | Downloads |
+| Package | Latest Release | Pre-Release | Metrics |
 |---------|---|---|---|
 | **[Ocelot](#ocelot)** | ![Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Release) | ![Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white&label=Pre-Release) | ![Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Released) |
 | **[Ocelot.QualityOfService.Polly](#ocelotqualityofservicepolly)** | ![Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Release) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Pre-Release) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Downloads) |

@@ -86,7 +86,7 @@ Stay updated with the latest releases of Ocelot and its extension packages from 
 
 ### Latest Package Releases
 
-| Package | Latest Release | Pre-Release | Release Date |
+| Package | Latest Release | Pre-Release | Metrics |
 |---------|---|---|---|
 | **Ocelot** (Core) | ![Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white) | ![Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white) | ![Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white) |
 | **Ocelot.QualityOfService.Polly** | ![Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget) |
