@@ -80,6 +80,22 @@ Feature groups are explained in the table below
 > Ocelot customizations can be configured using [Metadata](https://ocelot.readthedocs.io/en/latest/features/metadata.html), developed with [Delegating Handlers](https://ocelot.readthedocs.io/en/latest/features/delegatinghandlers.html), and in advanced scenarios, they can be developed and then configured with [Middleware Injection](https://ocelot.readthedocs.io/en/latest/features/middlewareinjection.html).
 For further details, refer to the [Documentation](#documentation).
 
+## 📡 Release Radar
+
+Stay updated with the latest releases of Ocelot and its extension packages from the [ThreeMammals](https://github.com/ThreeMammals) organization. This section provides a snapshot of release status across the entire Ocelot ecosystem.
+
+### Latest Package Releases
+
+| Package | Latest Release | Pre-Release | Release Date |
+|---------|---|---|---|
+| **Ocelot** (Core) | ![Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white) | ![Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white) | ![Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white) |
+| **Ocelot.QualityOfService.Polly** | ![Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget) |
+| **Ocelot.Discovery.Consul** | ![Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Consul?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Consul?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Consul?logo=nuget) |
+| **Ocelot.Provider.Kubernetes** | ![Release](https://img.shields.io/nuget/v/Ocelot.Provider.Kubernetes?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Provider.Kubernetes?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Provider.Kubernetes?logo=nuget) |
+| **Ocelot.Discovery.Eureka** | ![Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Eureka?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Eureka?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Eureka?logo=nuget) |
+
+> 📌 **View the complete [Release Radar](./ReleaseRadar.md)** for comprehensive release information, detailed metrics, CI/CD status, code quality badges, and more about each package.
+
 ## :file_folder: Repository Structure
 
 Welcome to Ocelot's **minimalist folder organization**! Our repository follows a clean, flat structure that makes it easy to navigate and contribute. Here's where everything lives:
