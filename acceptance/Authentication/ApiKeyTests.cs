@@ -3,447 +3,393 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Ocelot.Authentication.Extensions.ApiKey;
+using Ocelot.Authentication.ApiKey;
 using Ocelot.Configuration.File;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using TestStack.BDDfy;
-using Xunit;
+using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests
+namespace Ocelot.AcceptanceTests.Authentication;
+
+public class ApiKeyTests : AuthSteps
 {
-    public class ApiKeyTests : IDisposable
+    private string _apiServerRootUrl;
+    private string _downstreamServicePath = "/";
+    private string _downstreamServiceHost = "localhost";
+    private string _downstreamServiceScheme = "http";
+    private string _apiKeyValidationPath = "validateapikey";
+
+    private readonly Action<ApiKeyAuthenticationOptions> _getOptions;
+    private readonly Action<ApiKeyAuthenticationOptions> _postOptions;
+    private Action<ApiKeyAuthenticationOptions> _options;
+    private string _authProviderKey;
+
+    public ApiKeyTests()
     {
-        private readonly Steps _steps;
+        var mockValidationApiPort = PortFinder.GetRandomPort();
+        _apiServerRootUrl = $"http://localhost:{mockValidationApiPort}";
 
-        private string _apiServerRootUrl;
-        private string _downstreamServicePath = "/";
-        private string _downstreamServiceHost = "localhost";
-        private string _downstreamServiceScheme = "http";
-        private string _downstreamServiceUrl = "http://localhost:";
-
-        private string _apiKeyValidationPath = "validateapikey";
-
-        private readonly ServiceHandler _serviceHandler;
-
-        private readonly Action<ApiKeyAuthenticationOptions> _getOptions;
-        private readonly Action<ApiKeyAuthenticationOptions> _postOptions;
-
-        public ApiKeyTests()
+        _getOptions = o =>
         {
-            _steps = new Steps();
-            _serviceHandler = new ServiceHandler();
-            var mockValidationApiPort = RandomPortFinder.GetRandomPort();
-            _apiServerRootUrl = $"http://localhost:{mockValidationApiPort}";
+            o.Authority = $"{_apiServerRootUrl}/{_apiKeyValidationPath}";
+            o.Method = HttpMethod.Get;
+        };
 
-            _getOptions = o =>
-            {
-                o.Authority = $"{_apiServerRootUrl}/{_apiKeyValidationPath}";
-                o.Method = HttpMethod.Get;
-            };
-
-            _postOptions = o =>
-            {
-                o.Authority = $"{_apiServerRootUrl}/{_apiKeyValidationPath}";
-                o.Method = HttpMethod.Post;
-            };
-        }
-
-        [Fact]
-        public void should_return_401_using_api_key()
+        _postOptions = o =>
         {
-            var port = RandomPortFinder.GetRandomPort();
+            o.Authority = $"{_apiServerRootUrl}/{_apiKeyValidationPath}";
+            o.Method = HttpMethod.Post;
+        };
+    }
 
-            var configuration = new FileConfiguration
+    [Fact]
+    public void should_return_401_using_api_key()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
             {
-                Routes = new List<FileRoute>
+                new FileRoute
                 {
-                    new FileRoute
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
                     {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        new FileHostAndPort
                         {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey"
+                            Host = _downstreamServiceHost,
+                            Port = port
                         }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey"
                     }
                 }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_getOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_201_using_api_key()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey",
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_getOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/?key=testing"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_401_using_post()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey"
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_postOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_201_using_api_key_with_post()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey"
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_postOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/?key=testing"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_403_when_user_has_incorrect_role()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        RouteClaimsRequirement = new Dictionary<string, string>
-                        {
-                            { "Role", "testing" }
-                        },
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey",
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_getOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/?key=testing"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void should_return_201_when_user_has_correct_role()
-        {
-            var port = RandomPortFinder.GetRandomPort();
-
-            var configuration = new FileConfiguration
-            {
-                Routes = new List<FileRoute>
-                {
-                    new FileRoute
-                    {
-                        DownstreamPathTemplate = _downstreamServicePath,
-                        DownstreamHostAndPorts = new List<FileHostAndPort>
-                        {
-                            new FileHostAndPort
-                            {
-                                Host = _downstreamServiceHost,
-                                Port = port
-                            }
-                        },
-                        DownstreamScheme = _downstreamServiceScheme,
-                        UpstreamPathTemplate = "/",
-                        UpstreamHttpMethod = new List<string>{"Post"},
-                        RouteClaimsRequirement = new Dictionary<string, string>
-                        {
-                            { "Role", "testing" }
-                        },
-                        AuthenticationOptions = new FileAuthenticationOptions
-                        {
-                            AuthenticationProviderKey = "TestApiKey",
-                        }
-                    }
-                }
-            };
-
-            this.Given(x => x.GivenThereIsAServiceRunningOn($"{_downstreamServiceUrl}{port}", 201, string.Empty))
-                .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { "testing" }))
-                .And(x => _steps.GivenThereIsAConfiguration(configuration))
-                .And(x => _steps.GivenOcelotIsRunning(_getOptions, "TestApiKey"))
-                .And(x => _steps.GivenThePostHasContent("postContent"))
-                .When(x => _steps.WhenIPostUrlOnTheApiGateway("/?key=testing"))
-                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-                .BDDfy();
-        }
-
-
-        private void GivenThereIsAServiceRunningOn(string url, int statusCode, string responseBody)
-        {
-            _serviceHandler.GivenThereIsAServiceRunningOn(url, async context =>
-            {
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsync(responseBody);
-            });
-        }
-
-        private void GivenThereIsAMockKeyValidationApiServerOn(string url, string validationPath, string[] acceptedKeys, string[] roles)
-        {
-            var testBody = new
-            {
-                Owner = "testuser",
-                Roles = roles
-            };
-
-            IWebHost test = new WebHostBuilder()
-                .UseUrls(url)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseUrls(url)
-                .ConfigureServices(services =>
-                {
-                    services.AddRouting();
-                })
-                .Configure(app =>
-                {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/", async context =>
-                        {
-                            await context.Response.WriteAsync("OK");
-                        });
-
-                        endpoints.MapGet($"/{validationPath}", async context =>
-                        {
-                            if (!context.Request.Query.TryGetValue("key", out var key))
-                            {
-                                context.Response.StatusCode = 401;
-                                await context.Response.WriteAsync("");
-                            }
-
-                            if (acceptedKeys.Any(x => x == key))
-                            {
-                                context.Response.StatusCode = 200;
-                                await context.Response.WriteAsync(JsonConvert.SerializeObject(testBody));
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = 401;
-                                await context.Response.WriteAsync("");
-                            }
-                        });
-
-                        endpoints.MapPost($"/{validationPath}", async context =>
-                        {
-                            StreamReader r = new StreamReader(context.Request.Body);
-                            var streamBody = await r.ReadToEndAsync();
-
-                            var body = JsonConvert.DeserializeObject<PostBody>(streamBody);
-                            var key = body.key;
-
-                            if (acceptedKeys.Any(x => x == key))
-                            {
-                                context.Response.StatusCode = 200;
-                                await context.Response.WriteAsync(JsonConvert.SerializeObject(testBody));
-                            }
-                            else
-                            {
-                                context.Response.StatusCode = 401;
-                                await context.Response.WriteAsync("");
-                            }
-                        });
-                    });
-                })
-                .Build();
-
-            test.Start();
-            VerifyServerStarted(_apiServerRootUrl);
-        }
-
-        public void VerifyServerStarted(string url)
-        {
-            using (var httpClient = new HttpClient())
-            {
-                var response = httpClient.GetAsync(url).GetAwaiter().GetResult();
-                var content = response.Content.ReadAsStringAsync().GetAwaiter();
-                response.EnsureSuccessStatusCode();
             }
-        }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_getOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+        .BDDfy();
+    }
 
-        public void Dispose()
-        {
-            _serviceHandler.Dispose();
-            _steps.Dispose();
-        }
+    [Fact]
+    public void should_return_201_using_api_key()
+    {
+        var port = PortFinder.GetRandomPort();
 
-        public void GivenOcelotIsRunning(Action<ApiKeyAuthenticationOptions> options, string authenticationProviderKey)
+        var configuration = new FileConfiguration
         {
-            _webHostBuilder = new WebHostBuilder();
-            _webHostBuilder
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            Routes = new List<FileRoute>
+            {
+                new FileRoute
                 {
-                    config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
-                    config.AddJsonFile("ocelot.json", optional: true, reloadOnChange: false);
-                    config.AddEnvironmentVariables();
-                })
-                .ConfigureServices(s =>
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = _downstreamServiceHost,
+                            Port = port
+                        }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey",
+                    }
+                }
+            }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_getOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/?key=testing", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+        .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_401_using_post()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new FileRoute
                 {
-                    s.AddOcelot();
-                    s.AddAuthentication()
-                        .AddApiKey(authenticationProviderKey, options);
-                })
-                .Configure(app =>
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = _downstreamServiceHost,
+                            Port = port
+                        }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey"
+                    }
+                }
+            }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_postOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
+        .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_201_using_api_key_with_post()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new FileRoute
                 {
-                    app.UseOcelot().Wait();
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = _downstreamServiceHost,
+                            Port = port
+                        }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey"
+                    }
+                }
+            }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_postOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/?key=testing", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+        .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_403_when_user_has_incorrect_role()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new FileRoute
+                {
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = _downstreamServiceHost,
+                            Port = port
+                        }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    RouteClaimsRequirement = new Dictionary<string, string>
+                    {
+                        { "Role", "testing" }
+                    },
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey",
+                    }
+                }
+            }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_getOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/?key=testing", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
+        .BDDfy();
+    }
+
+    [Fact]
+    public void should_return_201_when_user_has_correct_role()
+    {
+        var port = PortFinder.GetRandomPort();
+
+        var configuration = new FileConfiguration
+        {
+            Routes = new List<FileRoute>
+            {
+                new FileRoute
+                {
+                    DownstreamPathTemplate = _downstreamServicePath,
+                    DownstreamHostAndPorts = new List<FileHostAndPort>
+                    {
+                        new FileHostAndPort
+                        {
+                            Host = _downstreamServiceHost,
+                            Port = port
+                        }
+                    },
+                    DownstreamScheme = _downstreamServiceScheme,
+                    UpstreamPathTemplate = "/",
+                    UpstreamHttpMethod = ["Post"],
+                    RouteClaimsRequirement = new Dictionary<string, string>
+                    {
+                        { "Role", "testing" }
+                    },
+                    AuthenticationOptions = new FileAuthenticationOptions
+                    {
+                        AuthenticationProviderKey = "TestApiKey",
+                    }
+                }
+            }
+        };
+        var body = Body();
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
+            .And(x => x.GivenThereIsAMockKeyValidationApiServerOn(_apiServerRootUrl, _apiKeyValidationPath, new string[] { "testing" }, new string[] { "testing" }))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(_getOptions, "TestApiKey"))
+            .When(x => WhenIPostUrlOnTheApiGateway("/?key=testing", "postContent"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
+        .BDDfy();
+    }
+
+    private void GivenThereIsAMockKeyValidationApiServerOn(string url, string validationPath, string[] acceptedKeys, string[] roles)
+    {
+        var testBody = new
+        {
+            Owner = "testuser",
+            Roles = roles
+        };
+
+        IWebHost test = new WebHostBuilder()
+            .UseUrls(url)
+            .UseKestrel()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseIISIntegration()
+            .UseUrls(url)
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+            })
+            .Configure(app =>
+            {
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapGet("/", async context =>
+                    {
+                        await context.Response.WriteAsync("OK");
+                    });
+
+                    endpoints.MapGet($"/{validationPath}", async context =>
+                    {
+                        if (!context.Request.Query.TryGetValue("key", out var key))
+                        {
+                            context.Response.StatusCode = 401;
+                            await context.Response.WriteAsync("");
+                        }
+
+                        if (acceptedKeys.Any(x => x == key))
+                        {
+                            context.Response.StatusCode = 200;
+                            await context.Response.WriteAsync(JsonConvert.SerializeObject(testBody));
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 401;
+                            await context.Response.WriteAsync("");
+                        }
+                    });
+
+                    endpoints.MapPost($"/{validationPath}", async context =>
+                    {
+                        StreamReader r = new StreamReader(context.Request.Body);
+                        var streamBody = await r.ReadToEndAsync();
+
+                        var body = JsonConvert.DeserializeObject<PostBody>(streamBody);
+                        var key = body.key;
+
+                        if (acceptedKeys.Any(x => x == key))
+                        {
+                            context.Response.StatusCode = 200;
+                            await context.Response.WriteAsync(JsonConvert.SerializeObject(testBody));
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 401;
+                            await context.Response.WriteAsync("");
+                        }
+                    });
                 });
+            })
+            .Build();
 
-            _ocelotServer = new TestServer(_webHostBuilder);
-            _ocelotClient = _ocelotServer.CreateClient();
+        test.Start();
+        VerifyServerStarted(_apiServerRootUrl);
+    }
+
+    public void VerifyServerStarted(string url)
+    {
+        using (var httpClient = new HttpClient())
+        {
+            var response = httpClient.GetAsync(url).GetAwaiter().GetResult();
+            var content = response.Content.ReadAsStringAsync().GetAwaiter();
+            response.EnsureSuccessStatusCode();
         }
     }
 
-    public class PostBody
+    public void WithAuthApiKey(IServiceCollection services)
     {
-        public string key { get; set; }
+        services.AddOcelot();
+        services.AddAuthentication().AddApiKey(_authProviderKey, _options);
+    }
+
+    public int GivenOcelotIsRunning(Action<ApiKeyAuthenticationOptions> options, string authenticationProviderKey)
+    {
+        _options = options;
+        _authProviderKey = authenticationProviderKey;
+        return GivenOcelotIsRunning(WithAuthApiKey);
     }
 }
 
-
+public class PostBody
+{
+    public string key { get; set; }
+}

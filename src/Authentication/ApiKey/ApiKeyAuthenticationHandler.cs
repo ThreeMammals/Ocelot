@@ -14,129 +14,128 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Ocelot.Authentication.Extensions.ApiKey
+namespace Ocelot.Authentication.ApiKey;
+
+public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationOptions>
 {
-    public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationOptions>
+    private const string ProblemContentType = "application/problem+json";
+
+    private readonly IOcelotLogger _logger;
+
+    public ApiKeyAuthenticationHandler(
+        IOptionsMonitor<ApiKeyAuthenticationOptions> options,
+        IOcelotLoggerFactory loggerFactory,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock) : base(options, logger, encoder, clock)
     {
-        private const string ProblemContentType = "application/problem+json";
+        _logger = loggerFactory.CreateLogger<ApiKeyAuthenticationHandler>();
+    }
 
-        private readonly IOcelotLogger _logger;
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var headerPresent = true;
+        var queryPresent = true;
 
-        public ApiKeyAuthenticationHandler(
-            IOptionsMonitor<ApiKeyAuthenticationOptions> options,
-            IOcelotLoggerFactory loggerFactory,
-            ILoggerFactory logger,
-            UrlEncoder encoder,
-            ISystemClock clock) : base(options, logger, encoder, clock)
+        if (!Request.Headers.TryGetValue(Options.ApiKeyHeaderName, out var apiKeyHeaderValues))
         {
-            _logger = loggerFactory.CreateLogger<ApiKeyAuthenticationHandler>();
+            headerPresent = false;
         }
 
-        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        if (!Request.Query.TryGetValue(Options.ApiKeyQueryName, out var apiKeyQueryValues))
         {
-            var headerPresent = true;
-            var queryPresent = true;
+            queryPresent = false;
+        }
 
-            if (!Request.Headers.TryGetValue(Options.ApiKeyHeaderName, out var apiKeyHeaderValues))
+        if (!headerPresent && !queryPresent)
+        {
+            _logger.LogError("No Api Key present in header or query parameters", new Exception());
+            return AuthenticateResult.NoResult();
+        }
+
+        var values = apiKeyHeaderValues.Concat(apiKeyQueryValues);
+        var providedApiKey = values.FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(providedApiKey))
+        {
+            return AuthenticateResult.NoResult();
+        }
+
+        using var client = new HttpClient();
+
+        StringContent body = null;
+        string url = Options.Authority;
+
+        if (Options.Method == HttpMethod.Get)
+        {
+            url = $"{url}?key={providedApiKey}";
+        }
+        else
+        {
+            var bodyData = new
             {
-                headerPresent = false;
-            }
+                key = providedApiKey,
+            };
+            body = new StringContent(JsonConvert.SerializeObject(bodyData), Encoding.UTF8, "application/json");
+        }
 
-            if (!Request.Query.TryGetValue(Options.ApiKeyQueryName, out var apiKeyQueryValues))
+        var message = new HttpRequestMessage(Options.Method, url)
+        {
+            Content = body,
+        };
+
+        var response = await client.SendAsync(message);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return AuthenticateResult.Fail("Invalid API Key provided.");
+        }
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var responseObject = JsonConvert.DeserializeObject<ApiKeyValidationResponse>(responseBody);
+
+        var claims = new List<Claim>
             {
-                queryPresent = false;
-            }
-
-            if (!headerPresent && !queryPresent)
-            {
-                _logger.LogError("No Api Key present in header or query parameters", new Exception());
-                return AuthenticateResult.NoResult();
-            }
-
-            var values = apiKeyHeaderValues.Concat(apiKeyQueryValues);
-            var providedApiKey = values.FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(providedApiKey))
-            {
-                return AuthenticateResult.NoResult();
-            }
-
-            using var client = new HttpClient();
-
-            StringContent body = null;
-            string url = Options.Authority;
-
-            if (Options.Method == HttpMethod.Get)
-            {
-                url = $"{url}?key={providedApiKey}";
-            }
-            else
-            {
-                var bodyData = new
-                {
-                    key = providedApiKey,
-                };
-                body = new StringContent(JsonConvert.SerializeObject(bodyData), Encoding.UTF8, "application/json");
-            }
-
-            var message = new HttpRequestMessage(Options.Method, url)
-            {
-                Content = body,
+                new Claim("Owner", responseObject.Owner),
             };
 
-            var response = await client.SendAsync(message);
+        claims.AddRange(responseObject.Roles.Select(role => new Claim("Role", role)));
 
-            if (!response.IsSuccessStatusCode)
-            {
-                return AuthenticateResult.Fail("Invalid API Key provided.");
-            }
+        var identity = new ClaimsIdentity(claims, Options.AuthenticationType);
+        var identities = new List<ClaimsIdentity> { identity };
+        var principal = new ClaimsPrincipal(identities);
+        var ticket = new AuthenticationTicket(principal, Options.Scheme);
 
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonConvert.DeserializeObject<ApiKeyValidationResponse>(responseBody);
+        return AuthenticateResult.Success(ticket);
+    }
 
-            var claims = new List<Claim>
-                {
-                    new Claim("Owner", responseObject.Owner),
-                };
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = 401;
+        Response.ContentType = ProblemContentType;
 
-            claims.AddRange(responseObject.Roles.Select(role => new Claim("Role", role)));
-
-            var identity = new ClaimsIdentity(claims, Options.AuthenticationType);
-            var identities = new List<ClaimsIdentity> { identity };
-            var principal = new ClaimsPrincipal(identities);
-            var ticket = new AuthenticationTicket(principal, Options.Scheme);
-
-            return AuthenticateResult.Success(ticket);
-        }
-
-        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+        var problemDetails = new ProblemDetails
         {
-            Response.StatusCode = 401;
-            Response.ContentType = ProblemContentType;
+            Status = StatusCodes.Status401Unauthorized,
+            Type = $"https://httpstatuses.com/401",
+            Detail = "Unauthorized",
+        };
 
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status401Unauthorized,
-                Type = $"https://httpstatuses.com/401",
-                Detail = "Unauthorized",
-            };
+        await Response.WriteAsync(JsonConvert.SerializeObject(problemDetails));
+    }
 
-            await Response.WriteAsync(JsonConvert.SerializeObject(problemDetails));
-        }
+    protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = 403;
+        Response.ContentType = ProblemContentType;
 
-        protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
+        var problemDetails = new ProblemDetails
         {
-            Response.StatusCode = 403;
-            Response.ContentType = ProblemContentType;
+            Status = StatusCodes.Status403Forbidden,
+            Type = $"https://httpstatuses.com/403",
+            Detail = "Forbidden",
+        };
 
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status403Forbidden,
-                Type = $"https://httpstatuses.com/403",
-                Detail = "Forbidden",
-            };
-
-            await Response.WriteAsync(JsonConvert.SerializeObject(problemDetails));
-        }
+        await Response.WriteAsync(JsonConvert.SerializeObject(problemDetails));
     }
 }
