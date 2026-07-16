@@ -37,7 +37,7 @@
     <ProjectReference Include="..\testing\Ocelot.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="TestStack.BDDfy" Version="10.0.13" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.128" />

@@ -118,11 +118,11 @@
       },
       "Microsoft.Reactive.Testing": {
         "type": "Direct",
-        "requested": "[7.0.0-preview.20, )",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "hjIBj1I/kTDZZuWyZwmI0qWNVBQnjw/DtZqCLjmHybKZDJhQPBp8Ynl0kuxVdpxMCTQavOLCl9qFclCC/MYU0A==",
+        "requested": "[7.0.0-rc.1, )",
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "JxXfavCtBl6dLd73t3iRVyLg1QdOmeXXrWM4/SDLhpsn/WwPtdyaZG11Y6+YNjonRENAT6o79PKodQyU6OAU3Q==",
         "dependencies": {
-          "System.Reactive": "7.0.0-preview.20",
+          "System.Reactive": "7.0.0-rc.1",
           "xunit.v3.assert.source": "3.2.2"
         }
       },
@@ -546,8 +546,8 @@
       },
       "System.Reactive": {
         "type": "Transitive",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "i+wuPoJc3QyEF7VTuEaz/AwpX+Fy+/ia2gaTCJHNekTf7jatDIEq5zduEcexg2P1zIzgeC2u4nXBGYlQC0ptJA=="
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "iOa6MiO63O4zLiFiDosU8ipeAVQ81LOTfJGIFU1Lv4R4MkaESMpCikMiQ2O9M6gJMrXGXCV5XVhTeqdNcrbnvA=="
       },
       "System.Security.AccessControl": {
         "type": "Transitive",
@@ -761,12 +761,12 @@
       },
       "Microsoft.Reactive.Testing": {
         "type": "Direct",
-        "requested": "[7.0.0-preview.20, )",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "hjIBj1I/kTDZZuWyZwmI0qWNVBQnjw/DtZqCLjmHybKZDJhQPBp8Ynl0kuxVdpxMCTQavOLCl9qFclCC/MYU0A==",
+        "requested": "[7.0.0-rc.1, )",
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "JxXfavCtBl6dLd73t3iRVyLg1QdOmeXXrWM4/SDLhpsn/WwPtdyaZG11Y6+YNjonRENAT6o79PKodQyU6OAU3Q==",
         "dependencies": {
           "System.Collections.Immutable": "10.0.3",
-          "System.Reactive": "7.0.0-preview.20",
+          "System.Reactive": "7.0.0-rc.1",
           "xunit.v3.assert.source": "3.2.2"
         }
       },
@@ -1214,8 +1214,8 @@
       },
       "System.Reactive": {
         "type": "Transitive",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "i+wuPoJc3QyEF7VTuEaz/AwpX+Fy+/ia2gaTCJHNekTf7jatDIEq5zduEcexg2P1zIzgeC2u4nXBGYlQC0ptJA=="
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "iOa6MiO63O4zLiFiDosU8ipeAVQ81LOTfJGIFU1Lv4R4MkaESMpCikMiQ2O9M6gJMrXGXCV5XVhTeqdNcrbnvA=="
       },
       "System.Security.AccessControl": {
         "type": "Transitive",
@@ -1441,12 +1441,12 @@
       },
       "Microsoft.Reactive.Testing": {
         "type": "Direct",
-        "requested": "[7.0.0-preview.20, )",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "hjIBj1I/kTDZZuWyZwmI0qWNVBQnjw/DtZqCLjmHybKZDJhQPBp8Ynl0kuxVdpxMCTQavOLCl9qFclCC/MYU0A==",
+        "requested": "[7.0.0-rc.1, )",
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "JxXfavCtBl6dLd73t3iRVyLg1QdOmeXXrWM4/SDLhpsn/WwPtdyaZG11Y6+YNjonRENAT6o79PKodQyU6OAU3Q==",
         "dependencies": {
           "System.Collections.Immutable": "10.0.3",
-          "System.Reactive": "7.0.0-preview.20",
+          "System.Reactive": "7.0.0-rc.1",
           "xunit.v3.assert.source": "3.2.2"
         }
       },
@@ -1886,8 +1886,8 @@
       },
       "System.Reactive": {
         "type": "Transitive",
-        "resolved": "7.0.0-preview.20",
-        "contentHash": "i+wuPoJc3QyEF7VTuEaz/AwpX+Fy+/ia2gaTCJHNekTf7jatDIEq5zduEcexg2P1zIzgeC2u4nXBGYlQC0ptJA=="
+        "resolved": "7.0.0-rc.1",
+        "contentHash": "iOa6MiO63O4zLiFiDosU8ipeAVQ81LOTfJGIFU1Lv4R4MkaESMpCikMiQ2O9M6gJMrXGXCV5XVhTeqdNcrbnvA=="
       },
       "System.Security.AccessControl": {
         "type": "Transitive",
