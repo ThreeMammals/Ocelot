@@ -80,21 +80,20 @@ Feature groups are explained in the table below
 > Ocelot customizations can be configured using [Metadata](https://ocelot.readthedocs.io/en/latest/features/metadata.html), developed with [Delegating Handlers](https://ocelot.readthedocs.io/en/latest/features/delegatinghandlers.html), and in advanced scenarios, they can be developed and then configured with [Middleware Injection](https://ocelot.readthedocs.io/en/latest/features/middlewareinjection.html).
 For further details, refer to the [Documentation](#documentation).
 
-## 📡 Release Radar
+## :satellite: Release Radar
 
 Stay updated with the latest releases of Ocelot and its extension packages from the [ThreeMammals](https://github.com/ThreeMammals) organization. This section provides a snapshot of release status across the entire Ocelot ecosystem.
 
-### Latest Package Releases
+| Project | Latest Release | Pre-Release (beta) | Release Date |
+|---------|----------------|--------------------|--------------|
+| ![Ocelot release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&label=Ocelot&include_prereleases) | ![Ocelot package](https://img.shields.io/nuget/v/Ocelot?logo=nuget) | ![Ocelot beta-package](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget) | ![Ocelot Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&label=date) |
+| ![Ocelot.Discovery.Consul release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.Consul?logo=github&label=Ocelot.Discovery.Consul&include_prereleases) | ![Ocelot.Discovery.Consul package](https://img.shields.io/nuget/v/Ocelot.Discovery.Consul?logo=nuget) | ![Ocelot.Discovery.Consul beta-package](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Consul?logo=nuget) | ![Ocelot.Discovery.Consul Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.Discovery.Consul?logo=github&label=date) |
+| ![Ocelot.Discovery.Eureka release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.Eureka?logo=github&label=Ocelot.Discovery.Eureka&include_prereleases) | ![Ocelot.Discovery.Eureka package](https://img.shields.io/nuget/v/Ocelot.Discovery.Eureka?logo=nuget) | ![Ocelot.Discovery.Eureka beta-package](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Eureka?logo=nuget) | ![Ocelot.Discovery.Eureka Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.Discovery.Eureka?logo=github&label=date) |
+| ![Ocelot.Discovery.KubeClient release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.KubeClient?logo=github&label=Ocelot.Discovery.KubeClient&include_prereleases) | ![Ocelot.Discovery.KubeClient package](https://img.shields.io/nuget/v/Ocelot.Discovery.KubeClient?logo=nuget) | ![Ocelot.Discovery.KubeClient beta-package](https://img.shields.io/nuget/vpre/Ocelot.Discovery.KubeClient?logo=nuget) | ![Ocelot.Discovery.KubeClient Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.Discovery.KubeClient?logo=github&label=date) |
+| ![Ocelot.QualityOfService.Polly release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.QualityOfService.Polly?logo=github&label=Ocelot.QualityOfService.Polly&include_prereleases) | ![Ocelot.QualityOfService.Polly package](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget) | ![Ocelot.QualityOfService.Polly beta-package](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget) | ![Ocelot.QualityOfService.Polly Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.QualityOfService.Polly?logo=github&label=date) |
+| ![Ocelot.Testing release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Testing?logo=github&label=Ocelot.Testing&include_prereleases) | ![Ocelot.Testing package](https://img.shields.io/nuget/v/Ocelot.Testing?logo=nuget) | ![Ocelot.Testing beta-package](https://img.shields.io/nuget/vpre/Ocelot.Testing?logo=nuget) | ![Ocelot.Testing Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.Testing?logo=github&label=date) |
 
-| Package | Latest Release | Pre-Release | Metrics |
-|---------|---|---|---|
-| **Ocelot** (Core) | ![Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white) | ![Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white) | ![Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white) |
-| **Ocelot.QualityOfService.Polly** | ![Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget) |
-| **Ocelot.Discovery.Consul** | ![Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Consul?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Consul?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Consul?logo=nuget) |
-| **Ocelot.Provider.Kubernetes** | ![Release](https://img.shields.io/nuget/v/Ocelot.Provider.Kubernetes?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Provider.Kubernetes?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Provider.Kubernetes?logo=nuget) |
-| **Ocelot.Discovery.Eureka** | ![Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Eureka?logo=nuget) | ![Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Eureka?logo=nuget) | ![Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Eureka?logo=nuget) |
-
-> 📌 **View the complete [Release Radar](./ReleaseRadar.md)** for comprehensive release information, detailed metrics, CI/CD status, code quality badges, and more about each package.
+> **View the complete [Release Radar](./ReleaseRadar.md)** for comprehensive release information, detailed metrics, CI/CD status, code quality badges, and more about each package.
 
 ## :file_folder: Repository Structure
 
