@@ -1,5 +1,5 @@
 # :satellite: Release Radar
-> Comprehensive release information and repository metrics are available for Ocelot and all extension packages developed by the [Three Mammals](https://github.com/ThreeMammals) organization.
+The Ocelot team created this page to provide comprehensive release information and repository metrics for Ocelot and all extension packages developed by the [Three Mammals](https://github.com/ThreeMammals) organization. All feature extension packages are published on [NuGet](https://www.nuget.org) under the [ThreeMammals](https://www.nuget.org/profiles/ThreeMammals) profile.
 
 ## :construction: Extension Packages in Development
 
