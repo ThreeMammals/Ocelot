@@ -22,7 +22,7 @@ The Ocelot development team does not support the following deprecated packages a
 | [![Ocelot.Cache.CacheManager repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Cache.CacheManager?logo=github&label=Ocelot.Cache.CacheManager&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Cache.CacheManager/ "Ocelot.Cache.CacheManager repository")<sup>2</sup> | [![Ocelot.Cache.CacheManager package](https://img.shields.io/nuget/v/Ocelot.Cache.CacheManager?logo=nuget&label=Ocelot.Cache.CacheManager)](https://www.nuget.org/packages/Ocelot.Cache.CacheManager/ "Ocelot.Cache.CacheManager package") | [![Ocelot.Cache.CacheManager Release Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot.Cache.CacheManager?label=Ocelot.Cache.CacheManager)](https://github.com/ThreeMammals/Ocelot.Cache.CacheManager/releases) |  |
 | [Ocelot.Provider.Consul](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot.Provider.Consul/ "Ocelot.Provider.Consul repository")<sup>1</sup> | [![Ocelot.Provider.Consul package](https://img.shields.io/nuget/v/Ocelot.Provider.Consul?logo=nuget&label=Ocelot.Provider.Consul)](https://www.nuget.org/packages/Ocelot.Provider.Consul/ "Ocelot.Provider.Consul package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) | [![Ocelot.Discovery.Consul repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.Consul?logo=github&label=Ocelot.Discovery.Consul&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Discovery.Consul/ "Ocelot.Discovery.Consul repository") |
 | [Ocelot.Provider.Eureka](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot.Provider.Eureka/ "Ocelot.Provider.Eureka repository")<sup>1</sup> | [![Ocelot.Provider.Eureka package](https://img.shields.io/nuget/v/Ocelot.Provider.Eureka?logo=nuget&label=Ocelot.Provider.Eureka)](https://www.nuget.org/packages/Ocelot.Provider.Eureka/ "Ocelot.Provider.Eureka package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) | [![Ocelot.Discovery.Eureka repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.Eureka?logo=github&label=Ocelot.Discovery.Eureka&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Discovery.Eureka/ "Ocelot.Discovery.Eureka repository") |
-| [Ocelot.Provider.Kubernetes](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot.Provider.Kubernetes/ "Ocelot.Provider.Kubernetes repository")<sup>1</sup> | [![Ocelot.Provider.Kubernetes package](https://img.shields.io/nuget/v/Ocelot.Provider.Kubernetes?logo=nuget&label=Ocelot.Provider.Kubernetes)](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/ "Ocelot.Provider.Kubernetes package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) | [![Ocelot.Discovery.KubeClient repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.KubeClient?logo=github&label=Ocelot.Discovery.KubeClient&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Discovery.KubeClient/ "Ocelot.Discovery.KubeClient repository") |
+| [Ocelot.Provider.Kubernetes (legacy)](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot.Provider.Kubernetes/ "Ocelot.Provider.Kubernetes repository")<sup>1</sup> | [![Ocelot.Provider.Kubernetes package](https://img.shields.io/nuget/v/Ocelot.Provider.Kubernetes?logo=nuget&label=Ocelot.Provider.Kubernetes)](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/ "Ocelot.Provider.Kubernetes package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) | [![Ocelot.Discovery.KubeClient repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Discovery.KubeClient?logo=github&label=Ocelot.Discovery.KubeClient&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Discovery.KubeClient/ "Ocelot.Discovery.KubeClient repository") |
 | [Ocelot.Provider.Polly](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot.Provider.Polly/ "Ocelot.Provider.Polly repository")<sup>1</sup> | [![Ocelot.Provider.Polly package](https://img.shields.io/nuget/v/Ocelot.Provider.Polly?logo=nuget&label=Ocelot.Provider.Polly)](https://www.nuget.org/packages/Ocelot.Provider.Polly/ "Ocelot.Provider.Polly package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) | [![Ocelot.QualityOfService.Polly repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.QualityOfService.Polly?logo=github&label=Ocelot.QualityOfService.Polly&include_prereleases)](https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly/ "Ocelot.QualityOfService.Polly repository") |
 | [![Ocelot.Tracing.Butterfly repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Tracing.Butterfly?logo=github&label=Ocelot.Tracing.Butterfly&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly/ "Ocelot.Tracing.Butterfly repository")<sup>2</sup> | [![Ocelot.Tracing.Butterfly package](https://img.shields.io/nuget/v/Ocelot.Tracing.Butterfly?logo=nuget&label=Ocelot.Tracing.Butterfly)](https://www.nuget.org/packages/Ocelot.Tracing.Butterfly/ "Ocelot.Tracing.Butterfly package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) |  |
 | [![Ocelot.Tracing.OpenTracing repository](https://img.shields.io/github/v/release/ThreeMammals/Ocelot.Tracing.OpenTracing?logo=github&label=Ocelot.Tracing.OpenTracing&include_prereleases)](https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing/ "Ocelot.Tracing.OpenTracing repository")<sup>2</sup> | [![Ocelot.Tracing.OpenTracing package](https://img.shields.io/nuget/v/Ocelot.Tracing.OpenTracing?logo=nuget&label=Ocelot.Tracing.OpenTracing)](https://www.nuget.org/packages/Ocelot.Tracing.OpenTracing/ "Ocelot.Tracing.OpenTracing package") | [Dec 25, 2025](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) |  |
@@ -36,47 +36,19 @@ The Ocelot development team does not support the following deprecated packages a
 
 The main API Gateway library—the core of the Ocelot ecosystem.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot)  
-**Package**: [Ocelot](https://www.nuget.org/packages/Ocelot/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot)
+- **Package**: [Ocelot](https://www.nuget.org/packages/Ocelot/)
 
-#### Version & Release Information
-- ![GitHub Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Latest%20Release&color=28a745)
-- ![GitHub Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white&label=Pre-Release&color=ffc107)
-- ![Release Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Released)
-- ![License](https://img.shields.io/github/license/ThreeMammals/Ocelot?logo=github&logoColor=white&label=License&color=yellow)
-
-#### NuGet & Downloads
-- ![NuGet Version](https://img.shields.io/nuget/v/Ocelot?logo=nuget&logoColor=white&label=NuGet)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&logoColor=white&label=Downloads)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&logoColor=white&label=Pre-Release)
-
-#### CI/CD Status
-- [![Release Workflow](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg?branch=main&label=Release)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
-- [![Develop Workflow](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg?branch=develop&label=Develop)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
-
-#### Repository Metrics
-- ![GitHub Stars](https://img.shields.io/github/stars/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Stars)
-- ![GitHub Forks](https://img.shields.io/github/forks/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Forks)
-- ![GitHub Watchers](https://img.shields.io/github/watchers/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Watchers)
-
-#### Code Quality & Coverage
-- [![codecov](https://img.shields.io/codecov/c/gh/ThreeMammals/Ocelot?logo=codecov&logoColor=white&label=Code%20Coverage)](https://codecov.io/gh/ThreeMammals/Ocelot)
-- [![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=Coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop)
-
-#### Documentation
-- [![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://ocelot.readthedocs.io/en/develop/)
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-- ![Open Issues](https://img.shields.io/github/issues/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Open%20Issues)
-- ![Open Pull Requests](https://img.shields.io/github/issues-pr/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Pull%20Requests)
-
-**Quick Links**:
-- [Latest Release](https://github.com/ThreeMammals/Ocelot/releases/latest)
-- [All Releases](https://github.com/ThreeMammals/Ocelot/releases)
-- [View on NuGet](https://www.nuget.org/packages/Ocelot/)
-- [Documentation](https://ocelot.readthedocs.io/)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues)
+| Category | Badges |
+|----------|--------|
+| Release | ![GitHub Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Latest%20Release&color=28a745) ![GitHub Pre-Release](https://img.shields.io/github/v/release/ThreeMammals/Ocelot?include_prereleases&logo=github&logoColor=white&label=Pre-Release&color=ffc107) |
+| NuGet | ![NuGet Version](https://img.shields.io/nuget/v/Ocelot?logo=nuget&logoColor=white&label=NuGet) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&logoColor=white&label=Pre-Release) ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&logoColor=white&label=Downloads) |
+| Release Info | ![Release Date](https://img.shields.io/github/release-date/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Released) ![License](https://img.shields.io/github/license/ThreeMammals/Ocelot?logo=github&logoColor=white&label=License&color=yellow) |
+| CI/CD | [![Release Workflow](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg?branch=main&label=Release)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml) [![Develop Workflow](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg?branch=develop&label=Develop)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml) |
+| Repository Metrics | ![GitHub Stars](https://img.shields.io/github/stars/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Stars) ![GitHub Forks](https://img.shields.io/github/forks/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Forks) ![GitHub Watchers](https://img.shields.io/github/watchers/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Watchers) |
+| Quality | [![codecov](https://img.shields.io/codecov/c/gh/ThreeMammals/Ocelot?logo=codecov&logoColor=white&label=Code%20Coverage)](https://codecov.io/gh/ThreeMammals/Ocelot) [![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=Coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop) |
+| Docs & Activity | [![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://ocelot.readthedocs.io/en/develop/) ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) ![Open Issues](https://img.shields.io/github/issues/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Open%20Issues) ![Open Pull Requests](https://img.shields.io/github/issues-pr/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Pull%20Requests) |
+| Links | [Latest Release](https://github.com/ThreeMammals/Ocelot/releases/latest) [All Releases](https://github.com/ThreeMammals/Ocelot/releases) [View on NuGet](https://www.nuget.org/packages/Ocelot/) [Documentation](https://ocelot.readthedocs.io/) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues) |
 
 ---
 
@@ -84,25 +56,16 @@ The main API Gateway library—the core of the Ocelot ecosystem.
 
 Quality of Service extension using the Polly resilience library for retry policies, circuit breakers, and other resilience patterns.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)  
-**Package**: [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)
+- **Package**: [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/)
 
-#### Version & Release Information
-- ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Downloads)
-
-#### Dependencies
-- Depends on: **Polly** library for resilience patterns
-- Ocelot core library (main package)
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-
-**Quick Links**:
-- [View on NuGet](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/)
-- [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=QualityOfService)
+| Category | Badges |
+|----------|--------|
+| Release | ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107) |
+| Downloads | ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.QualityOfService.Polly?logo=nuget&logoColor=white&label=Downloads) |
+| Dependencies | [![Polly](https://img.shields.io/nuget/v/Polly?logo=nuget&label=Polly)](https://www.nuget.org/packages/Polly/) [![Ocelot](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=Ocelot)](https://www.nuget.org/packages/Ocelot/) |
+| Activity | ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) |
+| Links | [View on NuGet](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/) [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=QualityOfService) |
 
 ---
 
@@ -110,53 +73,32 @@ Quality of Service extension using the Polly resilience library for retry polici
 
 Service Discovery extension using HashiCorp Consul for automatic service registration and discovery.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)  
-**Package**: [Ocelot.Discovery.Consul](https://www.nuget.org/packages/Ocelot.Discovery.Consul/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)
+- **Package**: [Ocelot.Discovery.Consul](https://www.nuget.org/packages/Ocelot.Discovery.Consul/)
 
-#### Version & Release Information
-- ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Downloads)
-
-#### Dependencies
-- Depends on: **Consul** client library
-- Ocelot core library (main package)
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-
-**Quick Links**:
-- [View on NuGet](https://www.nuget.org/packages/Ocelot.Discovery.Consul/)
-- [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src)
-- [Consul Documentation](https://www.consul.io/)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=Consul)
+| Category | Badges |
+|----------|--------|
+| Release | ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107) |
+| Downloads | ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Consul?logo=nuget&logoColor=white&label=Downloads) |
+| Dependencies | [![Consul](https://img.shields.io/nuget/v/Consul?logo=nuget&label=Consul)](https://www.nuget.org/packages/Consul/) [![Ocelot](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=Ocelot)](https://www.nuget.org/packages/Ocelot/) |
+| Activity | ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) |
+| Links | [View on NuGet](https://www.nuget.org/packages/Ocelot.Discovery.Consul/) [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src) [Consul Documentation](https://www.consul.io/) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=Consul) |
 
 ---
 
-### Ocelot.Provider.Kubernetes
+### Ocelot.Discovery.KubeClient
 
-Service Discovery extension for Kubernetes environment integration with automatic service discovery.
+Service Discovery extension for Kubernetes environments using the KubeClient integration approach.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)  
-**Package**: [Ocelot.Provider.Kubernetes](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)
+- **Package**: [Ocelot.Discovery.KubeClient](https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/)
 
-#### Version & Release Information
-- ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Provider.Kubernetes?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Provider.Kubernetes?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Provider.Kubernetes?logo=nuget&logoColor=white&label=Downloads)
-
-#### Dependencies
-- Depends on: **Kubernetes** client library
-- Ocelot core library (main package)
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-
-**Quick Links**:
-- [View on NuGet](https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/)
-- [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src)
-- [Kubernetes Documentation](https://kubernetes.io/)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=Kubernetes)
+| Category | Badges |
+|----------|--------|
+| Release | ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Discovery.KubeClient?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.KubeClient?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107) |
+| Downloads | ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.KubeClient?logo=nuget&logoColor=white&label=Downloads) |
+| Activity | ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) |
+| Links | [View on NuGet](https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/) [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src) [Kubernetes Documentation](https://kubernetes.io/) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=KubeClient) |
 
 ---
 
@@ -164,27 +106,16 @@ Service Discovery extension for Kubernetes environment integration with automati
 
 Service Discovery extension using Netflix Eureka for microservices registration and discovery in Spring Cloud environments.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)  
-**Package**: [Ocelot.Discovery.Eureka](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)
+- **Package**: [Ocelot.Discovery.Eureka](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/)
 
-#### Version & Release Information
-- ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Downloads)
-
-#### Dependencies
-- Depends on: **Steeltoe.Discovery.Eureka** for Eureka integration
-- Ocelot core library (main package)
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-
-**Quick Links**:
-- [View on NuGet](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/)
-- [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src)
-- [Spring Cloud Netflix](https://spring.io/projects/spring-cloud-netflix)
-- [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=Eureka)
+| Category | Badges |
+|----------|--------|
+| Release | ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107) |
+| Downloads | ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Discovery.Eureka?logo=nuget&logoColor=white&label=Downloads) |
+| Dependencies | [![Steeltoe.Discovery.Eureka](https://img.shields.io/nuget/v/Steeltoe.Discovery.Eureka?logo=nuget&label=Steeltoe.Discovery.Eureka)](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka/) [![Ocelot](https://img.shields.io/nuget/v/Ocelot?logo=nuget&label=Ocelot)](https://www.nuget.org/packages/Ocelot/) |
+| Activity | ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) |
+| Links | [View on NuGet](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/) [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/src) [Spring Cloud Netflix](https://spring.io/projects/spring-cloud-netflix) [Steeltoe.Discovery.Eureka](https://www.nuget.org/packages/Steeltoe.Discovery.Eureka) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues?q=Eureka) |
 
 ---
 
@@ -192,26 +123,16 @@ Service Discovery extension using Netflix Eureka for microservices registration 
 
 Shared testing utilities and base classes for writing tests using Ocelot. This package provides common test infrastructure.
 
-**Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)  
-**Package**: [Ocelot.Testing](https://www.nuget.org/packages/Ocelot.Testing/)
+- **Repository**: [ThreeMammals/Ocelot](https://github.com/ThreeMammals/Ocelot) (main repo)
+- **Package**: [Ocelot.Testing](https://www.nuget.org/packages/Ocelot.Testing/)
 
-#### Version & Release Information
-- ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Testing?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745)
-- ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Testing?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107)
-- ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Testing?logo=nuget&logoColor=white&label=Downloads)
-
-#### Purpose
-- Provides test utilities and base classes
-- Shared infrastructure for testing Ocelot implementations
-- Common helpers for acceptance and integration testing
-
-#### Activity & Issues
-- ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit)
-
-**Quick Links**:
-- [View on NuGet](https://www.nuget.org/packages/Ocelot.Testing/)
-- [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/testing)
-- [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues)
+| Category | Badges |
+|----------|--------|
+| Release | ![NuGet Release](https://img.shields.io/nuget/v/Ocelot.Testing?logo=nuget&logoColor=white&label=Latest%20Release&color=28a745) ![NuGet Pre-Release](https://img.shields.io/nuget/vpre/Ocelot.Testing?logo=nuget&logoColor=white&label=Pre-Release&color=ffc107) |
+| Downloads | ![NuGet Downloads](https://img.shields.io/nuget/dt/Ocelot.Testing?logo=nuget&logoColor=white&label=Downloads) |
+| Purpose | [![Testing](https://img.shields.io/badge/Testing-Utilities-blue)](https://www.nuget.org/packages/Ocelot.Testing/) |
+| Activity | ![Last Commit](https://img.shields.io/github/last-commit/ThreeMammals/Ocelot?logo=github&logoColor=white&label=Last%20Commit) |
+| Links | [View on NuGet](https://www.nuget.org/packages/Ocelot.Testing/) [Source Code](https://github.com/ThreeMammals/Ocelot/tree/develop/testing) [GitHub Issues](https://github.com/ThreeMammals/Ocelot/issues) |
 
 ---
 
