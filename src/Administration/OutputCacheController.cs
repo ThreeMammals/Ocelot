@@ -6,6 +6,7 @@ namespace Ocelot.Administration;
 
 // [ApiController] // TODO: Make it ApiController
 //[Authorize(Policy = "OcelotAdministration")]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize]
 [Route("outputcache")]
 public class OutputCacheController : Controller
