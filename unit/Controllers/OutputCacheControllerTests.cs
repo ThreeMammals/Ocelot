@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Ocelot.Administration;
 using Ocelot.Cache;
@@ -24,5 +25,17 @@ public class OutputCacheControllerTests : UnitTest
         // Assert
         result.ShouldBeOfType<NoContentResult>();
         _cache.Verify(x => x.ClearRegion("a"), Times.Once);
+    }
+
+    [Fact]
+    public void Should_have_ignore_api_attribute()
+    {
+        // Arrange
+        var attribute = typeof(OutputCacheController)
+            .GetCustomAttribute<ApiExplorerSettingsAttribute>();
+
+        // Assert
+        attribute.ShouldNotBeNull();
+        attribute.IgnoreApi.ShouldBeTrue();
     }
 }
