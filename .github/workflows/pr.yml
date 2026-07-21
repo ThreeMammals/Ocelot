@@ -16,7 +16,7 @@ jobs:
   #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   #   steps:
   #   - name: Checkout
-  #     uses: actions/checkout@v6
+  #     uses: actions/checkout@v7
   #   - name: SH-scripts executable
   #     run: |
   #       chmod +x .github/steps/*.sh
@@ -26,7 +26,7 @@ jobs:
   #     run: ./.github/steps/check-dotnet.sh ${{ matrix.dotnet-version }}
   #   - name: Setup .NET ${{ matrix.dotnet-version }}
   #     # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-  #     uses: actions/setup-dotnet@v5
+  #     uses: actions/setup-dotnet@v6
   #     with:
   #       dotnet-version: ${{ matrix.dotnet-version }}.x
   #       cache: true
@@ -64,13 +64,13 @@ jobs:
   #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   #   steps:
   #     - name: Checkout
-  #       uses: actions/checkout@v6
+  #       uses: actions/checkout@v7
   #     - name: SH-scripts executable
   #       run: |
   #         chmod +x .github/steps/*.sh
   #         ls -l .github/steps/*.sh
   #     - name: Setup .NET ${{ matrix.dotnet-version }}
-  #       uses: actions/setup-dotnet@v5
+  #       uses: actions/setup-dotnet@v6
   #       with:
   #         dotnet-version: ${{ matrix.dotnet-version }}.x
   #         cache: true
@@ -108,9 +108,9 @@ jobs:
   #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   #   steps:
   #     - name: Checkout
-  #       uses: actions/checkout@v6
+  #       uses: actions/checkout@v7
   #     - name: Setup .NET ${{ matrix.dotnet-version }}
-  #       uses: actions/setup-dotnet@v5
+  #       uses: actions/setup-dotnet@v6
   #       with:
   #         dotnet-version: ${{ matrix.dotnet-version }}.x
   #         cache: true
@@ -169,7 +169,7 @@ jobs:
   #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   #   steps:
   #   - name: Checkout
-  #     uses: actions/checkout@v6
+  #     uses: actions/checkout@v7
   #   - name: SH-scripts
   #     id: scripts
   #     run: |
@@ -184,7 +184,7 @@ jobs:
   #     run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
   #   - name: Setup .NET ${{ steps.scripts.outputs.version }}
   #     # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-  #     uses: actions/setup-dotnet@v5
+  #     uses: actions/setup-dotnet@v6
   #     with:
   #       dotnet-version: ${{ steps.scripts.outputs.version }}.x
   #       cache: true
@@ -222,7 +222,7 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         # with:
         #   fetch-depth: 0
       - name: SH-scripts executable
@@ -234,7 +234,7 @@ jobs:
         run: ./.github/steps/check-dotnet.sh 10
       - name: Setup .NET 10
         # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.x
           cache: true
@@ -274,7 +274,7 @@ jobs:
         continue-on-error: true
       - name: Codecov
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.coverage.outputs.COVERAGE_file }}

@@ -18,7 +18,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageTags>ocelot;testing</PackageTags>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ThreeMammals/Ocelot/tree/develop/testing</RepositoryUrl>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>

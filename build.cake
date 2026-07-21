@@ -1,12 +1,11 @@
-﻿#tool dotnet:?package=GitVersion.Tool
-#tool nuget:?package=ReportGenerator
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.8.2
+#tool nuget:?package=ReportGenerator&version=5.5.10
 
-#addin nuget:?package=Cake.Http
 // Switch from Newtonsoft to System.Text.Json lib!
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web
-
 #r "Spectre.Console"
+
 using Spectre.Console;
 
 using System.Collections.Generic;
@@ -954,19 +953,28 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private bool PackageExists(string packageId, string version)
 {
-	var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
-	try
-	{
-		var response = HttpGet(url);
-		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} exists");
-		return true;
-	}
-	catch (Exception ex)
-	{
-		Warning(ex.ToString());
-		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} does NOT exist");
-	}
-	return false;
+    var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
+    try
+    {
+        using (var client = new System.Net.Http.HttpClient())
+        {
+            // Only need the headers – no need to download the whole package
+            var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Head, url);
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                Information($"{nameof(PackageExists)}: Package {packageId}.{version} exists");
+                return true;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Warning(ex.ToString());
+    }
+    
+    Information($"{nameof(PackageExists)}: Package {packageId}.{version} does NOT exist");
+    return false;
 }
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)
