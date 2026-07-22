@@ -274,7 +274,7 @@ jobs:
         continue-on-error: true
       - name: Codecov
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.coverage.outputs.COVERAGE_file }}
