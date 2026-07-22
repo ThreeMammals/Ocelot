@@ -1,3 +1,4 @@
+using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration.FileModels;
@@ -27,6 +28,20 @@ public class FileGlobalWebSocketOptionsTests
         // Assert
         Assert.Null(actual.RouteKeys);
         Assert.False(ReferenceEquals(from, actual));
+        Assert.Equal(65536, actual.BufferSize);
+    }
+
+    [Fact]
+    public void Ctor_WebSocketOptions()
+    {
+        // Arrange
+        WebSocketOptions from = new(65536);
+
+        // Act
+        FileGlobalWebSocketOptions actual = new(from);
+
+        // Assert
+        Assert.Null(actual.RouteKeys);
         Assert.Equal(65536, actual.BufferSize);
     }
 

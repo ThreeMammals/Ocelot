@@ -67,6 +67,20 @@ public class WebSocketOptionsCreatorTests : UnitTest
     }
 
     [Fact]
+    public void Create_FromRoute_RouteValueWithoutGlobalSection()
+    {
+        // Arrange: route has options but no global WebSocket section is defined
+        var route = GivenRoute(RouteOptions());
+        var configuration = new FileGlobalConfiguration { WebSocket = null };
+
+        // Act
+        var actual = _creator.Create(route, configuration);
+
+        // Assert
+        Assert.Equal(65536, actual.BufferSize); // route value used as-is, nothing to merge
+    }
+
+    [Fact]
     public void Create_FromDynamicRoute_NullChecks()
     {
         // Arrange, Act, Assert
