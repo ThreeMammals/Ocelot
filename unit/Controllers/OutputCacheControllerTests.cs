@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Ocelot.Administration;
 using Ocelot.Cache;
 
@@ -28,11 +27,14 @@ public class OutputCacheControllerTests : UnitTest
     }
 
     [Fact]
-    public void Should_have_ignore_api_attribute()
+    [Trait("Bug", "989")] // https://github.com/ThreeMammals/Ocelot/issues/989
+    [Trait("PR", "2412")] // https://github.com/ThreeMammals/Ocelot/pull/2412
+    public void Should_have_ignore_api_attribute_to_hide_in_swagger()
     {
-        var attr = Attribute.GetCustomAttribute(
-            typeof(OutputCacheController),
-            typeof(ApiExplorerSettingsAttribute)) as ApiExplorerSettingsAttribute;
+        // Arrange, Act
+        var attr = Attribute.GetCustomAttribute(typeof(OutputCacheController), typeof(ApiExplorerSettingsAttribute)) as ApiExplorerSettingsAttribute;
+
+        // Assert
         Assert.NotNull(attr);
         Assert.True(attr.IgnoreApi);
     }

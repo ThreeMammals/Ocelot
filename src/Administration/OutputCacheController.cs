@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Ocelot.Cache;
 
 namespace Ocelot.Administration;
 
 // [ApiController] // TODO: Make it ApiController
-//[Authorize(Policy = "OcelotAdministration")]
+// [Authorize(Policy = "OcelotAdministration")]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Authorize]
 [Route("outputcache")]
