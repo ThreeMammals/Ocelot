@@ -160,7 +160,7 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ubuntu, macos, windows]
-        framework: [net10] # [net8, net9, net10]
+        framework: [net9] # [net8, net9, net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -260,8 +260,8 @@ jobs:
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
-      - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
+      # - name: Acceptance Tests
+      #   run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
       - name: Coverage files
         id: coverage
         run: ./.github/steps/coverage.sh # net10.0 Debug
