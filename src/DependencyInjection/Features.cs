@@ -18,7 +18,7 @@ public static class Features
     /// <remarks>Added validator-classes must implement the <see cref="AbstractValidator{FileConfiguration}"/> interface, where T is File-model.</remarks>
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
-    public static IServiceCollection AddConfigurationValidators(this IServiceCollection services) => services
+    public static IServiceCollection AddOcelotConfigurationValidators(this IServiceCollection services) => services
         .AddSingleton<IConfigurationValidator, FileConfigurationFluentValidator>()
         .AddSingleton<HostAndPortValidator>()
         .AddSingleton<RouteFluentValidator>()

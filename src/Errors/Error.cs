@@ -11,6 +11,7 @@ public abstract class Error
 
     protected Error(Exception exception, OcelotErrorCode code, int statusCode)
     {
+        ArgumentNullException.ThrowIfNull(exception);
         Exception = exception;
         HttpStatusCode = statusCode;
         Message = exception.Message;

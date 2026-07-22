@@ -1,6 +1,7 @@
 namespace Ocelot.Configuration;
 
-public interface IInternalConfiguration
+// TODO Rename to IOcelotConfiguration
+public interface IInternalConfiguration // TODO Inherit : Microsoft.Extensions.Configuration.IConfiguration
 {
     string AdministrationPath { get; }
     AuthenticationOptions AuthenticationOptions { get; }

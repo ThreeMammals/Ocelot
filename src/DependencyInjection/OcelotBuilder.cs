@@ -52,7 +52,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
         Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
-        Services.AddConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
+        Services.AddOcelotConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
 
         Services.TryAddSingleton<IHttpResponseHeaderReplacer, HttpResponseHeaderReplacer>();
         Services.TryAddSingleton<IHttpContextRequestHeaderReplacer, HttpContextRequestHeaderReplacer>();
