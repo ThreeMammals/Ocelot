@@ -20,7 +20,7 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
     - name: SH-scripts
       id: scripts
       run: |
@@ -34,7 +34,7 @@ jobs:
       run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
     - name: Setup .NET ${{ steps.scripts.outputs.version }}
       # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ steps.scripts.outputs.version }}.x
         cache: true
@@ -55,11 +55,11 @@ jobs:
     - name: Restore
       run: dotnet restore --locked-mode ./Ocelot.slnx
     - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
+      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings ./.config/coverlet.runsettings ./unit/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./unit/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings ./.config/coverlet.runsettings ./acceptance/Ocelot.Acceptance.csproj
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
 
   release-cake:
     needs: build
@@ -78,7 +78,7 @@ jobs:
           echo "$GITHUB_CONTEXT"
           echo "<<<"
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: SH-scripts executable
@@ -89,7 +89,7 @@ jobs:
         id: checkdotnet
         run: ./.github/steps/check-dotnet.sh 10
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.x
           cache: true
@@ -121,7 +121,7 @@ jobs:
         continue-on-error: true
       - name: Codecov
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.coverage.outputs.COVERAGE_file }}
