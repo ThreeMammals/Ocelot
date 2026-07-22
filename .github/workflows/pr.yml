@@ -160,7 +160,7 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ubuntu, macos, windows]
-        framework: [net9] # [net8, net9, net10]
+        framework: [net8] # [net8, net9, net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
