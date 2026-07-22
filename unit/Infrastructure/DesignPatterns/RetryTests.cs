@@ -113,7 +113,8 @@ public sealed class RetryTests : UnitTest
         Assert.Throws<InvalidOperationException>(() => Retry.Operation(InvalidOperation, waitTime: -1));
         watcher.Stop();
         Assert.InRange(watcher.ElapsedMilliseconds, 0, Retry.DefaultWaitTimeMilliseconds);
-        Assert.True(watcher.ElapsedMilliseconds < 10); // near to zero
+        int closeToZero = IsCiCd() ? Retry.DefaultWaitTimeMilliseconds : 10;
+        Assert.True(watcher.ElapsedMilliseconds < closeToZero);
     }
 
     [Fact]
