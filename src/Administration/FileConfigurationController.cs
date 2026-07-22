@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -8,6 +9,7 @@ using Ocelot.Errors;
 namespace Ocelot.Administration;
 
 // [ApiController] // TODO: Make it ApiController
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize]
 [Route("configuration")]
 public class FileConfigurationController : Controller

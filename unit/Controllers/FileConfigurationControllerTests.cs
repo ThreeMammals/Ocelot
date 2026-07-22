@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Ocelot.Administration;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
@@ -119,6 +120,16 @@ public class FileConfigurationControllerTests : UnitTest
         Assert.IsType<string>(actual.Value);
         var msg = actual.Value as string;
         Assert.Equal("Exception: Service failed" + NL, msg);
+    }
+
+    [Fact]
+    public void Should_have_ignore_api_attribute()
+    {
+        var attr = Attribute.GetCustomAttribute(
+            typeof(FileConfigurationController),
+            typeof(ApiExplorerSettingsAttribute)) as ApiExplorerSettingsAttribute;
+        Assert.NotNull(attr);
+        Assert.True(attr.IgnoreApi);
     }
 
     private class FakeError : Error
