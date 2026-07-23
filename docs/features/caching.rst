@@ -13,12 +13,18 @@ The following example shows how to add *CacheManager* to Ocelot so that you can 
 
 Install
 -------
+.. _Ocelot.Cache.CacheManager: https://www.nuget.org/packages/Ocelot.Cache.CacheManager
+.. _ThreeMammals/Ocelot.Cache.CacheManager: https://github.com/ThreeMammals/Ocelot.Cache.CacheManager
 
-First of all, add the following `Ocelot.Cache.CacheManager <https://www.nuget.org/packages/Ocelot.Cache.CacheManager>`_ package:
+  | Package: `Ocelot.Cache.CacheManager`_
+  | Namespace: ``Ocelot.Cache.CacheManager``
+  | Repository: `ThreeMammals/Ocelot.Cache.CacheManager`_
 
-.. code-block:: powershell
+First of all, add the following `Ocelot.Cache.CacheManager`_ package:
 
-    Install-Package Ocelot.Cache.CacheManager
+.. code-block:: shell
+
+    dotnet add package Ocelot.Cache.CacheManager
 
 This will give you access to the Ocelot cache manager extension methods.
 The second step is to add the following to your `Program`_:
@@ -30,6 +36,10 @@ The second step is to add the following to your `Program`_:
     builder.Services
         .AddOcelot(builder.Configuration)
         .AddCacheManager(x => x.WithDictionaryHandle());
+
+.. warning::
+  Starting with version `25.0`_, the `Ocelot.Cache.CacheManager`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
+  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Cache.CacheManager`_.
 
 ``CacheOptions`` Schema
 -----------------------
@@ -106,7 +116,7 @@ Finally, in order to use caching on a route in your route configuration add thes
 * Finally, ``EnableContentHashing`` is disabled due to the current route using the ``GET`` verb, which does not include a request body.
 
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
 .. warning::
   According to the static :ref:`config-route-schema`, the ``FileCacheOptions`` section has been deprecated!
 

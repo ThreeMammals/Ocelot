@@ -117,4 +117,4 @@ We expect you to share your use case with us in the `Discussions <https://github
 .. _"Field Parsing": https://www.rfc-editor.org/rfc/rfc7230#section-3.2.4
 .. _2374: https://github.com/ThreeMammals/Ocelot/issues/2374
 .. _2379: https://github.com/ThreeMammals/Ocelot/pull/2379
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
