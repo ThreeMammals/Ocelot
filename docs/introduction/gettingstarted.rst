@@ -1,8 +1,9 @@
 Getting Started
 ===============
 
-Ocelot is designed to work with `ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-9.0>`_ and is currently on `.NET 8 <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ `LTS <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types>`_
-and `.NET 9 <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ `STS <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types>`_ frameworks.
+Ocelot is designed to work with `ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-10.0>`_ and currently targets `.NET 8 <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ `LTS <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types>`_,
+`.NET 9 <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ `STS <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types>`_
+and `.NET 10 <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ `LTS <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#release-types>`_ frameworks.
 
 Install
 -------
