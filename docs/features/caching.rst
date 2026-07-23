@@ -14,20 +14,17 @@ The following example shows how to add *CacheManager* to Ocelot so that you can 
 Install
 -------
 .. _Ocelot.Cache.CacheManager: https://www.nuget.org/packages/Ocelot.Cache.CacheManager
+.. _ThreeMammals/Ocelot.Cache.CacheManager: https://github.com/ThreeMammals/Ocelot.Cache.CacheManager
 
   | Package: `Ocelot.Cache.CacheManager`_
   | Namespace: ``Ocelot.Cache.CacheManager``
-  | Repository: `ThreeMammals/Ocelot.Cache.CacheManager <https://github.com/ThreeMammals/Ocelot.Cache.CacheManager>`_
+  | Repository: `ThreeMammals/Ocelot.Cache.CacheManager`_
 
 First of all, add the following `Ocelot.Cache.CacheManager`_ package:
 
-.. code-block:: powershell
+.. code-block:: shell
 
     dotnet add package Ocelot.Cache.CacheManager
-
-.. warning::
-  Starting with version `25.0`_, the `Ocelot.Cache.CacheManager`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
-  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Cache.CacheManager <https://github.com/ThreeMammals/Ocelot.Cache.CacheManager>`_.
 
 This will give you access to the Ocelot cache manager extension methods.
 The second step is to add the following to your `Program`_:
@@ -39,6 +36,10 @@ The second step is to add the following to your `Program`_:
     builder.Services
         .AddOcelot(builder.Configuration)
         .AddCacheManager(x => x.WithDictionaryHandle());
+
+.. warning::
+  Starting with version `25.0`_, the `Ocelot.Cache.CacheManager`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
+  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Cache.CacheManager`_.
 
 ``CacheOptions`` Schema
 -----------------------

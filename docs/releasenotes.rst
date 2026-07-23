@@ -37,12 +37,12 @@ Release Notes
   | Release Codename: `.NET 10`_
 
 In this major release, the Ocelot team focused on preparing the codebase and its ecosystem for `.NET 10`_, while also extracting several integrated extension packages from the mono-repo into their own dedicated repositories to speed up delivery and reduce release coupling.
-This release also introduces a built-in *Quality of Service* (QoS) circuit breaker that works out of the box, without requiring the `Polly`_ library.
+This release also introduces a built-in :doc:`../features/qualityofservice` (QoS) circuit breaker that works out of the box, without requiring the `Polly`_ library.
 
 The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated>`_ of certain packages through multiple notes and warnings.
 With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
-On top of that, this release brings a great enhancement to the :doc:`../features/kubernetes` provider, also known as the `Ocelot.Discovery.KubeClient`_ package.
+Additionally, this release brings a significant enhancement to the :doc:`../features/kubernetes` ``PollKube`` provider from the `Ocelot.Discovery.KubeClient`_ package.
 
 What's New?
 -----------
@@ -77,13 +77,14 @@ What's New?
 
 - :doc:`../features/websockets`: `SecurityOptions support for the WebSocket pipeline <2403_>`_ was added by `@CurtisRobertOliver`_ in pull request `2406`_.
 
-  Previously, IP allow/block-list :doc:`../features/routing` ``SecurityOptions`` were not enforced for WebSocket upgrade requests, allowing them to bypass IP security.
+  Previously, IP allow/block-list :doc:`../features/routing` :ref:`Security Options <routing-security-options>` were not enforced for WebSocket upgrade requests, allowing them to bypass IP security.
   WebSocket upgrade requests are now intercepted by the same ``IPSecurityPolicy`` used for regular HTTP requests, and denied upgrades now correctly return ``403 Forbidden``.
 
 - :doc:`../features/configuration`: "`Merge custom JSON properties across multiple configuration files <651_>`_" was implemented by `@jlukawska`_ in pull request `1183`_.
 
   Ocelot's configuration builder now merges custom (non-schema) JSON properties defined across multiple ``ocelot.*.json`` files using Newtonsoft's ``JToken`` merge functionality, instead of the last-loaded file silently overwriting properties from previous files.
-  This also applies to the ``DynamicRoutes`` collection. See the updated :doc:`../features/configuration` documentation and the ``Configuration`` sample app for details.
+  This also applies to the ``DynamicRoutes`` collection.
+  See the updated :doc:`../features/configuration` documentation, the ":ref:`Extend with Custom Properties <config-custom-properties>`" section and the :ref:`Configuration Sample <config-sample>` app for details.
 
 - :doc:`../features/aggregation`: "`Correct mapping of RouteKeysConfig arrays in aggregates <2248_>`_" fix, contributed in pull request `2328`_.
 

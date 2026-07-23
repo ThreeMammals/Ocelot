@@ -12,9 +12,9 @@ Install Ocelot and it's dependencies using `NuGet <https://www.nuget.org/>`_.
 You will need to create a `ASP.NET Core minimal API project <https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api>`_ with "ASP.NET Core Empty" template but without ``app.Map*`` methods, and bring the package into it.
 Then follow the startup below and :doc:`../features/configuration` sections to get up and running.
 
-.. code-block:: powershell
+.. code-block:: shell
 
-   Install-Package Ocelot
+  dotnet add package Ocelot
 
 All versions can be found in the `NuGet Gallery | Ocelot <https://www.nuget.org/packages/Ocelot/>`_.
 

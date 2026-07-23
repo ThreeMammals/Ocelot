@@ -17,16 +17,17 @@ This chapter explains how to perform distributed tracing using Ocelot.
 
 .. _OpenTracing: https://opentracing.io
 .. _Ocelot.Tracing.OpenTracing: https://www.nuget.org/packages/Ocelot.Tracing.OpenTracing
+.. _ThreeMammals/Ocelot.Tracing.OpenTracing: https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing
 
   | Package: `Ocelot.Tracing.OpenTracing`_
   | Namespace: ``Ocelot.Tracing.OpenTracing``
-  | Repository: `ThreeMammals/Ocelot.Tracing.OpenTracing <https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing>`_
+  | Repository: `ThreeMammals/Ocelot.Tracing.OpenTracing`_
 
-Ocelot provides tracing functionality through the excellent project from `opentracing-csharp <https://github.com/opentracing/opentracing-csharp>`_ repository.
+Ocelot provides tracing functionality through the project from `opentracing-csharp <https://github.com/opentracing/opentracing-csharp>`_ repository.
 
-.. warning::
-  Starting with version `25.0`_, the `Ocelot.Tracing.OpenTracing`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
-  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Tracing.OpenTracing <https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing>`_.
+.. code-block:: shell
+
+  dotnet add package Ocelot.Tracing.OpenTracing
 
 The example below uses the `C# Client for Jaeger <https://github.com/jaegertracing/jaeger-client-csharp>`_ to provide the tracer used in Ocelot.
 To add `OpenTracing`_ services, you must call the ``AddOpenTracing()`` extension method on the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_, as shown below:
@@ -56,10 +57,14 @@ Then, in your `ocelot.json <https://github.com/ThreeMammals/Ocelot/blob/main/sam
 
 Ocelot will now send tracing information to `Jaeger <https://www.jaegertracing.io/>`_ whenever this route is called.
 
-  **Note 1**: A clean yet functional sample can be found here: `Ocelot.Samples.OpenTracing <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OpenTracing>`_.
+.. note::
+  1. A clean yet functional sample can be found here: `Ocelot.Samples.OpenTracing <https://github.com/ThreeMammals/Ocelot/tree/main/samples/OpenTracing>`_.
+  2. The `OpenTracing`_ project was archived on January 31, 2022 (see `the article <https://www.cncf.io/blog/2022/01/31/cncf-archives-the-opentracing-project/>`_).
+     The Ocelot team is planning to decide on a migration to `OpenTelemetry <https://opentelemetry.io>`_, which is highly desirable.
 
-  **Note 2**: The `OpenTracing`_ project was archived on January 31, 2022 (see `the article <https://www.cncf.io/blog/2022/01/31/cncf-archives-the-opentracing-project/>`_).
-  The Ocelot team is planning to decide on a migration to `OpenTelemetry <https://opentelemetry.io>`_, which is highly desirable.
+.. warning::
+  Starting with version `25.0`_, the `Ocelot.Tracing.OpenTracing`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
+  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Tracing.OpenTracing`_.
 
 .. _tr-butterfly:
 
@@ -68,23 +73,20 @@ Butterfly
 
 .. _Butterfly: https://github.com/liuhaoyang/butterfly
 .. _Ocelot.Tracing.Butterfly: https://www.nuget.org/packages/Ocelot.Tracing.Butterfly
+.. _ThreeMammals/Ocelot.Tracing.Butterfly: https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly
 
   | Package: `Ocelot.Tracing.Butterfly`_
   | Namespace: ``Ocelot.Tracing.Butterfly``
-  | Repository: `ThreeMammals/Ocelot.Tracing.Butterfly <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_
+  | Repository: `ThreeMammals/Ocelot.Tracing.Butterfly`_
 
 Ocelot provides tracing functionality through the excellent `Butterfly`_ project.
 To use the tracing functionality, please refer to the `Butterfly`_ documentation.
 
-.. warning::
-  Starting with version `25.0`_, the `Ocelot.Tracing.Butterfly`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
-  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Tracing.Butterfly <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_.
-
 In Ocelot, you need to add the NuGet package if you wish to trace a route:
 
-.. code-block:: powershell
+.. code-block:: shell
 
-    Install-Package Ocelot.Tracing.Butterfly
+  dotnet add package Ocelot.Tracing.Butterfly
 
 In your `Program`_, to add `Butterfly`_ services, you must call the ``AddButterfly()`` extension method on the ``OcelotBuilder`` returned by ``AddOcelot()``, as shown below:
 
@@ -112,9 +114,14 @@ Then, in your `ocelot.json`_, add the following to the route you want to trace:
 
 Ocelot will now send tracing information to `Butterfly`_ whenever this route is called.
 
-  **Note**: The `Butterfly`_ project has not been supported for more than seven years, as of 2025.
+.. note::
+  The `Butterfly`_ project has not been supported for more than seven years, as of 2026.
   The latest release of the `Butterfly.Client <https://www.nuget.org/packages/Butterfly.Client>`_ package (version `0.0.8 <https://www.nuget.org/packages/Butterfly.Client/0.0.8>`_) was made on February 22, 2018.
   As planned, the Ocelot team discontinued distribution of the `Ocelot.Tracing.Butterfly`_ package from the main Ocelot mono-repo in version `25.0`_, moving it to its own dedicated repository instead.
+
+.. warning::
+  Starting with version `25.0`_, the `Ocelot.Tracing.Butterfly`_ package has been extracted from the Ocelot mono-repo into its own dedicated repository.
+  The package ID and namespace remain unchanged, but the source code, issues, and releases are now hosted at `ThreeMammals/Ocelot.Tracing.Butterfly`_.
 
 """"
 
