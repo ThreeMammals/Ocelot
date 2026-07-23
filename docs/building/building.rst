@@ -19,7 +19,7 @@ or by a CI/CD server (currently `GitHub Actions`_), with minimal logic defined i
 
 The final goal of the build process is to create ``Ocelot.*`` `NuGet`_ packages (.nupkg files) for redistribution via the `NuGet`_ repository or manually.
 The build process consists of several steps: (1) compilation, (2) testing, (3) creating and publishing `NuGet`_ packages, and (4) making an official GitHub release.
-The build process requires pre-installed .NET SDKs on the build machine (host) for all target framework monikers: TFMs are ``net8.0`` and ``net9.0`` currently.
+The build process requires pre-installed .NET SDKs on the build machine (host) for all target framework monikers: TFMs are ``net8.0``, ``net9.0`` and ``net10.0`` currently.
 In general, the build process is the same across all environments and tools, with a few differences described below.
 
 .. _b-in-ide:
@@ -28,7 +28,7 @@ In IDE
 ------
 .. _Release configuration: https://learn.microsoft.com/en-us/visualstudio/debugger/how-to-set-debug-and-release-configurations?view=vs-2022
 
-In an IDE, a DevOps engineer can build the project in Visual Studio IDE or another IDE in `Release configuration`_ mode, but the latest .NET 8/9 SDKs must be pre-installed on the local machine.
+In an IDE, a DevOps engineer can build the project in Visual Studio IDE or another IDE in `Release configuration`_ mode, but the latest .NET 8/9/10 SDKs must be pre-installed on the local machine.
 However, this approach is not practical because the generated '.nupkg' files must be uploaded to `NuGet`_ manually, and the GitHub release must also be created manually.
 A better approach is to utilize the '`build.cake`_' script :ref:`b-in-terminal`, which covers all building scenarios.
 
