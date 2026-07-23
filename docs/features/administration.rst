@@ -122,6 +122,10 @@ If all the other Ocelot instances in the cluster have the same certificate then 
 Administration API
 ------------------
 
+.. note::
+  As of version `25.0`_, the ``{adminPath}/configuration`` and ``{adminPath}/outputcache/{{region}}`` endpoints are decorated with ``[ApiExplorerSettings(IgnoreApi = true)]`` and are therefore hidden from Swagger/OpenAPI documentation generators (e.g. `MMLib.SwaggerForOcelot <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_).
+  This prevents these internal administration endpoints from cluttering the API documentation surfaced to your API consumers, while the endpoints themselves remain fully functional.
+
 * **POST** ``{adminPath}/connect/token``
 
     This gets a token for use with the admin area using the client credentials we talk about setting above.
@@ -160,3 +164,5 @@ Administration API
 
 .. [#f1] The ":ref:`Your Own IdentityServer <ad-your-own-identityserver>`" feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
 .. [#f2] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+
+.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
