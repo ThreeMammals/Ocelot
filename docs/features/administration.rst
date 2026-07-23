@@ -123,7 +123,7 @@ Administration API
 ------------------
 
 .. note::
-  As of version `25.0`_, the ``{adminPath}/configuration`` and ``{adminPath}/outputcache/{{region}}`` endpoints are decorated with ``[ApiExplorerSettings(IgnoreApi = true)]`` and are therefore hidden from Swagger/OpenAPI documentation generators (e.g. `MMLib.SwaggerForOcelot <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_).
+  As of version `25.0`_, the ``{adminPath}/configuration`` and ``{adminPath}/outputcache/{region}`` endpoints are decorated with ``[ApiExplorerSettings(IgnoreApi = true)]`` and are therefore hidden from Swagger/OpenAPI documentation generators (e.g. `MMLib.SwaggerForOcelot <https://github.com/Burgyn/MMLib.SwaggerForOcelot>`_).
   This prevents these internal administration endpoints from cluttering the API documentation surfaced to your API consumers, while the endpoints themselves remain fully functional.
 
 * **POST** ``{adminPath}/connect/token``
