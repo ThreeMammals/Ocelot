@@ -271,7 +271,7 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
 .. _5.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/5.3.0
 .. _8.0.7: https://github.com/ThreeMammals/Ocelot/releases/tag/8.0.7
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat

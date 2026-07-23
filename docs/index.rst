@@ -1,4 +1,4 @@
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
 .. role::  htm(raw)
     :format: html
 .. role:: pdf(raw)

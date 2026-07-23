@@ -1,7 +1,7 @@
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _24.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
-.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 .. _.NET 10: https://github.com/ThreeMammals/Ocelot/milestone/13
 .. _Globality: https://github.com/ThreeMammals/Ocelot/milestone/9
