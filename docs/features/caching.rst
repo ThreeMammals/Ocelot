@@ -115,7 +115,7 @@ Finally, in order to use caching on a route in your route configuration add thes
 * Finally, ``EnableContentHashing`` is disabled due to the current route using the ``GET`` verb, which does not include a request body.
 
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
 .. warning::
   According to the static :ref:`config-route-schema`, the ``FileCacheOptions`` section has been deprecated!
 

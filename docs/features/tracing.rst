@@ -123,4 +123,4 @@ Ocelot will now send tracing information to `Butterfly`_ whenever this route is 
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/Program.cs
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/Basic/ocelot.json
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4

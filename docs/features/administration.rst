@@ -165,4 +165,4 @@ Administration API
 .. [#f1] The ":ref:`Your Own IdentityServer <ad-your-own-identityserver>`" feature was implemented for issue `228 <https://github.com/ThreeMammals/Ocelot/issues/228>`_.
 .. [#f2] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container. You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`. See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
 
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4

@@ -170,4 +170,4 @@ In any case, if the current overridden middleware does not provide enough pipeli
   :height: 25
   :class: img-valign-middle
 
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
