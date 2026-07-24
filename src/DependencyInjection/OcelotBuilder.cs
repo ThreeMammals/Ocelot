@@ -51,6 +51,7 @@ public class OcelotBuilder : IOcelotBuilder
         Configuration = configurationRoot;
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
+        Services.AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configurationRoot));
         Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
         Services.AddOcelotConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
 

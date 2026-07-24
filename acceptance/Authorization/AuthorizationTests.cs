@@ -138,7 +138,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
     /// </summary>
     /// <remarks>AI search:
     /// C# ASP.NET JsonConfigurationProvider Keys with "http://" prefix are not deserialized into dictionary.</remarks>
-    [Fact(DisplayName = "TODO " + nameof(Should_fix_issue_240))]
+    [Fact]
     [Trait("Bug", "240")] // https://github.com/ThreeMammals/Ocelot/issues/240
     [Trait("PR", "243")] // https://github.com/ThreeMammals/Ocelot/pull/243
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
@@ -148,15 +148,16 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value
+        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value -> Done
         {
-            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider
+            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider -> Done 
             { nameof(ClaimTypes.Role), "User"}, // this key is Ok because it is not an URL containing proto delimiter aka '://'
         };
         var claims = new List<KeyValuePair<string, string>>()
         {
             new(nameof(ClaimTypes.Role), "AdminUser"),
             new(nameof(ClaimTypes.Role), "User"),
+            new(ClaimTypes.Role, "User"),                // this claim is now supported 
         };
         this
             .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
