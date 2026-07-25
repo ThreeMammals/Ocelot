@@ -51,7 +51,6 @@ public class OcelotBuilder : IOcelotBuilder
         Configuration = configurationRoot;
         Services = services;
         Services.Configure<FileConfiguration>(configurationRoot);
-        Services.AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configurationRoot));
         Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
         Services.AddOcelotConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
 
@@ -134,8 +133,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotMetadata();
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
-
-        // Add ASP.NET services
+        Services.AddOcelotRouteClaimsRequirementFix(configurationRoot);        // Add ASP.NET services
         var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
         MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
             .Invoke(Services.AddMvcCore(), assembly);

@@ -1,5 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Ocelot.Authorization;
 using Ocelot.Cache;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
@@ -89,4 +92,18 @@ public static class Features
 
     public static IServiceCollection AddOcelotQualityOfService(this IServiceCollection services) => services
         .AddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
+
+
+    /// <summary>
+    /// Ocelot feature: fixes <see href="https://github.com/ThreeMammals/Ocelot/issues/679">issue #679</see> by preserving
+    /// URL-shaped keys (e.g. <see cref="System.Security.Claims.ClaimTypes.Role"/>) in <c>RouteClaimsRequirement</c>
+    /// dictionaries. Takes <paramref name="configuration"/> explicitly (rather than relying on DI resolution) to guarantee
+    /// it binds against the exact <see cref="IConfiguration"/> instance supplied to <c>AddOcelot</c>, since a caller may
+    /// have already registered a different <see cref="IConfiguration"/> in the container beforehand.
+    /// </summary>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="configuration">The exact configuration instance passed to <c>AddOcelot</c>.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddOcelotRouteClaimsRequirementFix(this IServiceCollection services, IConfiguration configuration) =>
+        services.AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configuration));
 }
