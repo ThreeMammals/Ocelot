@@ -131,14 +131,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    /// <summary>
-    /// In ASP.NET Core, the <see cref="Microsoft.Extensions.Configuration.Json.JsonConfigurationProvider"/>  (used for <c>appsettings.json</c> and similar) does not behave like a plain <see cref="Dictionary{K,V}"/>.
-    /// It applies normalization rules to keys when loading configuration.
-    /// That's why keys starting with "http://" or "https://" don't deserialize as you expect.
-    /// </summary>
-    /// <remarks>AI search:
-    /// C# ASP.NET JsonConfigurationProvider Keys with "http://" prefix are not deserialized into dictionary.</remarks>
-    [Fact]
+    [Fact(DisplayName = "TODO " + nameof(Should_fix_issue_240))]
     [Trait("Bug", "240")] // https://github.com/ThreeMammals/Ocelot/issues/240
     [Trait("PR", "243")] // https://github.com/ThreeMammals/Ocelot/pull/243
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
@@ -148,16 +141,15 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value -> Done
+        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value
         {
-            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider -> Done 
+            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider
             { nameof(ClaimTypes.Role), "User"}, // this key is Ok because it is not an URL containing proto delimiter aka '://'
         };
         var claims = new List<KeyValuePair<string, string>>()
         {
             new(nameof(ClaimTypes.Role), "AdminUser"),
             new(nameof(ClaimTypes.Role), "User"),
-            new(ClaimTypes.Role, "User"),                // this claim is now supported 
         };
         this
             .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
@@ -169,6 +161,61 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .BDDfy();
+    }
+    [Fact]
+    [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    public void Should_return_200_OK_authorizing_route_with_url_shaped_claim_type()
+    {
+        var testName = TestName();
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        var configuration = GivenConfiguration(route);
+        route.RouteClaimsRequirement = new()
+    {
+        { ClaimTypes.Role, "Admin" }, // URL-shaped claim type, e.g. http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+    };
+        var claims = new List<KeyValuePair<string, string>>()
+    {
+        new(ClaimTypes.Role, "Admin"),
+    };
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveATokenWithClaims(claims, testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .BDDfy();
+    }
+    [Fact]
+    [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    public void Should_return_403_Forbidden_when_url_shaped_claim_type_missing()
+    {
+        var testName = TestName();
+        var port = PortFinder.GetRandomPort();
+        var route = GivenAuthRoute(port);
+        var configuration = GivenConfiguration(route);
+        route.RouteClaimsRequirement = new()
+    {
+        { ClaimTypes.Role, "Admin" },
+    };
+        var claims = new List<KeyValuePair<string, string>>()
+    {
+        new(nameof(ClaimTypes.Role), "Admin"), // wrong form: short "Role" instead of the required URL claim type
+    };
+        this
+            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
+            .And(x => GivenIHaveATokenWithClaims(claims, testName))
+            .And(x => GivenIHaveAddedATokenToMyRequest())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
         .BDDfy();
     }
 
