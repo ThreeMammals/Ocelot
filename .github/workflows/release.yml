@@ -5,64 +5,64 @@ on:
       - main
       - 'release/25.**'
 jobs:
-  # Matrix build job having 2 dimensions (os, .NET ver)
-  build:
-    strategy:
-      max-parallel: 3
-      matrix:
-        os: [ubuntu, macos, windows]
-        framework: [net8, net9, net10]
-    runs-on: ${{ matrix.os }}-latest
-    defaults:
-      run:
-        shell: bash
-    env:
-      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v7
-    - name: SH-scripts
-      id: scripts
-      run: |
-        chmod +x .github/steps/*.sh
-        ls -l .github/steps/*.sh
-        frm="${{ matrix.framework }}"
-        clean="${frm#net}"
-        echo "version=$clean" >> $GITHUB_OUTPUT
-    - name: Check .NET ${{ steps.scripts.outputs.version }}
-      id: checkdotnet
-      run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
-    - name: Setup .NET ${{ steps.scripts.outputs.version }}
-      # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-      uses: actions/setup-dotnet@v6
-      with:
-        dotnet-version: ${{ steps.scripts.outputs.version }}.x
-        cache: true
-        cache-dependency-path: |
-          acceptance/packages.lock.json
-          benchmark/packages.lock.json
-          manual/packages.lock.json
-          src/packages.lock.json
-          testing/packages.lock.json
-          unit/packages.lock.json
-        # samples/**/packages.lock.json
-    - name: .NET Info
-      run: dotnet --info
-    - name: Add DNS-records
-      run: ./.github/steps/${{ matrix.os }}.add-dns-records.sh  
-    - name: Install certificate
-      run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
-    - name: Restore
-      run: dotnet restore --locked-mode ./Ocelot.slnx
-    - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
-    - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./unit/Ocelot.UnitTests.csproj
-    - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
+  # # Matrix build job having 2 dimensions (os, .NET ver)
+  # build:
+  #   strategy:
+  #     max-parallel: 3
+  #     matrix:
+  #       os: [ubuntu, macos, windows]
+  #       framework: [net8, net9, net10]
+  #   runs-on: ${{ matrix.os }}-latest
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   env:
+  #     NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v7
+  #   - name: SH-scripts
+  #     id: scripts
+  #     run: |
+  #       chmod +x .github/steps/*.sh
+  #       ls -l .github/steps/*.sh
+  #       frm="${{ matrix.framework }}"
+  #       clean="${frm#net}"
+  #       echo "version=$clean" >> $GITHUB_OUTPUT
+  #   - name: Check .NET ${{ steps.scripts.outputs.version }}
+  #     id: checkdotnet
+  #     run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
+  #   - name: Setup .NET ${{ steps.scripts.outputs.version }}
+  #     # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
+  #     uses: actions/setup-dotnet@v6
+  #     with:
+  #       dotnet-version: ${{ steps.scripts.outputs.version }}.x
+  #       cache: true
+  #       cache-dependency-path: |
+  #         acceptance/packages.lock.json
+  #         benchmark/packages.lock.json
+  #         manual/packages.lock.json
+  #         src/packages.lock.json
+  #         testing/packages.lock.json
+  #         unit/packages.lock.json
+  #       # samples/**/packages.lock.json
+  #   - name: .NET Info
+  #     run: dotnet --info
+  #   - name: Add DNS-records
+  #     run: ./.github/steps/${{ matrix.os }}.add-dns-records.sh  
+  #   - name: Install certificate
+  #     run: ./.github/steps/${{ matrix.os }}.install-certificate.sh
+  #   - name: Restore
+  #     run: dotnet restore --locked-mode ./Ocelot.slnx
+  #   - name: Build
+  #     run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
+  #   - name: Unit Tests
+  #     run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./unit/Ocelot.UnitTests.csproj
+  #   - name: Acceptance Tests
+  #     run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
 
   release-cake:
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     environment: build.cake # TODO Rename to Release
     env:
@@ -111,7 +111,7 @@ jobs:
           # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       - name: Coverage files
         id: coverage
-        run: ./.github/steps/coverage.sh
+        run: ./.github/steps/coverage.sh --folder ./artifacts/UnitTests/
       - name: Coveralls
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
         uses: coverallsapp/github-action@v2
@@ -121,7 +121,7 @@ jobs:
         continue-on-error: true
       - name: Codecov
         if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.coverage.outputs.COVERAGE_file }}

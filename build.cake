@@ -101,9 +101,9 @@ Task("Tests")
 Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease")
-    .IsDependentOn("PublishToNuget");
+	.IsDependentOn("CreateArtifacts");
+	//.IsDependentOn("PublishGitHubRelease")
+	//.IsDependentOn("PublishToNuget");
 
 Task("Restore")
     .Does(() =>

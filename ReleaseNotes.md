@@ -1,27 +1,13 @@
 <!--
+{{0}} -> {0}
+{{1}} -> {1}
 Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
 ## Pre-release 4 for [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
 > Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
-
-This is **Pre-release 4** for the [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK.
-
-Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions and [NuGet packages](https://www.nuget.org/profiles/ThreeMammals) based on .NET SDK [10.0.302](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on July 14, 2026. For more details about SDK [10.0.302](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (Runtime [10.0.10](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.10/10.0.10.md)), see the [Release notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.10/10.0.10.md).
-
-Development teams can start migrating their Ocelot-based projects using this _Pre-release 4_ to upgrade to the [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK with Long-Term Support (LTS).
-
-### :point_up: The [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13) milestone cycle is complete
-This is the final beta pre-release for the current release cycle (milestone [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)). The Ocelot development team is currently preparing the stable release, focusing on documentation quality and finalizing the latest DevOps activities for the extension packages.
-
-Stay updated — [subscribe](https://github.com/ThreeMammals/Ocelot/subscription) to Ocelot releases! :point_down: 
-
-[![Watch Ocelot releases](https://img.shields.io/badge/Subscribe-Releases-brightgreen?style=for-the-badge&logo=github)](https://github.com/ThreeMammals/Ocelot/subscription "Ocelot repository notifications status") [![Ocelot Releases RSS feed](https://img.shields.io/badge/Subscribe-Releases-2ea44f?style=for-the-badge&logo=rss)](https://github.com/ThreeMammals/Ocelot/releases.atom "Ocelot Releases RSS feed")
-
----
-
-| Release Tag: [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4)
-| Release Codename: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
+> Release Tag: [{0}](https://github.com/ThreeMammals/Ocelot/releases/tag/{0})
+> Release Codename: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
 
 In this major release, the Ocelot team focused on preparing the codebase and its ecosystem for [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13), while also extracting several integrated extension packages from the mono-repo into their own dedicated repositories to speed up delivery and reduce release coupling.
 This release also introduces a built-in *Quality of Service* (QoS) circuit breaker that works out of the box, without requiring the [Polly](https://www.nuget.org/packages/Polly/) library.
@@ -36,7 +22,7 @@ On top of that, this release brings a great enhancement to the [Kubernetes](http
 - **[Quality of Service](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/qualityofservice.rst)**: A "[Built-in Circuit Breaker](https://github.com/ThreeMammals/Ocelot/issues/2384)" implementation was added by @ocelot-ot in pull request #2385, no [Polly](https://www.nuget.org/packages/Polly/) required.
 
   Ocelot's QoS schema no longer strictly depends on the external [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/) package to provide circuit breaking and timeout enforcement.
-  A lightweight, thread-safe circuit breaker (`Closed` → `Open` → `HalfOpen` → `Closed`) ships in the Ocelot core package, supporting both count-based and `FailureRatio`-based modes.
+  A lightweight, thread-safe circuit breaker (`Closed` &rarr; `Open` &rarr; `HalfOpen` &rarr; `Closed`) ships in the Ocelot core package, supporting both count-based and `FailureRatio`-based modes.
   The two implementations are mutually exclusive: the last of `AddQualityOfService()` or `AddPolly()` registered on the `OcelotBuilder` wins.
   See the built-in QoS documentation for full details, including the `AddQualityOfService<THandler>()` extensibility point for overriding server error codes.
 
@@ -63,13 +49,13 @@ On top of that, this release brings a great enhancement to the [Kubernetes](http
 
 - Package extraction #2334: The Ocelot team, led by @raman-m, continued extracting integrated extension packages out of the mono-repo into their own dedicated repositories, each with an independent release cycle:
 
-  * [Ocelot.Cache.CacheManager](https://www.nuget.org/packages/Ocelot.Cache.CacheManager/) — pull request #2360
-  * [Ocelot.Tracing.Butterfly](https://www.nuget.org/packages/Ocelot.Tracing.Butterfly/) — pull request #2361
-  * [Ocelot.Tracing.OpenTracing](https://www.nuget.org/packages/Ocelot.Tracing.OpenTracing/) — pull request #2362
-  * [Ocelot.Discovery.Eureka](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/) (renamed from `Ocelot.Provider.Eureka`, see issue #2371) — pull request #2372
-  * [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/) (renamed from `Ocelot.Provider.Polly`, see issue #2378) — pull request #2380
-  * [Ocelot.Discovery.Consul](https://www.nuget.org/packages/Ocelot.Discovery.Consul/) (renamed from `Ocelot.Provider.Consul`, see issue #2378) — pull request #2388
-  * [Ocelot.Discovery.KubeClient](https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/) (renamed from `Ocelot.Provider.Kubernetes`, see issue #2378) — pull request #2404
+  * [Ocelot.Cache.CacheManager](https://www.nuget.org/packages/Ocelot.Cache.CacheManager/) &mdash; pull request #2360
+  * [Ocelot.Tracing.Butterfly](https://www.nuget.org/packages/Ocelot.Tracing.Butterfly/) &mdash; pull request #2361
+  * [Ocelot.Tracing.OpenTracing](https://www.nuget.org/packages/Ocelot.Tracing.OpenTracing/) &mdash; pull request #2362
+  * [Ocelot.Discovery.Eureka](https://www.nuget.org/packages/Ocelot.Discovery.Eureka/) (renamed from `Ocelot.Provider.Eureka`, see issue #2371) &mdash; pull request #2372
+  * [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/) (renamed from `Ocelot.Provider.Polly`, see issue #2378) &mdash; pull request #2380
+  * [Ocelot.Discovery.Consul](https://www.nuget.org/packages/Ocelot.Discovery.Consul/) (renamed from `Ocelot.Provider.Consul`, see issue #2378) &mdash; pull request #2388
+  * [Ocelot.Discovery.KubeClient](https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/) (renamed from `Ocelot.Provider.Kubernetes`, see issue #2378) &mdash; pull request #2404
 
   This keeps the Ocelot core repo lean, avoids delays caused by integrated packages' own release schedules, and lets each provider evolve independently.
   Consult the [Caching](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/caching.rst), [Tracing](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/tracing.rst), [Service Discovery](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/servicediscovery.rst) and [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst) chapters for package-specific upgrade notes.
@@ -81,7 +67,7 @@ On top of that, this release brings a great enhancement to the [Kubernetes](http
 
 - **[Administration](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/administration.rst)**: "[Hide Administration controllers from Swagger and OpenAPI](https://github.com/ThreeMammals/Ocelot/issues/989)" fix, contributed in pull request #2412.
 
-  The `{adminPath}/configuration` and `{adminPath}/outputcache/{region}` endpoints are now decorated with `[ApiExplorerSettings(IgnoreApi = true)]` so that they no longer appear in Swagger/OpenAPI documentation generated for the downstream API surface.
+  The `{{adminPath}}/configuration` and `{{adminPath}}/outputcache/{{region}}` endpoints are now decorated with `[ApiExplorerSettings(IgnoreApi = true)]` so that they no longer appear in Swagger/OpenAPI documentation generated for the downstream API surface.
 
 - **[DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps)**: Extensive testing and tooling modernization was carried out by @raman-m and contributors ahead of [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13):
 
