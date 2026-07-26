@@ -423,4 +423,4 @@ Gotchas
 
 .. _13.4: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
 .. _23.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
