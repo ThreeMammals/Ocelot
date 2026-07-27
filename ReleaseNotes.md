@@ -4,18 +4,33 @@
 Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
-## Pre-release 4 for [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
-> Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
-> Release Tag: [{0}](https://github.com/ThreeMammals/Ocelot/releases/tag/{0})
-> Release Codename: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)
+## Upgrade to [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK (TFM `net10.0`, version 25.0) a.k.a. [.NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/) release
+> **Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)** 👈 
+> Codenamed: [.NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/)
+> Read the Docs: [Ocelot 25.0](https://ocelot.readthedocs.io/en/25.0/) with [PDF](https://ocelot.readthedocs.io/_/downloads/en/25.0/pdf/)
+> Target Framework Monikers: `net8.0`, `net9.0`, `net10.0`
 
-In this major release, the Ocelot team focused on preparing the codebase and its ecosystem for [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13), while also extracting several integrated extension packages from the mono-repo into their own dedicated repositories to speed up delivery and reduce release coupling.
-This release also introduces a built-in *Quality of Service* (QoS) circuit breaker that works out of the box, without requiring the [Polly](https://www.nuget.org/packages/Polly/) library.
+### :information_source: About
+On November 11th, 2025, the [.NET team](https://devblogs.microsoft.com/dotnet/author/dotnet) announced the release of the [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) framework:
 
-The updated documentation highlights [the deprecation](https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated) of certain packages through multiple notes and warnings.
-With the [Obsolete attributes](https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code) in place, C# developers will notice several warnings in the build logs during compilation.
+* .NET Blog: [Announcing .NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/)
 
-On top of that, this release brings a great enhancement to the [Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/main/docs/features/kubernetes.rst) provider, also known as the [Ocelot.Discovery.KubeClient](https://www.nuget.org/packages/Ocelot.Discovery.KubeClient/) package.
+This major release upgrades the [Ocelot](https://www.nuget.org/packages/Ocelot#supportedframeworks-body-tab) package [TFMs](https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions) to **`net10.0`** in addition to the current `net8.0` and `net9.0`. Thus, the current Ocelot [supported frameworks](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) are .NET 8 LTS, .NET 9 STS, and **.NET 10** LTS.
+
+Additionally, in this major release the Ocelot team focused on preparing the codebase and its ecosystem for the **.NET 10** SDK ([.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13) milestone), while also extracting several [integrated extension packages](https://www.nuget.org/profiles/ThreeMammals) from [the v24.1 monorepo](https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src) into their own [dedicated repositories](https://github.com/orgs/ThreeMammals/repositories?q=Ocelot.) to speed up delivery and reduce release coupling. As a result of these [DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps) activities, the Ocelot repository now hosts only two package projects — [Ocelot](https://github.com/ThreeMammals/Ocelot/tree/develop/src) (`src` folder) and [Ocelot.Testing](https://github.com/ThreeMammals/Ocelot/tree/develop/testing) (`testing` folder) — along with two solutions, `Ocelot.slnx` and `Ocelot.Samples.slnx`, which can be opened or built only if the **.NET 10** SDK is installed. Since the extension packages now live in separate repositories, a new [Release Radar](https://github.com/ThreeMammals/Ocelot#satellite-release-radar) status page has been introduced to track their progress.
+
+This major version also includes the following feature updates:
+- A built-in [Quality of Service](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/qualityofservice.rst) (QoS) circuit breaker (express edition) that works out of the box without requiring the [Polly](https://www.nuget.org/packages/Polly/) library.
+- Significant enhancements to the [Websockets](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/websockets.rst) feature, including [Websockets middleware](https://github.com/ThreeMammals/Ocelot/blob/develop/src/WebSockets/WebSocketsProxyMiddleware.cs) overriding and the addition of [Security Options](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#security-options-6) to the WebSockets pipeline.
+- Improved [Configuration](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/configuration.rst) experience that merges multiple `ocelot.*.json` files, keeping users' [extended properties](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/configuration.rst#extend-with-custom-properties-6) available during Ocelot app startup and at runtime via the standard `IConfiguration` service in the DI container.
+
+Finally, because the repository has a [new folder structure](https://github.com/ThreeMammals/Ocelot#file_folder-repository-structure), the development team recommends recloning or even reforking the Ocelot repository for a successful upgrade to the new version in order to avoid potential build errors.
+
+As a best practice, the release strategy has been aligned with [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) monthly [patches](https://github.com/dotnet/core/tree/main/release-notes/10.0#release-notes) (usually available between the 10th and 15th of each month). The development team will therefore also aim to roll out monthly Ocelot patches that reference the new .NET SDK patched versions. Ocelot patches will follow the form of a beta or patched version `major.minor.*`, where `*` is the Ocelot patch number corresponding to the newly available [.NET SDK patch](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
+
+Ideally, the Ocelot team expects accelerated releases with more frequent minor/patch versions, because the [DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps) is now prepared for the new release strategy and offers fast delivery.
+
+For successful contributions, maintainers will announce an identity-verification procedure (details for first-time contributors will be published soon).
 
 ### :new: What's New?
 
