@@ -209,7 +209,7 @@ Task("CreateReleaseNotes")
 	.Does(() =>
 	{
         Information($"Generating release notes at {releaseNotesFile}");
-        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
+        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
         var lastRelease = lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
 
