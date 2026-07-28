@@ -141,9 +141,8 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value
+        route.RouteClaimsRequirement = new() // TODO this is dictionary which doesn't support multiple keys of the same value -> separated tests 
         {
-            { ClaimTypes.Role, "User"}, // TODO Such a claim types in a form of URL (aka http://*) are not supported by JsonConfigurationProvider
             { nameof(ClaimTypes.Role), "User"}, // this key is Ok because it is not an URL containing proto delimiter aka '://'
         };
         var claims = new List<KeyValuePair<string, string>>()
