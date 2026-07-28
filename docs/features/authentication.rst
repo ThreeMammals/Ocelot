@@ -409,4 +409,4 @@ Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussion
 .. _2336: https://github.com/ThreeMammals/Ocelot/pull/2336
 .. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
