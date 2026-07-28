@@ -211,6 +211,8 @@ Example ``JsonPath`` scenarios:
 - ``$.user.id`` → single value
 - ``$..id`` → deep search (use carefully)
 
+.. _agg-complex-aggregator:
+
 Aggregate Manually?
 ^^^^^^^^^^^^^^^^^^^
   *This is a pilot feature introduced in version 25.0!*

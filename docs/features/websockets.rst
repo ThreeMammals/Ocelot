@@ -133,6 +133,8 @@ If you want to ignore SSL warnings (errors) [#f3]_, configure your route as foll
 Refer to the official notes regarding :ref:`ssl-errors` in the :doc:`../features/configuration` documentation.
 There, you can also explore best practices tailored for your environments.
 
+.. _ws-supported:
+
 Supported
 ---------
 

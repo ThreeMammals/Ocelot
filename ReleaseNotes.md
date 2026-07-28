@@ -57,7 +57,7 @@ For successful contributions, maintainers will announce an identity-verification
   Ocelot's configuration builder now merges custom (non-schema) JSON properties defined across multiple `ocelot.*.json` files using Newtonsoft's `JToken` merge functionality, instead of the last-loaded file silently overwriting properties from previous files in the `Routes` collection.
   This also applies to the `DynamicRoutes` collection and the `GlobalConfiguration` section. See the updated [Configuration](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/configuration.rst) documentation, especially the "[Extend configuration with Custom Properties](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/configuration.rst#extend-with-custom-properties)" section, and the [Configuration Sample](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/configuration.rst#sample) app for details.
 
-- :airplane: **[Aggregation](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst)**: A new "[Manual/custom aggregators for Complex Aggregation](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst#aggregate-manually)" feature has been published (originally developed by a person yet to be identified). :laughing: :airplane:
+- :airplane: **[Aggregation](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst)**: A new "[Manual/custom aggregators](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst#aggregate-manually) for [Complex Aggregation](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst#complex-aggregation)" feature has been published (originally developed by @TomPallister in pull requests #248, #310). :airplane:
 
   While working on bug #2248 in pull request #2328 by @NandanDevHub, the development team uncovered an undocumented feature in the [Multiplexer](https://github.com/ThreeMammals/Ocelot/tree/develop/src/Multiplexer) namespace and decided to publish this pilot feature in the "[Aggregate Manually?](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst#aggregate-manually)" documentation. The feature is based on the `IResponseAggregator` interface, whose correct application is currently unclear. The Ocelot team will test it further in upcoming releases, develop best practices, create a sample app, and inform the community. For this reason we warn that the feature is still in pilot status. :airplane:
 
@@ -79,16 +79,19 @@ For successful contributions, maintainers will announce an identity-verification
 
 - **[Kubernetes](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst)**: The "[PollKube provider](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/kubernetes.rst#pollkube-provider-3)" was redesigned by @raman-m in pull request #2358.
 
-  The `PollKube` discovery provider was redesigned to utilize `PeriodicTimer` (introduced in .NET 8). The provider is based on an "active polling" strategy that requires stable behavior and careful management of timing events in multi-threaded scenarios. The new `PeriodicTimer` is designed for thread safety, and its callbacks replace the old `Timer` callbacks, which work fine in a synchronous flow.
+  The `PollKube` discovery provider was redesigned to utilize `PeriodicTimer` ([introduced](https://github.com/dotnet/runtime/pull/53899) in .NET 6). The provider is based on an "active polling" strategy that requires stable behavior and careful management of timing events in multi-threaded scenarios. The new `PeriodicTimer` is designed for thread safety, and its callbacks replace the old `Timer` callbacks, which work fine in a synchronous flow.
   Please note that the `PollKube` discovery provider is now part of the [Ocelot.Discovery.KubeClient](https://github.com/ThreeMammals/Ocelot.Discovery.KubeClient) package.
 
 - **[DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps)**: Extensive testing and tooling modernization was carried out by contributors ahead of [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13):
 
-  * Solutions upgraded to the Visual Studio 2026 & .NET 10 SDK format (`.sln` &rarr; `.slnx`), by @raman-m in pull request #2354.
+  * Solutions upgraded to the [Visual Studio 2026 Solution File Format](https://devblogs.microsoft.com/visualstudio/new-simpler-solution-file-format/) a.k.a. [.NET 10 CLI solution file format](https://devblogs.microsoft.com/dotnet/introducing-slnx-support-dotnet-cli/) (`.sln` &rarr; `.slnx`), by @raman-m in pull request #2354.
   * Testing projects migrated from xUnit v2 to xUnit v3 (by @methran1304 in #2356), and acceptance tests migrated to the `Microsoft.Testing.Platform` framework (by @raman-m in #2392).
   * [Ocelot.Testing](https://github.com/ThreeMammals/Ocelot.Testing) was re-embedded into the monorepo (by @ocelot-ot in #2364) and later excluded from Cobertura coverage via `coverlet.runsettings` (by @ocelot-ot in #2365).
   * [Codecov](https://about.codecov.io/) coverage reporting was installed for the repository, by @raman-m in pull request #2359.
   * NuGet packages were continuously bumped to their latest versions to support .NET SDK `10.0.*` (.NET Runtime `10.0.*`), by @raman-m and @ocelot-ot in pull requests #2367, #2389, #2402, and #2409.
+
+  The updated documentation also highlights [the deprecation](https://github.com/search?q=repo%3AThreeMammals%2FOcelot+deprecated+language%3AreStructuredText&type=code&l=reStructuredText) of certain packages through multiple notes and warnings.
+  With the [Obsolete attributes](https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code) in place, C# developers will notice several warnings in the build logs during compilation.
 
 ### :package: Patches
 
@@ -107,7 +110,7 @@ For successful contributions, maintainers will announce an identity-verification
   Previously, IP allow/block-list [Routing](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst) "[Security Options](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/routing.rst#security-options-6)" were not enforced for WebSocket upgrade requests, allowing them to bypass IP security.
   WebSocket upgrade requests are now intercepted by the same `IPSecurityPolicy` used for regular HTTP requests, and denied upgrades now correctly return `403 Forbidden`.
 
-  This critical security issue was [detected by security scanners](https://github.com/ThreeMammals/Ocelot/issues/2403#issuecomment-4819023032) on GitHub after the bug was reported. :see_no_evil:
+  This critical security issue was [detected by security scanners on GitHub](https://github.com/ThreeMammals/Ocelot/issues/2403#event-7907427333) after the bug was reported. :see_no_evil:
   Many thanks to **George Chen** (@geo-chen) for reporting this critical bug.
 
 - **[Aggregation](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/aggregation.rst)**: Issue #2248 was patched by @NandanDevHub in pull request #2328.
