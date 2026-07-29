@@ -2,6 +2,9 @@
 
 Caching
 =======
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 [#f1]_ Ocelot currently supports caching on the URL of the downstream service and setting a TTL in seconds to expire the cache.
 Users can also clear the cache for a specific region by using Ocelot's :ref:`administration-api`.
@@ -116,7 +119,7 @@ Finally, in order to use caching on a route in your route configuration add thes
 * Finally, ``EnableContentHashing`` is disabled due to the current route using the ``GET`` verb, which does not include a request body.
 
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 .. warning::
   According to the static :ref:`config-route-schema`, the ``FileCacheOptions`` section has been deprecated!
 

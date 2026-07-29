@@ -31,7 +31,7 @@ public sealed class PayloadTooLargeTests : Steps
     [Fact]
     public void Should_throw_payload_too_large_exception_using_http_sys()
     {
-        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Test is unstable for all platforms except Windows OS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), $"Testing the HTTP.sys web server is not applicable on the \"{RuntimeInformation.OSDescription}\" platform, as it is designed for Windows OS architecture.");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);

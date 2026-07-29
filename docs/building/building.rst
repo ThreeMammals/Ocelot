@@ -11,6 +11,9 @@
 
 Building
 ========
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 This document summarises the build and release process for the `Ocelot`_ project.
 The build scripts are written using `Cake`_ (C# Make), with relevant build tasks defined in the '`build.cake`_' file located in the root of the `Ocelot`_ project.
@@ -110,7 +113,7 @@ For example, use the following command:
 
 You may need to adjust the platform flag depending on your system.
 
-  **Note**: This approach is somewhat excessive, but it will work if you are a masterful Docker user. 🙂
+  **Note**: This approach is somewhat excessive, but it will work if you are a masterful Docker user.
   The Ocelot team has not followed this approach since version `24.0`_, favoring :ref:`b-with-ci-cd`-based builds and occasionally building :ref:`b-in-terminal` instead.
 
 .. _b-with-ci-cd:

@@ -20,9 +20,13 @@
 
 |K8sLogo| Kubernetes (K8s) [#f1]_
 =================================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
-    | Feature of: :doc:`../features/servicediscovery`
-    | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
+  | Feature of: :doc:`../features/servicediscovery`
+  | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in pull request `1134`_ because the service did not load balance as expected.
@@ -34,7 +38,7 @@ Install
 
 The first thing you need to do is install the `package`_ that provides |logo-kubernetes| support in Ocelot:
 
-.. code-block:: powershell
+.. code-block:: shell
 
     dotnet add package Ocelot.Discovery.KubeClient
 
@@ -395,4 +399,4 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

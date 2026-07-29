@@ -1092,7 +1092,7 @@ Your next recommended action is to completely remove the 3-second ``Timeout`` pr
 .. note::
 
   1. Both route ``Timeout`` and QoS ``Timeout`` are nullable positive integers, with a minimum valid value of ``1``.
-  Values in the range ``(−∞, 0]`` are treated as "no value" and will be automatically converted to the absolute :ref:`config-default-timeout`, effectively ignoring the property.
+  Values in the range ``(-∞, 0]`` are treated as "no value" and will be automatically converted to the absolute :ref:`config-default-timeout`, effectively ignoring the property.
 
   2. The unit of measurement for route ``Timeout`` is seconds,
   whereas QoS ``Timeout`` is measured in milliseconds.
@@ -1224,4 +1224,4 @@ Refer to the :ref:`config-merging-recipes` and :ref:`Extend with Custom Properti
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

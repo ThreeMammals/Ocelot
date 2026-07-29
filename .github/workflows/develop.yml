@@ -7,10 +7,10 @@ on:
 jobs:
   build:
     strategy:
-      max-parallel: 3
+      max-parallel: 1
       matrix:
         os: [ubuntu, macos, windows]
-        framework: [net8, net9, net10]
+        framework: [net10] # [net8, net9, net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
