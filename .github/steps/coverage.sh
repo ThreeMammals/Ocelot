@@ -12,11 +12,15 @@ DOTNET_TFM="${1:-net10.0}"
 # Default to "Debug" if no argument is provided
 BUILD_CONFIGURATION="${2:-Debug}"
 
-echo "::group::Listing $DOTNET_TFM build folder for $BUILD_CONFIGURATION configuration"
-ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
-echo "::endgroup::"
+if [ "$#" -ge 2 ] && [ "$1" = "--folder" ]; then
+  coverage_folder="$2"
+else
+  echo "::group::Listing $DOTNET_TFM build folder for $BUILD_CONFIGURATION configuration"
+  ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/"*/
+  echo "::endgroup::"
 
-coverage_folder=$(ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
+  coverage_folder=$(ls -d "./unit/bin/$BUILD_CONFIGURATION/$DOTNET_TFM/TestResults"*/ | head -1)
+fi
 echo "Detected first folder : $coverage_folder"
 
 echo "::group::TestResults files are ..."

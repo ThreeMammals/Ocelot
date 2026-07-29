@@ -3,6 +3,9 @@
 
 Not Supported
 =============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot does not support...
 

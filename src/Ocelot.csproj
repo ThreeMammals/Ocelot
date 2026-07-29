@@ -24,7 +24,7 @@
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <PackageIcon>ocelot_icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/ThreeMammals/Ocelot.git</RepositoryUrl>
-    <PackageReleaseNotes>https://github.com/ThreeMammals/Ocelot/blob/main/ReleaseNotes.md</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/ThreeMammals/Ocelot/releases/tag/0.0.0-dev</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
