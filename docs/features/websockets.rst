@@ -1,7 +1,9 @@
-.. _WebSocketsProxyMiddleware: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs
-
 Websockets
 ==========
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _WebSocketsProxyMiddleware: https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs
 
   * Ocelot Middleware: `WebSocketsProxyMiddleware`_
   * RFC 6455 Specification: `The WebSocket Protocol <https://datatracker.ietf.org/doc/html/rfc6455>`_ by Internet Engineering Task Force (IETF) organization
@@ -59,9 +61,9 @@ Ocelot supports proxying *SignalR*. To enable this with Ocelot, you need to do t
 
 First, install the `SignalR Client <https://www.nuget.org/packages/Microsoft.AspNetCore.SignalR.Client>`_ NuGet package:
 
-.. code-block:: powershell
+.. code-block:: shell
 
-  Install-Package Microsoft.AspNetCore.SignalR.Client
+  dotnet add package Microsoft.AspNetCore.SignalR.Client
 
 .. _break: http://break.do
 
@@ -273,7 +275,7 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
 .. _5.3.0: https://github.com/ThreeMammals/Ocelot/releases/tag/5.3.0
 .. _8.0.7: https://github.com/ThreeMammals/Ocelot/releases/tag/8.0.7
 .. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat

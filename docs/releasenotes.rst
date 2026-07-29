@@ -2,7 +2,6 @@
 .. _.NET 8: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 .. _.NET 10: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
-.. _Globality: https://github.com/ThreeMammals/Ocelot/milestone/9
 .. _Ocelot: https://www.nuget.org/packages/Ocelot
 .. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot.Testing
 .. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
@@ -23,7 +22,7 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 
 .. .. admonition:: Patches
 
-..   - `24.1.1`_, on July 16, 2025: Issue `2299`_ patch ...
+..   - `25.0.1`_, on September 1, 2026: Issue `3000`_ patch ...
 
 .. _release-notes:
 
@@ -32,7 +31,7 @@ Release Notes
 
   | Release Tag: `25.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0>`_
   | Release Codename: `.NET 10 <https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/>`__
-  | Release Date: July 28, 2026
+  | Release Date: July 29, 2026
 
 .. _TFMs: https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions
 .. _supported frameworks: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle

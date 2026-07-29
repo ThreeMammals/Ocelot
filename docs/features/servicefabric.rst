@@ -1,5 +1,9 @@
 Service Fabric
 ==============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
   [#f1]_ Feature of: :doc:`../features/servicediscovery`
 

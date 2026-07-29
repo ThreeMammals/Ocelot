@@ -1,4 +1,4 @@
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 .. role::  htm(raw)
     :format: html
 .. role:: pdf(raw)
@@ -23,7 +23,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
 :htm:`<section id="toc"><h2>Table of Contents<a class="headerlink" href="#toc" title="Link to this heading">¶</a></h2>`
 
   .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Welcome
 
     releasenotes

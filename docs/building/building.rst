@@ -11,6 +11,9 @@
 
 Building
 ========
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 This document summarises the build and release process for the `Ocelot`_ project.
 The build scripts are written using `Cake`_ (C# Make), with relevant build tasks defined in the '`build.cake`_' file located in the root of the `Ocelot`_ project.

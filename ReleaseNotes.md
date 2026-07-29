@@ -82,7 +82,7 @@ For successful contributions, maintainers will announce an identity-verification
   The `PollKube` discovery provider was redesigned to utilize `PeriodicTimer` ([introduced](https://github.com/dotnet/runtime/pull/53899) in .NET 6). The provider is based on an "active polling" strategy that requires stable behavior and careful management of timing events in multi-threaded scenarios. The new `PeriodicTimer` is designed for thread safety, and its callbacks replace the old `Timer` callbacks, which work fine in a synchronous flow.
   Please note that the `PollKube` discovery provider is now part of the [Ocelot.Discovery.KubeClient](https://github.com/ThreeMammals/Ocelot.Discovery.KubeClient) package.
 
-- **[DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps)**: Extensive testing and tooling modernization was carried out by contributors ahead of [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13):
+- **[DevOps](https://github.com/ThreeMammals/Ocelot/labels/DevOps)**: Extensive testing and tooling modernization was carried out by contributors ahead of [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13) milestone:
 
   * Solutions upgraded to the [Visual Studio 2026 Solution File Format](https://devblogs.microsoft.com/visualstudio/new-simpler-solution-file-format/) a.k.a. [.NET 10 CLI solution file format](https://devblogs.microsoft.com/dotnet/introducing-slnx-support-dotnet-cli/) (`.sln` &rarr; `.slnx`), by @raman-m in pull request #2354.
   * Testing projects migrated from xUnit v2 to xUnit v3 (by @methran1304 in #2356), and acceptance tests migrated to the `Microsoft.Testing.Platform` framework (by @raman-m in #2392).

@@ -1224,4 +1224,4 @@ Refer to the :ref:`config-merging-recipes` and :ref:`Extend with Custom Properti
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
