@@ -26,6 +26,7 @@ public class StaticRoutesCreatorTests : UnitTest
     private readonly Mock<IVersionCreator> _versionCreator;
     private readonly Mock<IVersionPolicyCreator> _versionPolicyCreator;
     private readonly Mock<IMetadataCreator> _metadataCreator;
+    private readonly Mock<IWebSocketOptionsCreator> _webSocketOptionsCreator;
     private FileConfiguration _fileConfig;
     private string _requestId;
     private string _rrk;
@@ -44,6 +45,7 @@ public class StaticRoutesCreatorTests : UnitTest
     private HttpVersionPolicy _expectedVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _uht;
     private Dictionary<string, string> _expectedMetadata;
+    private WebSocketOptions _ws;
 
     public StaticRoutesCreatorTests()
     {
@@ -64,6 +66,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
         _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
         _metadataCreator = new Mock<IMetadataCreator>();
+        _webSocketOptionsCreator = new Mock<IWebSocketOptionsCreator>();
 
         _creator = new StaticRoutesCreator(
             _cthCreator.Object,
@@ -82,7 +85,8 @@ public class StaticRoutesCreatorTests : UnitTest
             _versionCreator.Object,
             _versionPolicyCreator.Object,
             _uhtpCreator.Object,
-            _metadataCreator.Object);
+            _metadataCreator.Object,
+            _webSocketOptionsCreator.Object);
     }
 
     [Fact]
@@ -258,6 +262,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _ctt = new List<ClaimToThing>();
         _qoso = new QoSOptions();
         _rlo = new RateLimitOptions();
+        _ws = new WebSocketOptions(65536);
 
         _cacheOptions = new CacheOptions(0, "vesty", null, false);
         _hho = new();
@@ -289,6 +294,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _uhtpCreator.Setup(x => x.Create(It.IsAny<FileRoute>())).Returns(_uht);
         _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
             .Returns(new MetadataOptions() { Metadata = _expectedMetadata });
+        _webSocketOptionsCreator.Setup(x => x.Create(It.IsAny<FileRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ws);
     }
 
     private void ThenTheRoutesAreCreated()
@@ -332,6 +338,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _result[routeIndex].DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamPathTemplate);
         _result[routeIndex].DownstreamRoute[0].Key.ShouldBe(expected.Key);
         _result[routeIndex].DownstreamRoute[0].MetadataOptions.Metadata.ShouldBe(_expectedMetadata);
+        _result[routeIndex].DownstreamRoute[0].WebSocket.ShouldBe(_ws);
         _result[routeIndex].UpstreamHttpMethod.Count.ShouldBe(2);
         _result[routeIndex].UpstreamHttpMethod.ShouldAllBe(actual => expected.UpstreamHttpMethod.Contains(actual.Method));
         _result[routeIndex].UpstreamHost.ShouldBe(expected.UpstreamHost);
@@ -359,5 +366,6 @@ public class StaticRoutesCreatorTests : UnitTest
         _lboCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
         _soCreator.Verify(x => x.Create(fileRoute.SecurityOptions, globalConfig), Times.Once);
         _metadataCreator.Verify(x => x.Create(fileRoute.Metadata, globalConfig), Times.Once);
+        _webSocketOptionsCreator.Verify(x => x.Create(fileRoute, globalConfig), Times.Once);
     }
 }
