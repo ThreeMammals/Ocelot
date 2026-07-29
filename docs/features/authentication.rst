@@ -386,6 +386,36 @@ Nothing is currently in the stack, but the Ocelot team is rethinking a new versi
 We invite you to add more examples if you have integrated with other identity providers and the integration solution is working.
 Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussions/categories/show-and-tell>`_" discussion in the repository.
 
+Api Key
+^^^^^^^ 
+
+Add the following to your startup ConfigureServices method:
+
+.. code-block:: csharp
+    services
+        .AddAuthentication()
+        .AddApiKey(apiKeyProviderKey, options => 
+        {
+            options.Authority = configuration["Authentication:ApiKey:Authority"]; // Your api key authentication endpoint
+            options.Method = HttpMethod.Get; // The http method to be used to call your authentication endpoint
+        });
+
+NOTE: The api response from your authentication endpoint must be
+
+.. code-block:: csharp
+    public class ApiKeyValidationResponse
+    {
+        public string Owner { get; set; }
+        public IReadOnlyCollection<string> Roles { get; set; }
+    }
+
+Allowed Scopes
+^^^^^^^^^^^^^
+
+If you add scopes to AllowedScopes Ocelot will get all the user claims (from the token) of the type scope and make sure that the user has all of the scopes in the list.
+
+This is a way to restrict access to a Route on a per scope basis.
+
 """"
 
 .. [#f1] The ":ref:`Single Authentication Scheme <authentication-scheme>`" feature has been an Ocelot artifact for ages. Use the ``AuthenticationProviderKeys`` property instead of ``AuthenticationProviderKey`` one. We support this ``[Obsolete]`` property for backward compatibility and migration reasons. In future releases, the property may be removed as a breaking change.
