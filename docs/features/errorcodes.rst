@@ -1,5 +1,8 @@
 Error Handling
 ==============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 .. _Handle errors in ASP.NET Core: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling
 .. _standard error handling: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling
 
@@ -117,4 +120,4 @@ We expect you to share your use case with us in the `Discussions <https://github
 .. _"Field Parsing": https://www.rfc-editor.org/rfc/rfc7230#section-3.2.4
 .. _2374: https://github.com/ThreeMammals/Ocelot/issues/2374
 .. _2379: https://github.com/ThreeMammals/Ocelot/pull/2379
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

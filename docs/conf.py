@@ -6,10 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Ocelot Gateway'
+project = 'Ocelot API Gateway'
 copyright = ' 2016-2026 Three Mammals'
 author = 'Tom Gardham-Pallister, Raman Maksimchuk'
-release = '25.0 ".NET 10"' # OK displayed
+release = 'v25.0 ".NET 10"' # OK displayed
 version = '25.0' # version is not displayed in either HTML pages or PDF docs
 
 # -- General configuration ---------------------------------------------------
@@ -34,3 +34,14 @@ html_theme = 'alabaster'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_static_path
 html_static_path = ['_static']
 html_css_files = ['overrides.css']
+
+# UNICODE characters: https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-rst_epilog
+rst_epilog = """
+.. |ge| unicode:: U+2265 .. ≥
+"""
+
+latex_elements = {
+    'preamble': r'''
+    \usepackage{pifont}
+    '''
+}

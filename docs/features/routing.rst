@@ -1,5 +1,8 @@
 Routing
 =======
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot's primary function is to handle incoming HTTP requests and forward them to a downstream service.
 Currently, Ocelot supports this only through HTTP requests. In the future, it might support other transport mechanisms.
@@ -522,4 +525,4 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
 .. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

@@ -6,6 +6,10 @@
 
 Administration
 ==============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
   **Package**: `Ocelot.Administration.IdentityServer4`_ with integrated `IdentityServer4`_ package by `IdentityServer org <https://github.com/IdentityServer>`_ (archived on March 6, 2025)
 
@@ -171,4 +175,4 @@ Administration API
 .. _2412: https://github.com/ThreeMammals/Ocelot/pull/2412
 
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.4
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

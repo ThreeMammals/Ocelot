@@ -3,6 +3,9 @@
 
 Headers Transformation
 ======================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot allows the user to transform `HTTP headers <https://developer.mozilla.org/en-US/docs/Glossary/HTTP_header>`_ both before and after the downstream request.
 
