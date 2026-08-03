@@ -1,5 +1,7 @@
-Welcome to Ocelot 20.0
-======================
+.. _20.0: https://github.com/ThreeMammals/Ocelot/releases/tag/20.0.0
+
+Welcome to Ocelot `20.0`_
+=========================
 
 Thanks for taking a look at the Ocelot documentation! Please use the left hand navigation to get around.
 The team would suggest taking a look at the **Introduction** chapter first.

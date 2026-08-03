@@ -247,7 +247,6 @@ test/Ocelot.AcceptanceTests/ocelot.json
 
 # Read the docstates
 _build/
-_static/
 _templates/
 
 # JetBrains Rider
