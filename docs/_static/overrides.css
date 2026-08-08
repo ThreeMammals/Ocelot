@@ -1,0 +1,18 @@
+blockquote {
+    font-size: 0.9em;
+}
+aside.footnote-list {
+    font-size: 0.9em;
+}
+.img-valign-middle
+{
+    vertical-align: middle;
+}
+.img-valign-bottom
+{
+    vertical-align: bottom;
+}
+.img-valign-textbottom
+{
+    vertical-align: text-bottom;
+}
