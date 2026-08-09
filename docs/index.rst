@@ -5,6 +5,10 @@
 .. _@AlyHKafoury: https://github.com/AlyHKafoury
 .. _@FelixBoers: https://github.com/FelixBoers
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
+.. _23.2.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
+.. _23.2.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.1
+.. _23.2.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.2
+.. _2031: https://github.com/ThreeMammals/Ocelot/issues/2031
 
 Welcome to Ocelot `23.2`_
 ======================================================================================
@@ -17,18 +21,28 @@ The main features are :doc:`../features/configuration` and :doc:`../features/rou
 
 We **do** follow development process which is described in :doc:`../building/releaseprocess`.
 
+.. _release-notes:
+
 Release Notes
 -------------
 
-   | **Release Tag**: `23.2.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0>`_
-   | **Release Codename**: `Lunar Eclipse <https://www.timeanddate.com/eclipse/lunar/2024-march-25>`_
+  | Release Tag: `23.2.0`_
+  | Release Codename: `Lunar Eclipse <https://www.timeanddate.com/eclipse/lunar/2024-march-25>`_
+  | Release Date: April 1, 2024
+
+The major version `23.2.0`_ includes several patches, the history of which is outlined below.
+
+.. admonition:: Patches
+
+  - `23.2.1`_, on April 3, 2024: Documentation patch for `23.2.0`_ release.
+  - `23.2.2`_, on April 5, 2024: Issue `2031`_ patch. Don't validate placeholders in templates.
 
 What's new?
 ^^^^^^^^^^^
 
-- :doc:`../features/configuration`: A brand new :ref:`config-merging-tomemory` by `@ebjornset`_ as a part of the :ref:`config-merging-files` feature.
+- :doc:`../features/configuration`: A brand new :ref:`Merging files to memory <config-merging-tomemory>` by `@ebjornset`_ as a part of the :ref:`config-merging-files` feature.
   
-  The ``AddOcelot`` method merges the **ocelot.*.json** files into a single **ocelot.json** file as the primary configuration file, which is written back to disk and then added to the ``IConfigurationBuilder`` for the well-known ``IConfiguration``. You can now call another ``AddOcelot`` method that adds the merged JSON directly from memory to the ``IConfigurationBuilder``, using ``AddJsonStream`` instead.
+  The ``AddOcelot`` method merges the ``ocelot.*.json`` files into a single ``ocelot.json`` file as the primary configuration file, which is written back to disk and then added to the ``IConfigurationBuilder`` for the well-known ``IConfiguration``. You can now call another ``AddOcelot`` method that adds the merged JSON directly from memory to the ``IConfigurationBuilder``, using ``AddJsonStream`` instead.
   
   See more details in :ref:`di-configuration-overview` of :doc:`../features/dependencyinjection`.
 
@@ -72,7 +86,7 @@ Stabilization aka bug fixing
     | This resulted in problems with dependency injection libraries, or worse, causing the Ocelot app to crash!
     | See more in the `ServiceCollectionExtensions <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+ServiceCollectionExtensions&type=code>`_ class.
 
-  - See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue+is%3Aclosed+label%3Abug+milestone%3AFebruary%2724>`_ of the `February'24 <https://github.com/ThreeMammals/Ocelot/milestone/5>`_ milestone
+  - See `all bugs <https://github.com/ThreeMammals/Ocelot/issues?q=is%3Aissue%20state%3Aclosed%20label%3A%22Feb%2724%22%20label%3Abug>`_ of the `February'24 <https://github.com/ThreeMammals/Ocelot/milestone/5>`_ milestone
 
 Updated Documentation
 """""""""""""""""""""

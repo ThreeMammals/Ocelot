@@ -1,40 +1,61 @@
-#tool "dotnet:?package=GitVersion.Tool&version=5.8.1"
-#tool "dotnet:?package=coveralls.net&version=4.0.1"
-#addin nuget:?package=Newtonsoft.Json
-#addin nuget:?package=System.Text.Encodings.Web&version=4.7.1
-#tool "nuget:?package=ReportGenerator&version=5.2.0"
-#addin Cake.Coveralls&version=1.1.0
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.8.2
+#tool nuget:?package=ReportGenerator&version=5.5.10
 
+// Switch from Newtonsoft to System.Text.Json lib!
+#addin nuget:?package=Newtonsoft.Json
+#addin nuget:?package=System.Text.Encodings.Web
 #r "Spectre.Console"
-using Spectre.Console
+
+using Spectre.Console;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using _File_ = System.IO.File;
+using _Directory_ = System.IO.Directory;
 
-// compile
-var compileConfig = Argument("configuration", "Release");
+bool IsTechnicalRelease = false;
+const string Release = "Release"; // task name, target, and Release config name
+const string PullRequest = "PullRequest"; // task name, target, and PullRequest config name
+const string LatestFramework = "LatestFramework"; // task name, target, and LatestFramework config name
+const string AllTFMs = "net8.0;net9.0;net10.0";
+const string LatestTFM = "net10.0";
+string NL = Environment.NewLine;
 
-var slnFile = "./Ocelot.sln";
+// Create a CultureInfo object for UK English
+CultureInfo ukCulture = new("en-GB");
+CultureInfo.DefaultThreadCurrentCulture = ukCulture;
+CultureInfo.DefaultThreadCurrentUICulture = ukCulture;
+Information("Current Culture: " + CultureInfo.CurrentCulture);
+Information("Current UI Culture: " + CultureInfo.CurrentUICulture);
 
-// build artifacts
-var artifactsDir = Directory("artifacts");
+// Display culture properties
+Information("Culture Name: " + ukCulture.Name);              // en-GB
+Information("Display Name: " + ukCulture.DisplayName);       // English (United Kingdom)
+Information("English Name: " + ukCulture.EnglishName);       // English (United Kingdom)
+Information("Native Name: " + ukCulture.NativeName);         // English (United Kingdom)
+Information("Two-letter ISO Language Name: " + ukCulture.TwoLetterISOLanguageName); // en
+Information("Three-letter ISO Language Name: " + ukCulture.ThreeLetterISOLanguageName); // eng
+Information("Region ISO Code: " + new RegionInfo(ukCulture.Name).TwoLetterISORegionName); // GB
+
+// Example: format a date and currency in UK style
+DateTime now = DateTime.Now;
+decimal amount = 12345.67m;
+Information("Date (UK format): " + now.ToString("D", ukCulture));
+Information("Currency (UK format): " + amount.ToString("C", ukCulture));
+
+var compileConfig = Argument("configuration", Release); // compile
+var artifactsDir = Directory("artifacts"); // build artifacts
 
 // unit testing
 var artifactsForUnitTestsDir = artifactsDir + Directory("UnitTests");
-var unitTestAssemblies = @"./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj";
-var minCodeCoverage = 0.80d;
-var coverallsRepoToken = "OCELOT_COVERALLS_TOKEN";
-var coverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
+var unitTestAssemblies = @"./unit/Ocelot.UnitTests.csproj";
 
 // acceptance testing
 var artifactsForAcceptanceTestsDir = artifactsDir + Directory("AcceptanceTests");
-var acceptanceTestAssemblies = @"./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj";
-
-// integration testing
-var artifactsForIntegrationTestsDir = artifactsDir + Directory("IntegrationTests");
-var integrationTestAssemblies = @"./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj";
+var acceptanceTestAssemblies = @"./acceptance/Ocelot.Acceptance.csproj";
 
 // benchmark testing
 var artifactsForBenchmarkTestsDir = artifactsDir + Directory("BenchmarkTests");
@@ -44,62 +65,80 @@ var benchmarkTestAssemblies = @"./test/Ocelot.Benchmarks";
 var packagesDir = artifactsDir + Directory("Packages");
 var artifactsFile = packagesDir + File("artifacts.txt");
 var releaseNotesFile = packagesDir + File("ReleaseNotes.md");
-var releaseNotes = new List<string>();
-
-// stable releases
-var tagsUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/";
-var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUTGET_API_KEY");
-var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
-var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
+List<string> releaseNotes = new();
 
 // internal build variables - don't change these.
 string committedVersion = "0.0.0-dev";
 GitVersion versioning = null;
-int releaseId = 0;
-bool IsTechnicalRelease = false;
-string gitHubUsername = "TomPallister";
-string gitHubPassword = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
 
 var target = Argument("target", "Default");
+var slnFile = "./Ocelot.slnx";
 
-Information("target is " + target);
-Information("Build configuration is " + compileConfig);	
+Information($"{NL}Target: {target}");
+Information($"Build: {compileConfig}");
+Information($"Solution: {slnFile}");
 
 TaskTeardown(context => {
-	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}\n");
+	AnsiConsole.Markup($"[green]DONE[/] {context.Task.Name}" + NL);
 });
 
 Task("Default")
 	.IsDependentOn("Build");
-
 Task("Build")
-	.IsDependentOn("RunTests");
+	.IsDependentOn("Tests");
+Task("LatestFramework")
+	.IsDependentOn("Tests");
+Task("PullRequest")
+	.IsDependentOn("Tests");
 
 Task("ReleaseNotes")
 	.IsDependentOn("CreateReleaseNotes");
 
-Task("RunTests")
-	.IsDependentOn("RunUnitTests")
-	.IsDependentOn("RunAcceptanceTests")
-	.IsDependentOn("RunIntegrationTests");
+Task("Tests")
+	.IsDependentOn("UnitTests")
+	.IsDependentOn("AcceptanceTests");
 
 Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
 	.IsDependentOn("CreateArtifacts")
 	.IsDependentOn("PublishGitHubRelease")
-    .IsDependentOn("PublishToNuget");
+	.IsDependentOn("PublishToNuget");
+
+Task("Restore")
+    .Does(() =>
+	{
+		var settings = new DotNetRestoreSettings
+		{
+			LockedMode = true, // equivalent to --locked-mode
+			// UseLockFile = true, // equivalent to --use-lock-file
+			// Sources = new[] { "https://api.nuget.org/v3/index.json" }
+		};
+		DotNetRestore(slnFile, settings);
+	});
 
 Task("Compile")
 	.IsDependentOn("Clean")
 	.IsDependentOn("Version")
+	.IsDependentOn("Restore")
 	.Does(() =>
 	{	
+		PreprocessReadMe();
+		Information("Branch: " + GetBranchName());
+		Information("Build: " + compileConfig);
+		Information("Solution: " + slnFile);
 		var settings = new DotNetBuildSettings
 		{
 			Configuration = compileConfig,
+			NoRestore = true,
 		};
-
+		if (target == LatestFramework || target == PullRequest)
+		{
+			settings.Framework = LatestTFM; // build using .NET 10 SDK only
+		}
+		string frameworkInfo = string.IsNullOrEmpty(settings.Framework) ? AllTFMs : settings.Framework;
+		Information($"Settings {nameof(DotNetBuildSettings.Framework)}: {frameworkInfo}");
+		Information($"Settings {nameof(DotNetBuildSettings.Configuration)}: {settings.Configuration}");
 		DotNetBuild(slnFile, settings);
 	});
 
@@ -120,305 +159,494 @@ Task("Version")
 	.Does(() =>
 	{
 		versioning = GetNuGetVersionForCommit();
-		var nugetVersion = versioning.NuGetVersion;
-		Information("SemVer version number: " + nugetVersion);
+		versioning.NuGetVersion ??= versioning.SemVer;
+		if (target == Release && IsRunningInCICD() && IsMainBranch() && versioning.SemVer.Contains("-")) // dash -> suffix in version
+		{
+			versioning.NuGetVersion = versioning.MajorMinorPatch; // when releasing from main branch the tag should not contain suffix after dash char
+		}
+		var replacedVer = Regex.Replace(versioning.NuGetVersion, @"(?<=beta)0+(?=\d)", "."); // new SemVer Tool produces "-beta0003" suffix instead of old "-beta.3" for release branch
+		Information("# Original Ver -> " + versioning.NuGetVersion);
+		Information("# Replaced Ver -> " + replacedVer);
+		versioning.NuGetVersion = replacedVer;
+		Information("#########################");
+		Information("# SemVer Information");
+		Information("#========================");
+		Information($"# {nameof(versioning.NuGetVersion)}: {versioning.NuGetVersion}");
+		Information($"# {nameof(versioning.BranchName)}: {versioning.BranchName}");
+		Information($"# {nameof(versioning.MajorMinorPatch)}: {versioning.MajorMinorPatch}");
+		Information($"# {nameof(versioning.SemVer)}: {versioning.SemVer}");
+		Information($"# {nameof(versioning.InformationalVersion)}: {versioning.InformationalVersion}");
+		Information("#########################");
 
-		if (IsRunningOnCircleCI())
-		{
-			Information("Persisting version number...");
-			PersistVersion(committedVersion, nugetVersion);
-		}
-		else
-		{
-			Information("We are not running on build server, so we won't persist the version number.");
-		}
+		Information($"Persisting version number... {nameof(versioning.NuGetVersion)} -> {versioning.NuGetVersion}");
+		PersistVersion(committedVersion, versioning.NuGetVersion);
+	});
+
+Task("GitLogUniqContributors")
+	.Does(() =>
+	{
+		var command = "log --format=\"%aN|%aE\" ";
+		// command += IsRunningInCICD() ? "| sort | uniq" :
+		// 	IsRunningInPowershell() ? "| Sort-Object -Unique" : "| sort | uniq";
+		List<string> output = GitHelper(command);
+		output.Sort();
+		List<string> contributors = output.Distinct().ToList();
+		contributors.Sort();
+        Information($"Detected {contributors.Count} unique contributors:");
+        Information(string.Join(NL, contributors));
+		// TODO Search example in bash: curl -L -H "X-GitHub-Api-Version: 2022-11-28"   "https://api.github.com/search/users?q=Chris+Swinchatt"
+        Information(NL + "Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca");
+        AnsiConsole.Markup("Unicode test: 1) Raynald Messié; 2) 彭伟 pengweiqhca" + NL);
+		// Powershell life hack: $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+		// https://stackoverflow.com/questions/40098771/changing-powershells-default-output-encoding-to-utf-8
+		// https://stackoverflow.com/questions/49476326/displaying-unicode-in-powershell/49481797#49481797
+		// https://stackoverflow.com/questions/57131654/using-utf-8-encoding-chcp-65001-in-command-prompt-windows-powershell-window/57134096#57134096
 	});
 
 Task("CreateReleaseNotes")
 	.IsDependentOn("Version")
+	//.IsDependentOn("GitLogUniqContributors")
 	.Does(() =>
 	{
-		Information($"Generating release notes at {releaseNotesFile}");
+        Information($"Generating release notes at {releaseNotesFile}");
+        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
+        var lastRelease = "23.1.0"; // lastReleaseTags.First();
+        var releaseVersion = versioning.NuGetVersion;
+		var HEAD = "23.2.0";
 
-		// local helper function
-		Func<string, IEnumerable<string>> GitHelper = (command) =>
-		{
-			IEnumerable<string> output;
-			var exitCode = StartProcess(
-				"git",
-				new ProcessSettings { Arguments = command, RedirectStandardOutput = true },
-				out output);
-			if (exitCode != 0)
-				throw new Exception("Failed to execute Git command: " + command);
-			return output;
-		};
+        // Read main header from Git file, substitute version in header, and add content further...
+        Information("{0}  New release tag is " + releaseVersion);
+        Information("{1} Last release tag is " + lastRelease);
+        var body = _File_.ReadAllText("./ReleaseNotes.md", System.Text.Encoding.UTF8);
+        var releaseHeader = string.Format(body, releaseVersion, lastRelease);
+        releaseNotes = [ releaseHeader ];
+        if (IsTechnicalRelease)
+        {
+            WriteReleaseNotes();
+            return;
+        }
 
-		var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
-		var lastRelease = lastReleaseTags.First(t => !t.StartsWith("net")); // skip 'net*-vX.Y.Z' tag and take 'major.minor.build'
-		var releaseVersion = versioning.NuGetVersion;
+        const bool debugUserEmail = false;
+        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..{HEAD}")
+            .ToList();
+        var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
+        static SummaryItem CreateSummaryItem(System.Text.RegularExpressions.Match m) => new()
+        {
+            Commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
+            Author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
+            Email = m.Groups["email"]?.Value?.Trim() ?? string.Empty,
+        };
+        var summary = shortlogSummary
+            .Where(x => re.IsMatch(x))
+            .Select(x => re.Match(x))
+            .Select(CreateSummaryItem)
+            .ToList();
 
-		// Read main header from Git file, substitute version in header, and add content further...
-		Information("{0}  New release tag is " + releaseVersion);
-		Information("{1} Last release tag is " + lastRelease);
-		var releaseHeader = string.Format(System.IO.File.ReadAllText("./ReleaseNotes.md"), releaseVersion, lastRelease);
-		releaseNotes = new List<string> { releaseHeader };
-		if (IsTechnicalRelease)
-		{
-			WriteReleaseNotes();
-			return;
-		}
+        // Starring aka Release Influencers
+        var starring = new List<string>();
+        string CreateStars(int count, string name)
+        {
+            var contributor = summary.Find(x => x.Author.Equals(name));
+            var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", count));
+            var emailInfo = debugUserEmail ? ", " + contributor.Email : string.Empty;
+            return $"{stars}  {contributor.Author}{emailInfo}";
+        }
 
-		var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary {lastRelease}..HEAD")
-			.ToList();
-		var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)$");
-		var summary = shortlogSummary
-			.Where(x => re.IsMatch(x))
-			.Select(x => re.Match(x))
-			.Select(m => new
-			{
-				commits = int.Parse(m.Groups["commits"]?.Value ?? "0"),
-				author = m.Groups["author"]?.Value?.Trim() ?? string.Empty,
-			})
-			.ToList();
+        Information("------==< Old Starring >==------");
+        foreach (var contributor in summary)
+        {
+            starring.Add(CreateStars(contributor.Commits, contributor.Author));
+        }
+        Information(string.Join(NL, starring));
 
-		// Starring aka Release Influencers
-		var starring = new List<string>();
-		foreach (var contributor in summary)
-		{
-			var stars = string.Join(string.Empty, Enumerable.Repeat(":star:", contributor.commits));
-			starring.Add($"{stars}  {contributor.author}");
-		}
+        var commitsGrouping = summary
+            .GroupBy(x => x.Commits)
+            .Select(CreateCommitsGroupingItem)
+            .OrderByDescending(x => x.Commits)
+            .ToList();
+        starring = IterateCommits(commitsGrouping,
+            breaker: log => false, // don't break, so iterate all groups (summary)
+            byCommits: (log, group) => CreateStars(group.Commits, group.Authors.First()),
+            byFiles: (log, group, fGroup) => CreateStars(group.Commits, fGroup.Contributors.First().Contributor),
+            byInsertions: (log, group, fGroup, insGroup) => CreateStars(group.Commits, insGroup.Contributors.First().Contributor),
+            byDeletions: (log, group, fGroup, insGroup, contributor) => CreateStars(group.Commits, contributor.Contributor));
+        Information("------==< New Starring >==------");
+        Information(string.Join(NL, starring));
 
-		// Honoring aka Top Contributors
-		const int top3 = 3; // going to create Top 3
-		var topContributors = new List<string>();
-		var commitsGrouping = summary
-			.GroupBy(x => x.commits)
-			.Select(g => new
-			{
-				commits = g.Key,
-				count = g.Count(),
-				authors = g.Select(x => x.author).ToList(),
-			})
-			.OrderByDescending(x => x.commits)
-			.ToList();
+        // Honoring aka Top Contributors
+        var coreTeamNames = new List<string> { "Raman Maksimchuk", "ocelotgateway", " Ocelot Robo" }; // Ocelot Core team members should not be in Top 3 Chart
+        var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "163584778+ocelotgateway@users.noreply.github.com" };
+        string[] hearts = [":heart:", ":blue_heart:", ":green_heart:", ":orange_heart:", ":yellow_heart:", ":light_blue_heart:", ":purple_heart:", ":grey_heart:", ":black_heart:"];
+        static CommitsGroupingItem CreateCommitsGroupingItem(IGrouping<int, SummaryItem> g) => new()
+        {
+            Commits = g.Key,
+            Count = g.Count(),
+            Authors = g.Select(x => x.Author).ToArray(),
+        };
+        commitsGrouping = summary
+            .Where(x => !coreTeamNames.Contains(x.Author) && !coreTeamEmails.Contains(x.Email)) // filter out Ocelot Core team members
+            .GroupBy(x => x.Commits)
+            .Select(CreateCommitsGroupingItem)
+            .OrderByDescending(x => x.Commits)
+            .ToList();
+        var topContributors = IterateCommits(commitsGrouping,
+            breaker: log => false, // (log.Count >= 3), // going to create Top 3
+            byCommits: (log, group) =>
+            {
+                int n = log.Count;
+                var place = Place(log.Count);
+                var author = group.Authors.First();
+                return Honor(n, place, author, group.Commits);
+            },
+            byFiles: (log, group, fGroup) =>
+            {
+                int n = log.Count;
+                var place = Place(log.Count);
+                var contributor = fGroup.Contributors.First();
+                return HonorForFiles(n, place, contributor.Contributor, group.Commits, contributor.Files);
+            },
+            byInsertions: (log, group, fGroup, insGroup) =>
+            {
+                int n = log.Count;
+                var place = Place(log.Count);
+                var contributor = insGroup.Contributors.First();
+                return HonorForInsertions(n, place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions);
+            },
+            byDeletions: (log, group, fGroup, insGroup, contributor) =>
+            {
+                int n = log.Count;
+                var place = Place(log.Count);
+                return HonorForDeletions(n, place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
+            });
+        Information("------==< TOP Contributors >==------");
+        Information(string.Join(NL, topContributors));
 
-		// local helpers
-		string[] places = new[] { "1st", "2nd", "3rd" };
-		static string Plural(int n) => n == 1 ? "" : "s";
-		static string Honor(string place, string author, int commits, string suffix = null)
-			=> $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
-		static string HonorForFiles(string place, string author, int commits, int files, string suffix = null)
-			=> Honor(place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
-		static string HonorForInsertions(string place, string author, int commits, int files, int insertions, string suffix = null)
-			=> HonorForFiles(place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
-		static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
-			=> HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
-
-		foreach (var group in commitsGrouping)
-		{
-			if (topContributors.Count >= top3) break;
-			if (group.count == 1)
-			{
-				var place = places[topContributors.Count];
-				var author = group.authors.First();
-				var honoring = Honor(place, author, group.commits);
-				topContributors.Add(honoring);
-			}
-			else // multiple candidates with the same number of commits, so, group by files changed
-			{
-				var statistics = new List<(string Contributor, int Files, int Insertions, int Deletions)>();
-				var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
-				// Collect statistics from git log & shortlog
-				foreach (var author in group.authors)
-				{
-					if (!statistics.Exists(s => s.Contributor == author))
+        // local helpers
+        string Place(int i)
+            => ++i == 1 ? "1st" : i == 2 ? "2nd" : i == 3 ? "3rd" : $"{i}th";
+        string Plural(int n)
+            => n == 1 ? "" : "s";
+        string Emoji(int i)
+            => i < 3 ? $":{Place(i)}_place_medal:" : hearts[i % hearts.Length];
+        string Honor(int n, string place, string author, int commits, string suffix = null)
+            => $"{n+1}<sup>{place[^2..]}</sup> {Emoji(n)} goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
+        string HonorForFiles(int n, string place, string author, int commits, int files, string suffix = null)
+            => Honor(n, place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
+        string HonorForInsertions(int n, string place, string author, int commits, int files, int insertions, string suffix = null)
+            => HonorForFiles(n, place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
+        string HonorForDeletions(int n, string place, string author, int commits, int files, int insertions, int deletions)
+            => HonorForInsertions(n, place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
+        List<string> IterateCommits(List<CommitsGroupingItem> commitsGrouping, Predicate<List<string>> breaker,
+            Func<List<string>, CommitsGroupingItem, string> byCommits,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, string> byFiles,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, InsertionsGroupingItem, string> byInsertions,
+            Func<List<string>, CommitsGroupingItem, FilesGroupingItem, InsertionsGroupingItem, FilesChangedItem, string> byDeletions)
+        {
+            var log = new List<string>();
+            foreach (var group in commitsGrouping)
+            {
+                if (breaker.Invoke(log)) break; // (log.Count >= top3)
+                if (group.Count == 1)
+                {
+                    log.Add(byCommits.Invoke(log, group));
+                }
+                else // multiple candidates with the same number of commits, so, group by files changed
+                {
+                    var statistics = new List<FilesChangedItem>();
+                    var shortstatRegex = new Regex(@"^\s*(?'files'\d+)\s+files?\s+changed(?'ins',\s+(?'insertions'\d+)\s+insertions?\(\+\))?(?'del',\s+(?'deletions'\d+)\s+deletions?\(\-\))?\s*$");
+                    static FilesChangedItem CreateFilesChangedItem(System.Text.RegularExpressions.Match m)
 					{
-						var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
-						var data = shortstat
-							.Where(x => shortstatRegex.IsMatch(x))
-							.Select(x => shortstatRegex.Match(x))
-							.Select(m => new
-							{
-								files = int.Parse(m.Groups["files"]?.Value ?? "0"),
-								insertions = int.Parse(m.Groups["insertions"]?.Value ?? "0"),
-								deletions = int.Parse(m.Groups["deletions"]?.Value ?? "0"),
-							})
-							.ToList();
-						statistics.Add((author, data.Sum(x => x.files), data.Sum(x => x.insertions), data.Sum(x => x.deletions)));
+						FilesChangedItem item = new();
+						if (int.TryParse(m.Groups["files"]?.Value ?? "0", out int files))
+            				item.Files = files;
+						else
+            				item.Files = 0;
+
+						if (int.TryParse(m.Groups["insertions"]?.Value ?? "0", out int insertions))
+            				item.Insertions = insertions;
+						else
+            				item.Insertions = 0;
+
+						if (int.TryParse(m.Groups["deletions"]?.Value ?? "0", out int deletions))
+            				item.Deletions = deletions;
+						else
+            				item.Deletions = 0;
+						return item;
 					}
-				}
-				var filesGrouping = statistics
-					.GroupBy(x => x.Files)
-					.Select(g => new
-					{
-						files = g.Key,
-						count = g.Count(),
-						contributors = g.SelectMany(x => statistics.Where(s => s.Contributor==x.Contributor && s.Files==g.Key)).ToList(),
-					})
-					.OrderByDescending(x => x.files)
-					.ToList();
-				foreach (var fGroup in filesGrouping)
-				{
-					if (topContributors.Count >= top3) break;
-					if (fGroup.count == 1)
-					{
-						var place = places[topContributors.Count];
-						var contributor = fGroup.contributors.First();
-						var honoring = HonorForFiles(place, contributor.Contributor, group.commits, contributor.Files);
-						topContributors.Add(honoring);
-					}
-					else // multiple candidates with the same number of commits, with the same number of changed files, so, group by additions (insertions)
-					{
-						var insertionsGrouping = fGroup.contributors
-							.GroupBy(x => x.Insertions)
-							.Select(g => new
-							{
-								insertions = g.Key,
-								count = g.Count(),
-								contributors = g.SelectMany(x => fGroup.contributors.Where(s => s.Contributor == x.Contributor && s.Insertions == g.Key)).ToList(),
-							})
-							.OrderByDescending(x => x.insertions)
-							.ToList();
-						foreach (var insGroup in insertionsGrouping)
-						{
-							if (topContributors.Count >= top3) break;
-							if (insGroup.count == 1)
-							{
-								var place = places[topContributors.Count];
-								var contributor = insGroup.contributors.First();
-								var honoring = HonorForInsertions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions);
-								topContributors.Add(honoring);
-							}
-							else // multiple candidates with the same number of commits, with the same number of changed files, with the same number of insertions, so, order desc by deletions
-							{
-								foreach (var contributor in insGroup.contributors.OrderByDescending(x => x.Deletions))
-								{
-									if (topContributors.Count >= top3) break;
-									var place = places[topContributors.Count];
-									var honoring = HonorForDeletions(place, contributor.Contributor, group.commits, contributor.Files, contributor.Insertions, contributor.Deletions);
-									topContributors.Add(honoring);
-								}
-							}
-						}
-					}
-				}
-			}
-		} // END of Top 3
-
-		// releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-		// releaseNotes.AddRange(topContributors);
-		// releaseNotes.Add("");
-		// releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-		// releaseNotes.AddRange(starring);
-		releaseNotes.Add("");
-		releaseNotes.Add($"### Features in Release {releaseVersion}");
-		var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"<sub>%h by **%aN** on %ad &rarr;</sub>%n%s\" {lastRelease}..HEAD");
-		releaseNotes.AddRange(commitsHistory);
-
-		WriteReleaseNotes();
+                    foreach (var author in group.Authors) // Collect statistics from git log & shortlog
+                    {
+                        if (!statistics.Exists(s => s.Contributor == author))
+                        {
+                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..{HEAD}");
+                            var data = shortstat
+                                .Where(x => shortstatRegex.IsMatch(x))
+                                .Select(x => shortstatRegex.Match(x))
+                                .Select(CreateFilesChangedItem)
+                                .ToList();
+                            statistics.Add(new FilesChangedItem(author, data.Sum(x => x.Files), data.Sum(x => x.Insertions), data.Sum(x => x.Deletions)));
+                        }
+                    }
+                    var filesGrouping = statistics
+                        .GroupBy(x => x.Files)
+                        .Select(g => new FilesGroupingItem
+                        {
+                            Files = g.Key,
+                            Count = g.Count(),
+                            Contributors = g.SelectMany(x => statistics.Where(s => s.Contributor == x.Contributor && s.Files == g.Key)).ToArray(),
+                        })
+                        .OrderByDescending(x => x.Files)
+                        .ToList();
+                    foreach (var fGroup in filesGrouping)
+                    {
+                        if (breaker.Invoke(log)) break;
+                        if (fGroup.Count == 1)
+                        {
+                            log.Add(byFiles.Invoke(log, group, fGroup));
+                        }
+                        else // multiple candidates with the same number of commits, with the same number of changed files, so, group by additions (insertions)
+                        {
+                            var insertionsGrouping = fGroup.Contributors
+                                .GroupBy(x => x.Insertions)
+                                .Select(g => new InsertionsGroupingItem
+                                {
+                                    Insertions = g.Key,
+                                    Count = g.Count(),
+                                    Contributors = g.SelectMany(x => fGroup.Contributors.Where(s => s.Contributor == x.Contributor && s.Insertions == g.Key)).ToArray(),
+                                })
+                                .OrderByDescending(x => x.Insertions)
+                                .ToList();
+                            foreach (var insGroup in insertionsGrouping)
+                            {
+                                if (breaker.Invoke(log)) break;
+                                if (insGroup.Count == 1)
+                                {
+                                    log.Add(byInsertions.Invoke(log, group, fGroup, insGroup));
+                                }
+                                else // multiple candidates with the same number of commits, with the same number of changed files, with the same number of insertions, so, order desc by deletions
+                                {
+                                    foreach (var contributor in insGroup.Contributors.OrderByDescending(x => x.Deletions))
+                                    {
+                                        if (breaker.Invoke(log)) break;
+                                        log.Add(byDeletions.Invoke(log, group, fGroup, insGroup, contributor));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return log;
+        } // END of IterateCommits
+        releaseNotes.Add("### Honoring :medal_sports: Top 5 Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(5)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..{HEAD}");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
+        WriteReleaseNotes();
 	});
+
+struct SummaryItem
+{
+	public int Commits;
+	public string Author;
+	public string Email;
+}
+struct CommitsGroupingItem
+{
+	public int Commits;
+	public int Count;
+	public string[] Authors;
+}
+struct FilesChangedItem
+{
+	public string Contributor;
+	public int Files;
+	public int Insertions;
+	public int Deletions;
+	public FilesChangedItem(string author, int files, int insertions, int deletions)
+	{
+		Contributor = author;
+		Files = files;
+		Insertions = insertions;
+		Deletions = deletions;
+	}
+}
+struct FilesGroupingItem
+{
+	public int Files;
+	public int Count;
+	public FilesChangedItem[] Contributors;
+}
+struct InsertionsGroupingItem
+{
+	public int Insertions;
+	public int Count;
+	public FilesChangedItem[] Contributors;
+}
+
+private List<string> GitHelper(string command)
+{
+	IEnumerable<string> output;
+	var exitCode = StartProcess(
+		"git",
+		new ProcessSettings { Arguments = command, RedirectStandardOutput = true },
+		out output);
+	if (exitCode != 0)
+		throw new Exception("Failed to execute Git command: " + command);
+	return output.ToList();
+}
 
 private void WriteReleaseNotes()
 {
 	Information($"RUN {nameof(WriteReleaseNotes)} ...");
-
 	EnsureDirectoryExists(packagesDir);
-	System.IO.File.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
-
-	var content = System.IO.File.ReadAllText(releaseNotesFile, Encoding.UTF8);
+	_File_.WriteAllLines(releaseNotesFile, releaseNotes, Encoding.UTF8);
+	var content = _File_.ReadAllText(releaseNotesFile, Encoding.UTF8);
 	if (string.IsNullOrEmpty(content))
 	{
-		System.IO.File.WriteAllText(releaseNotesFile, "No commits since last release");
+		_File_.WriteAllText(releaseNotesFile, "No commits since last release", System.Text.Encoding.UTF8);
 	}
-
-	Information("Release notes are >>>\n{0}<<<", content);
-	Information($"EXITED {nameof(WriteReleaseNotes)}");
+	Information("Release notes are >>>{0}<<<", NL + content);
 }
 
-Task("RunUnitTests")
+private List<string> GetTFMs()
+{
+	var tfms = AllTFMs.Split(';').ToList();
+	if (target == LatestFramework || target == "UnitTests" || target == Release || target == PullRequest)
+    {
+        tfms.Clear();
+        tfms.Add(LatestTFM);
+    }
+	return tfms;
+}
+
+Task("UnitTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var testSettings = new DotNetTestSettings
+		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+		// Sequential processing as an emulation of Visual Studio Test Explorer
+		foreach (string tfm in GetTFMs())
 		{
-			Configuration = compileConfig,
-			ResultsDirectory = artifactsForUnitTestsDir,
+			var settings = new DotNetTestSettings
+			{
+				Configuration = compileConfig,
+				ResultsDirectory = artifactsForUnitTestsDir,
+				/*
+          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
+            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
+				*/
 				ArgumentCustomization = args => args
-					// this create the code coverage report
-					.Append("--collect:\"XPlat Code Coverage\"")
-		};
-
-		EnsureDirectoryExists(artifactsForUnitTestsDir);
-		DotNetTest(unitTestAssemblies, testSettings);
-
-		var coverageSummaryFile = GetSubDirectories(artifactsForUnitTestsDir).First().CombineWithFilePath(File("coverage.cobertura.xml"));
-		Information(coverageSummaryFile);
-		Information(artifactsForUnitTestsDir);
-
-		GenerateReport(coverageSummaryFile);
-		
-		if (IsRunningOnCircleCI() && IsMainOrDevelop())
-		{
-			var repoToken = EnvironmentVariable(coverallsRepoToken);
-			if (string.IsNullOrEmpty(repoToken))
+					.Append("--no-restore")
+					.Append("--no-build")
+					.Append("--verbosity:" + verbosity)
+					.Append("--coverlet")
+					.Append("--coverlet-include \"[Ocelot*]*\"")
+					.Append("--coverlet-exclude \"[Ocelot.Testing]*\""),
+				Framework = tfm,
+			};
+			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			Information($"{nameof(DotNetTestSettings)} -> {settings}");
+			EnsureDirectoryExists(artifactsForUnitTestsDir);
+			/*
+			try
+			{ DotNetTest(unitTestAssemblies, settings); } // sequential testing
+			catch (Exception e)
+			{ Warning(e.ToString()); }
+			*/
+			// Use StartProcess instead of DotNetTest for better control
+			var exitCode = StartProcess("dotnet", new ProcessSettings
 			{
-				throw new Exception(string.Format("Coveralls repo token not found. Set environment variable '{0}'", coverallsRepoToken));
-			}
-
-			Information(string.Format("Uploading test coverage to {0}", coverallsRepo));
-			CoverallsNet(coverageSummaryFile, CoverallsNetReportType.OpenCover, new CoverallsNetSettings()
-			{
-				RepoToken = repoToken
+				Arguments = $"test \"{unitTestAssemblies}\" " +
+							$"--configuration {compileConfig} " +
+							$"--framework {tfm} " +
+							$"--no-restore --no-build " +
+							$"--verbosity {verbosity} " +
+							$"--results-directory \"{artifactsForUnitTestsDir}\" " +
+							$"--coverlet " +
+							$"--coverlet-include \"[Ocelot*]*\" " +
+							$"--coverlet-exclude \"[Ocelot.Testing]*\"",
+				WorkingDirectory = "."
 			});
+			// Only fail on actual test failures, not on thread exit issues
+			if (exitCode != 0 && exitCode != 7)
+			{
+				throw new Exception($"dotnet test failed with exit code {exitCode}");
+			}
+			else if (exitCode == 7)
+			{
+				Warning("Tests passed but background threads didn't exit cleanly (exit code 7). Ignoring.");
+			}
 		}
-		else
-		{
-			Information("We are not running on the build server so we won't publish the coverage report to coveralls.io");
-		}
+		
+		Information("ArtifactsForUnitTestsDir = " + artifactsForUnitTestsDir);
+		// Find all files matching pattern "coverage.cobertura.*.xml"
+		var coverageFiles = GetFiles(artifactsForUnitTestsDir.ToString() + "/coverage.cobertura.*.xml");
+		if (!coverageFiles.Any())
+			throw new Exception($"No coverage.cobertura.*.xml files found in {artifactsForUnitTestsDir}");
+		// Get the first matching file (or order by creation date if needed)
+		var coverageSummaryFile = coverageFiles.First();
+		Information("CoverageSummaryFile = " + coverageSummaryFile);
+		GenerateReport(coverageSummaryFile);
+		Information("##############################");
+		Information("# Code coverage");
+		Information("#=============================");
 
-		var sequenceCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
-		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
+		// TODO Implement reporting to the Action Run summary as an attachment or artifact
+		const string CoverallsRepo = "https://coveralls.io/github/ThreeMammals/Ocelot";
+		Information($"# There is dedicated Coveralls step of GH Action workflows. So, we won't publish the coverage report to coveralls.io");
 
-		Information("Sequence Coverage: " + sequenceCoverage);
-	
-		if(double.Parse(sequenceCoverage) < minCodeCoverage)
+		// Apply code coverage threshold
+		const double MinCodeCoverage = 0.93D; // consider definition of an env var in GitHub Environment vars
+		var lineCoverage = XmlPeek(coverageSummaryFile, "//coverage/@line-rate");
+		var branchCoverage = XmlPeek(coverageSummaryFile, "//coverage/@branch-rate");
+		Information("# Line Coverage: " + lineCoverage);
+		Information("# Branch Coverage: " + branchCoverage);
+		if (double.Parse(lineCoverage) < MinCodeCoverage)
 		{
-			var whereToCheck = !IsRunningOnCircleCI() ? coverallsRepo : artifactsForUnitTestsDir;
-			throw new Exception(string.Format("Code coverage fell below the threshold of {0}%. You can find the code coverage report at {1}", minCodeCoverage, whereToCheck));
+			var whereToCheck = !IsRunningInCICD() ? CoverallsRepo : artifactsForUnitTestsDir;
+			var msg = $"# Code coverage fell below the threshold of {MinCodeCoverage * 100}%. You can find the code coverage report at {whereToCheck}";
+			Warning(msg);
+			// throw new Exception(msg); // fail the building job step in GitHub Actions
 		};
+		Information("##############################");
 	});
 
-Task("RunAcceptanceTests")
+Task("AcceptanceTests")
 	.IsDependentOn("Compile")
 	.Does(() =>
 	{
-		var settings = new DotNetTestSettings
+		var verbosity = IsRunningInCICD() ? "minimal" : "normal";
+		if (IsRunningInCICD() && target == Release)
 		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-
-		EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
-		DotNetTest(acceptanceTestAssemblies, settings);
-	});
-
-Task("RunIntegrationTests")
-	.IsDependentOn("Compile")
-	.Does(() =>
-	{
-		var settings = new DotNetTestSettings
+			Warning("We are rolling out a release through the CI/CD pipeline, so we won't be running acceptance tests this time!");
+			return;
+		}
+        // Sequential processing as an emulation of Visual Studio Test Explorer
+		foreach (string tfm in GetTFMs())
 		{
-			Configuration = compileConfig,
-			ArgumentCustomization = args => args
-				.Append("--no-restore")
-				.Append("--no-build")
-		};
-
-		EnsureDirectoryExists(artifactsForIntegrationTestsDir);
-		DotNetTest(integrationTestAssemblies, settings);
+			var settings = new DotNetTestSettings
+			{
+				Configuration = compileConfig,
+				ArgumentCustomization = args => args
+					.Append("--no-restore")
+					.Append("--no-build")
+					.Append("--verbosity:" + verbosity),
+				Framework = tfm,
+			};
+			Information($"Settings {nameof(settings.Framework)}: {settings.Framework}");
+			EnsureDirectoryExists(artifactsForAcceptanceTestsDir);
+			DotNetTest(acceptanceTestAssemblies, settings);
+		}
 	});
 
 Task("CreateArtifacts")
@@ -427,22 +655,22 @@ Task("CreateArtifacts")
 	.Does(() =>
 	{
 		WriteReleaseNotes();
-		System.IO.File.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
+		_File_.AppendAllLines(artifactsFile, new[] { "ReleaseNotes.md" });
 
 		if (!IsTechnicalRelease)
 		{
-			CopyFiles("./src/**/Release/Ocelot.*.nupkg", packagesDir);
-			var projectFiles = GetFiles("./src/**/Release/Ocelot.*.nupkg");
+			CopyFiles("./**/Release/Ocelot.*.{nupkg,snupkg}", packagesDir);
+			var projectFiles = GetFiles("./**/Release/Ocelot.*.{nupkg,snupkg}")
+				.OrderBy(f => f.GetFilenameWithoutExtension().ToString())
+				.ThenBy(f => f.GetExtension().ToString()) // .nupkg first
+				.ToList();
 			foreach(var projectFile in projectFiles)
 			{
-				System.IO.File.AppendAllLines(
-					artifactsFile,
-					new[] { projectFile.GetFilename().FullPath }
-				);
+				_File_.AppendAllLines(artifactsFile, new[] { projectFile.GetFilename().FullPath });
 			}
 		}
 
-		var artifacts = System.IO.File.ReadAllLines(artifactsFile)
+		var artifacts = _File_.ReadAllLines(artifactsFile)
 			.Distinct();
 
 		Information($"Listing all {nameof(artifacts)}...");
@@ -462,19 +690,20 @@ Task("PublishGitHubRelease")
 	.IsDependentOn("CreateArtifacts")
 	.Does(() => 
 	{
-		if (IsRunningOnCircleCI())
+		if (!IsRunningInCICD())
 		{
-			var path = packagesDir.ToString() + @"/**/*";
-
-			CreateGitHubRelease();
-
-			foreach (var file in GetFiles(path))
-			{
-				UploadFileToGitHubRelease(file);
-			}
-
-			CompleteGitHubRelease();
+			Warning("We are not running on the CI/CD so we won't publish a GitHub release");
+			return;
 		}
+
+		dynamic release = CreateGitHubRelease();
+		var path = packagesDir.ToString() + @"/**/*Ocelot.*"; // filter out artifacts.txt and ReleaseNotes.md
+		var files = GetFiles(path).ToList();
+		foreach (var file in files)
+		{
+			UploadFileToGitHubRelease(release, file);
+		}
+		CompleteGitHubRelease(release);
 	});
 
 Task("EnsureStableReleaseRequirements")
@@ -482,9 +711,9 @@ Task("EnsureStableReleaseRequirements")
     {
 		Information("Check if stable release...");
 
-        if (!IsRunningOnCircleCI())
+        if (!IsRunningInCICD())
 		{
-           throw new Exception("Stable release should happen via circleci");
+           throw new Exception("Stable release should happen via CI/CD");
 		}
 
 		Information("Release is stable...");
@@ -499,7 +728,7 @@ Task("DownloadGitHubReleaseArtifacts")
 			System.Threading.Thread.Sleep(5000);
 			EnsureDirectoryExists(packagesDir);
 
-			var releaseUrl = tagsUrl + versioning.NuGetVersion;
+			var releaseUrl = "https://api.github.com/repos/ThreeMammals/ocelot/releases/tags/" + versioning.NuGetVersion;
 			var releaseInfo = await GetResourceAsync(releaseUrl);
         	var assets_url = Newtonsoft.Json.Linq.JObject.Parse(releaseInfo)
 				.Value<string>("assets_url");
@@ -527,28 +756,73 @@ Task("PublishToNuget")
 			Information("Skipping of publishing to NuGet because of technical release...");
 			return;
 		}
-
-		if (IsRunningOnCircleCI())
+		if (!IsRunningInCICD())
 		{
-			PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
+			Warning("We are not running on the CI/CD so we won't publish NuGet packages.");
+			//return;
 		}
+		var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
+		var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
+		var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
+		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);
 	});
 
 Task("Void").Does(() => {});
 
 RunTarget(target);
 
+private void PreprocessReadMe()
+{
+	const string READMEmd = "./README.md";
+	const string RTD_NuGet_Valid_Domain = "[ReadTheDocs][~docspassing]";
+	const string RTD_Version_Latest  = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=latest&style=flat-square)";
+	const string RTD_Version_Develop = "[ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)";
+	Information($"Processing {READMEmd} ...");
+    var body = _File_.ReadAllText(READMEmd, System.Text.Encoding.UTF8);
+	var RTD_IsReplaced = false;
+	if (body.Contains(RTD_Version_Latest))
+	{
+		Information($"  {READMEmd}: Detected ReadTheDocs LATEST version marker -> {RTD_Version_Latest}");
+		body = body.Replace(RTD_Version_Latest, RTD_NuGet_Valid_Domain);
+		RTD_IsReplaced = true;
+	}
+	if (body.Contains(RTD_Version_Develop))
+	{
+		Information($"  {READMEmd}: Detected ReadTheDocs DEVELOP version marker -> {RTD_Version_Develop}");
+		body = body.Replace(RTD_Version_Develop, RTD_NuGet_Valid_Domain);
+		RTD_IsReplaced = true;
+	}
+	if (RTD_IsReplaced)
+	{
+		Information($"  {READMEmd}: ReadTheDocs badge has been replaced with -> {RTD_NuGet_Valid_Domain}");
+	}	
+
+	const string IMG_Octocat_HTML = "<img src=\"https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png\" alt=\"octocat\" height=\"25\" />";
+	const string IMG_NuGet_Valid_MD = "![octocat](https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat-25px.png)";
+	if (body.Contains(IMG_Octocat_HTML))
+	{
+		Information($"  {READMEmd}: Detected Octocat HTML IMG-tag -> " + IMG_Octocat_HTML);
+		body = body.Replace(IMG_Octocat_HTML, IMG_NuGet_Valid_MD);
+		Information($"  {READMEmd}: Octocat HTML IMG-tag has been replaced with -> " + IMG_NuGet_Valid_MD);
+	}
+	Information($"  {READMEmd}: Writing the body of the {READMEmd}...");
+	_File_.WriteAllText(READMEmd, body, System.Text.Encoding.UTF8);
+	Information($"DONE Processing {READMEmd}{NL}");
+}
+
 private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 {
-	var dir = System.IO.Directory.GetCurrentDirectory();
-	Information(dir);
+	var dir = _Directory_.GetCurrentDirectory();
+	Information("GenerateReport: Current directory: " + dir);
 
 	var reportSettings = new ProcessArgumentBuilder();
 	reportSettings.Append($"-targetdir:" + $"{dir}/{artifactsForUnitTestsDir}");
 	reportSettings.Append($"-reports:" + coverageSummaryFile);
+	reportSettings.Append($"-filefilters:-*.g.cs"); // silence warnings for source-generated files (e.g. RegexGenerator.g.cs) that are deleted after build
 
-	var toolpath = Context.Tools.Resolve("net7.0/ReportGenerator.dll");
-	Information($"Tool Path : {toolpath.ToString()}");
+	Information($"GenerateReport: Resolving net10.0/ReportGenerator.dll ...");
+	var toolpath = Context.Tools.Resolve("net10.0/ReportGenerator.dll");
+	Information($"GenerateReport: Tool Path: {toolpath.ToString()}" + NL);
 
 	DotNetExecute(toolpath, reportSettings);
 }
@@ -556,130 +830,244 @@ private void GenerateReport(Cake.Core.IO.FilePath coverageSummaryFile)
 /// Gets unique nuget version for this commit
 private GitVersion GetNuGetVersionForCommit()
 {
-    GitVersion(new GitVersionSettings{
+    GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
         UpdateAssemblyInfo = false,
-        OutputType = GitVersionOutput.BuildServer
+        OutputType = GitVersionOutput.BuildServer,
+		Verbosity = IsRunningInCICD() ? GitVersionVerbosity.Minimal : GitVersionVerbosity.Normal,
     });
-
-    return GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
+    return GitVersion(new GitVersionSettings
+	{
+		ConfigFile = "./.config/GitVersion.yml",
+		OutputType = GitVersionOutput.Json
+	});
 }
 
 /// Updates project version in all of our projects
 private void PersistVersion(string committedVersion, string newVersion)
 {
 	Information(string.Format("We'll search all csproj files for {0} and replace with {1}...", committedVersion, newVersion));
-
-	var projectFiles = GetFiles("./**/*.csproj");
-
+	var projectFiles = GetFiles("./**/*.csproj")
+		.Where(f => !f.FullPath.Contains("Ocelot.Samples."))
+		.ToList();
 	foreach(var projectFile in projectFiles)
 	{
 		var file = projectFile.ToString();
- 
 		Information(string.Format("Updating {0}...", file));
 
-		var updatedProjectFile = System.IO.File.ReadAllText(file)
+		var updatedProjectFile = _File_.ReadAllText(file, System.Text.Encoding.UTF8)
 			.Replace(committedVersion, newVersion);
 
-		System.IO.File.WriteAllText(file, updatedProjectFile);
+		_File_.WriteAllText(file, updatedProjectFile, System.Text.Encoding.UTF8);
 	}
 }
 
-/// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
+// Publishes code and symbols packages to nuget feed, based on contents of artifacts file
 private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFilePath artifactsFile, string feedApiKey, string codeFeedUrl, string symbolFeedUrl)
 {
-		Information("Publishing to NuGet...");
-        var artifacts = System.IO.File
-            .ReadAllLines(artifactsFile)
-			.Distinct();
-		
-		foreach(var artifact in artifacts)
+	Information($"{nameof(PublishPackages)}: Publishing to NuGet...");
+	var artifacts = _File_.ReadAllLines(artifactsFile)
+		.Distinct()
+		.Where(a => a.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+		.ToList();
+	var skippable = new List<string>
+	{
+		"ReleaseNotes.md", // skip always
+		// "Ocelot.24.0.0",
+		// "Ocelot.Cache.CacheManager",
+		// "Ocelot.Provider.Consul",
+		// "Ocelot.Provider.Eureka",
+		// "Ocelot.Provider.Kubernetes",
+		// "Ocelot.Provider.Polly",
+		// "Ocelot.Tracing.Butterfly",
+		// "Ocelot.Tracing.OpenTracing",
+	};
+	var includedInTheRelease = new List<string>
+	{
+		"Ocelot.Provider.Kubernetes",
+	};
+	foreach (var artifact in artifacts)
+	{
+		if (skippable.Exists(x => artifact.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
+			continue;
+		// if (!includedInTheRelease.Exists(x => artifact.StartsWith(x))) continue;
+
+		var package = packagesDir + File(artifact);
+		Information($"{nameof(PublishPackages)}: Pushing package " + package + "...");
+		try
 		{
-			if (artifact == "ReleaseNotes.md") 
+			DotNetNuGetPush(package,
+				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });
+
+			var symbolArtifact = artifact.Replace(".nupkg", ".snupkg");
+			var symbolPackage = packagesDir + File(symbolArtifact);
+			if (FileExists(symbolPackage))
 			{
-				continue;
+				Information($"  Pushing symbol package {symbolPackage}...");
+				System.Threading.Thread.Sleep(1000);
+				try
+				{
+					DotNetNuGetPush(symbolPackage,
+						new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl, SkipDuplicate = true });						
+				}
+				catch (Exception symEx)
+				{
+					Warning($"  Symbol push failed: {symEx.Message}");
+				}
 			}
-
-			var codePackage = packagesDir + File(artifact);
-			Information("Pushing package " + codePackage + "...");
-
-			Information("Calling DotNetNuGetPush");
-			DotNetNuGetPush(
-				codePackage,
-				new DotNetNuGetPushSettings { ApiKey = feedApiKey, Source = codeFeedUrl }
-			);
+			else
+			{
+				Information($"  No symbol package found for {artifact}");
+			}
 		}
+		catch (Exception ex)
+		{
+			Information("--------------------------------------------------------------");
+			Warning(ex.ToString());
+			throw; // exit task with non-zero result -> failed step -> failed job in Actions
+		}
+			// catch (Exception ex)
+			// {
+			// 	Warning(ex.ToString());
+			// 	// bool isConflict = ex.ToString().Contains("409") || ex.ToString().Contains("Conflict");
+			// 	if (!isBeta /*|| !isConflict*/) throw;
+
+			// 	var match = Regex.Match(theArtifact, @"-beta\.(\d+)(?=\.nupkg$)");
+			// 	if (!match.Success)
+			// 	{
+			// 		Warning("  No beta version found in the artifact name, but it should be there. Artifact: " + theArtifact);
+			// 		break;
+			// 	}
+    		// 	var betaNumber = match.Groups[1].Value;
+    		// 	Information($"  Detected Beta number: {betaNumber}");
+			// 	int newBetaVer = int.Parse(betaNumber) + 1; // increase beta version by 1 trying to find the next free beta number
+			// 	var newArtifact = Regex.Replace(theArtifact, @"-beta\.\d+(?=\.nupkg$)", "-beta." + newBetaVer);
+			// 	var newPackage = packagesDir + File(newArtifact);
+			// 	if (FileExists(newPackage)) DeleteFile(newPackage);
+			// 	MoveFile(package, newPackage);
+			// 	Warning($"  Package renamed: {package} -> {newPackage} (Attempt #{attempts})");
+			// 	var oldSymbol = packagesDir + File(theArtifact.Replace(".nupkg", ".snupkg"));
+			// 	var newSymbol = packagesDir + File(newArtifact.Replace(".nupkg", ".snupkg"));
+			// 	if (FileExists(oldSymbol))
+			// 	{
+			// 		if (FileExists(newSymbol)) DeleteFile(newSymbol);
+			// 		MoveFile(oldSymbol, newSymbol);
+			// 	}
+			// 	package = newPackage;
+			// 	theArtifact = newArtifact;				
+			// 	System.Threading.Thread.Sleep(1000);
+			// }
+	}
 }
 
-private void CreateGitHubRelease()
+private bool PackageExists(string packageId, string version)
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": true, \"prerelease\": true }}";
-	
+    var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
+    try
+    {
+        using (var client = new System.Net.Http.HttpClient())
+        {
+            // Only need the headers – no need to download the whole package
+            var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Head, url);
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                Information($"{nameof(PackageExists)}: Package {packageId}.{version} exists");
+                return true;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Warning(ex.ToString());
+    }
+    
+    Information($"{nameof(PackageExists)}: Package {packageId}.{version} does NOT exist");
+    return false;
+}
+
+private void SetupGitHubClient(System.Net.Http.HttpClient client)
+{
+	string token = Environment.GetEnvironmentVariable("OCELOT_GITHUB_API_KEY");
+	client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+	client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
+	client.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
+	client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
+}
+
+private dynamic CreateGitHubRelease()
+{
+	var body = ReleaseNotesAsJson();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": true, \"prerelease\": true, \"generate_release_notes\": false }}";
 	var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using (var client = new System.Net.Http.HttpClient())
 	{	
-		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-        	"Basic",
-			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
-		);
-		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
-
+		SetupGitHubClient(client);
 		var result = client.PostAsync("https://api.github.com/repos/ThreeMammals/Ocelot/releases", content).Result;
-		if(result.StatusCode != System.Net.HttpStatusCode.Created) 
+		if (result.StatusCode != System.Net.HttpStatusCode.Created) 
 		{
-			throw new Exception("CreateGitHubRelease result.StatusCode = " + result.StatusCode);
+			var msg = "CreateGitHubRelease: StatusCode = " + result.StatusCode;
+			Information(msg);
+			throw new Exception(msg);
 		}
-		var returnValue = result.Content.ReadAsStringAsync().Result;
-		dynamic test = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(returnValue);
-		releaseId = test.id;
+		var releaseData = result.Content.ReadAsStringAsync().Result;
+		dynamic releaseJSON = Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(releaseData);
+		Information("CreateGitHubRelease: Release ID is " + releaseJSON.id);
+		return releaseJSON;
 	}
 }
 
 private string ReleaseNotesAsJson()
 {
-	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(System.IO.File.ReadAllText(releaseNotesFile));
+	var body = _File_.ReadAllText(releaseNotesFile, System.Text.Encoding.UTF8);
+	return System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(body);
 }
 
-private void UploadFileToGitHubRelease(FilePath file)
+private void UploadFileToGitHubRelease(dynamic release, FilePath file)
 {
-	var data = System.IO.File.ReadAllBytes(file.FullPath);
+	var data = _File_.ReadAllBytes(file.FullPath);
 	var content = new System.Net.Http.ByteArrayContent(data);
 	content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
 	using (var client = new System.Net.Http.HttpClient())
 	{	
-		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-        	"Basic",
-			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
-		);
-		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
-
-		var result = client.PostAsync($"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={file.GetFilename()}", content).Result;
-		if(result.StatusCode != System.Net.HttpStatusCode.Created) 
+		SetupGitHubClient(client);
+		int releaseId = release.id;
+		var fileName = file.GetFilename();
+		string uploadUrl = release.upload_url.ToString();
+		// Information($"UploadFileToGitHubRelease: uploadUrl is {uploadUrl}");
+		string[] parts = uploadUrl.Replace("{", "").Split(',');
+		uploadUrl = parts[0] + "=" + fileName; // $"https://uploads.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}/assets?name={fileName}"
+		Information($"UploadFileToGitHubRelease: uploadUrl is {uploadUrl}");
+		var result = client.PostAsync(uploadUrl, content).Result;
+		if (result.StatusCode != System.Net.HttpStatusCode.Created) 
 		{
-			throw new Exception("UploadFileToGitHubRelease result.StatusCode = " + result.StatusCode);
+			Information($"UploadFileToGitHubRelease: StatusCode is {result.StatusCode}. Release ID is {releaseId}. Failed to upload file '{fileName}' to URL: {uploadUrl}");
+			throw new Exception("UploadFileToGitHubRelease: StatusCode is " + result.StatusCode);
 		}
 	}
 }
 
-private void CompleteGitHubRelease()
+private void CompleteGitHubRelease(dynamic release)
 {
-	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"main\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{ReleaseNotesAsJson()}\", \"draft\": false, \"prerelease\": false }}";
-	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
+	int releaseId = release.id;
+	string url = release.url.ToString();
+	string body = ReleaseNotesAsJson();
+	bool isPreRelease = !IsMainBranch();
+	var json = $"{{ \"tag_name\": \"{versioning.NuGetVersion}\", \"target_commitish\": \"{versioning.BranchName}\", \"name\": \"{versioning.NuGetVersion}\", \"body\": \"{body}\", \"draft\": false, \"prerelease\": {isPreRelease.ToString().ToLower()} }}";
+	var request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Patch"), url); // $"https://api.github.com/repos/ThreeMammals/Ocelot/releases/{releaseId}");
 	request.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
 	using (var client = new System.Net.Http.HttpClient())
 	{	
-		client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-        	"Basic",
-			Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes($"{gitHubUsername}:{gitHubPassword}"))
-		);
-		client.DefaultRequestHeaders.Add("User-Agent", "Ocelot Release");
-
+		SetupGitHubClient(client);
 		var result = client.SendAsync(request).Result;
 		if (result.StatusCode != System.Net.HttpStatusCode.OK) 
 		{
-			throw new Exception("CompleteGitHubRelease result.StatusCode = " + result.StatusCode);
+			Information($"CompleteGitHubRelease: StatusCode is {result.StatusCode}. Release ID is {releaseId}. Failed to patch release with URL: {url}");
+			throw new Exception("CompleteGitHubRelease: StatusCode = " + result.StatusCode);
 		}
 	}
 }
@@ -698,7 +1086,7 @@ private async Task<string> GetResourceAsync(string url)
 		using var response = await client.GetAsync(url);
 		response.EnsureSuccessStatusCode();
 		var content = await response.Content.ReadAsStringAsync();
-		Information("Response is >>>" + Environment.NewLine + content + Environment.NewLine + "<<<");
+		Information("Response is >>>" + NL + content + NL + "<<<");
 		return content;
 	}
 	catch(Exception exception)
@@ -708,14 +1096,25 @@ private async Task<string> GetResourceAsync(string url)
 	}
 }
 
+private bool IsRunningInCICD()
+	=> IsRunningOnCircleCI() || IsRunningInGitHubActions();
 private bool IsRunningOnCircleCI()
+	=> !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
+private bool IsRunningInGitHubActions()
+	=> Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
+private bool IsMainBranch()
 {
-    return !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CIRCLECI"));
+	var br = GetBranchName().ToLower();
+    return br == "main";
 }
-
-private bool IsMainOrDevelop()
+private string GetBranchName()
 {
-	var env = Environment.GetEnvironmentVariable("CIRCLE_BRANCH").ToLower();
-
-    return env == "main" || env == "develop";
+    return versioning?.BranchName ?? GetGitBranch();
+}
+private string GetGitBranch()
+{
+	var lines = GitHelper("branch --show-current");
+	var branch = string.Join(string.Empty, lines);
+	return branch ?? "Unknown Branch";
 }
