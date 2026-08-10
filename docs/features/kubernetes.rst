@@ -1,17 +1,27 @@
-.. |K8sLogo| image:: https://kubernetes.io/images/nav_logo2.svg
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+.. |K8sLogo| image:: ../images/k8s-logo_100px.png
   :alt: K8s Logo
   :height: 50
+  :class: img-valign-bottom
   :target: https://kubernetes.io
-
-.. |kubernetes| image:: https://kubernetes.io/images/nav_logo2.svg
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
   :alt: kubernetes logo
-  :height: 17
+  :height: 30
+  :class: img-valign-middle
   :target: https://kubernetes.io
 
-|K8sLogo| K8s [#f1]_
-====================
+.. _KubeClient: https://www.nuget.org/packages/KubeClient
+.. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
+.. _Ocelot.Discovery.KubeClient: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
+.. _package: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
 
-    A part of feature: :doc:`../features/servicediscovery`
+|K8sLogo| Kubernetes (K8s) [#f1]_
+=================================
+
+  A part of feature: :doc:`../features/servicediscovery`
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in PR `1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
@@ -19,7 +29,7 @@ Ocelot used to use the services API to send requests to the `K8s`_ service but t
 Install
 -------
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides |kubernetes| support in Ocelot [#f2]_:
+The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides |logo-kubernetes| support in Ocelot [#f2]_:
 
 .. code-block:: powershell
 
@@ -125,8 +135,8 @@ If your downstream service resides in a different namespace, you can override th
 
 .. _k8s-downstream-scheme-vs-port-names:
 
-Downstream Scheme vs Port Names [#f3]_
---------------------------------------
+Downstream Scheme with Port Names [#f3]_
+----------------------------------------
 
 Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
 When binding multiple ports, you assign a name to each subset port.
@@ -166,4 +176,4 @@ Consequently, if the port name is not designated, the default downstream scheme 
 
 .. [#f1] :doc:`../features/kubernetes` feature was requested as part of issue `345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1 <https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1>`_ 
 .. [#f2] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
-.. [#f3] :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
+.. [#f3] The ":ref:`Downstream Scheme with Port Names <k8s-downstream-scheme-vs-port-names>`" feature was requested as part of issue `1967 <https://github.com/ThreeMammals/Ocelot/issues/1967>`_ and released in version `23.3 <https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0>`_
