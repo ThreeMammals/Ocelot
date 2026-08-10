@@ -1,19 +1,35 @@
-.. |K8s Logo| image:: https://kubernetes.io/images/favicon.png
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+.. |K8sLogo| image:: ../images/k8s-logo_100px.png
   :alt: K8s Logo
-  :width: 40
+  :height: 50
+  :class: img-valign-bottom
+  :target: https://kubernetes.io
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 30
+  :class: img-valign-middle
+  :target: https://kubernetes.io
 
-|K8s Logo| Kubernetes [#f1]_ aka K8s
-====================================
+.. _KubeClient: https://www.nuget.org/packages/KubeClient
+.. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
+.. _Ocelot.Discovery.KubeClient: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
+.. _package: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
 
-    A part of feature: :doc:`../features/servicediscovery` [#f2]_
+|K8sLogo| Kubernetes (K8s) [#f1]_
+=================================
+
+  A part of feature: :doc:`../features/servicediscovery`
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
-Ocelot used to use the services API to send requests to the `K8s <https://kubernetes.io/>`__ service but this was changed in `PR 1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
+Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in PR `1134 <https://github.com/ThreeMammals/Ocelot/pull/1134>`_ because the service did not load balance as expected.
 
 Install
 -------
 
-The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides **Kubernetes** [#f1]_ support in Ocelot:
+The first thing you need to do is install the `NuGet package <https://www.nuget.org/packages/Ocelot.Provider.Kubernetes>`_ that provides |logo-kubernetes| support in Ocelot [#f2]_:
 
 .. code-block:: powershell
 
@@ -116,4 +132,4 @@ If your downstream service resides in a different namespace, you can override th
 """"
 
 .. [#f1] `Wikipedia <https://en.wikipedia.org/wiki/Kubernetes>`_ | `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
-.. [#f2] This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider. 
+.. [#f2] This feature was requested as part of `issue 345 <https://github.com/ThreeMammals/Ocelot/issues/345>`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider.
