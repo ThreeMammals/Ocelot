@@ -1,11 +1,15 @@
-.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.3
+.. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
+.. role::  htm(raw)
+    :format: html
+.. role:: pdf(raw)
+   :format: latex pdflatex
 
 ############################
 Ocelot `23.4`_ Documentation
 ############################
 
 Thanks for taking a look at the Ocelot documentation!
-Please use the left hand **Navigation** sidebar to get around, or see the **Table of Contents** below (above).
+Please use the left hand **Navigation** sidebar to get around, or see the :htm:`<a class="reference internal" href="#toc"><span class="std std-ref">Table of Contents</span></a> below.` :pdf:`\textbf{Table of Contents} above.`
 
 The team recommends that newcomers to Ocelot's world start with the **Introduction** chapters.
 For seasoned fans of Ocelot with a Production environment, it is advised to always consult the :ref:`release-notes` in the **Welcome** section before upgrading the app to the latest `23.4`_ version.
@@ -13,13 +17,13 @@ For seasoned fans of Ocelot with a Production environment, it is advised to alwa
 All **Features** are listed in alphabetical order.
 The primary features include :doc:`../features/configuration` and :doc:`../features/routing`.
 
-Additional tips for building Ocelot can be found in the **Building Ocelot** section.
+Additional tips for building Ocelot can be found in the ":doc:`Building Ocelot <../building/overview>`" section.
 We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../building/releaseprocess`.
 
-.. admonition:: Table of Contents
+:htm:`<section id="toc"><h2>Table of Contents<a class="headerlink" href="#toc" title="Link to this heading">¶</a></h2>`
 
   .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Welcome
 
     releasenotes
@@ -74,3 +78,4 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     building/devprocess
     building/releaseprocess
 
+:htm:`</section>`
