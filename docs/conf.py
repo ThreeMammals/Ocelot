@@ -48,3 +48,6 @@ latex_elements = {
     \usepackage{pifont}
     ''',
 }
+latex_additional_files = [
+    'images/k8s-logo-kubernetes.png'
+]

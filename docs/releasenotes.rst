@@ -19,19 +19,20 @@ Welcome to the Ocelot `24.0`_ documentation!
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
+.. _release-notes:
+
+📢 Release Notes
+-----------------
+
+  | Release Tag: `24.0.0`_
+  | Release Codename: `.NET 9`_
+  | Release Date: April 20, 2025
+
 The major version `24.0.0`_ includes several patches, the history of which is outlined below.
 
 .. admonition:: Patches
 
-  - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ extension package.
-
-.. _release-notes:
-
-Release Notes
--------------
-
-  | Release Tag: `24.0.0`_
-  | Release Codename: `.NET 9`_
+  - `24.0.1`_, on July 16, 2025: Issue `2299`_ patch for the `Ocelot.Provider.Kubernetes`_ package.
 
 On November 12th, 2024, the `.NET team <https://devblogs.microsoft.com/dotnet/author/dotnet/>`_ announced the release of the `.NET 9`_ framework:
 
@@ -41,8 +42,8 @@ This major release upgrades `Ocelot`_ package `TFMs <https://learn.microsoft.com
 Thus, the current Ocelot `supported frameworks <https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle>`_ are .NET 8 LTS and .NET 9 STS.
 According to the `.NET Support Policy <https://dotnet.microsoft.com/en-us/platform/support/policy>`_, the Ocelot team has discontinued support of .NET 6 and .NET 7 by providing the version `23.4.3`_ which targets those .NET versions.
 
-Official Notice to the Community Regarding CircleCI
----------------------------------------------------
+🔖 Official Notice to the Community Regarding CircleCI
+-------------------------------------------------------
 
 Ocelot's previous CI/CD provider, CircleCI, facilitated professional and seamless development, build processes, and delivery of Ocelot versions for seven years, starting in `March 2018 <https://github.com/ThreeMammals/Ocelot/pull/283>`_.
 But last year, in January 2025, after patching Ocelot with version `23.4.3`_, our team encountered legal issues related to CircleCI Co's policies, leading to this CI/CD provider stopping the build process for the `Ocelot project <https://app.circleci.com/pipelines/github/ThreeMammals/Ocelot>`_.
@@ -60,8 +61,8 @@ Since the Ocelot team does not utilize these non-critical products (we prefer to
 As a team, we hope that GitHub will never enforce extra rules on our project or other OSS projects.
 Regardless, we remain on GitHub!
 
-What's New?
------------
+🆕 What's New?
+---------------
 
 .. _@raman-m: https://github.com/raman-m
 .. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
@@ -89,8 +90,8 @@ What's New?
   For your information, the current code coverage of the Ocelot project is around 85-86%. The coverage threshold is subject to change in upcoming releases.
   All Coveralls builds can be viewed by navigating to the `ThreeMammals/Ocelot`_ project on Coveralls.io.
 
-What's Updated?
----------------
+🆙 What's Updated?
+-------------------
 
 .. _1912: https://github.com/ThreeMammals/Ocelot/issues/1912
 .. _2218: https://github.com/ThreeMammals/Ocelot/issues/2218
@@ -166,8 +167,8 @@ What's Updated?
   .. _Samples: https://github.com/ThreeMammals/Ocelot/tree/main/samples
   .. _Top-level statements: https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/program-structure/top-level-statements
 
-Documentation Summary
----------------------
+📘 Documentation
+-----------------
 
 Due to the major version increase to v24, all documentation chapters were reviewed to improve readability, eliminate ambiguity, provide more useful tables and data schemas, update code snippets with the syntax of `Top-level statements`_, and add handy samples, among other enhancements.
 The entire documentation is designed to be truly professional for senior developers while remaining easy to read for junior developers and newcomers who are starting to use the Ocelot gateway.
@@ -183,8 +184,8 @@ Feel free to explore and interact with it! 😊
 .. _README link: https://github.com/ThreeMammals/Ocelot?tab=readme-ov-file#documentation
 .. _Ocelot AI Guru: https://gurubase.io/g/ocelot
 
-Contributing
-------------
+🧑‍💻 Contributing
+------------------
 
 .. |octocat| image:: images/octocat.png
   :alt: octocat

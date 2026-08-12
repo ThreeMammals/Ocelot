@@ -2,26 +2,21 @@
   :format: html
 .. role:: pdf(raw)
   :format: latex pdflatex
-.. |K8sLogo| image:: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png
+.. |K8sLogo| image:: ../images/k8s-logo_100px.png
   :alt: K8s Logo
   :height: 50
   :class: img-valign-bottom
   :target: https://kubernetes.io
-.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
-  :alt: kubernetes logo
-  :height: 30
-  :class: img-valign-middle
-  :target: https://kubernetes.io
 
 .. _KubeClient: https://www.nuget.org/packages/KubeClient
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
-.. _package: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
+.. _NuGet package: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
 
 |K8sLogo| Kubernetes (K8s) [#f1]_
 =================================
 
-    | Feature of: :doc:`../features/servicediscovery`
-    | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
+  | Feature of: :doc:`../features/servicediscovery`
+  | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 
 Ocelot will call the `K8s <https://kubernetes.io/>`_ endpoints API in a given namespace to get all of the endpoints for a pod and then load balance across them.
 Ocelot used to use the services API to send requests to the `K8s`_ service but this was changed in pull request `1134`_ because the service did not load balance as expected.
@@ -33,9 +28,26 @@ For a comprehensive understanding, it is essential refer to the `KubeClient`_ do
 
 Install
 -------
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 28
+  :class: img-valign-middle
+  :target: https://kubernetes.io
+.. |logo-kubernetes-pdf| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 14
+  :class: img-valign-middle
+  :target: https://kubernetes.io
 
-The first thing you need to do is install the `package`_ that provides |logo-kubernetes| support in Ocelot:
+.. only:: html
 
+  The first thing you need to do is install the `NuGet package`_ that provides |logo-kubernetes| support in Ocelot:
+
+.. only:: latex
+
+  The first thing you need to do is install the `NuGet package`_ that provides :pdf:`\raisebox{-0.3\totalheight}{\sphinxincludegraphics[height=20\sphinxpxdimen]{k8s-logo-kubernetes.png}}` support in Ocelot:
+
+.. _break: http://break.do
 .. code-block:: powershell
 
     Install-Package Ocelot.Provider.Kubernetes
@@ -210,7 +222,7 @@ Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``
 
   **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
   Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
-  Please refer to the :ref:`k8s-downstream-scheme-vs-port-names` section for technical details.
+  Please refer to the ":ref:`Downstream Scheme with Port Names <k8s-downstream-scheme-vs-port-names>`" section for technical details.
 
 .. _k8s-pollkube-provider:
 
@@ -226,7 +238,7 @@ If you want to poll Kubernetes for the latest services rather than per request (
     "Namespace": "dev",
     "Type": "PollKube",
     "PollingInterval": 100 // ms
-  } 
+  }
 
 The polling interval is in milliseconds and tells Ocelot how often to call Kubernetes for changes in service configuration.
 
@@ -252,8 +264,8 @@ If your downstream service resides in a different namespace, you can override th
 
 .. _k8s-downstream-scheme-vs-port-names:
 
-Downstream Scheme vs Port Names [#f3]_
---------------------------------------
+Downstream Scheme with Port Names [#f3]_
+----------------------------------------
 
 Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
 When binding multiple ports, you assign a name to each subset port.
@@ -295,7 +307,7 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 
 .. [#f1] The :doc:`../features/kubernetes` feature was requested as part of issue `345`_ to add support for `Kubernetes <https://kubernetes.io/>`_ :doc:`../features/servicediscovery` provider, and released in version `13.4.1`_ 
 .. [#f2] The :ref:`k8s-addkubernetes-action-method` was requested as part of issue `2255`_ (PR `2257`_), and released in version `24.0`_
-.. [#f3] The :ref:`k8s-downstream-scheme-vs-port-names` feature was requested as part of issue `1967`_ and released in version `23.3`_
+.. [#f3] The ":ref:`Downstream Scheme with Port Names <k8s-downstream-scheme-vs-port-names>`" feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
 .. _1134: https://github.com/ThreeMammals/Ocelot/pull/1134

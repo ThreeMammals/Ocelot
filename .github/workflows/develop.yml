@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - develop
-      - 'release/**'
+      # - 'release/**'
 jobs:
   #1 Official required job to run utilizing GitHub Actions infrastructure
   build:
