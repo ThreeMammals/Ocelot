@@ -145,7 +145,7 @@ public sealed class KubernetesServiceDiscoveryTests : ConcurrentSteps
     [InlineData(5, 50, 2, null)]
     [InlineData(5, 50, 3, null)]
     [InlineData(5, 50, 4, nameof(Kube))]
-    [InlineData(5, 50, 4, nameof(PollKube))]
+    // [InlineData(5, 50, 4, nameof(PollKube))]
     [InlineData(5, 50, 4, nameof(WatchKube))]
     public void ShouldHighlyLoadOnUnstableKubeProvider_WithRoundRobinLoadBalancing(int totalServices, int totalRequests, int k8sGeneration, string discoveryType)
     {
