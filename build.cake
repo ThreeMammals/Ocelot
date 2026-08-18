@@ -101,9 +101,9 @@ Task("Tests")
 Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease")
-	.IsDependentOn("PublishToNuget");
+	.IsDependentOn("CreateArtifacts");
+	//.IsDependentOn("PublishGitHubRelease")
+	//.IsDependentOn("PublishToNuget");
 
 Task("Restore")
     .Does(() =>
@@ -210,8 +210,9 @@ Task("CreateReleaseNotes")
 	{
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
-        var lastRelease = lastReleaseTags.First();
+        var lastRelease = "24.1.0"; // lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
+        var HEAD = "25.0.0"; // "HEAD";
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
@@ -226,7 +227,7 @@ Task("CreateReleaseNotes")
         }
 
         const bool debugUserEmail = false;
-        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
+        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..{HEAD}")
             .ToList();
         var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
         static SummaryItem CreateSummaryItem(System.Text.RegularExpressions.Match m) => new()
@@ -376,7 +377,7 @@ Task("CreateReleaseNotes")
                     {
                         if (!statistics.Exists(s => s.Contributor == author))
                         {
-                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
+                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..{HEAD}");
                             var data = shortstat
                                 .Where(x => shortstatRegex.IsMatch(x))
                                 .Select(x => shortstatRegex.Match(x))
@@ -446,7 +447,7 @@ Task("CreateReleaseNotes")
         releaseNotes.Add("");
         releaseNotes.Add("<details><summary>Logbook</summary>");
         releaseNotes.Add("");
-        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..{HEAD}");
         releaseNotes.AddRange(commitsHistory);
         releaseNotes.Add("</details>");
         releaseNotes.Add("");
