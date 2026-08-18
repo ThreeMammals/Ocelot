@@ -25,25 +25,26 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 
 .. _release-notes:
 
-Release Notes
--------------
+📢 Release Notes
+-----------------
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
 .. _Obsolete attributes: https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20%5BObsolete&type=code
 
   | Release Tag: `24.1.0`_
   | Release Codename: `Globality`_
+  | Release Date: December 25, 2025
 
 In this minor release, the Ocelot team put the spotlight on the :doc:`../features/configuration` feature as part of their semi-annual 2025 effort, with a particular focus on the :ref:`config-global-configuration-schema`.
 This release enhances support for global configurations across both routing modes: the classic static :doc:`../features/routing` and the :doc:`service discovery <../features/servicediscovery>`-based :ref:`Dynamic Routing <sd-dynamic-routing>`.
 
-The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated>`_ of certain options through multiple notes and warnings.
+The updated documentation highlights `the deprecation <https://ocelot.readthedocs.io/en/24.1/search.html?q=deprecated>`_ of certain options through multiple notes and warnings.
 This deprecation process will be completed in the upcoming `.NET 10`_ release.
 With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
 On top of that, this release brings a great enhancement to the :doc:`../features/kubernetes` provider, also known as the `Ocelot.Provider.Kubernetes`_ package.
 
-What's New?
------------
+🆕 What's New?
+----------------
 .. _@raman-m: https://github.com/raman-m
 .. _@kick2nick: https://github.com/kick2nick
 .. _@hogwartsdeveloper: https://github.com/hogwartsdeveloper
@@ -87,8 +88,8 @@ What's New?
 
   .. note:: The ``DurationOfBreak``, ``ExceptionsAllowedBeforeBreaking``, and ``TimeoutValue`` options are now deprecated in `24.1`_, so check the ":ref:`qos-schema`" documentation for details.
 
-What's Updated?
----------------
+🆙 What's Updated?
+--------------------
 .. _@marklonquist: https://github.com/marklonquist
 .. _@jlukawska: https://github.com/jlukawska
 .. _@MiladRv: https://github.com/MiladRv
@@ -105,7 +106,7 @@ What's Updated?
 .. _2342: https://github.com/ThreeMammals/Ocelot/pull/2342
 .. _2345: https://github.com/ThreeMammals/Ocelot/pull/2345
 .. _2347: https://github.com/ThreeMammals/Ocelot/pull/2347
-.. _File-model: https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/Configuration/File
+.. _File-model: https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src/Ocelot/Configuration/File
 .. _deprecated options: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+deprecated+language%3AreStructuredText&type=code&l=reStructuredText
 .. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot/tree/24.0.0/test/Ocelot.Testing
 .. _extension packages: https://www.nuget.org/profiles/ThreeMammals
@@ -194,11 +195,11 @@ What's Updated?
 
 - `DevOps`_: Stabilized tests and reviewed `GH-Actions`_ workflows by `@raman-m`_ in pull requests `2342`_ and `2345`_.
 
-  These efforts kept the CI/CD builds in `GitHub Actions <https://github.com/ThreeMammals/Ocelot/actions>`_ stable, targeting the `alpha release <https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0-pre-release-24-1.1>`_ of version `24.1`_.
+  These efforts kept the CI/CD builds in `GitHub Actions <https://github.com/ThreeMammals/Ocelot/actions>`_ stable, targeting the `beta release <https://www.nuget.org/packages/Ocelot/24.1.0-beta.1>`_ of version `24.1`_.
   The CI/CD environment was set up and tested `GH-Actions`_ workflows in advance for the beta release, which is the goal of pull request `2347`_.
 
-Patches Included
-----------------
+📦 Patches Included
+---------------------
 .. _@mehyaa: https://github.com/mehyaa
 .. _913: https://github.com/ThreeMammals/Ocelot/issues/913
 .. _930: https://github.com/ThreeMammals/Ocelot/issues/930
@@ -224,8 +225,8 @@ Patches Included
   Starting with version `24.1`_, Ocelot now supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the '``scope``' claim in the ``ScopesAuthorizer`` service, also referred to as the ``IScopesAuthorizer`` service in the DI container.
   This is noted in the ":ref:`authentication-allowed-scopes`" documentation (see the first note).
 
-Contributing
-------------
+🧑‍💻 Contributing
+------------------
 
 .. |octocat| image:: images/octocat.png
   :alt: octocat

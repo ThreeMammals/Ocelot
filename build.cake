@@ -93,10 +93,10 @@ Task("Tests")
 	.IsDependentOn("AcceptanceTests");
 
 Task("Release")
-	.IsDependentOn("Build")
-	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("CreateArtifacts");
-	// .IsDependentOn("PublishGitHubRelease")
+    .IsDependentOn("Build")
+    .IsDependentOn("CreateReleaseNotes")
+    .IsDependentOn("CreateArtifacts");
+    // .IsDependentOn("PublishGitHubRelease")
     // .IsDependentOn("PublishToNuget");
 
 Task("Restore")
@@ -204,9 +204,9 @@ Task("CreateReleaseNotes")
 	{
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
-        var lastRelease = "23.4.3"; // lastReleaseTags.First();
+        var lastRelease = "24.0.1"; // lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
-        var HEAD = "24.0.0";
+        var HEAD = "24.1.0";
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
