@@ -58,8 +58,6 @@ Then in your ocelot.json add the following to proxy a Route using SignalR. Note 
 
 .. code-block:: json
 
-   {
-  "Routes": [
     {
       "DownstreamPathTemplate": "/{catchAll}",
       "DownstreamScheme": "ws",
@@ -72,8 +70,6 @@ Then in your ocelot.json add the following to proxy a Route using SignalR. Note 
       "UpstreamPathTemplate": "/gateway/{catchAll}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
     }
- ]
-}
 
 With this configuration set Ocelot will match any SignalR traffic that comes in on / and proxy it to localhost:5001/ws. To make this clearer Ocelot will receive messages from the upstream client, proxy these to the downstream service, receive messages from the downstream service and proxy these to the upstream client.
 

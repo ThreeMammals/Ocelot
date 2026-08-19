@@ -14,7 +14,7 @@ Within this dictionary the entries specify how Ocelot should transform things! T
 The value of the entry is parsed to logic that will perform the transform. First ofall a dictionary accessor is specified e.g. Claims[CustomerId]. This means we want to access the claims and get the CustomerId claim type. Next is a greater than (>)symbol which is just used to split the string. The next entry is either value or value with an indexer. If value is specified Ocelot will just take the value and add it to the transform. If the value has an indexer Ocelot will look for a delimiter which is provided after another greater than symbol. Ocelot will then split the value on the delimiter and add whatever was at the index requested to the transform.
 
 Claims to Claims Transformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to claims
 
@@ -41,7 +41,7 @@ Below is an example configuration that will transforms claims to headers
 This shows a transform where Ocelot looks at the users sub claim and transforms it into a CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
 
 Claims to Query String Parameters Transformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to query string parameters
 

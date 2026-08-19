@@ -41,7 +41,7 @@ Butterfly
 ^^^^^^^^^
 
 Ocelot providers tracing functionality from the excellent `Butterfly <https://github.com/liuhaoyang/butterfly>`_ project. The code for the Ocelot integration
-can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_.
+can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`__.
 
 In order to use the tracing please read the Butterfly documentation.
 

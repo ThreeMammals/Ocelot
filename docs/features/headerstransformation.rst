@@ -81,11 +81,11 @@ Placeholders
 
 Ocelot allows placeholders that can be used in header transformation.
 
-{RemoteIpAddress} - This will find the clients IP address using _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString() so you will get back some IP.
-{BaseUrl} - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
-{DownstreamBaseUrl} - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for DownstreamHeaderTransform at the moment.
-{TraceId} - This will use the Butterfly APM Trace Id. This only works for DownstreamHeaderTransform at the moment.
-{UpstreamHost} - This will look for the incoming Host header.
+* ``{RemoteIpAddress}`` - This will find the clients IP address using ``_httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString()`` so you will get back some IP.
+* ``{BaseUrl}`` - This will use Ocelot's base url e.g. http://localhost:5000 as its value.
+* ``{DownstreamBaseUrl}`` - This will use the downstream services base url e.g. http://localhost:5000 as its value. This only works for ``DownstreamHeaderTransform`` at the moment.
+* ``{TraceId}`` - This will use the Butterfly APM Trace Id. This only works for ``DownstreamHeaderTransform`` at the moment.
+* ``{UpstreamHost}`` - This will look for the incoming ``Host`` header.
 
 Handling 302 Redirects
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -147,4 +147,4 @@ Ideally this feature would be able to support the fact that a header can have mu
         "AllowAutoRedirect": false,
     },
 
-If anyone wants to have a go at this please help yourself!!
+If anyone wants to have a go at this please help yourself!! :)

@@ -1,8 +1,9 @@
 Logging
 =======
 
-Ocelot uses the standard logging interfaces ILoggerFactory / ILogger<T> at the moment. This is encapsulated in  IOcelotLogger / IOcelotLoggerFactory with an implementation 
-for the standard asp.net core logging stuff at the moment. This is because Ocelot add's some extra info to the logs such as request id if it is configured.
+Ocelot uses the standard logging interfaces ``ILoggerFactory`` / ``ILogger<T>`` at the moment.
+This is encapsulated in ``IOcelotLogger`` / ``IOcelotLoggerFactory`` with an implementation for the standard ASP.NET Core logging stuff at the moment.
+This is because Ocelot add's some extra info to the logs such as request id if it is configured.
 
 There is a global error handler that should catch any exceptions thrown and log them as errors.
 
