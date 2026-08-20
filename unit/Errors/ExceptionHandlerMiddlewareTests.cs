@@ -88,6 +88,24 @@ public class ExceptionHandlerMiddlewareTests : UnitTest
     }
 
     [Fact]
+    public async Task Should_set_499_status_code_when_request_is_canceled()
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        _httpContext.RequestAborted = cts.Token;
+
+        var config = new InternalConfiguration();
+        _httpContext.Items.Add(nameof(IInternalConfiguration), config);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status499ClientClosedRequest);
+    }
+
+    [Fact]
     public async Task ShouldSetAspDotNetRequestId()
     {
         // Arrange
