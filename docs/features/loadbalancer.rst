@@ -102,9 +102,9 @@ If you have multiple Routes with the same LoadBalancerOptions then all of those 
 Please note that if you give more than one DownstreamHostAndPort or you are using a Service Discovery provider such as Consul and this returns more than one service then CookieStickySessions uses round robin to select the next server. This is hard coded at the moment but could be changed.
 
 Custom Load Balancers
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
-`DavidLievrouw <https://github.com/DavidLievrouw`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155`_.
+`DavidLievrouw <https://github.com/DavidLievrouw>`_ implemented a way to provide Ocelot with custom load balancer in `PR 1155 <https://github.com/ThreeMammals/Ocelot/pull/1155>`_.
 
 In order to create and use a custom load balancer you can do the following. Below we setup a basic load balancing config and not the Type is CustomLoadBalancer this is the name of a class we will setup to do load balancing.
 
@@ -172,17 +172,15 @@ Finally you need to register this class with Ocelot. I have used the most comple
 
 .. code-block:: csharp
 
-            Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, Route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
+  Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, CustomLoadBalancer> loadBalancerFactoryFunc = (serviceProvider, Route, serviceDiscoveryProvider) => new CustomLoadBalancer(serviceDiscoveryProvider.Get);
 
-            s.AddOcelot()
-                .AddCustomLoadBalancer(loadBalancerFactoryFunc);
+  s.AddOcelot().AddCustomLoadBalancer(loadBalancerFactoryFunc);
 
 However there is a much simpler example that will work the same.
 
 .. code-block:: csharp
 
-            s.AddOcelot()
-                .AddCustomLoadBalancer<CustomLoadBalancer>();
+  s.AddOcelot().AddCustomLoadBalancer<CustomLoadBalancer>();
 
 There are numerous extension methods to add a custom load balancer and the interface is as follows.
 

@@ -1,5 +1,8 @@
-Welcome to Ocelot `18.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/18.0.0>`_
-======================================================================================
+.. _18.0: https://github.com/ThreeMammals/Ocelot/releases/tag/18.0.0
+
+#########################
+Welcome to Ocelot `18.0`_
+#########################
 
 Thanks for taking a look at the Ocelot documentation. Please use the left hand nav to get around. I would suggest taking a look at introduction first.
 
