@@ -7,7 +7,7 @@ OpenTracing
 ^^^^^^^^^^^
 
 Ocelot providers tracing functionality from the excellent `OpenTracing C# <https://github.com/opentracing/opentracing-csharp>`_ project. The code for the Ocelot integration
-can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing>`_.
+can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.OpenTracing>`__.
 
 The example below uses `Jaeger C# <https://github.com/jaegertracing/jaeger-client-csharp>`_ client to provide the tracer used in Ocelot.
 
@@ -41,7 +41,7 @@ Butterfly
 ^^^^^^^^^
 
 Ocelot providers tracing functionality from the excellent `Butterfly <https://github.com/liuhaoyang/butterfly>`_ project. The code for the Ocelot integration
-can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`_.
+can be found `here <https://github.com/ThreeMammals/Ocelot.Tracing.Butterfly>`__.
 
 In order to use the tracing please read the Butterfly documentation.
 

@@ -3,8 +3,8 @@ Getting Started
 
 Ocelot is designed to work with .NET Core only and is currently on netcoreapp3.1.
 
-.NET Core 3.1
-^^^^^^^^^^^^^
+.NET 5
+^^^^^^
 
 **Install NuGet package**
 
@@ -105,8 +105,9 @@ Then in your Program.cs you will want to have the following. The main things to 
         }
     }
 
-    
- **Note:** When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace **.UseIISIntegration()** with **.UseIIS()**, otherwise you'll get startup errors.
+.. _break: http://break.do
+
+  **Note**: When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace ``.UseIISIntegration()`` with ``.UseIIS()``, otherwise you'll get startup errors.
 
 .NET Core 1.0
 ^^^^^^^^^^^^^
