@@ -108,8 +108,9 @@ AddOcelot() (adds ocelot services), UseOcelot().Wait() (sets up all the Ocelot m
         }
     }
 
-    
- **Note:** When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace **.UseIISIntegration()** with **.UseIIS()**, otherwise you'll get startup errors.
+.. _break: http://break.do
+
+  **Note**: When using ASP.NET Core 2.2 and you want to use In-Process hosting, replace ``.UseIISIntegration()`` with ``.UseIIS()``, otherwise you'll get startup errors.
 
 .NET Core 1.0
 ^^^^^^^^^^^^^

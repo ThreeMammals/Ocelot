@@ -183,8 +183,8 @@ Dynamic Routing
 
 This feature was requested in `issue 340 <https://github.com/ThreeMammals/Ocelot/issues/340>`_. 
 
-The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the ReRoute config. See the docs :ref:`service-discovery` if 
-this sounds interesting to you.
+The idea is to enable dynamic routing when using a service discovery provider so you don't have to provide the Route config.
+See the docs :doc:`../features/servicediscovery` ":ref:`sd-dynamic-routing`" if this sounds interesting to you.
 
 Query Strings
 ^^^^^^^^^^^^^

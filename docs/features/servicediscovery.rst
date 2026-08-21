@@ -157,6 +157,8 @@ is provided by the Pivotal.Discovery.Client NuGet package so big thanks to them 
 
 Ocelot will use the scheme (http/https) set in Eureka if these values are not provided in ocelot.json
 
+.. _sd-dynamic-routing:
+
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 

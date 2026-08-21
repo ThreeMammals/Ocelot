@@ -1,5 +1,5 @@
 Configuration
-============
+=============
 
 An example configuration can be found `here <https://github.com/ThreeMammals/Ocelot/blob/master/test/Ocelot.ManualTest/ocelot.json>`_.
 There are two sections to the configuration. An array of ReRoutes and a GlobalConfiguration. 
@@ -175,9 +175,9 @@ Reload JSON config on change
 Ocelot supports reloading the json configuration file on change. e.g. the following will recreate Ocelots internal configuration when the ocelot.json file is updated
 manually.
 
-.. code-block:: json
+.. code-block:: csharp
 
-    config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+  config.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 Configuration Key
 -----------------
@@ -240,6 +240,7 @@ Polling the HasChanged property
 -------------------------------
 
 .. code-block:: csharp
+
     public class ConfigurationNotifyingService : BackgroundService
     {
         private readonly IOcelotConfigurationChangeTokenSource _tokenSource;
@@ -266,6 +267,7 @@ Registering a callback
 ----------------------
 
 .. code-block:: csharp
+
     public class MyDependencyInjectedClass : IDisposable
     {
         private readonly IOcelotConfigurationChangeTokenSource _tokenSource;

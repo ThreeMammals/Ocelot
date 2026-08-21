@@ -32,7 +32,7 @@ after another greater than symbol. Ocelot will then split the value on the delim
 and add whatever was at the index requested to the transform.
 
 Claims to Claims Transformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to claims
 
@@ -61,7 +61,7 @@ This shows a transform where Ocelot looks at the users sub claim and transforms 
 CustomerId header. Assuming the sub looks like this "usertypevalue|useridvalue".
 
 Claims to Query String Parameters Transformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is an example configuration that will transforms claims to query string parameters
 
