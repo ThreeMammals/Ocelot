@@ -149,6 +149,8 @@ Ocelot will now register all the necessary services when it starts up and if you
 
 Ocelot will use the scheme (http/https) set in Eureka if these values are not provided in ocelot.json
 
+.. _sd-dynamic-routing:
+
 Dynamic Routing
 ^^^^^^^^^^^^^^^
 
