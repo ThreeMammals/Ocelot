@@ -1,8 +1,5 @@
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Configuration;
 
-/// <summary>
-/// TODO Move to Configuration feat namespace since these tests are part of Configuration Validator feature.
-/// </summary>
 public class CannotStartOcelotTests : Steps
 {
     private Exception _ex;

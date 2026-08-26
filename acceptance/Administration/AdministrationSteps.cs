@@ -1,15 +1,15 @@
-﻿using Ocelot.AcceptanceTests.Authentication;
+﻿using Ocelot.Acceptance.Authentication;
 using Ocelot.Testing.Authentication;
 
-namespace Ocelot.AcceptanceTests.Administration;
+namespace Ocelot.Acceptance.Administration;
 
 public sealed class AdministrationSteps : AuthSteps
 {
-    private Task GivenThereIsOcelotInternalJwtAuthServiceRunning(CancellationToken token)
+    private async Task GivenThereIsOcelotInternalJwtAuthServiceRunning(CancellationToken token)
     {
         var scopes = new string[] { OcelotScopes.Api, OcelotScopes.Api2 };
         var jwtSigningServer = CreateJwtSigningServer(JwtSigningServerUrl, scopes);
-        return jwtSigningServer.StartAsync(token)
-            .ContinueWith(t => VerifyJwtSigningServerStarted(JwtSigningServerUrl, token), token);
+        await jwtSigningServer.StartAsync(token);
+        await VerifyJwtSigningServerStarted(JwtSigningServerUrl, token);
     }
 }

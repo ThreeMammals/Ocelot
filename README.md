@@ -3,12 +3,11 @@
 [![Release Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/release.yml)
 [![Development Status](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml/badge.svg)](https://github.com/ThreeMammals/Ocelot/actions/workflows/develop.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/ocelot/badge/?version=develop&style=flat-square)](https://app.readthedocs.org/projects/ocelot/builds/?version__slug=develop)
-[![coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg)](https://coveralls.io/github/ThreeMammals/Ocelot "Coveralls status")
+[![coveralls](https://img.shields.io/coveralls/github/ThreeMammals/Ocelot/develop?label=coveralls&logo=coveralls&logoColor=white)](https://coveralls.io/github/ThreeMammals/Ocelot "Coveralls status")
 [![codecov](https://codecov.io/gh/ThreeMammals/Ocelot/branch/develop/graph/badge.svg)](https://codecov.io/gh/ThreeMammals/Ocelot "Codecov status")
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThreeMammals/Ocelot/blob/main/LICENSE.md)
 [![NuGet](https://img.shields.io/nuget/vpre/Ocelot?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Ocelot/ "Download Ocelot from NuGet.org")
 [![Downloads](https://img.shields.io/nuget/dt/Ocelot?logo=nuget&label=Downloads)](https://www.nuget.org/packages/Ocelot/ "Total Ocelot downloads from NuGet.org")
-<!-- [![Coveralls](https://coveralls.io/repos/github/ThreeMammals/Ocelot/badge.svg?branch=develop)](https://coveralls.io/github/ThreeMammals/Ocelot?branch=develop) -->
 
 [~docspassing]: https://img.shields.io/badge/Docs-passing-44CC11?style=flat-square
 [~docsfailing]: https://img.shields.io/badge/Docs-failing-red?style=flat-square

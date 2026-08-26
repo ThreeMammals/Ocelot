@@ -11,7 +11,7 @@ using Ocelot.Testing.LoadBalancer;
 using Ocelot.Testing.Steps;
 using Ocelot.Values;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Acceptance.LoadBalancer;
 
 public sealed class LoadBalancerTests : ConcurrentSteps
 {

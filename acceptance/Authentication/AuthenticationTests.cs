@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests.Authentication;
+namespace Ocelot.Acceptance.Authentication;
 
 public sealed class AuthenticationTests : AuthSteps
 {

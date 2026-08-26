@@ -7,7 +7,7 @@ using Ocelot.Middleware;
 using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 [Trait("Feat", "212")] // https://github.com/ThreeMammals/Ocelot/issues/212
 public sealed class WebSocketsFactoryTests : WebSocketsSteps

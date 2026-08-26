@@ -8,7 +8,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 public sealed class MessageInvokerPoolTests : RequesterSteps
 {

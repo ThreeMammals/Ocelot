@@ -2,7 +2,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Testing.Authentication;
 using System.Security.Claims;
 
-namespace Ocelot.AcceptanceTests.Authorization;
+namespace Ocelot.Acceptance.Authorization;
 
 public sealed class AuthorizationTests : AuthorizationSteps
 {

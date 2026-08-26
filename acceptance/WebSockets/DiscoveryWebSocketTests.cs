@@ -3,7 +3,7 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Testing.Steps;
 using System.Net.WebSockets;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 public sealed class DiscoveryWebSocketTests : WebSocketsSteps
 {

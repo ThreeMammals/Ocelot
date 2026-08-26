@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.LoadBalancer.Balancers;
 using System.Web;
 
-namespace Ocelot.AcceptanceTests.Routing;
+namespace Ocelot.Acceptance.Routing;
 
 public sealed class RoutingTests : Steps
 {

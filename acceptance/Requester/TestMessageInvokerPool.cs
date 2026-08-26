@@ -3,7 +3,7 @@ using Ocelot.Logging;
 using Ocelot.Requester;
 using System.Collections.Concurrent;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 public class TestMessageInvokerPool : MessageInvokerPool, IMessageInvokerPool
 {

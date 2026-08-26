@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Testing.Steps;
 using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests.Configuration;
+namespace Ocelot.Acceptance.Configuration;
 
 [Trait("PR", "2073")] // https://github.com/ThreeMammals/Ocelot/pull/2073
 public class TimeoutTests : TimeoutSteps
