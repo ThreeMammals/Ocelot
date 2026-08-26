@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.AcceptanceTests.Authorization;
+using Ocelot.Acceptance.Authorization;
 using Ocelot.Testing.Authentication;
 
-namespace Ocelot.AcceptanceTests.Transformations;
+namespace Ocelot.Acceptance.Transformations;
 
 /// <summary>
 /// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-downstream-path">Claims to Downstream Path</see>.

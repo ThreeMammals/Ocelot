@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Request;
 
 public sealed class ContentTests : Steps
 {

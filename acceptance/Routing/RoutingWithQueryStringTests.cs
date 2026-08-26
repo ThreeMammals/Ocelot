@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.AcceptanceTests.Routing;
+namespace Ocelot.Acceptance.Routing;
 
 public sealed class RoutingWithQueryStringTests : Steps
 {

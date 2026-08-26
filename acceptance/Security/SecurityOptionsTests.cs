@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.HttpOverrides; // !!!
 using Ocelot.Configuration.File;
 using Ocelot.Middleware;
 
-namespace Ocelot.AcceptanceTests.Security;
+namespace Ocelot.Acceptance.Security;
 
 public sealed class SecurityOptionsTests: Steps
 {

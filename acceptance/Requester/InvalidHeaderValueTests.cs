@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 using HeadersCollection = List<KeyValuePair<string, string>>;
 

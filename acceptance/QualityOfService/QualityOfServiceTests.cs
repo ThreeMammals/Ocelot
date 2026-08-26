@@ -8,7 +8,7 @@ using Ocelot.QualityOfService;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.QualityOfService;
+namespace Ocelot.Acceptance.QualityOfService;
 
 [Trait("Feat", "23")] // https://github.com/ThreeMammals/Ocelot/issues/23
 [Trait("Feat", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39

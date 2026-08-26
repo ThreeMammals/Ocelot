@@ -8,7 +8,7 @@ using Ocelot.Testing.Steps;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 public sealed class WebSocketsSecurityTests : WebSocketsSteps
 {

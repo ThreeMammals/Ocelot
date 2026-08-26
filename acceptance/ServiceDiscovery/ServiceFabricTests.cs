@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.AcceptanceTests.ServiceDiscovery;
+namespace Ocelot.Acceptance.ServiceDiscovery;
 
 [Trait("Feat", "238")] // https://github.com/ThreeMammals/Ocelot/issues/238
 public sealed class ServiceFabricTests : Steps

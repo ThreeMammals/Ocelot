@@ -4,7 +4,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Configuration;
 
 public class StartupTests : Steps
 {

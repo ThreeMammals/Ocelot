@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests.Routing;
+namespace Ocelot.Acceptance.Routing;
 
 [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
 [Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360

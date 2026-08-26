@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Request;
+namespace Ocelot.Acceptance.Request;
 
 public sealed class ThreadSafeHeadersTests : Steps
 {

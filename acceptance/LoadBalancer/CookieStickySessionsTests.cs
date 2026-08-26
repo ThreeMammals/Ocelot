@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.Balancers;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.LoadBalancer;
+namespace Ocelot.Acceptance.LoadBalancer;
 
 [Trait("Feat", "336")] // https://github.com/ThreeMammals/Ocelot/pull/336
 public sealed class CookieStickySessionsTests : Steps
