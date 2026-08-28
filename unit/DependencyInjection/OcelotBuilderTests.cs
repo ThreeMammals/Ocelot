@@ -32,8 +32,9 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
-using System.Text.Encodings.Web;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.DependencyInjection;
@@ -81,23 +82,23 @@ public class OcelotBuilderTests : UnitTest
 
     [Fact]
     [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    [Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
     public void AddOcelot_RouteClaimsRequirementWithUrlShapedKey_IsPreservedThroughRealPipeline()
     {
         // Arrange
-        const string json = """
-    {
-      "Routes": [
-        {
-          "DownstreamPathTemplate": "/",
-          "DownstreamScheme": "http",
-          "UpstreamPathTemplate": "/",
-          "RouteClaimsRequirement": {
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "Admin"
-          }
-        }
-      ]
-    }
-    """;
+        const string json = $@"
+        {{
+          ""Routes"": [
+            {{
+              ""DownstreamPathTemplate"": ""/"",
+              ""DownstreamScheme"": ""http"",
+              ""UpstreamPathTemplate"": ""/"",
+              ""RouteClaimsRequirement"": {{
+                ""{ClaimTypes.Role}"": ""Admin""
+              }}
+            }}
+          ]
+        }}";
         var configuration = new ConfigurationBuilder()
             .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)))
             .Build();
@@ -107,10 +108,10 @@ public class OcelotBuilderTests : UnitTest
         _serviceProvider = _services.BuildServiceProvider(true);
 
         // Assert
-        var fileConfig = _serviceProvider.GetRequiredService<IOptions<FileConfiguration>>().Value;
-        var requirement = fileConfig.Routes[0].RouteClaimsRequirement;
-        requirement.ShouldContainKey("http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
-        requirement["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"].ShouldBe("Admin");
+        var actual = _serviceProvider.GetRequiredService<IOptions<FileConfiguration>>().Value;
+        var requirement = actual.Routes[0].RouteClaimsRequirement;
+        Assert.Contains(ClaimTypes.Role, requirement.Keys);
+        Assert.Equal("Admin", requirement[ClaimTypes.Role]);
     }
 
     [Fact]

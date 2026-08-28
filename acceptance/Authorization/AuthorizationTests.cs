@@ -131,7 +131,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         .BDDfy();
     }
 
-    [Fact(DisplayName = "TODO " + nameof(Should_fix_issue_240))]
+    [Fact]
     [Trait("Bug", "240")] // https://github.com/ThreeMammals/Ocelot/issues/240
     [Trait("PR", "243")] // https://github.com/ThreeMammals/Ocelot/pull/243
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
@@ -151,7 +151,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
             new(nameof(ClaimTypes.Role), "User"),
         };
         this
-            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
+            .Given(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
             .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
@@ -162,8 +162,11 @@ public sealed class AuthorizationTests : AuthorizationSteps
             .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
         .BDDfy();
     }
+
     [Fact]
     [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    [Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public void Should_return_200_OK_authorizing_route_with_url_shaped_claim_type()
     {
         var testName = TestName();
@@ -171,27 +174,30 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
         route.RouteClaimsRequirement = new()
-    {
-        { ClaimTypes.Role, "Admin" }, // URL-shaped claim type, e.g. http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-    };
+        {
+            { ClaimTypes.Role, "Admin" }, // URL-shaped claim type, e.g. http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+        };
         var claims = new List<KeyValuePair<string, string>>()
-    {
-        new(ClaimTypes.Role, "Admin"),
-    };
+        {
+            new(ClaimTypes.Role, "Admin"),
+        };
         this
-            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
+            .Given(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Omar"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => GivenIHaveATokenWithClaims(claims, testName))
             .And(x => GivenIHaveAddedATokenToMyRequest())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Omar"))
         .BDDfy();
     }
+
     [Fact]
     [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    [Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public void Should_return_403_Forbidden_when_url_shaped_claim_type_missing()
     {
         var testName = TestName();
@@ -199,16 +205,16 @@ public sealed class AuthorizationTests : AuthorizationSteps
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
         route.RouteClaimsRequirement = new()
-    {
-        { ClaimTypes.Role, "Admin" },
-    };
+        {
+            { ClaimTypes.Role, "Admin" },
+        };
         var claims = new List<KeyValuePair<string, string>>()
-    {
-        new(nameof(ClaimTypes.Role), "Admin"), // wrong form: short "Role" instead of the required URL claim type
-    };
+        {
+            new(nameof(ClaimTypes.Role), "Admin"), // wrong form: short "Role" instead of the required URL claim type
+        };
         this
-            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
+            .Given(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
+            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Omar"))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
             .And(x => GivenIHaveATokenWithClaims(claims, testName))

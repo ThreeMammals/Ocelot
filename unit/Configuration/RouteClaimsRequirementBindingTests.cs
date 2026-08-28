@@ -7,6 +7,8 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
 
+[Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+[Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
 public class RouteClaimsRequirementBindingTests
 {
     [Fact]
@@ -22,17 +24,18 @@ public class RouteClaimsRequirementBindingTests
     [Fact]
     public void PostConfigure_RouteWithoutClaimsRequirement_LeavesRouteUntouched()
     {
+        // Arrange
         const string json = """
-    {
-      "Routes": [
         {
-          "DownstreamPathTemplate": "/",
-          "DownstreamScheme": "http",
-          "UpstreamPathTemplate": "/"
+          "Routes": [
+            {
+              "DownstreamPathTemplate": "/",
+              "DownstreamScheme": "http",
+              "UpstreamPathTemplate": "/"
+            }
+          ]
         }
-      ]
-    }
-    """;
+        """;
         var configuration = new ConfigurationBuilder()
             .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)))
             .Build();
@@ -42,10 +45,13 @@ public class RouteClaimsRequirementBindingTests
             new RouteClaimsRequirementPostConfigureOptions(configuration));
         var provider = services.BuildServiceProvider();
 
+        // Act
         var fileConfig = provider.GetRequiredService<IOptions<FileConfiguration>>().Value;
 
-        fileConfig.Routes[0].RouteClaimsRequirement.ShouldBeEmpty();
+        // Assert
+        Assert.Empty(fileConfig.Routes[0].RouteClaimsRequirement);
     }
+
     [Fact]
     public void ShouldPreserveColonInRouteClaimsRequirementKey()
     {
@@ -97,7 +103,7 @@ public class RouteClaimsRequirementBindingTests
         sut.PostConfigure(null, fileConfig);
 
         // Assert
-        fileConfig.Routes.ShouldNotBeNull();
-        fileConfig.Routes.ShouldBeEmpty();
+        Assert.NotNull(fileConfig.Routes);
+        Assert.Empty(fileConfig.Routes);
     }
 }

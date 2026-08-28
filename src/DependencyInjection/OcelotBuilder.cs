@@ -133,7 +133,9 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotMetadata();
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
-        Services.AddOcelotRouteClaimsRequirementFix(configurationRoot);        // Add ASP.NET services
+        Services.AddOcelotAuthorizationRouteClaimsRequirement(configurationRoot); // TODO Must be AddOcelotAuthorization(...)
+
+        // Add ASP.NET services
         var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
         MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
             .Invoke(Services.AddMvcCore(), assembly);
