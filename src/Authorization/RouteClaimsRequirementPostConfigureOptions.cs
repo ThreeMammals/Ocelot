@@ -20,7 +20,7 @@ public sealed class RouteClaimsRequirementPostConfigureOptions : IPostConfigureO
             return;
 
         options.Routes ??= [];
-        var routes = _configuration.GetSection(nameof(FileConfiguration.Routes));
+        var routes = _configuration.OcelotRoutes();
         for (var i = 0; i < options.Routes.Count; i++)
 		{
 			var route = options.Routes[i];
