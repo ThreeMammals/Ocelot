@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Security.Cryptography;
 
-namespace Ocelot.AcceptanceTests.Request;
+namespace Ocelot.Acceptance.Request;
 
 [Trait("TODO", "Update me!")]
 public sealed class StreamContentTests : Steps

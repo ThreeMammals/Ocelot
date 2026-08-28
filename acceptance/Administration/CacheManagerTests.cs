@@ -2,14 +2,14 @@
 //x using CacheManager.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.AcceptanceTests.Authentication;
+using Ocelot.Acceptance.Authentication;
 //x using Ocelot.Cache.CacheManager;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Testing.Authentication;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Administration;
+namespace Ocelot.Acceptance.Administration;
 
 public sealed class CacheManagerTests : AuthSteps
 {

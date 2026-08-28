@@ -2,21 +2,16 @@
   :format: html
 .. role:: pdf(raw)
   :format: latex pdflatex
-.. |K8sLogo| image:: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png
+.. |K8sLogo| image:: ../images/k8s-logo-100px.png
   :alt: K8s Logo
   :height: 50
   :class: img-valign-bottom
-  :target: https://kubernetes.io
-.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
-  :alt: kubernetes logo
-  :height: 30
-  :class: img-valign-middle
   :target: https://kubernetes.io
 
 .. _KubeClient: https://www.nuget.org/packages/KubeClient
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
 .. _Ocelot.Discovery.KubeClient: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
-.. _package: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
+.. _NuGet package: https://www.nuget.org/packages/Ocelot.Discovery.KubeClient
 
 |K8sLogo| Kubernetes (K8s) [#f1]_
 =================================
@@ -35,12 +30,29 @@ Ocelot used to use the services API to send requests to the `K8s`_ service but t
 
 Install
 -------
+.. |logo-kubernetes| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 28
+  :class: img-valign-middle
+  :target: https://kubernetes.io
+.. |logo-kubernetes-pdf| image:: ../images/k8s-logo-kubernetes.png
+  :alt: kubernetes logo
+  :height: 14
+  :class: img-valign-middle
+  :target: https://kubernetes.io
 
-The first thing you need to do is install the `package`_ that provides |logo-kubernetes| support in Ocelot:
+.. only:: html
 
+  The first thing you need to do is install the `NuGet package`_ that provides |logo-kubernetes| support in Ocelot:
+
+.. only:: latex
+
+  The first thing you need to do is install the `NuGet package`_ that provides :pdf:`\raisebox{-0.3\totalheight}{\sphinxincludegraphics[height=20\sphinxpxdimen]{k8s-logo-kubernetes.png}}` support in Ocelot:
+
+.. _break: http://break.do
 .. code-block:: shell
 
-    dotnet add package Ocelot.Discovery.KubeClient
+  dotnet add package Ocelot.Discovery.KubeClient
 
 .. note::
   Our NuGet `Ocelot.Discovery.KubeClient`_ extension package is based on the `KubeClient`_ package.
@@ -234,7 +246,7 @@ Service deployment in ``Dev`` namespace, and discovery provider type is ``Kube``
 
   **Note 2**: The ``Kube`` provider searches for the service entry using ``ServiceName`` and then retrieves the first available port from the ``EndpointSubsetV1.Ports`` collection.
   Therefore, if the port name is not specified, the default downstream scheme will be ``http``; 
-  Please refer to the ":ref:`Downstream Scheme vs Port Names <k8s-downstream-scheme-vs-port-names>`" section for technical details.
+  Please refer to the ":ref:`Downstream Scheme with Port Names <k8s-downstream-scheme-vs-port-names>`" section for technical details.
 
 .. _k8s-pollkube-provider:
 
@@ -278,19 +290,17 @@ Changes streamed through this connection will be used to update the list of avai
     "Type": "WatchKube"
   }
 
+The provider has an implicit configuration for fine-tuned watching, which are available and can only be initialized in C# code.
+
+* ``WatchKube.FirstResultsFetchingTimeoutSeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot.Discovery.KubeClient+FirstResultsFetchingTimeoutSeconds&type=code>`_ is the default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint.
+* ``WatchKube.FailedSubscriptionRetrySeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot.Discovery.KubeClient+FailedSubscriptionRetrySeconds&type=code>`__ is the default number of seconds to wait before scheduling the next retry for the subscription operation.
+
+For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
+
 .. note::
 
   The ``WatchKube`` provider is specifically designed for high-load Ocelot vs. Kubernetes environments with high RPS ratios.
   To better understand which type is suitable for your needs, we have added a table :ref:`k8s-comparing-providers`.
-
-The provider has an implicit configuration for fine-tuned watching, which are available and can only be initialized in C# code.
-
-* ``WatchKube.FirstResultsFetchingTimeoutSeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FirstResultsFetchingTimeoutSeconds&type=code>`_ is the default number of seconds to wait after Ocelot starts, following the provider's creation, to fetch the first result from the Kubernetes endpoint. :sup:`1`
-* ``WatchKube.FailedSubscriptionRetrySeconds``: `This <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20FailedSubscriptionRetrySeconds&type=code>`__ is the default number of seconds to wait before scheduling the next retry for the subscription operation. :sup:`1`
-
-.. _break3: http://break.do
-
-  :sup:`1` For both ``static int`` properties, the default value is 1 (one) second. The constraint ensures that the assigned value is greater than or equal to 1 (one). Therefore, the minimum value is 1 (one) second.
   
 .. _k8s-comparing-providers:
 
@@ -336,8 +346,8 @@ The evolution path of all providers follows: ``Kube`` -> ``PollKube`` -> ``Watch
 
 .. _k8s-downstream-scheme-vs-port-names:
 
-Downstream Scheme vs Port Names [#f5]_
---------------------------------------
+Downstream Scheme with Port Names [#f5]_
+----------------------------------------
 
 Kubernetes configuration permits the definition of multiple ports with names for each address of an endpoint subset.
 When binding multiple ports, you assign a name to each subset port.
@@ -382,7 +392,7 @@ you must define ``DownstreamScheme`` to enable the provider to recognize the des
 .. [#f3] The evolution of the ":ref:`PollKube provider <k8s-pollkube-provider>`" began with pull request `772`_ (version `13.2.0`_).
   Since then, the provider's design was reviewed due to reported bug `2304`_, and patch `2335`_ was applied and rolled out in version `24.1`_.
 .. [#f4] The ":ref:`WatchKube provider <k8s-watchkube-provider>`" was first discussed in thread `2168`_, later implemented in pull request `2174`_, and released in version `24.1`_.
-.. [#f5] The ":ref:`Downstream Scheme vs Port Names <k8s-downstream-scheme-vs-port-names>`" feature was requested as part of issue `1967`_ and released in version `23.3`_
+.. [#f5] The ":ref:`Downstream Scheme with Port Names <k8s-downstream-scheme-vs-port-names>`" feature was requested as part of issue `1967`_ and released in version `23.3`_
 
 .. _345: https://github.com/ThreeMammals/Ocelot/issues/345
 .. _772: https://github.com/ThreeMammals/Ocelot/pull/772

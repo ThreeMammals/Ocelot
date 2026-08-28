@@ -10,9 +10,9 @@
 
 .. _welcome:
 
-###############
-Ocelot v25.0
-###############
+#######
+Welcome
+#######
 
 Welcome to the Ocelot `25.0`_ documentation!
 
@@ -26,8 +26,8 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 
 .. _release-notes:
 
-Release Notes
--------------
+📢 Release Notes
+-----------------
 
   | Release Tag: `25.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0>`_
   | Release Codename: `.NET 10 <https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/>`__
@@ -74,8 +74,8 @@ Ideally, the Ocelot team expects accelerated releases with more frequent minor/p
 
 For successful contributions, maintainers will announce an identity-verification procedure (details for first-time contributors will be `published <https://github.com/ThreeMammals/Ocelot/discussions/categories/announcements>`_ soon).
 
-What's New?
-^^^^^^^^^^^^
+🆕 What's New?
+----------------
 .. _@raman-m: https://github.com/raman-m
 .. _@ocelot-ot: https://github.com/ocelot-ot
 .. _@erannevo: https://github.com/erannevo
@@ -128,8 +128,8 @@ What's New?
   The Ocelot team will test it further in upcoming releases, develop best practices, create a sample app, and inform the community.
   For this reason the feature is still in pilot status.
 
-What's Updated?
-^^^^^^^^^^^^^^^^^
+🆙 What's Updated?
+--------------------
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
 .. _Ocelot.Cache.CacheManager: https://www.nuget.org/packages/Ocelot.Cache.CacheManager/
 .. _Ocelot.Tracing.Butterfly: https://www.nuget.org/packages/Ocelot.Tracing.Butterfly/
@@ -193,8 +193,8 @@ What's Updated?
   The updated documentation also highlights `the deprecation <https://ocelot.readthedocs.io/en/latest/search.html?q=deprecated>`_ of certain packages through multiple notes and warnings.
   With the `Obsolete attributes`_ in place, C# developers will notice several warnings in the build logs during compilation.
 
-Patches Included
-^^^^^^^^^^^^^^^^^^^
+📦 Patches Included
+---------------------
 .. _989: https://github.com/ThreeMammals/Ocelot/issues/989
 .. _2346: https://github.com/ThreeMammals/Ocelot/issues/2346
 .. _2351: https://github.com/ThreeMammals/Ocelot/pull/2351
@@ -236,8 +236,8 @@ Patches Included
 
   The ``{adminPath}/configuration`` and ``{adminPath}/outputcache/{region}`` endpoints are now decorated with ``[ApiExplorerSettings(IgnoreApi = true)]`` so that they no longer appear in Swagger/OpenAPI documentation generated for the downstream API surface.
 
-Contributing
-------------
+🧑‍💻 Contributing
+------------------
 .. _Pull requests: https://github.com/ThreeMammals/Ocelot/pulls
 .. _issues: https://github.com/ThreeMammals/Ocelot/issues
 .. _Ocelot GitHub: https://github.com/ThreeMammals/Ocelot/

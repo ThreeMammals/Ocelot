@@ -10,14 +10,14 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.AcceptanceTests.Authentication;
+using Ocelot.Acceptance.Authentication;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Aggregation;
 
 public sealed class AggregateTests : Steps
 {
@@ -522,12 +522,13 @@ public sealed class AggregateTests : Steps
 
 public class FakeDep { }
 
-public class FakeDefinedAggregator : IDefinedAggregator
+public class FakeDefinedAggregator(FakeDep dep) : IDefinedAggregator
 {
-    public FakeDefinedAggregator(FakeDep dep) { }
+    private readonly FakeDep _dep = dep;
 
     public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
     {
+        var a = _dep;
         var one = await responses[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
         var two = await responses[1].Items.DownstreamResponse().Content.ReadAsStringAsync();
 

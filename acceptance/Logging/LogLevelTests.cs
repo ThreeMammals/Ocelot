@@ -10,7 +10,7 @@ using Ocelot.Middleware;
 using Serilog;
 using Serilog.Core;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Logging;
 
 public sealed class LogLevelTests : Steps
 {
@@ -65,6 +65,7 @@ public sealed class LogLevelTests : Steps
         => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
             async app =>
             {
+                var a = appsettingsFileName;
                 app.Use(async (context, next) =>
                 {
                     var loggerFactory = context.RequestServices.GetService<IOcelotLoggerFactory>();

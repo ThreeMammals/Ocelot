@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 [Trait("Bug", "749")] // https://github.com/ThreeMammals/Ocelot/issues/749
 [Trait("PR", "1769")] // https://github.com/ThreeMammals/Ocelot/pull/1769

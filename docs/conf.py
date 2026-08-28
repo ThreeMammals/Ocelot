@@ -11,6 +11,7 @@ copyright = ' 2016-2026 Three Mammals'
 author = 'Tom Gardham-Pallister, Raman Maksimchuk'
 release = 'v25.0 ".NET 10"' # OK displayed
 version = '25.0' # version is not displayed in either HTML pages or PDF docs
+today = 'July 29, 2026'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -40,8 +41,13 @@ rst_epilog = """
 .. |ge| unicode:: U+2265 .. ≥
 """
 
+latex_logo = '_static/ocelot_logo.png'
+#   'releasename': '.NET 10',
 latex_elements = {
     'preamble': r'''
     \usepackage{pifont}
-    '''
+    ''',
 }
+latex_additional_files = [
+    'images/k8s-logo-kubernetes.png'
+]

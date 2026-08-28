@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Ocelot.AcceptanceTests.Logging;
+using Ocelot.Acceptance.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 public sealed class ClientWebSocketTests : WebSocketsSteps
 {
