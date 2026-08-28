@@ -106,4 +106,4 @@ public static class Features
     public static IServiceCollection AddOcelotAuthorizationRouteClaimsRequirement(this IServiceCollection services, IConfiguration configuration) => services
         .AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configuration));
 }
-}
+
