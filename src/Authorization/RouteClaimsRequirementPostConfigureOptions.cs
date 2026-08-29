@@ -22,11 +22,11 @@ public sealed class RouteClaimsRequirementPostConfigureOptions : IPostConfigureO
         }
 
         options.Routes ??= [];
-        var routeSections = _configuration.OcelotRoutes().GetChildren().ToArray();
-        for (var i = 0; i < options.Routes.Count && i < routeSections.Length; i++)
+        var routes = _configuration.OcelotRoutes();
+        for (var i = 0; i < options.Routes.Count; i++)
         {
             var route = options.Routes[i];
-            var routeClaims = routeSections[i].GetSection(nameof(FileRoute.RouteClaimsRequirement));
+            var routeClaims = routes.GetSection($"{i}:{nameof(FileRoute.RouteClaimsRequirement)}");
             var requirements = ReadRequirements(routeClaims);
 
             if (requirements.Count > 0)
