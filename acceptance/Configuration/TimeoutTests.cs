@@ -65,21 +65,22 @@ public class TimeoutTests : TimeoutSteps
             WatchWhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate));
 
     [Fact]
+    [Trait("Bug", "1687")]
     [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
     public async Task HasRouteTimeout_ShouldTimeoutAfterRouteTimeout()
     {
         const int RouteTimeoutSeconds = 2;
-        int serviceTimeoutMs = Ms(RouteTimeoutSeconds) + 500; // total 2.5 sec
+        int serviceTimeoutMs = Ms(RouteTimeoutSeconds + 1); // total 3 sec
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, RouteTimeoutSeconds); // !!!
         var body = Body();
         this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body)) // 2.5s > 2s -> ServiceUnavailable
+            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body)) // 3s > 2s -> GatewayTimeout
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway())
             .Then(x => ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), serviceTimeoutMs))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
+            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             .And(x => ThenTheResponseBodyShouldBe(string.Empty))
         .BDDfy();
     }
