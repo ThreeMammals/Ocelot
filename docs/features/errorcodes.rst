@@ -71,20 +71,20 @@ Client Error Responses
 Server Error Responses
 ----------------------
 .. _502 Bad Gateway: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502
-.. _503 Service Unavailable: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503
+.. _504 Gateway Timeout: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/504
 
 - `500 Internal Server Error`_: If unable to complete the HTTP request to the downstream service, and the exception is not ``OperationCanceledException`` or ``HttpRequestException``.
 - `502 Bad Gateway`_: If unable to connect to the downstream service.
-- `503 Service Unavailable`_: Returned when the downstream request times out.
+- `504 Gateway Timeout`_: Returned when the downstream request times out.
 
     | Ocelot Error: `RequestTimedOutError <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+RequestTimedOutError&type=code>`_
     | Ocelot Code: `OcelotErrorCode.RequestTimedOutError <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20OcelotErrorCode.RequestTimedOutError&type=code>`_
 
-  According to Ocelot Core's design, status code ``503`` is produced in the following ``TimeoutException`` scenarios:
+  According to Ocelot Core's design, status code ``504`` is produced in the following ``TimeoutException`` scenarios:
 
   1. By ``TimeoutDelegatingHandler`` from the ``IMessageInvokerPool`` service, when an ``OperationCanceledException`` is thrown and the context's cancellation token is not in the “cancellation requested” state.
      Ocelot does not log an error with the exception body, but the ``IExceptionToErrorMapper`` service generates the internal `OcelotErrorCode.RequestTimedOutError`_.
-  2. By ``ResponderMiddleware``, if the default ``IErrorsToHttpStatusCodeMapper`` service maps the detected `OcelotErrorCode.RequestTimedOutError`_ to status ``503``.
+  2. By ``ResponderMiddleware``, if the default ``IErrorsToHttpStatusCodeMapper`` service maps the detected `OcelotErrorCode.RequestTimedOutError`_ to status ``504``.
      This error code is produced by the ``IExceptionToErrorMapper`` service when a ``TimeoutException`` is thrown by other middlewares—especially by ``TimeoutDelegatingHandler``.
 
 .. _eh-error-mapper:

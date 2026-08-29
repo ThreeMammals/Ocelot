@@ -29,7 +29,7 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
         {
-            return StatusCodes.Status503ServiceUnavailable;
+            return StatusCodes.Status504GatewayTimeout;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestCanceled))
