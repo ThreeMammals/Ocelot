@@ -84,24 +84,29 @@ public class OcelotBuilderTests : UnitTest
     [Fact]
     [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
     [Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public void AddOcelot_RouteClaimsRequirementWithUrlShapedKey_IsPreservedThroughRealPipeline()
     {
         // Arrange
-        const string json = $@"
-        {{
-          ""Routes"": [
-            {{
-              ""DownstreamPathTemplate"": ""/"",
-              ""DownstreamScheme"": ""http"",
-              ""UpstreamPathTemplate"": ""/"",
-              ""RouteClaimsRequirement"": {{
-                ""{ClaimTypes.Role}"": ""Admin""
-              }}
-            }}
-          ]
-        }}";
+        var fileConfiguration = new FileConfiguration
+        {
+            Routes =
+            [
+                new FileRoute
+            {
+                DownstreamPathTemplate = "/",
+                DownstreamScheme = "http",
+                UpstreamPathTemplate = "/",
+                RouteClaimsRequirement = new()
+                {
+                    { ClaimTypes.Role, "Admin" },
+                },
+            },
+        ],
+        };
+        var primaryConfigFile = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile);
         var configuration = new ConfigurationBuilder()
-            .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            .AddOcelot(fileConfiguration, primaryConfigFile, false, false)
             .Build();
 
         // Act — this is the real public entry point every Ocelot user calls
@@ -113,8 +118,9 @@ public class OcelotBuilderTests : UnitTest
         var requirement = actual.Routes[0].RouteClaimsRequirement;
         Assert.Contains(ClaimTypes.Role, requirement.Keys);
         Assert.Equal("Admin", requirement[ClaimTypes.Role]);
-    }
 
+        File.Delete(primaryConfigFile); // matches FileUnit's own cleanup convention
+    }
     [Fact]
     [Trait("Feat", "224")] // https://github.com/ThreeMammals/Ocelot/pull/224
     [Trait("Feat", "269")] // https://github.com/ThreeMammals/Ocelot/pull/269
