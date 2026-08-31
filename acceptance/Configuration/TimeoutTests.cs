@@ -65,7 +65,7 @@ public class TimeoutTests : TimeoutSteps
             WatchWhenIGetUrlOnTheApiGateway(route2.UpstreamPathTemplate));
 
     [Fact]
-    [Trait("Bug", "1687")]
+    [Trait("Bug", "1687")] // https://github.com/ThreeMammals/Ocelot/issues/1687
     [Trait("Feat", "1869")] // https://github.com/ThreeMammals/Ocelot/issues/1869
     public async Task HasRouteTimeout_ShouldTimeoutAfterRouteTimeout()
     {

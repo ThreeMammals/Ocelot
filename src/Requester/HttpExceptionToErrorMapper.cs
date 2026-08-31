@@ -27,8 +27,8 @@ public class HttpExceptionToErrorMapper : IExceptionToErrorMapper
             return mapper(exception);
         }
 
-        // here are mapped the exceptions thrown from Ocelot core application
-        if (type == typeof(TimeoutException))
+        // The exception thrown by Ocelot.Requester.TimeoutDelegatingHandler
+        if (type == typeof(TimeoutException) && exception.InnerException is null)
         {
             return new RequestTimedOutError(exception); // -> 504 Gateway Timeout
         }
