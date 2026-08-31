@@ -62,7 +62,7 @@ public sealed class MultipartFormDataTests : Steps
         var form = await request.ReadFormAsync(context.RequestAborted);
         var file = form.Files.GetFile(FileFieldName).ShouldNotBeNull();
 
-        _downstreamPath = request.Path.Value;
+        _downstreamPath = request.PathBase.Add(request.Path).Value;
         _downstreamContentType = request.ContentType;
         _downstreamFieldValue = form[FieldName].ToString();
         _downstreamFileFieldName = file.Name;
