@@ -5,12 +5,15 @@ namespace Ocelot.Acceptance.Request;
 
 public sealed class MultipartFormDataTests : Steps
 {
+    private const string UpstreamPath = "/upload";
+    private const string DownstreamPath = "/api/files";
     private const string FieldName = "description";
     private const string FieldValue = "issue-714";
     private const string FileFieldName = "file";
     private const string FileName = "test.txt";
     private const string FileContent = "multipart-file-content";
 
+    private string _downstreamPath;
     private string _downstreamContentType;
     private string _downstreamFieldValue;
     private string _downstreamFileFieldName;
@@ -19,19 +22,20 @@ public sealed class MultipartFormDataTests : Steps
 
     [Fact]
     [Trait("Bug", "714")]
-    public void Should_route_multipart_form_data_with_file()
+    public void Should_reroute_multipart_form_data_with_file()
     {
         var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port, HttpMethod.Post);
+        var route = GivenRoute(port, HttpMethod.Post, UpstreamPath, DownstreamPath);
         var configuration = GivenConfiguration(route);
         using var content = GivenMultipartContent();
 
         this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", CaptureMultipartRequest))
+            .Given(x => x.GivenThereIsAServiceRunningOn(port, DownstreamPath, CaptureMultipartRequest))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", content))
+            .When(x => WhenIPostUrlOnTheApiGateway(UpstreamPath, content))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(_ => _downstreamPath.ShouldBe(DownstreamPath))
             .And(_ => _downstreamContentType.ShouldStartWith("multipart/form-data; boundary="))
             .And(_ => _downstreamFieldValue.ShouldBe(FieldValue))
             .And(_ => _downstreamFileFieldName.ShouldBe(FileFieldName))
@@ -58,6 +62,7 @@ public sealed class MultipartFormDataTests : Steps
         var form = await request.ReadFormAsync(context.RequestAborted);
         var file = form.Files.GetFile(FileFieldName).ShouldNotBeNull();
 
+        _downstreamPath = request.Path.Value;
         _downstreamContentType = request.ContentType;
         _downstreamFieldValue = form[FieldName].ToString();
         _downstreamFileFieldName = file.Name;
