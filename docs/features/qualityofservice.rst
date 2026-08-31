@@ -586,6 +586,7 @@ Absolute timeout [#f4]_
 
 If a *QoS* section is not included, *QoS* will not be applied, and Ocelot will enforce an absolute timeout of 90 seconds (defined by the ``DownstreamRoute`` `DefTimeout`_ constant) for all downstream requests.
 This absolute timeout is configurable via the ``DownstreamRoute`` `DefaultTimeoutSeconds`_ static C# property.
+When this Ocelot Core timeout is reached, Ocelot returns ``504 Gateway Timeout``.
 For more information, refer to the :ref:`config-default-timeout` section of the :doc:`../features/configuration` chapter.
 
 .. _qos-notes-value-constraints:

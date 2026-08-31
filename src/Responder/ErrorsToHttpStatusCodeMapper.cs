@@ -29,7 +29,8 @@ public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
         {
-            return StatusCodes.Status503ServiceUnavailable;
+            // RFC 7231 "HTTP/1.1 Semantics and Content" section 6.6.5. 504 Gateway Timeout -> https://www.rfc-editor.org/info/rfc7231/#section-6.6.5
+            return StatusCodes.Status504GatewayTimeout;
         }
 
         if (errors.Any(e => e.Code == OcelotErrorCode.RequestCanceled))
