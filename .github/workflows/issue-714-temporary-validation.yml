@@ -1,0 +1,43 @@
+name: Issue 714 temporary validation
+
+on:
+  push:
+    branches:
+      - test/issue-714-multipart-regression
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.x
+          cache: true
+          cache-dependency-path: |
+            acceptance/packages.lock.json
+            src/packages.lock.json
+            testing/packages.lock.json
+            unit/packages.lock.json
+
+      - name: .NET Info
+        run: dotnet --info
+
+      - name: Restore
+        run: dotnet restore --locked-mode ./Ocelot.slnx
+
+      - name: Build
+        run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
+
+      - name: Unit Tests
+        run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj
+
+      - name: Acceptance Tests
+        run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
