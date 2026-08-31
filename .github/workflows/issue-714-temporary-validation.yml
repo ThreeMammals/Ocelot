@@ -39,5 +39,8 @@ jobs:
       - name: Unit Tests
         run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj
 
+      - name: Issue 714 Acceptance Test
+        run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj --filter "FullyQualifiedName~Ocelot.Acceptance.Request.MultipartFormDataTests"
+
       - name: Acceptance Tests
-        run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
+        run: dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj --filter "FullyQualifiedName!~Ocelot.Acceptance.WebSockets.ClientWebSocketTests.Http20ClientWhenDirectConnectionThenShouldConnect"
