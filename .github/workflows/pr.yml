@@ -253,13 +253,23 @@ jobs:
       - name: Install certificate
         run: ./.github/steps/ubuntu.install-certificate.sh
       - name: Restore
-        run: dotnet restore --locked-mode ./Ocelot.slnx
+        run: |
+          dotnet restore --locked-mode ./Ocelot.slnx
+          dotnet tool restore
       - name: Build
         run: dotnet build --no-restore ./Ocelot.slnx --framework net10.0
       - name: Unit Tests
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
             --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
+      - name: Install Playwright
+        run: |
+          which pwsh || echo "pwsh not found"
+          pwsh --version
+          echo Installing Playwright browsers...
+          cd ./acceptance
+          dotnet build -c Debug -p:WarningLevel=0 --framework net10.0
+          pwsh bin/Debug/net10.0/playwright.ps1 install  
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
       - name: Coverage files

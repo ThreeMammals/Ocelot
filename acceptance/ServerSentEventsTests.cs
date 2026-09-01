@@ -3,24 +3,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.TestHost;
-using Shouldly;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.ResponseCompression;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using System.Collections.Generic;
-using Xunit;
-using TestStack.BDDfy;
+using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests.ServerSentEvents;
+namespace Ocelot.Acceptance;
 
 public class ServerSentEventsTests : Steps
 {
-    private readonly List<string> _receivedEvents = new();
+    private readonly List<string> _receivedEvents = [];
     private readonly Stopwatch _stopwatch = new();
     
     [Fact]
@@ -265,7 +256,7 @@ public class ServerSentEventsTests : Steps
                 services.AddOcelot();
                 services.AddResponseCompression(options => {
                     options.EnableForHttps = true;
-                    options.MimeTypes = new[] { "text/event-stream" };
+                    options.MimeTypes = ["text/event-stream"];
                 });
             },
             app => {

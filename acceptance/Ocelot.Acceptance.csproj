@@ -44,6 +44,7 @@
     <PackageReference Include="TestStack.BDDfy" Version="10.0.13" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0-pre.128" />
     <!-- Microsoft -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.5" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.10" />
