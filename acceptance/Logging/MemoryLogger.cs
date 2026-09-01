@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.Logging;
+namespace Ocelot.Acceptance.Logging;
 
 public class MemoryLogger : ILogger
 {

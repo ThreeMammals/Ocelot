@@ -9,7 +9,7 @@ using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 [Trait("Feat", "212")] // https://github.com/ThreeMammals/Ocelot/issues/212
 public sealed class WebSocketsFactoryTests : WebSocketsSteps

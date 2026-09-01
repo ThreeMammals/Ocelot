@@ -1,5 +1,8 @@
 Claims Transformation
 =====================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot allows the user to access claims and transform them into headers, query string parameters, other claims and change downstream paths. This is only available once a user has been authenticated.
 

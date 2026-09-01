@@ -2,7 +2,7 @@
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.ErrorHandling;
 
 [Trait("Commit", "84256e7")] // https://github.com/ThreeMammals/Ocelot/commit/84256e7bac0fa2c8ceba92bd8fe64c8015a37cea
 public sealed class ReturnsErrorTests : Steps

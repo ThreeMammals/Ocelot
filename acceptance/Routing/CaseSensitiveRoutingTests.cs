@@ -1,4 +1,4 @@
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Routing;
 
 public sealed class CaseSensitiveRoutingTests : Steps
 {

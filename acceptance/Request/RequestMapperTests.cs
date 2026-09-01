@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.Request;
+namespace Ocelot.Acceptance.Request;
 
 [Trait("PR", "1972")] // https://github.com/ThreeMammals/Ocelot/pull/1972
 public sealed class RequestMapperTests : Steps

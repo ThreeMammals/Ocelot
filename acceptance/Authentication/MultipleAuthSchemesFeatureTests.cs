@@ -7,7 +7,7 @@ using Ocelot.Testing.Authentication;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Authentication;
+namespace Ocelot.Acceptance.Authentication;
 
 [Trait("PR", "1870")] // https://github.com/ThreeMammals/Ocelot/pull/1870
 [Trait("Feat", "740")] // https://github.com/ThreeMammals/Ocelot/issues/740

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance;
 
 public static class IFluentStepBuilderExtensions
 {

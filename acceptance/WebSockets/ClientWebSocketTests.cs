@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Ocelot.AcceptanceTests.Logging;
+using Ocelot.Acceptance.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.WebSockets;
+namespace Ocelot.Acceptance.WebSockets;
 
 public sealed class ClientWebSocketTests : WebSocketsSteps
 {
@@ -37,10 +37,12 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     /// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    /* [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
+    [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public void Http11ClientWhenDirectConnectionThenShouldConnect(string url, string expected)
     {
+        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+
         var body = Body();
         var echoEndpoint = new Uri(url);
         this
@@ -83,10 +85,12 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     ///// <returns>A <see cref="Task"/> object.</returns>
     [Theory]
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
-    /*[InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/ */
+    [InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public void Http11ClientWhenOcelotInTheMiddleThenShouldConnect(string scheme, string host, int port, string path, string expected)
     {
+        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+
         var route = GivenWsRoute(scheme, host, port, path);
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
@@ -151,6 +155,8 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public void Http11ClientWhenConnectionClosedPrematurelyThenShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
     {
+        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+
         Action<IServiceCollection> WithExtraLogging = (services) =>
             services.AddOcelot()
             .Services.RemoveAll<IOcelotLoggerFactory>()

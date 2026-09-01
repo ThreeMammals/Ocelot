@@ -1,5 +1,8 @@
 Service Discovery
 =================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot allows you to specify a *service discovery* provider, which it uses to determine the host and port for the downstream service to which it forwards requests.
 Currently, this feature is only supported in the ``GlobalConfiguration`` section.
@@ -19,9 +22,9 @@ Consul
 
 The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Discovery.Consul>`_, which adds `Consul`_ support to Ocelot:
 
-.. code-block:: powershell
+.. code-block:: shell
 
-    dotnet add package Ocelot.Discovery.Consul
+  dotnet add package Ocelot.Discovery.Consul
 
 To register *Consul* services, invoke the ``AddConsul()`` extension method using the ``OcelotBuilder`` returned by ``AddOcelot()`` [#f1]_.
 Include the following code in your `Program`_:
@@ -387,9 +390,9 @@ Now, enough of the background!
 
 The first step is to install `the package <https://www.nuget.org/packages/Ocelot.Discovery.Eureka>`__ that provides `Eureka`_ support for Ocelot:
 
-.. code-block:: powershell
+.. code-block:: shell
 
-    Install-Package Ocelot.Discovery.Eureka
+  dotnet add package Ocelot.Discovery.Eureka
 
 Next, add the following to your `Program <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Eureka/ApiGateway/Program.cs>`__:
 
@@ -767,4 +770,4 @@ However, you can retain this ``Type`` option to maintain compatibility between b
 .. _13.5.2: https://github.com/ThreeMammals/Ocelot/releases/tag/13.5.2
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

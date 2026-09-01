@@ -6,7 +6,7 @@ using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests.Configuration;
+namespace Ocelot.Acceptance.Configuration;
 
 public sealed class ConfigurationReloadTests : Steps
 {

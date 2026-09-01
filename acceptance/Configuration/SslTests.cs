@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Configuration;
 
 [Trait("Feat", "309")] // https://github.com/ThreeMammals/Ocelot/issues/309
 public sealed class SslTests : Steps

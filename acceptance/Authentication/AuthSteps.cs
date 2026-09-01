@@ -1,6 +1,6 @@
 ﻿using Ocelot.Testing.Authentication;
 
-namespace Ocelot.AcceptanceTests.Authentication;
+namespace Ocelot.Acceptance.Authentication;
 
 public class AuthSteps : AuthenticationSteps
 {

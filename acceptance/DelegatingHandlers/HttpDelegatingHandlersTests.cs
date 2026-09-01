@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.DelegatingHandlers;
 
 public sealed class HttpDelegatingHandlersTests : Steps
 {

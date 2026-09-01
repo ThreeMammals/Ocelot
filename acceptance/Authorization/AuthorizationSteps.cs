@@ -1,7 +1,7 @@
 ﻿using Ocelot.Testing.Authentication;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Authorization;
+namespace Ocelot.Acceptance.Authorization;
 
 using Authentication;
 

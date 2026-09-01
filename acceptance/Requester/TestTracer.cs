@@ -2,7 +2,7 @@
 using Ocelot.Logging;
 using System.Collections.Concurrent;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 public class TestTracer : IOcelotTracer
 {
