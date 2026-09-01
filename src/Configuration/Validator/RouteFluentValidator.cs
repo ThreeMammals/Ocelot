@@ -70,6 +70,13 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
                 .WithMessage("RateLimitOptions.Period does not contain integer then ms (millisecond), s (second), m (minute), h (hour), d (day) e.g. 1m for 1 minute period");
         });
 
+        When(route => route.WebSocket != null, () =>
+        {
+            RuleFor(route => route.WebSocket.BufferSize)
+                .Must(size => !size.HasValue || size.Value > 0)
+                .WithMessage(route => $"WebSocket.BufferSize is negative or zero for the route {route}");
+        });
+
         RuleFor(route => route.AuthenticationOptions)
             .SetValidator(authOptsValidator);
 
