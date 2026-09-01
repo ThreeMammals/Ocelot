@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocelot WebSocket Gateway</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .welcome-text {
+            color: #555;
+            font-size: 1em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .feature {
+            flex: 1;
+            min-width: 150px;
+            margin: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .feature-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .feature-desc {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .cta {
+            margin-top: 40px;
+            text-align: left;
+        }
+        .cta-title {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .routes-section {
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .route-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        .route-item:last-child {
+            margin-bottom: 0;
+        }
+        .status-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-indicator.not-tested {
+            background-color: #999;
+        }
+        .status-indicator.testing {
+            background-color: #667eea;
+            animation: pulse 1s infinite;
+        }
+        .status-indicator.success {
+            background-color: #4caf50;
+        }
+        .status-indicator.error {
+            background-color: #f44336;
+        }
+        .status-indicator.corruption {
+            background-color: #ff9800;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .route-info {
+            flex: 1;
+            min-width: 200px;
+        }
+        .route-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .route-method {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+        .route-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 15px;
+        }
+        .keep-session-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85em;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+        }
+        .keep-session-label input[type="checkbox"] {
+            cursor: pointer;
+            margin: 0;
+        }
+        .test-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #667eea;
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-width: 80px;
+        }
+        .test-button:hover {
+            background-color: #764ba2;
+        }
+        .test-button.stop {
+            background-color: #f44336;
+        }
+        .test-button.stop:hover {
+            background-color: #d32f2f;
+        }
+        .test-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .route-status {
+            font-size: 0.85em;
+            color: #999;
+            min-width: 80px;
+            text-align: right;
+        }
+        .route-status.success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .route-status.error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .route-status.corruption {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .logging-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .logging-title {
+            color: #333;
+            font-weight: bold;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .action-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #667eea;
+            color: white;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .action-button:hover {
+            background-color: #764ba2;
+        }
+        .action-button:active {
+            transform: scale(0.98);
+        }
+        .logging-window {
+            background: #f5f5f5;
+            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            line-height: 1.4;
+            border: 1px solid #e0e0e0;
+        }
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .log-time {
+            color: #4caf50;
+            margin-right: 8px;
+        }
+        .log-info {
+            color: #667eea;
+        }
+        .log-success {
+            color: #4caf50;
+        }
+        .log-error {
+            color: #f44336;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer-text {
+            color: #999;
+            font-size: 0.85em;
+        }
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="/ocelot_logo.png" alt="Ocelot Logo" class="logo">
+            <h1>Welcome to Ocelot WebSocket</h1>
+            <p class="subtitle">Your WebSocket API Gateway is running!</p>
+            
+            <div class="welcome-text">
+                <p>Welcome to the <strong>Ocelot WebSocket Sample</strong> application.</p>
+                <p>This gateway demonstrates WebSocket proxying with configurable buffer sizes for high-throughput streaming scenarios.</p>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-title">🚀 Fast</div>
+                    <div class="feature-desc">High-performance WebSocket routing</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-title">🔒 Secure</div>
+                    <div class="feature-desc">Support for WSS (WebSocket Secure)</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-title">⚙️ Configurable</div>
+                    <div class="feature-desc">Custom buffer sizes per route</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <p class="cta-title">🧪 Test WebSocket Routes</p>
+            <p style="color: #999; font-size: 0.95em; margin-bottom: 15px;">Click the "Test" button to verify each route's connectivity and response handling.</p>
+            
+            <div class="routes-section">
+                <!-- WS Route -->
+                <div class="route-item">
+                    <div class="status-indicator not-tested" id="status-ws"></div>
+                    <div class="route-info">
+                        <div class="route-method">WS</div>
+                        <div class="route-path">/ws</div>
+                    </div>
+                    <div class="route-controls">
+                        <label class="keep-session-label">
+                            <input type="checkbox" id="keep-session-ws">
+                            Keep session
+                        </label>
+                        <button class="test-button" id="btn-ws">Test</button>
+                    </div>
+                    <div class="route-status" id="status-text-ws">Not tested</div>
+                </div>
+
+                <!-- WSS Route -->
+                <div class="route-item">
+                    <div class="status-indicator not-tested" id="status-wss"></div>
+                    <div class="route-info">
+                        <div class="route-method">WSS</div>
+                        <div class="route-path">/wss</div>
+                    </div>
+                    <div class="route-controls">
+                        <label class="keep-session-label">
+                            <input type="checkbox" id="keep-session-wss">
+                            Keep session
+                        </label>
+                        <button class="test-button" id="btn-wss">Test</button>
+                    </div>
+                    <div class="route-status" id="status-text-wss">Not tested</div>
+                </div>
+            </div>
+
+            <p style="color: #999; font-size: 0.9em; margin-top: 15px;">Check the <code>ocelot.json</code> file to see the WebSocket configuration and add your own routes.</p>
+        </div>
+
+        <!-- Logging Window -->
+        <div style="margin-top: 30px;">
+            <div class="logging-header">
+                <p class="logging-title">📋 Test Log</p>
+                <div class="action-buttons">
+                    <button class="action-button" id="clear-log-btn">Clear log</button>
+                    <button class="action-button" id="clear-status-btn">Clear status</button>
+                </div>
+            </div>
+            <div class="logging-window" id="logging-window">
+                <div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">
+                📖 Learn more at <a href="https://github.com/ThreeMammals/Ocelot">github.com/ThreeMammals/Ocelot</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration for WebSocket routes
+        const routes = {
+            ws: {
+                path: '/ws',
+                upstream: 'ws://localhost:5555/ws', // Local gateway
+                downstream: 'ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx',
+                buttonId: 'btn-ws',
+                statusId: 'status-ws',
+                statusTextId: 'status-text-ws'
+            },
+            wss: {
+                path: '/wss',
+                upstream: 'ws://localhost:5555/wss', // Note: WSS from localhost requires special setup, using ws for demo
+                downstream: 'wss://echo.websocket.org',
+                buttonId: 'btn-wss',
+                statusId: 'status-wss',
+                statusTextId: 'status-text-wss'
+            }
+        };
+
+        // State management
+        const routeStates = {
+            ws: { socket: null, testing: false, result: 'not-tested', lastSentMessage: null, messageInterval: null },
+            wss: { socket: null, testing: false, result: 'not-tested', lastSentMessage: null, messageInterval: null }
+        };
+
+        // Logging utility
+        function log(message, type = 'info') {
+            const loggingWindow = document.getElementById('logging-window');
+            const now = new Date().toLocaleTimeString();
+            const logClass = `log-${type}`;
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry`;
+            logEntry.innerHTML = `<span class="log-time">[${type.toUpperCase()}]</span> <span class="${logClass}">${escapeHtml(message)}</span>`;
+            loggingWindow.appendChild(logEntry);
+            loggingWindow.scrollTop = loggingWindow.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Update button and status displays
+        function updateButtonState(routeKey, testing) {
+            const button = document.getElementById(routes[routeKey].buttonId);
+            const statusIndicator = document.getElementById(routes[routeKey].statusId);
+            
+            if (testing) {
+                button.textContent = 'Stop';
+                button.classList.add('stop');
+                statusIndicator.textContent = '';
+                statusIndicator.className = 'status-indicator testing';
+            } else {
+                button.textContent = 'Test';
+                button.classList.remove('stop');
+                const state = routeStates[routeKey];
+                updateStatusDisplay(routeKey, state.result);
+            }
+        }
+
+        function updateStatusDisplay(routeKey, result) {
+            const statusIndicator = document.getElementById(routes[routeKey].statusId);
+            const statusText = document.getElementById(routes[routeKey].statusTextId);
+            
+            switch (result) {
+                case 'success':
+                    statusIndicator.textContent = '';
+                    statusIndicator.className = 'status-indicator success';
+                    statusText.textContent = 'OK';
+                    statusText.className = 'route-status success';
+                    break;
+                case 'error':
+                    statusIndicator.textContent = '';
+                    statusIndicator.className = 'status-indicator error';
+                    statusText.textContent = 'Error';
+                    statusText.className = 'route-status error';
+                    break;
+                case 'corruption':
+                    statusIndicator.textContent = '';
+                    statusIndicator.className = 'status-indicator corruption';
+                    statusText.textContent = 'Corruption';
+                    statusText.className = 'route-status corruption';
+                    break;
+                case 'not-tested':
+                default:
+                    statusIndicator.textContent = '';
+                    statusIndicator.className = 'status-indicator not-tested';
+                    statusText.textContent = 'Not tested';
+                    statusText.className = 'route-status';
+                    break;
+            }
+        }
+
+        // Generate test message
+        function generateTestMessage() {
+            return `Echo test - ${new Date().toISOString()} - ${Math.random().toString(36).substring(2, 10)}`;
+        }
+
+        // Send message and store it for verification
+        function sendAndStoreMessage(socket, state) {
+            const testMessage = generateTestMessage();
+            state.lastSentMessage = testMessage;
+            socket.send(testMessage);
+            log(`Sent test message: "${testMessage}"`, 'info');
+        }
+
+        // WebSocket testing function
+        function testRoute(routeKey) {
+            const state = routeStates[routeKey];
+            const route = routes[routeKey];
+
+            if (state.testing && state.socket) {
+                // Stop the test
+                log(`Stopping test for route: ${route.path}`, 'info');
+                
+                // Clear the message interval if it exists
+                if (state.messageInterval) {
+                    clearInterval(state.messageInterval);
+                    state.messageInterval = null;
+                }
+                
+                state.socket.close();
+                state.testing = false;
+                updateButtonState(routeKey, false);
+                return;
+            }
+
+            // Start the test - reset status to running
+            log(`Starting test for route: ${route.path}`, 'info');
+            state.testing = true;
+            state.result = 'testing';
+            
+            // Update status display to show running state
+            const statusIndicator = document.getElementById(routes[routeKey].statusId);
+            const statusText = document.getElementById(routes[routeKey].statusTextId);
+            statusIndicator.textContent = '';
+            statusIndicator.className = 'status-indicator testing';
+            statusText.textContent = 'Running';
+            statusText.className = 'route-status';
+            
+            const button = document.getElementById(routes[routeKey].buttonId);
+            button.textContent = 'Stop';
+            button.classList.add('stop');
+
+            const keepSession = document.getElementById(`keep-session-${routeKey}`).checked;
+            if (keepSession) {
+                log(`Keep session enabled - will send messages continuously until Stop is pressed`, 'info');
+            }
+
+            try {
+                // Construct the upstream WebSocket URL based on current location
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const host = window.location.host;
+                const wsUrl = `${protocol}//${host}${route.path}`;
+                
+                log(`Connecting to: ${wsUrl}`, 'info');
+                state.socket = new WebSocket(wsUrl);
+
+                state.socket.onopen = () => {
+                    log(`✓ Connected to ${route.path}`, 'success');
+                    // Send initial message
+                    sendAndStoreMessage(state.socket, state);
+
+                    // If keep session is enabled, send messages continuously
+                    if (keepSession) {
+                        state.messageInterval = setInterval(() => {
+                            if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+                                sendAndStoreMessage(state.socket, state);
+                            }
+                        }, 2000);
+                    }
+                };
+
+                state.socket.onmessage = (event) => {
+                    const receivedData = event.data;
+                    const sentData = state.lastSentMessage;
+                    
+                    // Verify message integrity
+                    if (receivedData === sentData) {
+                        log(`✓ Received matching response: "${receivedData}"`, 'success');
+                        state.result = 'success';
+                    } else {
+                        log(`✗ Data corruption detected! Sent: "${sentData}", Received: "${receivedData}"`, 'error');
+                        state.result = 'corruption';
+                    }
+
+                    // If not keeping session, close after first response
+                    if (!keepSession && state.socket) {
+                        state.socket.close();
+                    }
+                };
+
+                state.socket.onerror = (error) => {
+                    log(`✗ Error on ${route.path}: ${error.message || 'Unknown error'}`, 'error');
+                    state.result = 'error';
+                };
+
+                state.socket.onclose = () => {
+                    log(`Connection closed for ${route.path}`, 'info');
+                    
+                    // Clear the message interval if it exists
+                    if (state.messageInterval) {
+                        clearInterval(state.messageInterval);
+                        state.messageInterval = null;
+                    }
+                    
+                    state.testing = false;
+                    state.socket = null;
+                    updateButtonState(routeKey, false);
+                };
+            } catch (error) {
+                log(`✗ Exception testing ${route.path}: ${error.message}`, 'error');
+                state.result = 'error';
+                state.testing = false;
+                updateButtonState(routeKey, false);
+            }
+        }
+
+        // Clear log window
+        function clearLog() {
+            const loggingWindow = document.getElementById('logging-window');
+            loggingWindow.innerHTML = '';
+            log('Log cleared by user', 'info');
+        }
+
+        // Clear all status indicators and reset to initial state
+        function clearStatus() {
+            Object.keys(routeStates).forEach(routeKey => {
+                const state = routeStates[routeKey];
+                
+                // Stop any running tests
+                if (state.testing && state.socket) {
+                    if (state.messageInterval) {
+                        clearInterval(state.messageInterval);
+                        state.messageInterval = null;
+                    }
+                    state.socket.close();
+                }
+                
+                // Reset state
+                state.socket = null;
+                state.testing = false;
+                state.result = 'not-tested';
+                state.lastSentMessage = null;
+                state.messageInterval = null;
+                
+                // Uncheck keep session checkbox
+                const checkboxId = `keep-session-${routeKey}`;
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+                
+                // Update UI
+                updateStatusDisplay(routeKey, 'not-tested');
+                updateButtonState(routeKey, false);
+            });
+            
+            log('All statuses cleared and reset to initial state', 'info');
+        }
+
+        // Initialize event listeners
+        function initializeRouteButtons() {
+            Object.keys(routes).forEach(routeKey => {
+                const button = document.getElementById(routes[routeKey].buttonId);
+                button.addEventListener('click', () => {
+                    testRoute(routeKey);
+                });
+            });
+            
+            // Add listeners for clear buttons
+            document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+            document.getElementById('clear-status-btn').addEventListener('click', clearStatus);
+            
+            log('Route testing interface initialized. Ready to test WebSocket routes.', 'info');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeRouteButtons);
+    </script>
+</body>
+</html>

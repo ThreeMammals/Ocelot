@@ -7,7 +7,7 @@ namespace Ocelot.Testing;
 /// This is the base class for any unit testing classes.
 /// It is recommended to always inherit from it.
 /// </summary>
-public class Unit
+public abstract class Unit
 {
     protected readonly Guid _testId = Guid.NewGuid();
     protected string TestID { get => _testId.ToString("N"); }
@@ -17,4 +17,5 @@ public class Unit
     protected virtual bool IsCiCd() => IsRunningInGitHubActions();
     protected static bool IsRunningInGitHubActions()
         => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+    public abstract CancellationToken CancelMe { get; }
 }

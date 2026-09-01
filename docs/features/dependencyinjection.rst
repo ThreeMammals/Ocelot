@@ -5,9 +5,13 @@
 
 Dependency Injection
 ====================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
-    | Namespace: ``Ocelot.DependencyInjection``
-    | Source code: `DependencyInjection <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/DependencyInjection>`_
+  | Namespace: ``Ocelot.DependencyInjection``
+  | Source code: `DependencyInjection <https://github.com/ThreeMammals/Ocelot/tree/main/src/Ocelot/DependencyInjection>`_
 
 .. _di-services-overview:
 

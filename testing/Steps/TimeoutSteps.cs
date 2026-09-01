@@ -27,7 +27,7 @@ public class TimeoutSteps : AcceptanceSteps
         {
             await Task.Delay(timeout);
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(response);
+            await context.Response.WriteAsync(response, context.RequestAborted);
         }
         handler.GivenThereIsAServiceRunningOn(port, MapBodyWithTimeout);
     }
@@ -47,4 +47,6 @@ public class TimeoutSteps : AcceptanceSteps
         watcher.Elapsed.ShouldBeGreaterThan(expectedLowDuration);
         watcher.Elapsed.ShouldBeLessThan(expectedHighDuration);
     }
+    public static void ThenTimeoutIsInRange(Func<Stopwatch> watcher, int lowDurationMs, int highDurationMs)
+        => ThenTimeoutIsInRange(watcher.Invoke(), lowDurationMs, highDurationMs);
 }

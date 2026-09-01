@@ -14,7 +14,7 @@ public class Wait
         _milliSeconds = milliSeconds;
     }
 
-    public bool Until(Func<bool> condition)
+    public bool Until(Func<bool> condition, int delayMs = 100)
     {
         var watcher = Stopwatch.StartNew();
         while (watcher.ElapsedMilliseconds < _milliSeconds)
@@ -24,21 +24,23 @@ public class Wait
                 watcher.Stop();
                 return true;
             }
+            Thread.Sleep(delayMs);
         }
         watcher.Stop();
         return false;
     }
 
-    public async Task<bool> UntilAsync(Func<Task<bool>> condition)
+    public async Task<bool> UntilAsync(Func<CancellationToken, Task<bool>> condition, CancellationToken token, int delayMs = 100)
     {
         var watcher = Stopwatch.StartNew();
         while (watcher.ElapsedMilliseconds < _milliSeconds)
         {
-            if (await condition.Invoke())
+            if (await condition.Invoke(token))
             {
                 watcher.Stop();
                 return true;
             }
+            await Task.Delay(delayMs, token);
         }
         watcher.Stop();
         return false;

@@ -13,5 +13,6 @@
   <Project Path="samples/ServiceFabric/ApiGateway/Ocelot.Samples.ServiceFabric.ApiGateway.csproj" />
   <Project Path="samples/ServiceFabric/DownstreamService/Ocelot.Samples.ServiceFabric.DownstreamService.csproj" />
   <Project Path="samples/Web/Ocelot.Samples.Web.csproj" />
-  <Project Path="src/Ocelot/Ocelot.csproj" />
+  <Project Path="samples/WebSocket/Ocelot.Samples.WebSocket.csproj" />
+  <Project Path="src/Ocelot.csproj" />
 </Solution>

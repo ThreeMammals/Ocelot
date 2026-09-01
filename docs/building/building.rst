@@ -11,6 +11,9 @@
 
 Building
 ========
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 This document summarises the build and release process for the `Ocelot`_ project.
 The build scripts are written using `Cake`_ (C# Make), with relevant build tasks defined in the '`build.cake`_' file located in the root of the `Ocelot`_ project.
@@ -19,7 +22,7 @@ or by a CI/CD server (currently `GitHub Actions`_), with minimal logic defined i
 
 The final goal of the build process is to create ``Ocelot.*`` `NuGet`_ packages (.nupkg files) for redistribution via the `NuGet`_ repository or manually.
 The build process consists of several steps: (1) compilation, (2) testing, (3) creating and publishing `NuGet`_ packages, and (4) making an official GitHub release.
-The build process requires pre-installed .NET SDKs on the build machine (host) for all target framework monikers: TFMs are ``net8.0`` and ``net9.0`` currently.
+The build process requires pre-installed .NET SDKs on the build machine (host) for all target framework monikers: TFMs are ``net8.0``, ``net9.0`` and ``net10.0`` currently.
 In general, the build process is the same across all environments and tools, with a few differences described below.
 
 .. _b-in-ide:
@@ -28,7 +31,7 @@ In IDE
 ------
 .. _Release configuration: https://learn.microsoft.com/en-us/visualstudio/debugger/how-to-set-debug-and-release-configurations?view=vs-2022
 
-In an IDE, a DevOps engineer can build the project in Visual Studio IDE or another IDE in `Release configuration`_ mode, but the latest .NET 8/9 SDKs must be pre-installed on the local machine.
+In an IDE, a DevOps engineer can build the project in Visual Studio IDE or another IDE in `Release configuration`_ mode, but the latest .NET 8/9/10 SDKs must be pre-installed on the local machine.
 However, this approach is not practical because the generated '.nupkg' files must be uploaded to `NuGet`_ manually, and the GitHub release must also be created manually.
 A better approach is to utilize the '`build.cake`_' script :ref:`b-in-terminal`, which covers all building scenarios.
 
@@ -110,7 +113,7 @@ For example, use the following command:
 
 You may need to adjust the platform flag depending on your system.
 
-  **Note**: This approach is somewhat excessive, but it will work if you are a masterful Docker user. 🙂
+  **Note**: This approach is somewhat excessive, but it will work if you are a masterful Docker user.
   The Ocelot team has not followed this approach since version `24.0`_, favoring :ref:`b-with-ci-cd`-based builds and occasionally building :ref:`b-in-terminal` instead.
 
 .. _b-with-ci-cd:
@@ -212,15 +215,14 @@ Depending on your build scenario, `Ocelot`_ *testing* can be performed as follow
 
    .. code-block:: shell
 
-      dotnet test -f net8.0 ./Ocelot.sln
+      dotnet test -f net10.0 ./Ocelot.slnx
 
    Or run tests separately per project:
 
    .. code-block:: shell
 
-      dotnet test -f net8.0 ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj  # Unit tests only
-      dotnet test -f net8.0 ./test/Ocelot.IntegrationTests/Ocelot.IntegrationTests.csproj  # Integration tests only
-      dotnet test -f net8.0 ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj  # Acceptance tests only
+      dotnet test -f net10.0 ./unit/Ocelot.UnitTests.csproj  # Unit tests only
+      dotnet test -f net10.0 ./acceptance/Ocelot.Acceptance.csproj  # Acceptance tests only
 
 2. Run ``dotnet cake`` command: ``dotnet cake --target=Tests`` to perform all tests (unit, integration and acceptance).
    Or run tests separately per *testing* project:
@@ -228,7 +230,6 @@ Depending on your build scenario, `Ocelot`_ *testing* can be performed as follow
    .. code-block:: shell
 
       dotnet cake --target=UnitTests # unit tests only
-      dotnet cake --target=IntegrationTests # integration tests only
       dotnet cake --target=AcceptanceTests # acceptance tests only
 
 :ref:`b-with-docker`: This approach is not recommended.

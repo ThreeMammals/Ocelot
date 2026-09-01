@@ -117,6 +117,8 @@ public class AuthenticationSteps : AcceptanceSteps
         json.ShouldNotBeNullOrEmpty();
     }
 
+    public static string[] NoScopes => Array.Empty<string>();
+
     public Task<string> GivenThereIsExternalJwtSigningService(string[] extraScopes, CancellationToken token)
     {
         List<string> scopes = [OcelotScopes.Api, OcelotScopes.Api2];
@@ -190,7 +192,7 @@ public class AuthenticationSteps : AcceptanceSteps
         return JsonSerializer.Deserialize<BearerToken>(responseContent, JsonSerializerOptions.Web);
     }
 
-    protected FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
+    public FileRoute GivenAuthRoute(int port, string path, FileAuthenticationOptions options)
     {
         FileRoute? r = GivenRoute(port, path, path) as FileRoute;
         r!.AuthenticationOptions = options;

@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - 'release/24.**'
+      # - 'release/25.**'
 jobs:
   # Matrix build job having 2 dimensions (os, .NET ver)
   build:
@@ -20,7 +20,7 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
     - name: SH-scripts
       id: scripts
       run: |
@@ -29,19 +29,23 @@ jobs:
         frm="${{ matrix.framework }}"
         clean="${frm#net}"
         echo "version=$clean" >> $GITHUB_OUTPUT
-    - name: Check .NET ${{ steps.scripts.outputs.version }}
-      id: checkdotnet
-      run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
+    # - name: Check .NET ${{ steps.scripts.outputs.version }}
+    #   id: checkdotnet
+    #   run: ./.github/steps/check-dotnet.sh ${{ steps.scripts.outputs.version }}
     - name: Setup .NET ${{ steps.scripts.outputs.version }}
       # if: steps.checkdotnet.outputs.CHECKDOTNET_installed == 'false'
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ steps.scripts.outputs.version }}.x
         cache: true
         cache-dependency-path: |
-          samples/**/packages.lock.json
-          src/**/packages.lock.json
-          test/**/packages.lock.json
+          acceptance/packages.lock.json
+          benchmark/packages.lock.json
+          manual/packages.lock.json
+          src/packages.lock.json
+          testing/packages.lock.json
+          unit/packages.lock.json
+        # samples/**/packages.lock.json
     - name: .NET Info
       run: dotnet --info
     - name: Add DNS-records
@@ -51,11 +55,11 @@ jobs:
     - name: Restore
       run: dotnet restore --locked-mode ./Ocelot.slnx
     - name: Build
-      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0          
+      run: dotnet build --no-restore ./Ocelot.slnx --framework ${{ matrix.framework }}.0
     - name: Unit Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.UnitTests/Ocelot.UnitTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./unit/Ocelot.UnitTests.csproj
     - name: Acceptance Tests
-      run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --settings coverlet.runsettings ./test/Ocelot.AcceptanceTests/Ocelot.AcceptanceTests.csproj
+      run: dotnet test --no-restore --no-build --verbosity normal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
 
   release-cake:
     needs: build
@@ -74,25 +78,32 @@ jobs:
           echo "$GITHUB_CONTEXT"
           echo "<<<"
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: SH-scripts executable
         run: |
           chmod +x .github/steps/*.sh
           ls -l .github/steps/*.sh
-      - name: Check .NET 10
-        id: checkdotnet
-        run: ./.github/steps/check-dotnet.sh 10
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v5
+      # - name: Check .NET 10
+      #   id: checkdotnet
+      #   run: ./.github/steps/check-dotnet.sh 10
+      - name: Setup .NET 8+9+10
+        uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.x
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
           cache: true
           cache-dependency-path: |
-            samples/**/packages.lock.json
-            src/**/packages.lock.json
-            test/**/packages.lock.json
+            acceptance/packages.lock.json
+            benchmark/packages.lock.json
+            manual/packages.lock.json
+            src/packages.lock.json
+            testing/packages.lock.json
+            unit/packages.lock.json
+          # samples/**/packages.lock.json
       - name: Cake Build
         uses: cake-build/cake-action@v3
         with:
@@ -101,21 +112,21 @@ jobs:
           OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
           OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
           # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      - name: Coverage files
-        id: coverage
-        run: ./.github/steps/prepare-coveralls.sh
-      - name: Coveralls
-        if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: coverallsapp/github-action@v2
-        with:
-          file: ${{ steps.coverage.outputs.COVERAGE_file }}
-          compare-ref: main
-        continue-on-error: true
-      - name: Codecov
-        if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ steps.coverage.outputs.COVERAGE_file }}
-          flags: unit
-        continue-on-error: true
+      # - name: Coverage files
+      #   id: coverage
+      #   run: ./.github/steps/coverage.sh --folder ./artifacts/UnitTests/
+      # - name: Coveralls
+      #   if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
+      #   uses: coverallsapp/github-action@v2
+      #   with:
+      #     file: ${{ steps.coverage.outputs.COVERAGE_file }}
+      #     compare-ref: main
+      #   continue-on-error: true
+      # - name: Codecov
+      #   if: steps.coverage.outputs.COVERAGE_file_exists == 'true'
+      #   uses: codecov/codecov-action@v7
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: ${{ steps.coverage.outputs.COVERAGE_file }}
+      #     flags: unit
+      #   continue-on-error: true

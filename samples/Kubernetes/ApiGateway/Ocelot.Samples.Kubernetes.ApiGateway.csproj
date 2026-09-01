@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>24.1.0</AssemblyVersion>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <Authors>Raman Maksimchuk</Authors>
@@ -20,8 +20,10 @@
     <None Include="..\..\..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Ocelot.Provider.Kubernetes\Ocelot.Provider.Kubernetes.csproj" />
-    <ProjectReference Include="..\..\..\src\Ocelot\Ocelot.csproj" />
+    <PackageReference Include="Ocelot" Version="25.0.0-beta.3" />
+    <PackageReference Include="Ocelot.Provider.Kubernetes" Version="25.0.0-beta.3" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
 </Project>

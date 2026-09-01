@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>24.1.0</AssemblyVersion>
-    <Copyright>© 2025 Three Mammals. MIT licensed OSS</Copyright>
+    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <PlatformTarget>x64</PlatformTarget>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
@@ -23,9 +23,9 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceFabric" Version="11.3.475" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.3.475" />
-    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="8.3.475" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="12.0.997-beta" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.6.235" />
+    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="8.6.235" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />

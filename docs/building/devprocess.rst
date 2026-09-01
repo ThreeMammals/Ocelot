@@ -5,8 +5,8 @@
 .. _issue(s): https://github.com/ThreeMammals/Ocelot/issues
 .. _discussion: https://github.com/ThreeMammals/Ocelot/discussions
 .. _fork: https://docs.github.com/en/get-started/quickstart/fork-a-repo
-.. _unit: https://github.com/ThreeMammals/Ocelot/tree/develop/test/Ocelot.UnitTests
-.. _acceptance: https://github.com/ThreeMammals/Ocelot/tree/develop/test/Ocelot.AcceptanceTests
+.. _unit: https://github.com/ThreeMammals/Ocelot/tree/develop/unit
+.. _acceptance: https://github.com/ThreeMammals/Ocelot/tree/develop/acceptance
 .. _documentation: https://github.com/ThreeMammals/Ocelot/tree/develop/docs
 .. _feature: https://github.com/ThreeMammals/Ocelot/tree/develop/docs/features
 .. _Actions: https://github.com/ThreeMammals/Ocelot/actions
@@ -14,6 +14,9 @@
 
 Development Process
 ===================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 * The *development process* is optimized when using Gitflow branching, as detailed here: `Gitflow Workflow`_.
   It's important to note that the Ocelot team does not utilize `GitHub Flow`_, which, despite being quicker, does not align with the efficiency required for Ocelot's delivery.
