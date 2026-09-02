@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
