@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Ocelot.Administration;
-using Ocelot.Authorization;
 using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Configuration.ChangeTracking;
@@ -48,8 +46,14 @@ public class OcelotBuilder : IOcelotBuilder
 
     public OcelotBuilder(IServiceCollection services, IConfiguration configurationRoot, Func<IMvcCoreBuilder, Assembly, IMvcCoreBuilder> customBuilder = null)
     {
-        Configuration = configurationRoot;
         Services = services;
+        Configuration = configurationRoot;
+
+        // Add ASP.NET services
+        var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
+        customBuilder ??= AddDefaultAspNetServices;
+        MvcCoreBuilder = customBuilder.Invoke(services.AddMvcCore(), assembly);
+
         Services.Configure<FileConfiguration>(configurationRoot);
         Services.Configure<FileGlobalConfiguration>(configurationRoot.GetSection(nameof(FileConfiguration.GlobalConfiguration)));
         Services.AddOcelotConfigurationValidators(); // based on the AbstractValidator<FileModel> interface
@@ -81,8 +85,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<ILoadBalancerHouse, LoadBalancerHouse>();
         Services.TryAddSingleton<IRemoveOutputHeaders, RemoveOutputHeaders>();
         Services.TryAddSingleton<IClaimToThingConfigurationParser, ClaimToThingConfigurationParser>();
-        Services.TryAddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>();
-        Services.TryAddSingleton<IScopesAuthorizer, ScopesAuthorizer>();
         Services.TryAddSingleton<IAddClaimsToRequest, AddClaimsToRequest>();
         Services.TryAddSingleton<IAddHeadersToRequest, AddHeadersToRequest>();
         Services.TryAddSingleton<IAddQueriesToRequest, AddQueriesToRequest>();
@@ -125,6 +127,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
         // Features
+        Services.AddOcelotAuthorization(MvcCoreBuilder, configurationRoot);
         Services.AddOcelotCache();
         Services.AddOcelotConfigurationRepository();
         Services.AddOcelotHeaderRouting();
@@ -133,11 +136,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotMetadata();
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
-        Services.AddOcelotAuthorizationRouteClaimsRequirement(configurationRoot); // TODO Must be AddOcelotAuthorization(...)
-        // Add ASP.NET services
-        var assembly = typeof(FileConfigurationController).GetTypeInfo().Assembly;
-        MvcCoreBuilder = (customBuilder ?? AddDefaultAspNetServices)
-            .Invoke(Services.AddMvcCore(), assembly);
     }
 
     /// <summary>
@@ -168,11 +166,9 @@ public class OcelotBuilder : IOcelotBuilder
         Services
             .AddMiddlewareAnalysis()
             .AddWebEncoders();
-
         return builder
             .AddApplicationPart(assembly)
             .AddControllersAsServices()
-            .AddAuthorization()
             .AddNewtonsoftJson();
     }
 

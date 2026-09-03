@@ -17,20 +17,17 @@ public sealed class RouteClaimsRequirementPostConfigureOptions : IPostConfigureO
     public void PostConfigure(string name, FileConfiguration options)
     {
         if (options is null)
-        {
             return;
-        }
 
         options.Routes ??= [];
         var routes = _configuration.OcelotRoutes();
         for (var i = 0; i < options.Routes.Count; i++)
         {
-            var route = options.Routes[i];
             var routeClaims = routes.GetSection($"{i}:{nameof(FileRoute.RouteClaimsRequirement)}");
             var requirements = ReadRequirements(routeClaims);
-
             if (requirements.Count > 0)
             {
+                var route = options.Routes[i];
                 route.RouteClaimsRequirement = requirements;
             }
         }

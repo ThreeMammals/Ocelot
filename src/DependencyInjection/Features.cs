@@ -12,12 +12,27 @@ using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.Logging;
 using Ocelot.QualityOfService;
 using Ocelot.RateLimiting;
-using System.Security.Claims;
 
 namespace Ocelot.DependencyInjection;
 
 public static class Features
 {
+    /// <summary>
+    /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/authorization.rst">Authorization</see>.
+    /// </summary>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
+    /// <param name="configuration">The exact configuration instance passed to <c>AddOcelot</c>.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddOcelotAuthorization(this IServiceCollection services, IMvcCoreBuilder builder, IConfiguration configuration)
+    {
+        builder.AddAuthorization(); // TODO Intro AuthorizationOptions (see 2nd constructor)
+        return services
+            .AddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>()
+            .AddSingleton<IScopesAuthorizer, ScopesAuthorizer>()
+            .AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configuration));
+    }
+
     /// <summary>This Ocelot Core feature adds validation for JSON configuration File-models.</summary>
     /// <remarks>Added validator-classes must implement the <see cref="AbstractValidator{FileConfiguration}"/> interface, where T is File-model.</remarks>
     /// <param name="services">The services collection to add the feature to.</param>
@@ -93,17 +108,4 @@ public static class Features
 
     public static IServiceCollection AddOcelotQualityOfService(this IServiceCollection services) => services
         .AddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
-
-    /// <summary>
-    /// Ocelot feature:
-    /// Fixes <see href="https://github.com/ThreeMammals/Ocelot/issues/679">issue #679</see> by preserving URL-shaped keys (e.g. <see cref="ClaimTypes.Role"/>) in <c>RouteClaimsRequirement</c> dictionaries.
-    /// Takes <paramref name="configuration"/> explicitly (rather than relying on DI resolution) to guarantee it binds against the exact <see cref="IConfiguration"/> instance supplied to <c>AddOcelot</c>,
-    /// since a caller may have already registered a different <see cref="IConfiguration"/> in the container beforehand.
-    /// </summary>
-    /// <param name="services">The services collection to add the feature to.</param>
-    /// <param name="configuration">The exact configuration instance passed to <c>AddOcelot</c>.</param>
-    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
-    public static IServiceCollection AddOcelotAuthorizationRouteClaimsRequirement(this IServiceCollection services, IConfiguration configuration) => services
-        .AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configuration));
 }
-
