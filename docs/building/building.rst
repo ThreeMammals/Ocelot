@@ -237,15 +237,50 @@ Instead, perform automated testing :ref:`b-with-ci-cd` or opt for :ref:`b-in-ter
 
 :ref:`b-with-ci-cd`: In `GitHub Actions`_ `workflows`_, the *testing* process consists of separate testing steps, organized per job:
 
-* In the `'build' job`_: There are '`Unit Tests`_', '`Integration Tests`_', and '`Acceptance Tests`_' steps.
+* In the `'build' job`_: There are '`Unit Tests`_' and '`Acceptance Tests`_' steps.
 * In the `'build-cake' job`_: There is a '`Cake Build`_' step responsible for performing tests internally.
 
 .. _'build' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+build%3A+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
 .. _Unit Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Unit+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
-.. _Integration Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Integration+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
 .. _Acceptance Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Acceptance+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
 .. _'build-cake' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22-cake%3A%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
 .. _Cake Build: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22cake-build%2F%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+
+.. _b-code-coverage:
+
+Code Coverage
+-------------
+
+Continuously merging ``develop`` into the feature branch is the recommended practice.
+After a successful build, the developer should review the unit tests and work toward achieving a green status for code coverage in CI/CD.
+
+Do you know how to generate local code coverage reports using the `dotnet-reportgenerator-globaltool <https://www.nuget.org/packages/dotnet-reportgenerator-globaltool>`_?
+
+1. In the root folder, the ``tools`` folder must be created after running the ``dotnet tool restore`` command, and the ``reportgenerator`` command should then be functional.
+
+2. To use ``reportgenerator``, you must first create a Coverlet XML report file (code coverage report) via the ``dotnet test`` command for the unit testing project (part of :ref:`b-testing`).
+
+For example:
+
+.. code-block:: shell
+
+  dotnet test --project .\unit\Ocelot.UnitTests.csproj --coverlet --framework net10.0 --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
+
+This generates a report in the ``unit\bin\Debug\net10.0\TestResults\`` folder.
+Use it for the ``-reports`` argument in the following command:
+
+.. code-block:: shell
+
+  reportgenerator -reports:D:\github\ThreeMammals\Ocelot\unit\bin\Debug\net10.0\TestResults\coverage.cobertura.300726085513082.xml -targetdir:coveragereport -filefilters:-*.g.cs
+
+Note that ``-reports`` value must be an absolute path to the ``coverage.cobertura.*.xml`` file.
+Finally, it generates HTML webpages. Navigate to ``index.html``.
+
+The alternative to manually generating an HTML coverage report is opening the ``coverage.cobertura.*.xml`` file in Visual Studio 2026 IDE via the "Code Coverage Results" window:
+
+* Menu → Test → Code Coverage Results → Import Results → Open ``coverage.cobertura.*.xml`` file.
+
+This approach is useful for directly navigating to the class, applying code coverage, and highlighting both covered and uncovered lines, right inside Visual Studio 2026 IDE.
 
 SSL certificate
 ---------------
