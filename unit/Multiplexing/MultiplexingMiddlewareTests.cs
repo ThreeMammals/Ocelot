@@ -78,6 +78,47 @@ public class MultiplexingMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "714")]
+    public async Task CreateThreadContextAsync_Should_allow_multipart_form_to_be_read_from_cloned_body()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        const string boundary = "----OcelotBoundary714";
+        const string fieldName = "description";
+        const string fieldValue = "issue-714";
+        const string fileFieldName = "file";
+        const string fileName = "test.txt";
+        const string fileContent = "multipart-file-content";
+        var body =
+            $"--{boundary}\r\n" +
+            $"Content-Disposition: form-data; name=\"{fieldName}\"\r\n\r\n" +
+            $"{fieldValue}\r\n" +
+            $"--{boundary}\r\n" +
+            $"Content-Disposition: form-data; name=\"{fileFieldName}\"; filename=\"{fileName}\"\r\n" +
+            "Content-Type: text/plain\r\n\r\n" +
+            $"{fileContent}\r\n" +
+            $"--{boundary}--\r\n";
+        var bytes = Encoding.UTF8.GetBytes(body);
+        _httpContext.Request.Body = new MemoryStream(bytes);
+        _httpContext.Request.ContentLength = bytes.Length;
+        _httpContext.Request.ContentType = $"multipart/form-data; boundary={boundary}";
+        _httpContext.Request.Method = "POST";
+
+        // Act
+        var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+        var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext, route });
+        var form = await actual.Request.ReadFormAsync(CancelMe);
+        var file = form.Files.GetFile(fileFieldName).ShouldNotBeNull();
+
+        // Assert
+        form[fieldName].ToString().ShouldBe(fieldValue);
+        file.Name.ShouldBe(fileFieldName);
+        file.FileName.ShouldBe(fileName);
+        using var reader = new StreamReader(file.OpenReadStream());
+        (await reader.ReadToEndAsync(CancelMe)).ShouldBe(fileContent);
+    }
+
+    [Fact]
     [Trait("Bug", "1396")]
     public async Task Invoke_ContextUser_ForwardedToDownstreamContext()
     {
@@ -362,7 +403,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(),
             ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
     }
-    
+
     [Fact]
     [Trait("Bug", "2248")]
     [Trait("PR", "2328")]

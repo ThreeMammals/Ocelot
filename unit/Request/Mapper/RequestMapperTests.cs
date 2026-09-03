@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
@@ -277,6 +277,38 @@ public class RequestMapperTests : UnitTest
 
         // Assert
         _mappedRequest.Content.ShouldBeNull();
+    }
+
+    [Fact]
+    [Trait("Bug", "714")]
+    public async Task Should_preserve_multipart_form_data_boundary_and_body()
+    {
+        // Arrange
+        const string boundary = "----OcelotBoundary714";
+        var body =
+            $"--{boundary}\r\n" +
+            "Content-Disposition: form-data; name=\"description\"\r\n\r\n" +
+            "issue-714\r\n" +
+            $"--{boundary}\r\n" +
+            "Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\n" +
+            "Content-Type: text/plain\r\n\r\n" +
+            "multipart-file-content\r\n" +
+            $"--{boundary}--\r\n";
+
+        GivenTheInputRequestHasContent(body);
+        _inputRequest.ContentType = $"multipart/form-data; boundary={boundary}";
+        _inputRequest.Method = "POST";
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+
+        // Act
+        WhenMapped();
+
+        // Assert
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.GetValues(HeaderNames.ContentType).Single()
+            .ShouldBe(_inputRequest.ContentType);
+        await ThenTheMappedRequestHasContent(body);
     }
 
     [Fact]
