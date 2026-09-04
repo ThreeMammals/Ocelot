@@ -1,20 +1,21 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Testing.Steps;
 using System.Threading.RateLimiting;
 
-namespace Ocelot.AcceptanceTests.RateLimiting;
+namespace Ocelot.Acceptance.RateLimiting;
 
-public class AspNetRateLimitingTests: RateLimitingSteps
+public class AspNetRateLimitingTests : RateLimitingSteps
 {
     private const string FixedWindowPolicyName = "RateLimitPolicy";
     private int _rateLimitLimit;
     private int _rateLimitWindow;
     private string _quotaExceededMessage;
-    
+
     [Fact]
     [Trait("Feat", "2138")]
     public async Task Should_RateLimit()
@@ -29,15 +30,15 @@ public class AspNetRateLimitingTests: RateLimitingSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithRateLimiter);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 1);
-        ThenTheStatusCodeShouldBeOK();
+        ThenTheStatusCodeShouldBeOk();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", _rateLimitLimit - 1);
-        ThenTheStatusCodeShouldBeOK();
+        ThenTheStatusCodeShouldBeOk();
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 1);
         ThenTheStatusCodeShouldBe(HttpStatusCode.TooManyRequests);
         ThenTheResponseBodyShouldBe(_quotaExceededMessage);
         GivenIWait((1000 * _rateLimitWindow) + 100);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 1);
-        ThenTheStatusCodeShouldBeOK();
+        ThenTheStatusCodeShouldBeOk();
     }
 
     private FileRoute GivenRoute(int port, string rateLimitPolicyName)
@@ -50,7 +51,7 @@ public class AspNetRateLimitingTests: RateLimitingSteps
         return route;
     }
 
-    private FileConfiguration GivenConfiguration(params FileRoute[] routes)
+    public override FileConfiguration GivenConfiguration(params FileRoute[] routes)
     {
         var config = base.GivenConfiguration(routes);
         config.GlobalConfiguration.RateLimitOptions = new()

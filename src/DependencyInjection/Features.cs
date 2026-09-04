@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -83,13 +85,13 @@ public static class Features
         var rejectedMessage = globalRateLimitOptions?.QuotaExceededMessage ?? "API calls quota exceeded!";
         services.AddRateLimiter(options =>
         {
+            // TODO Need private method
             options.OnRejected = async (rejectedContext, token) =>
             {
                 rejectedContext.HttpContext.Response.StatusCode = rejectStatusCode;
                 await rejectedContext.HttpContext.Response.WriteAsync(rejectedMessage, token);
             };
         });
-
         return services;
     }
 

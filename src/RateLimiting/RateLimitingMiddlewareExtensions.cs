@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Middleware;
 
-namespace Ocelot.RateLimiting.Middleware;
+namespace Ocelot.RateLimiting;
 
 public static class RateLimitingMiddlewareExtensions
 {
