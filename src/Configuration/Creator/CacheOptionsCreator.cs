@@ -6,7 +6,7 @@ namespace Ocelot.Configuration.Creator;
 public class CacheOptionsCreator : ICacheOptionsCreator
 {
     public CacheOptions Create(FileCacheOptions options)
-        => new(options?.TtlSeconds, options?.Region, options?.Header, options?.EnableContentHashing);
+        => new(options?.TtlSeconds, options?.Region, options?.Header, options?.EnableContentHashing, options?.StatusCodes);
 
     public CacheOptions Create(FileRoute route, FileGlobalConfiguration globalConfiguration, string loadBalancingKey)
     {
@@ -58,6 +58,7 @@ public class CacheOptionsCreator : ICacheOptionsCreator
         var header = options.Header.IfEmpty(globalOptions.Header).IfEmpty(CacheOptions.Oc_Cache_Control);
         var ttlSeconds = options.TtlSeconds ?? globalOptions.TtlSeconds;
         var enableHashing = options.EnableContentHashing ?? globalOptions.EnableContentHashing;
-        return new CacheOptions(ttlSeconds, region, header, enableHashing);
+        var statusCodes = options.StatusCodes ?? globalOptions.StatusCodes;
+        return new CacheOptions(ttlSeconds, region, header, enableHashing, statusCodes);
     }
 }
