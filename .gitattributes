@@ -1,5 +1,32 @@
-# 2010
-*.txt -crlf
+# Auto-detect text files and normalize to LF in the repo
+* text=auto
 
-# 2020
-*.txt text eol=lf 
+# C# source files: CRLF on Windows, LF on Linux/macOS
+*.cs text eol=crlf
+*.py text eol=crlf
+*.md text eol=crlf
+*.rst text eol=crlf
+*.json text eol=crlf
+*.cake text eol=crlf
+*.yaml text eol=crlf
+*.yml text eol=crlf
+
+# Solution and project files: CRLF (Windows convention)
+*.slnx text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+
+# Scripts: force specific line endings
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files (prevent corruption)
+*.png binary
+*.jpg binary
+*.ico binary
+*.dll binary
+*.exe binary
+*.pfx binary

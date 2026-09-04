@@ -1,0 +1,21 @@
+namespace Ocelot.Configuration;
+
+// TODO Rename to IOcelotConfiguration
+public interface IInternalConfiguration // TODO Inherit : Microsoft.Extensions.Configuration.IConfiguration
+{
+    string AdministrationPath { get; }
+    AuthenticationOptions AuthenticationOptions { get; }
+    CacheOptions CacheOptions { get; }
+    Version DownstreamHttpVersion { get; }
+    HttpVersionPolicy DownstreamHttpVersionPolicy { get; }
+    string DownstreamScheme { get; }
+    HttpHandlerOptions HttpHandlerOptions { get; }
+    LoadBalancerOptions LoadBalancerOptions { get; }
+    MetadataOptions MetadataOptions { get; }
+    QoSOptions QoSOptions { get; }
+    RateLimitOptions RateLimitOptions { get; }
+    string RequestId { get; }
+    Route[] Routes { get; }
+    ServiceProviderConfiguration ServiceProviderConfiguration { get; }
+    int? Timeout { get; }
+}
