@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Authorization;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
@@ -32,6 +33,7 @@ using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
@@ -710,6 +712,36 @@ public class OcelotBuilderTests : UnitTest
         var repo = _serviceProvider.GetService<IFileConfigurationRepository>();
         Assert.NotNull(repo);
         Assert.IsType<FakeDiskFileConfigurationRepository>(repo);
+    }
+
+    [Fact]
+    [Trait("Bug", "679")] // https://github.com/ThreeMammals/Ocelot/issues/679
+    [Trait("PR", "2414")] // https://github.com/ThreeMammals/Ocelot/pull/2414
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+    public void AddOcelot_RouteClaimsRequirementWithUrlShapedKey_IsPreservedThroughRealPipeline()
+    {
+        // Arrange
+        var route = new FileRoute();
+        route.RouteClaimsRequirement.Add(ClaimTypes.Role, "Admin"); // URL-shaped key
+        var config = new FileConfiguration();
+        config.Routes.Add(route);
+
+        var configuration = new ConfigurationBuilder()
+            .AddOcelot(config, null, MergeOcelotJson.ToMemory)
+            .Build();
+
+        // Act
+        _ocelotBuilder = _services.AddOcelot(configuration);
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        var added = _serviceProvider.GetRequiredService<IPostConfigureOptions<FileConfiguration>>();
+        Assert.NotNull(added);
+        Assert.IsType<RouteClaimsRequirementPostConfigureOptions>(added);
+        var actual = _serviceProvider.GetRequiredService<IOptions<FileConfiguration>>().Value;
+        var requirement = actual.Routes[0].RouteClaimsRequirement;
+        Assert.Contains(ClaimTypes.Role, requirement.Keys);
+        Assert.Equal("Admin", requirement[ClaimTypes.Role]);
     }
 
     private sealed class FakeDiscoveryPollerOptions : ServiceDiscoveryFileConfigurationPollerOptions
