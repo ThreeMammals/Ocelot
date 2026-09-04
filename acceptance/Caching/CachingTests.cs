@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -167,7 +165,8 @@ public sealed class CachingTests : Steps
     [InlineData(null, HttpStatusCode.Unauthorized)]
     [InlineData(new int[] { (int)HttpStatusCode.OK, (int)HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.Forbidden)]
-    [Trait("Feat", "741")]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    [Trait("PR", "2337")] // https://github.com/ThreeMammals/Ocelot/pull/2337
     public void Should_cache_when_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
@@ -180,24 +179,25 @@ public sealed class CachingTests : Steps
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloFromLaura, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloFromTom, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .And(x => ThenTheContentLengthIs(HelloLauraContent.Length))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .And(x => ThenTheContentLengthIs(HelloFromLaura.Length))
             .BDDfy();
     }
 
     [Theory]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.InternalServerError)]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.BadRequest)]
-    [Trait("Feat", "741")]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    [Trait("PR", "2337")] // https://github.com/ThreeMammals/Ocelot/pull/2337
     public void Should_not_cache_when_not_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
@@ -210,17 +210,17 @@ public sealed class CachingTests : Steps
         var (testBody1String, testBody2String) = TestBodiesFactory();
         var configuration = GivenFileConfiguration(port, options);
 
-        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloLauraContent, null, null))
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloFromLaura, null, null))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloLauraContent))
-            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloTomContent, null, null))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloFromTom, null, null))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(responseCode))
-            .And(x => ThenTheResponseBodyShouldBe(HelloTomContent))
-            .And(x => ThenTheContentLengthIs(HelloTomContent.Length))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromTom))
+            .And(x => ThenTheContentLengthIs(HelloFromTom.Length))
             .BDDfy();
     }
 

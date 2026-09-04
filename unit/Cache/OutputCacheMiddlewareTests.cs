@@ -157,6 +157,7 @@ public class OutputCacheMiddlewareTests : UnitTest
     [InlineData(null, HttpStatusCode.Unauthorized)]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.OK)]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.Forbidden)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
     public async Task Should_cache_when_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
@@ -174,6 +175,7 @@ public class OutputCacheMiddlewareTests : UnitTest
     [Theory]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.InternalServerError)]
     [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.BadRequest)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
     public async Task Should_not_cache_when_not_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
     {
         // Arrange
