@@ -42,13 +42,14 @@ public class ServerSentEventsTests : Steps
             context.Response.Headers.Append("Connection", "keep-alive");
 
             await context.Response.WriteAsync("data: event1\n\n");
-            await context.Response.Body.FlushAsync();
 
             // Wait deliberately to ensure chunks are sent asynchronously
             await Task.Delay(1000);
 
             await context.Response.WriteAsync("data: event2\n\n");
-            await context.Response.Body.FlushAsync();
+
+            // Big timeout after second event to show client not affected by end of handler
+            await Task.Delay(5000);
         });
     }
 
@@ -76,6 +77,10 @@ public class ServerSentEventsTests : Steps
                 if (!string.IsNullOrEmpty(line))
                 {
                     _receivedEvents.Add((line, _stopwatch.ElapsedMilliseconds));
+                    if (_receivedEvents.Count >= 2)
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -85,19 +90,21 @@ public class ServerSentEventsTests : Steps
     {
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        _receivedEvents.Count.ShouldBeGreaterThanOrEqualTo(2);
+        _receivedEvents.Count.ShouldBe(2);
         _receivedEvents[0].Text.ShouldBe("data: event1");
         _receivedEvents[1].Text.ShouldBe("data: event2");
 
-        // First event must arrive early before downstream delay finishes
-        _receivedEvents[0].ElapsedMs.ShouldBeLessThan(500);
+        // First event must arrive early without flush
+        _receivedEvents[0].ElapsedMs.ShouldBeLessThan(400);
 
-        // Second event must arrive after 1000ms delay finishes
-        _receivedEvents[1].ElapsedMs.ShouldBeGreaterThanOrEqualTo(900);
+        // Second event must arrive right after 1000ms delay, way before 5000ms handler end delay
+        _receivedEvents[1].ElapsedMs.ShouldBeGreaterThanOrEqualTo(950);
+        _receivedEvents[1].ElapsedMs.ShouldBeLessThan(2000);
 
-        // Delta between event 1 and event 2 proves true streaming over time, not batch delivery
+        // Delta strictly around 1000ms proves true async streaming, not buffered batch or end of handler
         var delta = _receivedEvents[1].ElapsedMs - _receivedEvents[0].ElapsedMs;
-        delta.ShouldBeGreaterThanOrEqualTo(800);
+        delta.ShouldBeGreaterThanOrEqualTo(900);
+        delta.ShouldBeLessThan(1600);
     }
 
     private void GivenOcelotIsRunningWithCompression()

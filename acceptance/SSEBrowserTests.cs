@@ -37,10 +37,9 @@ public class SSEBrowserTests : IAsyncLifetime
         {
             ctx.Response.ContentType = "text/event-stream";
             await ctx.Response.WriteAsync("data: event1\n\n");
-            await ctx.Response.Body.FlushAsync();
             await Task.Delay(1000);
             await ctx.Response.WriteAsync("data: event2\n\n");
-            await ctx.Response.Body.FlushAsync();
+            await Task.Delay(5000);
         });
         _downstreamApp.MapGet("/not-sse", async ctx =>
         {
@@ -134,13 +133,15 @@ public class SSEBrowserTests : IAsyncLifetime
         await _page.SetContentAsync(html);
 
         var t1 = await event1Received.Task.WaitAsync(TimeSpan.FromSeconds(2), Xunit.TestContext.Current.CancellationToken);
-        t1.ShouldBeLessThan(600);
+        t1.ShouldBeLessThan(400);
 
         var t2 = await event2Received.Task.WaitAsync(TimeSpan.FromSeconds(4), Xunit.TestContext.Current.CancellationToken);
-        t2.ShouldBeGreaterThanOrEqualTo(900);
+        t2.ShouldBeGreaterThanOrEqualTo(950);
+        t2.ShouldBeLessThan(2000); // Way before 5000ms delay finishes!
 
         var delta = t2 - t1;
-        delta.ShouldBeGreaterThanOrEqualTo(800);
+        delta.ShouldBeGreaterThanOrEqualTo(900);
+        delta.ShouldBeLessThan(1600);
     }
 
     [Fact]
