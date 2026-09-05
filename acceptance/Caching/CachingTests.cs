@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Ocelot.UnitTests.DependencyInjection;
 
@@ -500,7 +501,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             fileConfiguration: null, primaryFile, null, null);
 
         // Assert
-        var actual = JsonConvert.DeserializeObject<FileConfiguration>(json);
+        var actual = JsonSerializer.Deserialize<FileConfiguration>(json);
         Assert.Equal(TestName(), actual.GlobalConfiguration.RequestIdKey);
 
         // The primary config file (ocelot.json) should be skipped during merge when multiple files exist
@@ -538,17 +539,18 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         Assert.NotNull(configuration.Routes);
         Assert.NotNull(configuration.DynamicRoutes);
         Assert.NotNull(configuration.GlobalConfiguration);
-        dynamic actual = JObject.Parse(json);
-        Assert.NotNull(actual.GlobalConfiguration);
-        Assert.IsType<JObject>(actual.GlobalConfiguration);
-        AssertJArray(actual.Aggregates);
-        AssertJArray(actual.Routes);
-        AssertJArray(actual.DynamicRoutes);
-        static void AssertJArray(dynamic obj)
+        JsonNode actual = JsonNode.Parse(json);
+        var globalConfiguration = actual["GlobalConfiguration"];
+        Assert.NotNull(globalConfiguration);
+        Assert.IsType<JsonObject>(globalConfiguration);
+        AssertJArray(actual["Aggregates"]);
+        AssertJArray(actual["Routes"]);
+        AssertJArray(actual["DynamicRoutes"]);
+        static void AssertJArray(JsonNode obj)
         {
             Assert.NotNull(obj);
-            Assert.IsType<JArray>(obj);
-            JArray arr = obj as JArray;
+            Assert.IsType<JsonArray>(obj);
+            var arr = obj as JsonArray;
             Assert.Empty(arr);
         }
     }
@@ -562,8 +564,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         // Arrange
         GivenTheEnvironmentIs(TestID);
         var configuration = GivenCombinedFileConfigurationObject();
-        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
-        JObject jobjConfiguration = JObject.Parse(json);
+        var json = JsonSerializer.Serialize(configuration, OcelotSerializerOptions.WebWriteIndented);
+        JsonObject jobjConfiguration = JsonNode.Parse(json).AsObject();
 
         // Act
         _configRoot = new ConfigurationBuilder()
@@ -584,7 +586,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public void OcelotJMergeSection_WhenSourceSectionIsNeitherJObjectNorJArray_DoesNothingAndReturnsTargetUnchanged()
     {
         // Arrange
-        var target = JObject.Parse(@"
+        var target = JsonNode.Parse(@"
         {
           ""Routes"": [
             { ""Key"": ""route1"" }
@@ -594,10 +596,12 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
           }
         }");
 
-        var source = JObject.Parse(@"
+        // Routes is Deliberately not JArray / JObject
+        // GlobalConfiguration is Deliberately not JObject / JArray
+        var source = JsonNode.Parse(@"
         {
-          ""Routes"": ""this-is-a-string-not-array-or-object"",  // Deliberately not JArray / JObject
-          ""GlobalConfiguration"": 12345                         // Deliberately not JObject / JArray
+          ""Routes"": ""this-is-a-string-not-array-or-object"",
+          ""GlobalConfiguration"": 12345
         }");
 
         // Act
@@ -608,15 +612,15 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         Assert.Same(target, result); // Should return the original target (fluent)
 
         // Routes section should remain unchanged
-        var routesAfter = target.OcelotJSection("Routes") as JArray;
+        var routesAfter = target.OcelotJSection("Routes") as JsonArray;
         Assert.NotNull(routesAfter);
         Assert.Single(routesAfter);
-        Assert.Equal("route1", routesAfter[0]["Key"].Value<string>());
+        Assert.Equal("route1", routesAfter[0]["Key"].GetValue<string>());
 
         // GlobalConfiguration section should remain unchanged
-        var globalAfter = target.OcelotJSection("GlobalConfiguration") as JObject;
+        var globalAfter = target.OcelotJSection("GlobalConfiguration") as JsonObject;
         Assert.NotNull(globalAfter);
-        Assert.Equal("https://ocelot.net", globalAfter["BaseUrl"].Value<string>());
+        Assert.Equal("https://ocelot.net", globalAfter["BaseUrl"].GetValue<string>());
     }
 
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
@@ -631,36 +635,35 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Scenario 1: obj var is null after casting to JObject
             string json = null;
-            JToken token = null; // JToken.Parse(jsonInput);
+            JsonNode token = null; // JToken.Parse(jsonInput);
             var result = token.OcelotJSection(myProp);
             Assert.Null(result);
 
             // Scenario 2: obj not null but property not found
             json = "{}";
-            token = JToken.Parse(json);
+            token = JsonNode.Parse(json);
             result = token.OcelotJSection(myProp);
             Assert.Null(result);
 
             // Scenario 3: property found but value is null
             json = @"{""MyProp"": null}";
-            token = JToken.Parse(json);
+            token = JsonNode.Parse(json);
             result = token.OcelotJSection(myProp);
-            Assert.NotNull(result);
-            Assert.Equal(null, result.Value<int?>());
+            Assert.Null(result);
 
             // Scenario 4: property found with integer value
             json = @"{""MyProp"": 123}";
-            token = JToken.Parse(json);
+            token = JsonNode.Parse(json);
             result = token.OcelotJSection(myProp);
             Assert.NotNull(result);
-            Assert.Equal(123, result.Value<int>());
+            Assert.Equal(123, result.GetValue<int>());
         }
 
         [Fact]
         public void OcelotJSection_CaseInsensitiveLookup_WorksCorrectly()
         {
             // Arrange
-            var token = JObject.Parse(@"{ ""routes"": [1,2,3], ""GLOBALCONFIGURATION"": { ""BaseUrl"": ""https://ocelot.net"" } }");
+            var token = JsonNode.Parse(@"{ ""routes"": [1,2,3], ""GLOBALCONFIGURATION"": { ""BaseUrl"": ""https://ocelot.net"" } }");
 
             // Act & Assert
             Assert.NotNull(token.OcelotJSection("Routes"));
@@ -679,10 +682,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [Fact]
         public void OcelotJSetSection_NullTarget_DoesNothing()
         {
-            JToken to = null;
+            JsonNode to = null;
 
             // Act
-            to.OcelotJSetSection(TestName(), JValue.CreateString(TestID));
+            to.OcelotJSetSection(TestName(), JsonValue.Create<string>(TestID));
 
             Assert.Null(to); // Still null, no exception
         }
@@ -690,15 +693,27 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [Fact]
         public void OcelotJSetSection_NonJObjectTarget_DoesNothing()
         {
-            var array = new JArray { 1, 2, 3 };
+            // Arrange
+            var array = new JsonArray
+            {
+                JsonValue.Create(1),
+                JsonValue.Create(2),
+                JsonValue.Create(3)
+            };
 
             // Act
-            array.OcelotJSetSection(TestName(), JValue.CreateString(TestID));
+            array.OcelotJSetSection(TestName(), JsonValue.Create(TestID));
 
+            // Assert - Array should remain unchanged
             Assert.Equal(3, array.Count);
-            Assert.Contains(1, array);
-            Assert.Contains(2, array);
-            Assert.Contains(3, array);
+
+            // Check values by index instead of Contains
+            Assert.Equal(JsonValueKind.Number, array[0].GetValueKind());
+            Assert.Equal(1, array[0].GetValue<int>());
+            Assert.Equal(2, array[1].GetValue<int>());
+            Assert.Equal(3, array[2].GetValue<int>());
+
+            // OcelotJSection should return null for arrays
             var jtoken = array.OcelotJSection(TestName());
             Assert.Null(jtoken);
         }
@@ -709,10 +724,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [InlineData("SeCtIoN")]
         public void OcelotJSetSection_ExistingProperty_UpdatesValue_CaseInsensitive(string propertyName)
         {
-            var jObj = JObject.Parse("""{ "section": "oldValue", "other": 42 }""");
+            var jObj = JsonNode.Parse("""{ "section": "oldValue", "other": 42 }""");
 
             // Act
-            jObj.OcelotJSetSection(propertyName, JValue.CreateString(TestID));
+            jObj.OcelotJSetSection(propertyName, JsonValue.Create<string>(TestID));
 
             Assert.Equal(TestID, (string)jObj["section"]);
             Assert.Equal(42, (int)jObj["other"]); // Other properties unchanged
@@ -721,21 +736,21 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [Fact]
         public void OcelotJSetSection_NewProperty_AddsIt()
         {
-            var jObj = new JObject();
+            var jObj = new JsonObject();
             var newSection = TestName();
 
             // Act
-            jObj.OcelotJSetSection(newSection, JValue.CreateString(TestID));
+            jObj.OcelotJSetSection(newSection, JsonValue.Create<string>(TestID));
 
             Assert.Equal(TestID, (string)jObj[newSection]);
-            Assert.Single(jObj.Properties());
+            Assert.Single(jObj.AsEnumerable());
         }
 
         [Fact]
         public void OcelotJSetSection_UpdatesComplexValue()
         {
-            var jObj = JObject.Parse("""{ "config": { "enabled": false } }""");
-            var newValue = JObject.Parse("""{ "enabled": true, "timeout": 30 }""");
+            var jObj = JsonNode.Parse("""{ "config": { "enabled": false } }""");
+            var newValue = JsonNode.Parse("""{ "enabled": true, "timeout": 30 }""");
 
             // Act
             jObj.OcelotJSetSection("config", newValue);
@@ -747,24 +762,22 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [Fact]
         public void OcelotJSetSection_NullValue_SetsNull()
         {
-            var jObj = JObject.Parse("""{ "data": "something" }""");
+            var jObj = JsonNode.Parse("""{ "data": "something" }""");
 
             // Act
             jObj.OcelotJSetSection("data", null);
 
             var actual = jObj["data"];
-            Assert.NotNull(actual);
-            Assert.True(((JValue)actual).Type == JTokenType.Null);
-            Assert.Null(actual.Value<string>());
+            Assert.Null(actual);
         }
 
         [Fact]
         public void OcelotJSetSection_EmptyName_AddsProperty()
         {
-            var jObj = new JObject();
+            var jObj = new JsonObject();
 
             // Act
-            jObj.OcelotJSetSection("", JValue.CreateString("emptyNameValue"));
+            jObj.OcelotJSetSection("", JsonValue.Create<string>("emptyNameValue"));
 
             Assert.Equal("emptyNameValue", (string)jObj[""]);
         }
@@ -772,29 +785,37 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         [Fact]
         public void OcelotJSetSection_NullName_ThrowsOrHandlesGracefully()
         {
-            var jObj = new JObject();
+            var jObj = new JsonObject();
 
             // Newtonsoft.Json behavior: Add with null name throws ArgumentNullException
             Assert.Throws<ArgumentNullException>(() =>
-                jObj.OcelotJSetSection(null, JValue.CreateString("value")));
+                jObj.OcelotJSetSection(null, JsonValue.Create<string>("value")));
         }
 
         [Theory]
-        [InlineData("value", JTokenType.String)]
-        [InlineData(123, JTokenType.Integer)]
-        [InlineData(true, JTokenType.Boolean)]
-        [InlineData(null, JTokenType.Null)]
-        public void OcelotJSetSection_AcceptsVariousValueTypes(object rawValue, JTokenType expectedType)
+        [InlineData("value", JsonValueKind.String)]
+        [InlineData(123, JsonValueKind.Number)]
+        [InlineData(true, JsonValueKind.True)]
+        [InlineData(false, JsonValueKind.False)]
+        [InlineData(null, JsonValueKind.Null)]
+        public void OcelotJSetSection_AcceptsVariousValueTypes(object rawValue, JsonValueKind expectedType)
         {
-            var jObj = new JObject();
-            JToken value = rawValue is null ? null : JToken.FromObject(rawValue);
+            var jObj = new JsonObject();
+            JsonNode value = rawValue is null ? null : JsonSerializer.SerializeToNode(rawValue);
 
             // Act
             jObj.OcelotJSetSection(TestName(), value);
 
             var actual = jObj[TestName()];
-            Assert.NotNull(actual);
-            Assert.Equal(expectedType, actual.Type);
+            if (JsonValueKind.Null == expectedType)
+            {
+                Assert.Null(actual);
+            }
+            else
+            {
+                Assert.NotNull(actual);
+                Assert.Equal(expectedType, actual.GetValueKind());
+            }
         }
     }
     [Trait("Feat", "651")] // https://github.com/ThreeMammals/Ocelot/issues/651
@@ -803,7 +824,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJ : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
 
         [Fact]
         public void OcelotJson_ReturnsJsonFromBuilder()
@@ -823,7 +844,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJObject_ReturnsJObjectFromBuilder()
         {
             // Arrange
-            var jobj = new JObject { { "Routes", new JArray() } };
+            var jobj = new JsonObject { { "Routes", new JsonArray() } };
             GivenJObject(jobj);
 
             // Act
@@ -837,11 +858,11 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJRoutes_ReturnsRoutesArray()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Routes"": [{ ""Key"": ""route1"" }] }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""Routes"": [{ ""Key"": ""route1"" }] }");
+            GivenJObject(jobj.AsObject());
 
             // Act
-            JArray actual = _builder.OcelotJRoutes();
+            JsonArray actual = _builder.OcelotJRoutes();
 
             // Assert
             Assert.NotNull(actual);
@@ -852,8 +873,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJDynamicRoutes_ReturnsDynamicRoutesArray()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""DynamicRoutes"": [{ ""ServiceName"": ""service1"" }] }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""DynamicRoutes"": [{ ""ServiceName"": ""service1"" }] }");
+            GivenJObject(jobj.AsObject());
 
             // Act
             var actual = _builder.OcelotJDynamicRoutes();
@@ -867,8 +888,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJAggregates_ReturnsAggregatesArray()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Aggregates"": [{ ""UpstreamPathTemplate"": ""/agg"" }] }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""Aggregates"": [{ ""UpstreamPathTemplate"": ""/agg"" }] }");
+            GivenJObject(jobj.AsObject());
 
             // Act
             var actual = _builder.OcelotJAggregates();
@@ -882,15 +903,15 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalConfiguration_ReturnsGlobalConfigObject()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": ""https://ocelot.net"" } }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": ""https://ocelot.net"" } }");
+            GivenJObject(jobj.AsObject());
 
             // Act
             var actual = _builder.OcelotJGlobalConfiguration();
 
             // Assert
             Assert.NotNull(actual);
-            Assert.Equal("https://ocelot.net", actual["BaseUrl"].Value<string>());
+            Assert.Equal("https://ocelot.net", actual["BaseUrl"].GetValue<string>());
         }
     }
 
@@ -900,7 +921,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJRoute : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
         private const string UpstreamPathTemplate = nameof(FileRoute.UpstreamPathTemplate);
         private const string DownstreamPathTemplate = nameof(FileRoute.DownstreamPathTemplate);
         private const string Key = nameof(FileRoute.Key);
@@ -909,58 +930,58 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJRoute_FindByUpstreamPathTemplate_ReturnsMatchingRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""DownstreamPathTemplate"": ""/users"", ""Key"": ""route1"" },
                 { ""UpstreamPathTemplate"": ""/api/orders"", ""DownstreamPathTemplate"": ""/orders"", ""Key"": ""route2"" }
               ]
             }");
-            GivenJObject(jobj);
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/api/orders");
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("/api/orders", route[UpstreamPathTemplate].Value<string>());
-            Assert.Equal("/orders", route[DownstreamPathTemplate].Value<string>());
-            Assert.Equal("route2", route[Key].Value<string>());
+            Assert.Equal("/api/orders", route[UpstreamPathTemplate].GetValue<string>());
+            Assert.Equal("/orders", route[DownstreamPathTemplate].GetValue<string>());
+            Assert.Equal("route2", route[Key].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJRoute_FindByKey_ReturnsMatchingRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""GetUsers"" },
                 { ""UpstreamPathTemplate"": ""/api/orders"", ""Key"": ""GetOrders"" }
               ]
             }");
-            GivenJObject(jobj);
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute(key: "GetUsers");
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("GetUsers", route[Key].Value<string>());
-            Assert.Equal("/api/users", route[UpstreamPathTemplate].Value<string>());
+            Assert.Equal("GetUsers", route[Key].GetValue<string>());
+            Assert.Equal("/api/users", route[UpstreamPathTemplate].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJRoute_NoMatch_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""route1"" }
               ]
             }");
-            GivenJObject(jobj);
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/api/nonexistent");
@@ -973,8 +994,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJRoute_EmptyRoutes_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Routes"": [] }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""Routes"": [] }");
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/api/nonexistent");
@@ -987,49 +1008,49 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJRoute_CaseSensitiveComparison_FindsExactMatch()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/API/Users"", ""Key"": ""route1"" }
               ]
             }");
-            GivenJObject(jobj);
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/API/Users");
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("/API/Users", route[UpstreamPathTemplate].Value<string>());
-            Assert.Equal("route1", route[Key].Value<string>());
+            Assert.Equal("/API/Users", route[UpstreamPathTemplate].GetValue<string>());
+            Assert.Equal("route1", route[Key].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJRoute_CaseInsensitiveComparison_IgnoresCase()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""route1"" }
               ]
             }");
-            GivenJObject(jobj);
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/API/USERS");
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("/api/users", route[UpstreamPathTemplate].Value<string>());
+            Assert.Equal("/api/users", route[UpstreamPathTemplate].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJRoute_NullRoutesArray_HandleGracefully()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Routes"": null }");
-            GivenJObject(jobj);
+            var jobj = JsonNode.Parse(@"{ ""Routes"": null }");
+            GivenJObject(jobj.AsObject());
 
             // Act
             var route = _builder.OcelotJRoute("/api/nonexistent");
@@ -1045,7 +1066,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJDynamicRoute : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonNode jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj.AsObject();
         private const string ServiceName = nameof(FileDynamicRoute.ServiceName);
         private const string ServiceNamespace = nameof(FileDynamicRoute.ServiceNamespace);
         private const string Key = nameof(FileDynamicRoute.Key);
@@ -1054,7 +1075,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJDynamicRoute_FindByServiceName_NoNamespace_ReturnsMatchingRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""DynamicRoutes"": [
                 { ""ServiceName"": ""UserService"", ""ServiceNamespace"": """", ""Key"": ""dynamicRoute1"" },
@@ -1068,15 +1089,15 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("UserService", route[ServiceName].Value<string>());
-            Assert.Equal("dynamicRoute1", route[Key].Value<string>());
+            Assert.Equal("UserService", route[ServiceName].GetValue<string>());
+            Assert.Equal("dynamicRoute1", route[Key].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJDynamicRoute_FindByServiceNameAndNamespace_ReturnsMatchingRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""DynamicRoutes"": [
                 { ""ServiceName"": ""UserService"", ""ServiceNamespace"": ""v1"", ""Key"": ""dynamicRoute1"" },
@@ -1090,16 +1111,16 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("UserService", route[ServiceName].Value<string>());
-            Assert.Equal("v1", route[ServiceNamespace].Value<string>());
-            Assert.Equal("dynamicRoute1", route[Key].Value<string>());
+            Assert.Equal("UserService", route[ServiceName].GetValue<string>());
+            Assert.Equal("v1", route[ServiceNamespace].GetValue<string>());
+            Assert.Equal("dynamicRoute1", route[Key].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJDynamicRoute_FindByKey_ReturnsMatchingRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""DynamicRoutes"": [
                 { ""ServiceName"": ""UserService"", ""Key"": ""GetUsers"" },
@@ -1113,14 +1134,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("GetUsers", route[Key].Value<string>());
+            Assert.Equal("GetUsers", route[Key].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJDynamicRoute_NoMatch_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""DynamicRoutes"": [
                 { ""ServiceName"": ""UserService"", ""Key"": ""route1"" }
@@ -1139,7 +1160,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJDynamicRoute_NoDynamicRoutes_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""DynamicRoutes"": null }");
+            var jobj = JsonNode.Parse(@"{ ""DynamicRoutes"": null }");
             GivenJObject(jobj);
 
             // Act
@@ -1153,7 +1174,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJDynamicRoute_CaseSensitiveComparison_FindsExactMatch()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""DynamicRoutes"": [
                 { ""ServiceName"": ""UserService"", ""Key"": ""route1"" }
@@ -1166,14 +1187,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("UserService", route[ServiceName].Value<string>());
+            Assert.Equal("UserService", route[ServiceName].GetValue<string>());
 
             // Act
             route = _builder.OcelotJDynamicRoute("USERservice", comparison: StringComparison.OrdinalIgnoreCase);
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("UserService", route[ServiceName].Value<string>());
+            Assert.Equal("UserService", route[ServiceName].GetValue<string>());
         }
     }
 
@@ -1183,14 +1204,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJAggregate : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonNode jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj.AsObject();
         private const string UpstreamPathTemplate = nameof(FileAggregateRoute.UpstreamPathTemplate);
 
         [Fact]
         public void OcelotJAggregate_FindByUpstreamPathTemplate_ReturnsMatchingAggregate()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Aggregates"": [
                 { ""UpstreamPathTemplate"": ""/aggregated/users"", ""RouteKeys"": [""u1"", ""u2"" ] },
@@ -1204,14 +1225,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("/aggregated/users", route[UpstreamPathTemplate].Value<string>());
+            Assert.Equal("/aggregated/users", route[UpstreamPathTemplate].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJAggregate_NoMatch_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Aggregates"": [
                 { ""UpstreamPathTemplate"": ""/aggregated/users"", ""RouteKeys"": [""u1"", ""u2"" ] }
@@ -1230,7 +1251,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJAggregate_EmptyAggregates_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Aggregates"": [] }");
+            var jobj = JsonNode.Parse(@"{ ""Aggregates"": [] }");
             GivenJObject(jobj);
 
             // Act
@@ -1244,7 +1265,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJAggregate_CaseInsensitiveComparison_IgnoresCase()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Aggregates"": [
                 { ""UpstreamPathTemplate"": ""/aggregated/users"", ""RouteKeys"": [""u1"", ""u2"" ] }
@@ -1263,7 +1284,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJAggregate_CaseSensitiveComparison_FindsExactMatch()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Aggregates"": [
                 { ""UpstreamPathTemplate"": ""/aggregated/Users"", ""RouteKeys"": [""u1"", ""u2"" ] }
@@ -1276,14 +1297,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
 
             // Assert
             Assert.NotNull(route);
-            Assert.Equal("/aggregated/Users", route[nameof(FileAggregateRoute.UpstreamPathTemplate)].Value<string>());
+            Assert.Equal("/aggregated/Users", route[nameof(FileAggregateRoute.UpstreamPathTemplate)].GetValue<string>());
         }
 
         [Fact]
         public void OcelotJAggregate_NullAggregatesArray_HandleGracefully()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Aggregates"": null }");
+            var jobj = JsonNode.Parse(@"{ ""Aggregates"": null }");
             GivenJObject(jobj);
 
             // Act
@@ -1297,7 +1318,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJAggregate_NullUpstreamPathTemplate_HandleGracefully()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""Aggregates"": [] }");
+            var jobj = JsonNode.Parse(@"{ ""Aggregates"": [] }");
             GivenJObject(jobj);
 
             // Act
@@ -1314,14 +1335,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJGlobalProperty : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonNode jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj.AsObject();
         private const string UpstreamPathTemplate = nameof(FileAggregateRoute.UpstreamPathTemplate);
 
         [Fact]
         public void OcelotJGlobalProperty_PropertyExists_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""GlobalConfiguration"": {
                 ""BaseUrl"": ""https://ocelot.net"",
@@ -1342,7 +1363,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_NestedPropertyPath_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""GlobalConfiguration"": {
                 ""RateLimitOptions"": {
@@ -1365,7 +1386,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_PropertyNotFound_ReturnsDefault()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": ""https://ocelot.net"" } }");
+            var jobj = JsonNode.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": ""https://ocelot.net"" } }");
             GivenJObject(jobj);
 
             // Act
@@ -1379,7 +1400,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_NullValue_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": null } }");
+            var jobj = JsonNode.Parse(@"{ ""GlobalConfiguration"": { ""BaseUrl"": null } }");
             GivenJObject(jobj);
 
             // Act
@@ -1393,7 +1414,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_IntegerProperty_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""GlobalConfiguration"": {
                 ""ServiceDiscoveryProvider"": {
@@ -1414,7 +1435,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_BooleanProperty_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""GlobalConfiguration"": {
                 ""RateLimitOptions"": {
@@ -1435,7 +1456,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJGlobalProperty_GlobalConfigurationNull_HandleGracefully()
         {
             // Arrange
-            var jobj = JObject.Parse(@"{ ""GlobalConfiguration"": null }");
+            var jobj = JsonNode.Parse(@"{ ""GlobalConfiguration"": null }");
             GivenJObject(jobj);
 
             // Act
@@ -1452,13 +1473,13 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
     public class OcelotJProperty : UnitTest
     {
         private readonly ConfigurationBuilder _builder = new();
-        private void GivenJObject(JObject jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj;
+        private void GivenJObject(JsonNode jobj) => _builder.Properties[ConfigurationBuilderExtensions.MergedConfigJObjectKey] = jobj.AsObject();
 
         [Fact]
         public void OcelotJProperty_PropertyFoundInRoute_ReturnsRouteProperty()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""TimeoutInMilliseconds"": 5000 }
@@ -1480,7 +1501,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_PropertyNotFoundInRoute_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""GetUsers"" }
@@ -1502,7 +1523,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RoutePropertyIsNull_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Timeout"": null }
@@ -1524,7 +1545,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NestedPropertyPathInRoute_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 {
@@ -1549,7 +1570,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NestedPropertyPathInGlobal_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"" }
@@ -1573,7 +1594,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_StringProperty_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""DownstreamScheme"": ""https"" }
@@ -1593,7 +1614,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_IntegerProperty_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Priority"": 1 }
@@ -1615,7 +1636,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BooleanProperty_ReturnsValue()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""AuthenticationOptions"": { ""Enabled"": true } }
@@ -1635,7 +1656,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RouteNotFound_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""GetUsers"" }
@@ -1657,7 +1678,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_FindRouteByKey_ReturnsRouteProperty()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Key"": ""GetUsers"", ""TimeoutInMilliseconds"": 5000 }
@@ -1677,7 +1698,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_CaseSensitiveComparison_FindsExactMatch()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/API/Users"", ""TimeoutInMilliseconds"": 5000 }
@@ -1699,7 +1720,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_CaseInsensitiveComparison_IgnoresCase()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""TimeoutInMilliseconds"": 5000 }
@@ -1721,7 +1742,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_PropertyNullValue_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Description"": null }
@@ -1743,7 +1764,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_GlobalPropertyNotFound_ReturnsDefault()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"" }
@@ -1763,7 +1784,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BothRoutesAndGlobalNull_ReturnsNull()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""Description"": null }
@@ -1785,7 +1806,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NoRoutes_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [],
               ""GlobalConfiguration"": {
@@ -1805,7 +1826,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_MultipleRoutes_FindsCorrectRoute()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [
                 { ""UpstreamPathTemplate"": ""/api/users"", ""TimeoutInMilliseconds"": 5000 },
@@ -1828,7 +1849,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NullPathTemplate_FallsBackToGlobal()
         {
             // Arrange
-            var jobj = JObject.Parse(@"
+            var jobj = JsonNode.Parse(@"
             {
               ""Routes"": [],
               ""GlobalConfiguration"": {
@@ -1854,12 +1875,12 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RoutePropertyExists_ReturnsRouteProperty()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""UpstreamPathTemplate"": ""/api/users"",
               ""TimeoutInMilliseconds"": 5000
-            }");
-            var global = JObject.Parse(@"{ ""TimeoutInMilliseconds"": 30000 }");
+            }").AsObject();
+            var global = JsonNode.Parse(@"{ ""TimeoutInMilliseconds"": 30000 }").AsObject();
 
             // Act
             var timeout = route.OcelotJProperty<int>("TimeoutInMilliseconds", global);
@@ -1872,8 +1893,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_PropertyNotInRoute_FallsBackToGlobal()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }");
-            var global = JObject.Parse(@"{ ""RequestIdKey"": ""OcelotRequestId"" }");
+            var route = JsonNode.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""RequestIdKey"": ""OcelotRequestId"" }")
+                .AsObject();
 
             // Act
             var requestIdKey = route.OcelotJProperty<string>("RequestIdKey", global);
@@ -1886,8 +1909,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RoutePropertyIsNull_FallsBackToGlobal()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"", ""Timeout"": null }");
-            var global = JObject.Parse(@"{ ""Timeout"": 30000 }");
+            var route = JsonNode.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"", ""Timeout"": null }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""Timeout"": 30000 }")
+                .AsObject();
 
             // Act
             var timeout = route.OcelotJProperty<int>("Timeout", global);
@@ -1900,13 +1925,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NestedPathInRoute_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""AuthenticationOptions"": {
                 ""AuthenticationProviderKey"": ""Bearer""
               }
-            }");
-            var global = JObject.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }");
+            }").AsObject();
+            var global = JsonNode.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }")
+                .AsObject();
 
             // Act
             var authKey = route.OcelotJProperty<string>("AuthenticationOptions.AuthenticationProviderKey", global);
@@ -1919,13 +1945,14 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NestedPathInGlobal_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }");
-            var global = JObject.Parse(@"
+            var route = JsonNode.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }")
+                .AsObject();
+            var global = JsonNode.Parse(@"
             {
               ""ServiceDiscoveryProvider"": {
                 ""Host"": ""localhost""
               }
-            }");
+            }").AsObject();
 
             // Act
             var host = route.OcelotJProperty<string>("ServiceDiscoveryProvider.Host", global);
@@ -1938,8 +1965,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_StringProperty_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""DownstreamScheme"": ""https"" }");
-            var global = JObject.Parse(@"{ ""DownstreamScheme"": ""http"" }");
+            var route = JsonNode.Parse(@"{ ""DownstreamScheme"": ""https"" }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""DownstreamScheme"": ""http"" }")
+                .AsObject();
 
             // Act
             var scheme = route.OcelotJProperty<string>("DownstreamScheme", global);
@@ -1952,8 +1981,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_IntegerProperty_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""Priority"": 1 }");
-            var global = JObject.Parse(@"{ ""Priority"": 99 }");
+            var route = JsonNode.Parse(@"{ ""Priority"": 1 }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""Priority"": 99 }")
+                .AsObject();
 
             // Act
             var priority = route.OcelotJProperty<int>("Priority", global);
@@ -1966,8 +1997,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BooleanProperty_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""AuthenticationOptions"": { ""Enabled"": true } }");
-            var global = JObject.Parse(@"{ ""AuthenticationOptions"": { ""Enabled"": false } }");
+            var route = JsonNode.Parse(@"{ ""AuthenticationOptions"": { ""Enabled"": true } }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""AuthenticationOptions"": { ""Enabled"": false } }")
+                .AsObject();
 
             // Act
             var enabled = route.OcelotJProperty<bool>("AuthenticationOptions.Enabled", global);
@@ -1980,8 +2013,9 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NullRoute_FallsBackToGlobal()
         {
             // Arrange
-            JObject route = null;
-            var global = JObject.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }");
+            JsonObject route = null;
+            var global = JsonNode.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }")
+                .AsObject();
 
             // Act
             var baseUrl = route.OcelotJProperty<string>("BaseUrl", global);
@@ -1994,8 +2028,9 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_NullGlobalConfiguration_ReturnsNull()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }");
-            JObject global = null;
+            var route = JsonNode.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }")
+                .AsObject();
+            JsonObject global = null;
 
             // Act
             var actual = route.OcelotJProperty<string>("NonexistentProperty", global);
@@ -2008,8 +2043,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BothNulls_ReturnsNull()
         {
             // Arrange
-            JObject route = null;
-            JObject global = null;
+            JsonObject route = null;
+            JsonObject global = null;
 
             // Act
             var actual = route.OcelotJProperty<string>("AnyProperty", global);
@@ -2022,8 +2057,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_GlobalPropertyNotFound_ReturnsNull()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }");
-            var global = JObject.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }");
+            var route = JsonNode.Parse(@"{ ""UpstreamPathTemplate"": ""/api/users"" }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""BaseUrl"": ""https://ocelot.net"" }")
+                .AsObject();
 
             // Act
             var actual = route.OcelotJProperty<string>("NonexistentProperty", global);
@@ -2036,8 +2073,10 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RoutePropertyIsJTokenNull_FallsBackToGlobal()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""Description"": null }");
-            var global = JObject.Parse(@"{ ""Description"": ""Global Description"" }");
+            var route = JsonNode.Parse(@"{ ""Description"": null }")
+                .AsObject();
+            var global = JsonNode.Parse(@"{ ""Description"": ""Global Description"" }")
+                .AsObject();
 
             // Act
             var description = route.OcelotJProperty<string>("Description", global);
@@ -2050,7 +2089,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_DefaultGlobalConfiguration_UsesStaticMergedConfigJObject()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""Key"": ""route1"" }");
+            var route = JsonNode.Parse(@"{ ""Key"": ""route1"" }").AsObject();
             // Not passing global configuration, so it should use the static MergedConfigJObject if available
 
             // Act - this tests the null coalescing for globalConfiguration
@@ -2064,7 +2103,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_MultipleNestingLevels_ReturnsValue()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""Level1"": {
                 ""Level2"": {
@@ -2073,8 +2112,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
                   }
                 }
               }
-            }");
-            var global = JObject.Parse(@"{}");
+            }").AsObject();
+            var global = JsonNode.Parse(@"{}").AsObject();
 
             // Act
             var value = route.OcelotJProperty<string>("Level1.Level2.Level3.Value", global);
@@ -2087,16 +2126,16 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_ComplexType_ReturnsCorrectly()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""DownstreamHostAndPorts"": [
                 { ""Host"": ""localhost"", ""Port"": 5000 }
               ]
-            }");
-            var global = JObject.Parse(@"{}");
+            }").AsObject();
+            var global = JsonNode.Parse(@"{}").AsObject();
 
             // Act
-            var hostAndPorts = route.OcelotJProperty<JArray>("DownstreamHostAndPorts", global);
+            var hostAndPorts = route.OcelotJProperty<JsonArray>("DownstreamHostAndPorts", global);
 
             // Assert
             Assert.NotNull(hostAndPorts);
@@ -2107,22 +2146,22 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BothRouteAndGlobalHaveProperty_PreferRoute()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""Level1"": {
                 ""Level2"": {
                   ""Value"": ""RouteValue""
                 }
               }
-            }");
-            var global = JObject.Parse(@"
+            }").AsObject();
+            var global = JsonNode.Parse(@"
             {
               ""Level1"": {
                 ""Level2"": {
                   ""Value"": ""GlobalValue""
                 }
               }
-            }");
+            }").AsObject();
 
             // Act
             var value = route.OcelotJProperty<string>("Level1.Level2.Value", global);
@@ -2135,20 +2174,20 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_RouteHasPartialPath_FallsBackToGlobal()
         {
             // Arrange
-            var route = JObject.Parse(@"
+            var route = JsonNode.Parse(@"
             {
               ""Level1"": {
                 ""Level2"": null
               }
-            }");
-            var global = JObject.Parse(@"
+            }").AsObject();
+            var global = JsonNode.Parse(@"
             {
               ""Level1"": {
                 ""Level2"": {
                   ""Value"": ""GlobalValue""
                 }
               }
-            }");
+            }").AsObject();
 
             // Act - path doesn't exist in route, should get null and return global's result
             var value = route.OcelotJProperty<string>("Level1.Level2.Value", global);
@@ -2161,8 +2200,8 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         public void OcelotJProperty_BothAreNull_ReturnsNull()
         {
             // Arrange
-            var route = JObject.Parse(@"{ ""Key"": null }");
-            var global = JObject.Parse(@"{ ""Key"": null }");
+            var route = JsonNode.Parse(@"{ ""Key"": null }").AsObject();
+            var global = JsonNode.Parse(@"{ ""Key"": null }").AsObject();
 
             // Act
             var actual = route.OcelotJProperty<string>("Key", global);
@@ -2192,7 +2231,7 @@ public class ConfigurationBuilderExtensionsTestsBase : FileUnitTest
     {
         fileName ??= string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, key);
         var fullPath = Path.Combine(folder, fileName);
-        File.WriteAllText(fullPath, JsonConvert.SerializeObject(configuration, Formatting.Indented));
+        File.WriteAllText(fullPath, JsonSerializer.Serialize(configuration, OcelotSerializerOptions.WebWriteIndented));
         files.Add(fullPath); // important for cleaning up files
         return fullPath;
     }

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.Configuration.Repository;
 
@@ -234,14 +235,14 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     private static void ThenTheOcelotJsonIsStoredAs(FileInfo ocelotJson, FileConfiguration expecteds)
     {
         var actual = File.ReadAllText(ocelotJson.FullName);
-        var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
+        var expectedText = JsonSerializer.Serialize(expecteds, OcelotSerializerOptions.WebWriteIndented);
         actual.ShouldBe(expectedText);
     }
 
     private void GivenTheConfigurationIs(FileConfiguration fileConfiguration, [CallerMemberName] string environmentName = null)
     {
         var environmentSpecificPath = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
-        var jsonConfiguration = JsonConvert.SerializeObject(fileConfiguration, Formatting.Indented);
+        var jsonConfiguration = JsonSerializer.Serialize(fileConfiguration, OcelotSerializerOptions.WebWriteIndented);
         var environmentSpecific = new FileInfo(environmentSpecificPath);
         if (environmentSpecific.Exists)
         {
@@ -256,7 +257,7 @@ public sealed class DiskFileConfigurationRepositoryTests : FileUnitTest
     {
         var environmentSpecific = Path.Combine(TestID, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, environmentName));
         var actual = File.ReadAllText(environmentSpecific);
-        var expectedText = JsonConvert.SerializeObject(expecteds, Formatting.Indented);
+        var expectedText = JsonSerializer.Serialize(expecteds, OcelotSerializerOptions.WebWriteIndented);
         actual.ShouldBe(expectedText);
         files.Add(environmentSpecific);
     }

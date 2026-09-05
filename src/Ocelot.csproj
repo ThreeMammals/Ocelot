@@ -41,7 +41,7 @@
   </PropertyGroup>
   <!-- Project dependencies -->
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.12" />
+    <PackageReference Include="System.Text.Json" Version="10.0.10" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="IPAddressRange" Version="6.3.0" />
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32"><!-- deprecated -->
