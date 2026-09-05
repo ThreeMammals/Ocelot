@@ -164,9 +164,29 @@ public class SSEBrowserTests : IAsyncLifetime
     public async Task SignalR_SSE_Through_Ocelot_ShouldWorkInBrowser()
     {
         var connectionStartedTcs = new TaskCompletionSource<bool>();
+        var msg1Tcs = new TaskCompletionSource<long>();
+        var msg2Tcs = new TaskCompletionSource<long>();
+        var msg3Tcs = new TaskCompletionSource<long>();
+        var sw = new System.Diagnostics.Stopwatch();
+
         _page.Console += (_, e) =>
         {
-            if (e.Text == "Connection started") connectionStartedTcs.TrySetResult(true);
+            if (e.Text == "Connection started")
+            {
+                connectionStartedTcs.TrySetResult(true);
+            }
+            else if (e.Text == "Received: Message 1")
+            {
+                msg1Tcs.TrySetResult(sw.ElapsedMilliseconds);
+            }
+            else if (e.Text == "Received: Message 2")
+            {
+                msg2Tcs.TrySetResult(sw.ElapsedMilliseconds);
+            }
+            else if (e.Text == "Received: Message 3")
+            {
+                msg3Tcs.TrySetResult(sw.ElapsedMilliseconds);
+            }
         };
 
         var html = $@"
@@ -181,6 +201,7 @@ public class SSEBrowserTests : IAsyncLifetime
                         .withUrl('http://localhost:{OcelotPort}/proxy/testhub', {{ transport: signalR.HttpTransportType.ServerSentEvents }})
                         .build();
                     connection.on('ReceiveMessage', msg => {{
+                        console.log('Received: ' + msg);
                         const d = document.createElement('div');
                         d.textContent = 'Received: ' + msg;
                         document.getElementById('log').appendChild(d);
@@ -194,10 +215,31 @@ public class SSEBrowserTests : IAsyncLifetime
         await connectionStartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
 
         var hub = _downstreamApp.Services.GetRequiredService<IHubContext<SseHub>>();
-        await hub.Clients.All.SendAsync("ReceiveMessage", "Hello from Ocelot!", cancellationToken: Xunit.TestContext.Current.CancellationToken);
+        sw.Start();
+
+        // Send Message 1
+        await hub.Clients.All.SendAsync("ReceiveMessage", "Message 1", cancellationToken: Xunit.TestContext.Current.CancellationToken);
+        var t1 = await msg1Tcs.Task.WaitAsync(TimeSpan.FromSeconds(2), Xunit.TestContext.Current.CancellationToken);
+        t1.ShouldBeLessThan(500);
+
+        // Wait 500ms before sending Message 2
+        await Task.Delay(500, Xunit.TestContext.Current.CancellationToken);
+        await hub.Clients.All.SendAsync("ReceiveMessage", "Message 2", cancellationToken: Xunit.TestContext.Current.CancellationToken);
+        var t2 = await msg2Tcs.Task.WaitAsync(TimeSpan.FromSeconds(2), Xunit.TestContext.Current.CancellationToken);
+
+        // Wait 500ms before sending Message 3
+        await Task.Delay(500, Xunit.TestContext.Current.CancellationToken);
+        await hub.Clients.All.SendAsync("ReceiveMessage", "Message 3", cancellationToken: Xunit.TestContext.Current.CancellationToken);
+        var t3 = await msg3Tcs.Task.WaitAsync(TimeSpan.FromSeconds(2), Xunit.TestContext.Current.CancellationToken);
+
+        // Gaps prove messages delivered one by one as sent, not batched
+        (t2 - t1).ShouldBeGreaterThanOrEqualTo(400);
+        (t3 - t2).ShouldBeGreaterThanOrEqualTo(400);
 
         var logText = await _page.Locator("#log").InnerTextAsync();
-        logText.ShouldContain("Received: Hello from Ocelot!");
+        logText.ShouldContain("Received: Message 1");
+        logText.ShouldContain("Received: Message 2");
+        logText.ShouldContain("Received: Message 3");
     }
 
     private class SseHub : Hub { }
