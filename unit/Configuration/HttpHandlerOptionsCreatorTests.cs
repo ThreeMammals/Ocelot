@@ -297,6 +297,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         FileHttpHandlerOptions options = new()
         {
             AllowAutoRedirect = isDef ? null : true,
+            EnableMultipleHttp2Connections = isDef ? null : true,
             MaxConnectionsPerServer = isDef ? null : 333,
             PooledConnectionLifetimeSeconds = isDef ? null : 333,
             UseCookieContainer = isDef ? null : true,
@@ -306,6 +307,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         FileHttpHandlerOptions globalOptions = new()
         {
             AllowAutoRedirect = isDef ? null : false,
+            EnableMultipleHttp2Connections = isDef ? null : false,
             MaxConnectionsPerServer = isDef ? null : 111,
             PooledConnectionLifetimeSeconds = isDef ? null : 111,
             UseCookieContainer = isDef ? null : false,
@@ -318,6 +320,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
 
         // Assert
         Assert.Equal(!isDef, actual.AllowAutoRedirect);
+        Assert.Equal(!isDef, actual.EnableMultipleHttp2Connections);
         Assert.Equal(isDef ? int.MaxValue : 333, actual.MaxConnectionsPerServer);
         Assert.Equal(isDef ? HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds : 333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.Equal(!isDef, actual.UseCookieContainer);
@@ -328,6 +331,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     private static FileHttpHandlerOptions RouteOptions() => new()
     {
         AllowAutoRedirect = true,
+        EnableMultipleHttp2Connections = true,
         MaxConnectionsPerServer = 333,
         PooledConnectionLifetimeSeconds = 333,
         UseCookieContainer = true,
@@ -341,6 +345,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         {
             RouteKeys = null,
             AllowAutoRedirect = false,
+            EnableMultipleHttp2Connections = false,
             MaxConnectionsPerServer = 111,
             PooledConnectionLifetimeSeconds = 111,
             UseCookieContainer = false,
