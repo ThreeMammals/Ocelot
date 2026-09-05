@@ -1,5 +1,9 @@
 Rate Limiting
 =============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
   Feature label: `Rate Limiting <https://github.com/ThreeMammals/Ocelot/labels/Rate%20Limiting>`_
 
@@ -271,7 +275,7 @@ Therefore, when client traffic enters the Ocelot pipeline, the current request i
 Roadmap
 -------
 
-  | Feature label: `Rate Limiting`_
+  | Feature label: `Rate Limiting <https://github.com/ThreeMammals/Ocelot/labels/Rate%20Limiting>`__
   | Development history: `Rate Limiting <https://github.com/ThreeMammals/Ocelot/pulls?q=is%3Apr+label%3A%22Rate+Limiting%22>`__ [#f4]_
 
 - **Rules**: The Ocelot team is considering a redesign of the *Rate Limiting* feature in light of the "`Announcing Rate Limiting for .NET`_" article by Brennan Conroy, published on July 13th, 2022.
@@ -323,7 +327,7 @@ Filter the current discussions by the `Rate Limiting <https://github.com/ThreeMa
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png
   :alt: octocat
