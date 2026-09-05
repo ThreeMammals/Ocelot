@@ -38,6 +38,9 @@ public class SSEBrowserTests : IAsyncLifetime
             ctx.Response.ContentType = "text/event-stream";
             await ctx.Response.WriteAsync("data: event1\n\n");
             await ctx.Response.Body.FlushAsync();
+            await Task.Delay(1000);
+            await ctx.Response.WriteAsync("data: event2\n\n");
+            await ctx.Response.Body.FlushAsync();
         });
         _downstreamApp.MapGet("/not-sse", async ctx =>
         {
@@ -108,16 +111,36 @@ public class SSEBrowserTests : IAsyncLifetime
     [Trait("Feat", "941")]
     public async Task Sse_Streaming_Through_Ocelot_ShouldWorkInBrowser()
     {
-        IResponse response = null;
-        _page.Response += (_, r) => { if (r.Url.Contains("sse-plain")) response = r; };
-
+        var event1Received = new TaskCompletionSource<long>();
+        var event2Received = new TaskCompletionSource<long>();
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        await _page.GotoAsync($"http://localhost:{OcelotPort}/proxy/sse-plain");
-        sw.Stop();
 
-        response.ShouldNotBeNull();
-        response.Headers.ContainsKey("content-encoding").ShouldBeTrue();
-        sw.ElapsedMilliseconds.ShouldBeLessThan(1000);
+        _page.Console += (_, e) =>
+        {
+            if (e.Text == "Event: event1") event1Received.TrySetResult(sw.ElapsedMilliseconds);
+            if (e.Text == "Event: event2") event2Received.TrySetResult(sw.ElapsedMilliseconds);
+        };
+
+        var html = $@"
+            <html>
+            <body>
+                <script>
+                    const es = new EventSource('http://localhost:{OcelotPort}/proxy/sse-plain');
+                    es.onmessage = e => console.log('Event: ' + e.data);
+                </script>
+            </body>
+            </html>";
+
+        await _page.SetContentAsync(html);
+
+        var t1 = await event1Received.Task.WaitAsync(TimeSpan.FromSeconds(2), Xunit.TestContext.Current.CancellationToken);
+        t1.ShouldBeLessThan(600);
+
+        var t2 = await event2Received.Task.WaitAsync(TimeSpan.FromSeconds(4), Xunit.TestContext.Current.CancellationToken);
+        t2.ShouldBeGreaterThanOrEqualTo(900);
+
+        var delta = t2 - t1;
+        delta.ShouldBeGreaterThanOrEqualTo(800);
     }
 
     [Fact]

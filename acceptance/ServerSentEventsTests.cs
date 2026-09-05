@@ -13,7 +13,7 @@ namespace Ocelot.Acceptance;
 
 public class ServerSentEventsTests : Steps
 {
-    private readonly List<string> _receivedEvents = [];
+    private readonly List<(string Text, long ElapsedMs)> _receivedEvents = [];
     private readonly Stopwatch _stopwatch = new();
 
     [Fact]
@@ -75,12 +75,7 @@ public class ServerSentEventsTests : Steps
                 if (line == null) break;
                 if (!string.IsNullOrEmpty(line))
                 {
-                    _receivedEvents.Add(line);
-
-                    if (_receivedEvents.Count == 1)
-                    {
-                        _stopwatch.Stop();
-                    }
+                    _receivedEvents.Add((line, _stopwatch.ElapsedMilliseconds));
                 }
             }
         }
@@ -91,11 +86,18 @@ public class ServerSentEventsTests : Steps
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         _receivedEvents.Count.ShouldBeGreaterThanOrEqualTo(2);
-        _receivedEvents[0].ShouldBe("data: event1");
-        _receivedEvents[1].ShouldBe("data: event2");
+        _receivedEvents[0].Text.ShouldBe("data: event1");
+        _receivedEvents[1].Text.ShouldBe("data: event2");
 
-        // The first event should be received way before the 1000ms delay finishes.
-        _stopwatch.ElapsedMilliseconds.ShouldBeLessThan(500);
+        // First event must arrive early before downstream delay finishes
+        _receivedEvents[0].ElapsedMs.ShouldBeLessThan(500);
+
+        // Second event must arrive after 1000ms delay finishes
+        _receivedEvents[1].ElapsedMs.ShouldBeGreaterThanOrEqualTo(900);
+
+        // Delta between event 1 and event 2 proves true streaming over time, not batch delivery
+        var delta = _receivedEvents[1].ElapsedMs - _receivedEvents[0].ElapsedMs;
+        delta.ShouldBeGreaterThanOrEqualTo(800);
     }
 
     private void GivenOcelotIsRunningWithCompression()
