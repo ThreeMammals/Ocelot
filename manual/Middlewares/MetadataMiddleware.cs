@@ -1,4 +1,5 @@
-﻿using Ocelot.Logging;
+﻿using Ocelot.Infrastructure;
+using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.Text.Json;
 
@@ -15,8 +16,8 @@ public class MetadataMiddleware
         {
             logger.LogInformation(() =>
             {
-                var metadataInJson = JsonSerializer.Serialize(metadata, JsonSerializerOptions.Web);
-                var message = $"{nameof(MetadataMiddleware)} found some metadata: {metadataInJson}";
+                var metadataInJson = JsonSerializer.Serialize(metadata, OcelotSerializerOptions.Web);
+                var message = $"My {nameof(MetadataMiddleware)} found some metadata: {metadataInJson}";
                 return message;
             });
         }

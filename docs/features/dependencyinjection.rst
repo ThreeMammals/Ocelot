@@ -131,6 +131,14 @@ Current `implementation <https://github.com/search?q=repo%3AThreeMammals%2FOcelo
             .AddControllersAsServices()
             .AddAuthorization()
             .AddNewtonsoftJson();
+            .AddJsonOptions(op =>
+            {
+                op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                op.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+                op.JsonSerializerOptions.WriteIndented = false;
+                op.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                op.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            });
     }
 
 The method cannot be overridden. It is not virtual, and there is no way to override the current behavior by inheritance.

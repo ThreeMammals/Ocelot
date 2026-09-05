@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
-using Newtonsoft.Json;
 using Ocelot.Configuration.ChangeTracking;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
+using Ocelot.Infrastructure;
+using System.Text.Json;
 using FileIO = System.IO.File;
 
 namespace Ocelot.Configuration.Repository;
@@ -53,7 +54,7 @@ public class DiskFileConfigurationRepository : IFileConfigurationRepository, IDi
             _semaphore.Release();
         }
 
-        return JsonConvert.DeserializeObject<FileConfiguration>(json);
+        return JsonSerializer.Deserialize<FileConfiguration>(json);
     }
 
     public async Task<FileConfiguration> GetAsync(CancellationToken cancellationToken = default)
@@ -69,12 +70,12 @@ public class DiskFileConfigurationRepository : IFileConfigurationRepository, IDi
             _semaphore.Release();
         }
 
-        return JsonConvert.DeserializeObject<FileConfiguration>(json);
+        return JsonSerializer.Deserialize<FileConfiguration>(json);
     }
 
     public void Set(FileConfiguration configuration)
     {
-        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+        var json = JsonSerializer.Serialize(configuration, OcelotSerializerOptions.WebWriteIndented);
         _semaphore.Wait();
         try
         {
@@ -98,7 +99,7 @@ public class DiskFileConfigurationRepository : IFileConfigurationRepository, IDi
 
     public async Task SetAsync(FileConfiguration configuration, CancellationToken cancellationToken = default)
     {
-        var json = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+        var json = JsonSerializer.Serialize(configuration, OcelotSerializerOptions.WebWriteIndented);
         await _semaphore.WaitAsync(cancellationToken);
         try
         {

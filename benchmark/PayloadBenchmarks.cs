@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.Benchmarks;
 
@@ -89,7 +90,7 @@ public sealed class PayloadBenchmarks : ManualConfig, IDisposable
     private static object[] GeneratePayload(int size, string directory, string fileName, bool isJson)
     {
         var filePath = Path.Combine(directory, fileName);
-        var generateDummy = isJson ? (Func<int, string, string>) GenerateDummyJsonFile : GenerateDummyDatFile;
+        var generateDummy = isJson ? (Func<int, string, string>)GenerateDummyJsonFile : GenerateDummyDatFile;
         return new object[]
         {
             generateDummy(size, filePath),

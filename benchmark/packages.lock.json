@@ -20,6 +20,12 @@
           "System.Management": "9.0.5"
         }
       },
+      "Bogus": {
+        "type": "Direct",
+        "requested": "[35.5.1, )",
+        "resolved": "35.5.1",
+        "contentHash": "GBp2peww04szEJ0GlBlzCYilFDaSkL7Ja4m37YeTRjC/mgoiZnUuifmgUxVD/oLU2MC1uoXfQYK91doGp7Zkpg=="
+      },
       "Serilog.AspNetCore": {
         "type": "Direct",
         "requested": "[10.0.0, )",
@@ -34,6 +40,12 @@
           "Serilog.Sinks.Debug": "3.0.0",
           "Serilog.Sinks.File": "7.0.0"
         }
+      },
+      "System.Text.Json": {
+        "type": "Direct",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q=="
       },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",
@@ -490,7 +502,6 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[10.0.10, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.10, )",
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       },
@@ -525,6 +536,12 @@
           "System.Management": "9.0.5"
         }
       },
+      "Bogus": {
+        "type": "Direct",
+        "requested": "[35.5.1, )",
+        "resolved": "35.5.1",
+        "contentHash": "GBp2peww04szEJ0GlBlzCYilFDaSkL7Ja4m37YeTRjC/mgoiZnUuifmgUxVD/oLU2MC1uoXfQYK91doGp7Zkpg=="
+      },
       "Serilog.AspNetCore": {
         "type": "Direct",
         "requested": "[10.0.0, )",
@@ -538,6 +555,16 @@
           "Serilog.Sinks.Console": "6.1.1",
           "Serilog.Sinks.Debug": "3.0.0",
           "Serilog.Sinks.File": "7.0.0"
+        }
+      },
+      "System.Text.Json": {
+        "type": "Direct",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q==",
+        "dependencies": {
+          "System.IO.Pipelines": "10.0.10",
+          "System.Text.Encodings.Web": "10.0.10"
         }
       },
       "BenchmarkDotNet.Annotations": {
@@ -1017,23 +1044,14 @@
         "resolved": "10.0.10",
         "contentHash": "o16m2YpDN/pjHsnxf9pTGwkpcuvjW8v1/wGUwJtM1c3QZUKm7ZEO/eYRJg7iIx6GxS2Zv9lAMHpiQwHDdgqauA=="
       },
-      "System.Text.Json": {
-        "type": "Transitive",
-        "resolved": "10.0.10",
-        "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q==",
-        "dependencies": {
-          "System.IO.Pipelines": "10.0.10",
-          "System.Text.Encodings.Web": "10.0.10"
-        }
-      },
       "ocelot": {
         "type": "Project",
         "dependencies": {
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.29, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.29, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[10.0.10, )"
         }
       },
       "ocelot.testing": {
@@ -1068,6 +1086,12 @@
           "System.Management": "9.0.5"
         }
       },
+      "Bogus": {
+        "type": "Direct",
+        "requested": "[35.5.1, )",
+        "resolved": "35.5.1",
+        "contentHash": "GBp2peww04szEJ0GlBlzCYilFDaSkL7Ja4m37YeTRjC/mgoiZnUuifmgUxVD/oLU2MC1uoXfQYK91doGp7Zkpg=="
+      },
       "Serilog.AspNetCore": {
         "type": "Direct",
         "requested": "[10.0.0, )",
@@ -1081,6 +1105,16 @@
           "Serilog.Sinks.Console": "6.1.1",
           "Serilog.Sinks.Debug": "3.0.0",
           "Serilog.Sinks.File": "7.0.0"
+        }
+      },
+      "System.Text.Json": {
+        "type": "Direct",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q==",
+        "dependencies": {
+          "System.IO.Pipelines": "10.0.10",
+          "System.Text.Encodings.Web": "10.0.10"
         }
       },
       "BenchmarkDotNet.Annotations": {
@@ -1547,23 +1581,14 @@
         "resolved": "10.0.10",
         "contentHash": "o16m2YpDN/pjHsnxf9pTGwkpcuvjW8v1/wGUwJtM1c3QZUKm7ZEO/eYRJg7iIx6GxS2Zv9lAMHpiQwHDdgqauA=="
       },
-      "System.Text.Json": {
-        "type": "Transitive",
-        "resolved": "10.0.10",
-        "contentHash": "bmsO6UdYtBdtn32zYXfsh7KlyTIzV/3V9hdT9RIb4pXKgYOsNxXR+VbWigNwBtNFVGYGm6Hwmqw5a+/IWFd36Q==",
-        "dependencies": {
-          "System.IO.Pipelines": "10.0.10",
-          "System.Text.Encodings.Web": "10.0.10"
-        }
-      },
       "ocelot": {
         "type": "Project",
         "dependencies": {
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.18, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.18, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[10.0.10, )"
         }
       },
       "ocelot.testing": {

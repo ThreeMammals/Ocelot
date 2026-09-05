@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+using Ocelot.Infrastructure;
+using System.Text.Json;
 
 namespace Ocelot.RateLimiting;
 
@@ -16,7 +17,7 @@ public class DistributedCacheRateLimitStorage : IRateLimitStorage
     public DistributedCacheRateLimitStorage(IDistributedCache memoryCache) => _memoryCache = memoryCache;
 
     public void Set(string id, RateLimitCounter counter, TimeSpan expirationTime)
-        => _memoryCache.SetString(id, JsonConvert.SerializeObject(counter), new DistributedCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
+        => _memoryCache.SetString(id, JsonSerializer.Serialize(counter, OcelotSerializerOptions.Web), new DistributedCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
 
     public bool Exists(string id) => !string.IsNullOrEmpty(_memoryCache.GetString(id));
 
@@ -24,7 +25,7 @@ public class DistributedCacheRateLimitStorage : IRateLimitStorage
     {
         var stored = _memoryCache.GetString(id);
         return string.IsNullOrEmpty(stored) ? null :
-            JsonConvert.DeserializeObject<RateLimitCounter>(stored);
+            JsonSerializer.Deserialize<RateLimitCounter>(stored, OcelotSerializerOptions.Web);
     }
 
     public void Remove(string id) => _memoryCache.Remove(id);

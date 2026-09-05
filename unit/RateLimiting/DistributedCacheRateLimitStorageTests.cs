@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using Ocelot.RateLimiting;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
@@ -23,7 +23,7 @@ public class DistributedCacheRateLimitStorageTests
         var id = "test-id";
         var counter = new RateLimitCounter(DateTime.UtcNow, null, 5);
         var expiration = TimeSpan.FromMinutes(1);
-        var expectedJson = JsonConvert.SerializeObject(counter);
+        var expectedJson = JsonSerializer.Serialize(counter);
         var expectedBytes = Encoding.UTF8.GetBytes(expectedJson);
         _cache.Setup(c => c.Set(id, It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>()));
 
@@ -59,7 +59,7 @@ public class DistributedCacheRateLimitStorageTests
         // Arrange
         var id = "get-id";
         var counter = new RateLimitCounter(DateTime.UtcNow, null, 3);
-        var json = JsonConvert.SerializeObject(counter);
+        var json = JsonSerializer.Serialize(counter);
         var bytes = Encoding.UTF8.GetBytes(json);
         _cache.Setup(c => c.Get(id)).Returns(bytes);
 

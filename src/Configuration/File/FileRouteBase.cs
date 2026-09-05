@@ -1,6 +1,5 @@
 ﻿using Ocelot.Configuration.Creator;
 using System.Text.Json.Serialization;
-using NewtonsoftJsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Ocelot.Configuration.File;
 
@@ -31,7 +30,7 @@ public abstract class FileRouteBase : IRouteGrouping
     public IDictionary<string, string> Metadata { get; set; }
     public FileQoSOptions QoSOptions { get; set; }
     public FileRateLimitByHeaderRule RateLimitOptions { get; set; } // IRouteRateLimiting
-    [NewtonsoftJsonIgnore, JsonIgnore] // publish the schema in version 25.1!
+    [JsonIgnore] // publish the schema in version 25.1!
     public FileRateLimiting RateLimiting { get; set; }
     public string ServiceName { get; set; }
     public string ServiceNamespace { get; set; }

@@ -218,7 +218,6 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[10.0.10, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.10, )",
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       }
@@ -442,8 +441,8 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.29, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.29, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[10.0.10, )"
         }
       }
     },
@@ -678,8 +677,8 @@
           "FluentValidation": "[12.1.1, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.18, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.18, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )",
+          "System.Text.Json": "[10.0.10, )"
         }
       }
     }

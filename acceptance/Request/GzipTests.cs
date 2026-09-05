@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.Acceptance.Request;
 
@@ -29,7 +29,7 @@ public sealed class GzipTests : Steps
 
     private static StreamContent GivenThePostHasGzipContent(object input)
     {
-        var json = JsonConvert.SerializeObject(input);
+        var json = JsonSerializer.Serialize(input);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
         var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, CompressionMode.Compress, true))

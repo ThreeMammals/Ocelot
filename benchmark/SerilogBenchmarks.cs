@@ -8,6 +8,7 @@ using Ocelot.Middleware;
 using Serilog;
 using Serilog.Core;
 using System.Net;
+using System.Text.Json;
 
 namespace Ocelot.Benchmarks;
 
