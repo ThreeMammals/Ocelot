@@ -2,7 +2,9 @@
 
 Middleware Injection
 ====================
-
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 When setting up Ocelot in your `Program`_, you can provide additional middleware and override it with your custom middlewares. This is done as follows:
 
@@ -78,6 +80,13 @@ The user can set middleware-functions aka custom user's middleware against the f
         | Prev: ``ClaimsToHeadersMiddleware``
         | Next: ``ClaimsToQueryStringMiddleware``
       - This allows the user to implement own query string manipulation logic.
+    * - ``WebSocketsMiddleware`` :sup:`2`
+      - This allows the user to completely override Ocelot's `WebSocketsProxyMiddleware <https://github.com/ThreeMammals/Ocelot/blob/main/src/Ocelot/WebSockets/WebSocketsProxyMiddleware.cs>`_ for *WebSockets* requests. :sup:`1`
+        This delegate is ignored when ``WebSocketsMiddlewareType`` is also set.
+    * - ``WebSocketsMiddlewareType`` :sup:`2`
+      - This allows the user to specify a ``Type`` derived from `WebSocketsProxyMiddleware`_ to use as the custom *WebSockets* proxy middleware. :sup:`1`
+        This option takes **priority** over ``WebSocketsMiddleware`` when both properties are set.
+        Useful for customizing behaviors such as the buffer size; see the :ref:`Sample <ws-sample>` section in the :doc:`../features/websockets` chapter.
 
 Obviously, you can add the mentioned Ocelot middleware overrides as normal before the call to ``app.UseOcelot``.
 They cannot be added afterward because Ocelot does not invoke subsequent middleware overrides based on the specified middleware configuration.
@@ -86,6 +95,9 @@ As a result, the next-called middleware **will not** affect the Ocelot configura
 .. warning::
   :sup:`1` Use the mentioned middleware overrides with caution! Overridden middleware removes the default implementation.
   If you encounter any exceptions or strange behavior in your middleware pipeline, remove the overridden middleware and try again.
+
+.. note::
+  :sup:`2` Overriding the `WebSocketsProxyMiddleware`_ is available starting from Ocelot version `25.0`_.
 
 .. _mi-ocelot-pipeline-builder:
 
@@ -159,3 +171,5 @@ In any case, if the current overridden middleware does not provide enough pipeli
   :alt: octocat
   :height: 25
   :class: img-valign-middle
+
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
