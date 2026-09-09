@@ -3,21 +3,23 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:24620/",
+      "applicationUrl": "http://localhost:5000/",
       "sslPort": 0
     }
   },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OCELOT_ISSUE941_GATEWAY": "1"
       }
     },
     "Ocelot.ManualTest": {
       "commandName": "Project",
-      "launchUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:5005",
+      "launchUrl": "http://localhost:5005",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

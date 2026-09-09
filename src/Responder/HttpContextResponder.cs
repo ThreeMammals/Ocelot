@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Headers;
+using Ocelot.Logging;
 using Ocelot.Middleware;
+using System.Net.Mime;
+using System.Runtime.InteropServices;
 
 namespace Ocelot.Responder;
 
@@ -12,10 +16,12 @@ namespace Ocelot.Responder;
 public class HttpContextResponder : IHttpResponder
 {
     private readonly IRemoveOutputHeaders _removeOutputHeaders;
+    private readonly IOcelotLogger _logger;
 
-    public HttpContextResponder(IRemoveOutputHeaders removeOutputHeaders)
+    public HttpContextResponder(IRemoveOutputHeaders removeOutputHeaders, IOcelotLoggerFactory loggerFactory)
     {
         _removeOutputHeaders = removeOutputHeaders;
+        _logger = loggerFactory.CreateLogger<HttpContextResponder>();
     }
 
     public async Task SetResponseOnHttpContext(HttpContext context, DownstreamResponse downstream)
@@ -75,10 +81,50 @@ public class HttpContextResponder : IHttpResponder
         }
     }
 
+#if NET9_0_OR_GREATER
+    public const string TextEventStreamMediaType = MediaTypeNames.Text.EventStream;
+#else
+    public const string TextEventStreamMediaType = "text/event-stream";
+#endif
+
+    protected virtual bool IsServerSentEventsStreaming(HttpContext context, DownstreamResponse downstream)
+    {
+        var mediaType = downstream.Content.Headers.ContentType?.MediaType ?? string.Empty;
+        return mediaType.Equals(TextEventStreamMediaType, StringComparison.OrdinalIgnoreCase)
+            || mediaType.Contains(TextEventStreamMediaType, StringComparison.OrdinalIgnoreCase);
+    }
+
     protected virtual async Task WriteToUpstreamAsync(HttpContext context, DownstreamResponse downstream)
     {
+        if (IsServerSentEventsStreaming(context, downstream))
+        {
+            var feature = context.Features.Get<IHttpResponseBodyFeature>();
+            if (feature == null)
+            {
+                var server = context.RequestServices.GetService(typeof(IServer)) ?? "Unknown";
+                _logger.LogWarning(() => $"{nameof(IHttpResponseBodyFeature)} is null for SSE request. Buffering cannot be disabled. Server: {server}, OS: {RuntimeInformation.OSDescription}, Framework: {RuntimeInformation.FrameworkDescription}");
+                return;
+            }
+
+            feature.DisableBuffering();
+            ProcessSoftwareHeadersForServerSentEvents(context.Response.Headers);
+        }
+
         await using var content = await downstream.Content.ReadAsStreamAsync();
         await content.CopyToAsync(context.Response.Body, context.RequestAborted);
+    }
+
+    protected virtual void ProcessSoftwareHeadersForServerSentEvents(IHeaderDictionary headers)
+    {
+        SetupNginxSseHeaders(headers);
+    }
+
+    protected virtual void SetupNginxSseHeaders(IHeaderDictionary headers)
+    {
+        if (!headers.ContainsKey("X-Accel-Buffering"))
+        {
+            headers.Append("X-Accel-Buffering", "no");
+        }
     }
 
     private static void SetStatusCode(HttpContext context, int statusCode)
