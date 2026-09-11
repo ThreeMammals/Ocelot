@@ -1,8 +1,5 @@
-﻿using Steeltoe.Discovery.Client;
-
-var builder = WebApplication.CreateBuilder(args);
+﻿var builder = WebApplication.CreateBuilder(args);
 builder.Services
-    .AddDiscoveryClient(builder.Configuration)
     .AddControllers();
 
 if (builder.Environment.IsDevelopment())

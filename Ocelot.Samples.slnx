@@ -1,0 +1,18 @@
+<Solution>
+  <Project Path="samples/Basic/Ocelot.Samples.Basic.csproj" />
+  <Project Path="samples/Configuration/Ocelot.Samples.Configuration.csproj" />
+  <Project Path="samples/Eureka/ApiGateway/Ocelot.Samples.Eureka.ApiGateway.csproj" />
+  <Project Path="samples/Eureka/DownstreamService/Ocelot.Samples.Eureka.DownstreamService.csproj" />
+  <Project Path="samples/GraphQL/Ocelot.Samples.GraphQL.csproj" />
+  <Project Path="samples/Kubernetes/ApiGateway/Ocelot.Samples.Kubernetes.ApiGateway.csproj" />
+  <Project Path="samples/Kubernetes/DownstreamService/Ocelot.Samples.Kubernetes.DownstreamService.csproj" />
+  <Project Path="samples/Metadata/Ocelot.Samples.Metadata.csproj" />
+  <Project Path="samples/OpenTracing/Ocelot.Samples.OpenTracing.csproj" />
+  <Project Path="samples/ServiceDiscovery/ApiGateway/Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj" />
+  <Project Path="samples/ServiceDiscovery/DownstreamService/Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj" />
+  <Project Path="samples/ServiceFabric/ApiGateway/Ocelot.Samples.ServiceFabric.ApiGateway.csproj" />
+  <Project Path="samples/ServiceFabric/DownstreamService/Ocelot.Samples.ServiceFabric.DownstreamService.csproj" />
+  <Project Path="samples/Web/Ocelot.Samples.Web.csproj" />
+  <Project Path="samples/WebSocket/Ocelot.Samples.WebSocket.csproj" />
+  <Project Path="src/Ocelot.csproj" />
+</Solution>

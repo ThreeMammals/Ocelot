@@ -5,6 +5,9 @@
 
 Release Process
 ===============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 * The *release process* is optimized when using Gitflow branching, as detailed here: `Gitflow Workflow`_.
   It's important to note that the Ocelot team does not utilize `GitHub Flow`_, which, despite being quicker, does not align with the efficiency required for Ocelot's delivery.

@@ -1,5 +1,13 @@
 {
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:5556" // "https://localhost:7778"
+    "BaseUrl": "http://localhost:5556", // "https://localhost:7778"
+    "DefaultCity": "London", // custom property
+    "DefaultCountry": "England", // custom property
+    "DefaultCities": [ "Dublin", "London", "Edinburgh" ], // custom property
+    "Defaults": { // custom options
+      "Country": "UK",
+      "City": "London",
+      "HighTemp": 30
+    }
   }
 }

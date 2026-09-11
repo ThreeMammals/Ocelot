@@ -1,7 +1,7 @@
 ﻿using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Provider.Eureka;
-using Ocelot.Provider.Polly;
+using Ocelot.Discovery.Eureka;
+using Ocelot.QualityOfService.Polly;
 using Ocelot.Samples.Web;
 
 //_ = OcelotHostBuilder.Create(args);

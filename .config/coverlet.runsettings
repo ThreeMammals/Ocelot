@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Exclude the Ocelot.Testing assembly (shared testing library, not a product under test) -->
+          <Exclude>[Ocelot.Testing*]*</Exclude>
+          <!-- Do not count the test assemblies themselves toward coverage -->
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <!-- Exclude assemblies that have no matching source files (e.g. generated or third-party) -->
+          <ExcludeAssembliesWithoutSources>MissingAll</ExcludeAssembliesWithoutSources>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

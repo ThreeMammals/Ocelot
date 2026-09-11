@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install mycert2.crt certificate
-crt='./test/Ocelot.AcceptanceTests/mycert2.crt'
+crt='./acceptance/mycert2.crt'
 openssl version
 echo Moving the certificate to the trusted CA store...
 if [ ! -f "$crt" ]; then

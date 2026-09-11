@@ -2,7 +2,7 @@ Write-Host "Hello from PowerShell"
 Get-Date
 
 # Install mycert2.crt certificate
-$crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
+$crt = ".\acceptance\mycert2.crt"
 if (Test-Path $crt) {
   Write-Output "mycert2.crt file found"
 }
@@ -11,7 +11,7 @@ openssl version
 
 Write-Output "Moving the certificate to the trusted CA store..."
 # Import into the Local Machine Trusted Root Certification Authorities store
-$crt = ".\test\Ocelot.AcceptanceTests\mycert2.crt"
+$crt = ".\acceptance\mycert2.crt"
 Import-Certificate -FilePath $crt -CertStoreLocation Cert:\LocalMachine\Root
 
 Write-Output "Verifying installation by listing trusted root certificates..."

@@ -10,7 +10,9 @@
           "Host": "api.weatherapi.com",
           "Port": 443
         }
-      ]
+      ],
+      "DefaultCity": "Paris", // custom property
+      "DefaultCountry": "France" // custom property
     }
   ]
 }

@@ -1,0 +1,14 @@
+coverage:
+  status:
+    project: #add everything under here, more options at https://docs.codecov.com/docs/commit-status
+      default:
+        target: auto
+        threshold: 0%
+        base: auto
+
+comment:
+  layout: "reach, diff, flags, tree"
+  behavior: default
+
+github_checks:
+  annotations: true

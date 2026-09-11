@@ -1,0 +1,149 @@
+﻿{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/posts/{postId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/posts/{postId}",
+      "UpstreamHttpMethod": [ "Get", "Put", "Patch", "Delete" ],
+      "RequestIdKey": "RouteRequestId",
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": true,
+        "UseProxy": true
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts/{postId}/comments",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/posts/{postId}/comments",
+      "UpstreamHttpMethod": [ "Get" ],
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": true,
+        "UseCookieContainer": true,
+        "UseTracing": false
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/comments/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/comments/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "Key": "C1",
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Limit": 3,
+        "Period": "1m", // 1 minute
+        "PeriodTimespan": 3 // 3 seconds
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/posts",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "jsonplaceholder.typicode.com",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/metadata/posts",
+      "UpstreamHttpMethod": [ "GET" ],
+      "Metadata": {
+        "api_id": "e99d7ce0-d918-443e-b243-1960a8212b5d"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/bug930/ws1",
+      "DownstreamPathTemplate": "/WebSocket/EchoWebSocket.ashx",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "corefx-net-http11.azurewebsites.net",
+          "Port": 80
+        }
+      ],
+      "Metadata": {
+        "bug_930": "https://github.com/ThreeMammals/Ocelot/issues/930",
+        "PR_2091": "https://github.com/ThreeMammals/Ocelot/pull/2091"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/bug930/ws2",
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "echo.websocket.org",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "bug_930": "https://github.com/ThreeMammals/Ocelot/issues/930",
+        "PR_2091": "https://github.com/ThreeMammals/Ocelot/pull/2091"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/bug930/ws3",
+      "DownstreamPathTemplate": "/raw",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ws.postman-echo.com",
+          "Port": 443
+        }
+      ],
+      "Metadata": {
+        "bug_930": "https://github.com/ThreeMammals/Ocelot/issues/930",
+        "PR_2091": "https://github.com/ThreeMammals/Ocelot/pull/2091"
+      }
+    }
+  ],
+
+  "GlobalConfiguration": {
+    "RequestIdKey": "ot-traceid",
+    //"RateLimitOptions": {
+    //  "ClientIdHeader": "MyRateLimiting",
+    //  "QuotaExceededMessage": "Customize Tips!",
+    //  "RateLimitCounterPrefix": "ocelot",
+    //  "Keys": ["C1"]
+    //},
+    "RateLimitingRules": [
+      {
+        "Name": "MetadataRule",
+        "Pattern": "/metadata/posts",
+        "Methods": [ "GET" ],
+        "Limit": 1,
+        "Period": "1m",
+        "DisableRateLimitHeaders": false,
+        "QuotaExceededMessage": "You have exceeded the rate limit quota for grouped route by '/metadata/posts' pattern! Please try again later."
+      },
+      {
+        "Name": "PostsRule",
+        "Pattern": "/posts/*",
+        "Methods": [ "GET" ],
+        "Limit": 3,
+        "Period": "1m",
+        "DisableRateLimitHeaders": true,
+        "QuotaExceededMessage": "You have exceeded the rate limit quota for grouped routes by '/posts/*' pattern! Please try again later."
+      }
+    ]
+  }
+}

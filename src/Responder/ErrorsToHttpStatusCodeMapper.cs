@@ -1,0 +1,73 @@
+using Microsoft.AspNetCore.Http;
+using Ocelot.Errors;
+
+namespace Ocelot.Responder;
+
+public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
+{
+    public int Map(List<Error> errors)
+    {
+        if (errors.Any(e => e.Code == OcelotErrorCode.UnauthenticatedError))
+        {
+            return StatusCodes.Status401Unauthorized;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.UnauthorizedError
+            || e.Code == OcelotErrorCode.ClaimValueNotAuthorizedError
+            || e.Code == OcelotErrorCode.ScopeNotAuthorizedError
+            || e.Code == OcelotErrorCode.UserDoesNotHaveClaimError
+            || e.Code == OcelotErrorCode.CannotFindClaimError
+            || e.Code == OcelotErrorCode.SecurityError))
+        {
+            return StatusCodes.Status403Forbidden;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.QuotaExceededError))
+        {
+            return errors.Single(e => e.Code == OcelotErrorCode.QuotaExceededError).HttpStatusCode;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.RequestTimedOutError))
+        {
+            // RFC 7231 "HTTP/1.1 Semantics and Content" section 6.6.5. 504 Gateway Timeout -> https://www.rfc-editor.org/info/rfc7231/#section-6.6.5
+            return StatusCodes.Status504GatewayTimeout;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.RequestCanceled))
+        {
+            // status code refer to
+            // https://stackoverflow.com/questions/46234679/what-is-the-correct-http-status-code-for-a-cancelled-request?answertab=votes#tab-top
+            // https://httpstatuses.com/499
+            return StatusCodes.Status499ClientClosedRequest;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.UnableToFindDownstreamRouteError))
+        {
+            return StatusCodes.Status404NotFound;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.ConnectionToDownstreamServiceError))
+        {
+            return StatusCodes.Status502BadGateway;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.UnableToCompleteRequestError
+            || e.Code == OcelotErrorCode.CouldNotFindLoadBalancerCreator
+            || e.Code == OcelotErrorCode.ErrorInvokingLoadBalancerCreator))
+        {
+            return StatusCodes.Status500InternalServerError;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.PayloadTooLargeError))
+        {
+            return StatusCodes.Status413PayloadTooLarge;
+        }
+
+        if (errors.Any(e => e.Code == OcelotErrorCode.BadRequestError))
+        {
+            return StatusCodes.Status400BadRequest;
+        }
+
+        return StatusCodes.Status404NotFound;
+    }
+}

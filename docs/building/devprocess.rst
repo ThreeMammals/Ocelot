@@ -5,15 +5,19 @@
 .. _issue(s): https://github.com/ThreeMammals/Ocelot/issues
 .. _discussion: https://github.com/ThreeMammals/Ocelot/discussions
 .. _fork: https://docs.github.com/en/get-started/quickstart/fork-a-repo
-.. _unit: https://github.com/ThreeMammals/Ocelot/tree/develop/test/Ocelot.UnitTests
-.. _acceptance: https://github.com/ThreeMammals/Ocelot/tree/develop/test/Ocelot.AcceptanceTests
+.. _unit: https://github.com/ThreeMammals/Ocelot/tree/develop/unit
+.. _acceptance: https://github.com/ThreeMammals/Ocelot/tree/develop/acceptance
 .. _documentation: https://github.com/ThreeMammals/Ocelot/tree/develop/docs
 .. _feature: https://github.com/ThreeMammals/Ocelot/tree/develop/docs/features
 .. _Actions: https://github.com/ThreeMammals/Ocelot/actions
-.. _Coveralls check: https://coveralls.io/github/ThreeMammals/Ocelot
+.. _Coveralls: https://coveralls.io/github/ThreeMammals/Ocelot
+.. _Codecov: https://app.codecov.io/gh/ThreeMammals/Ocelot
 
 Development Process
 ===================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 * The *development process* is optimized when using Gitflow branching, as detailed here: `Gitflow Workflow`_.
   It's important to note that the Ocelot team does not utilize `GitHub Flow`_, which, despite being quicker, does not align with the efficiency required for Ocelot's delivery.
@@ -38,13 +42,15 @@ Ocelot project follows this *development process* to integrate work into a merge
    To expedite pull request approval, contributors should consider:
 
    - Ensuring all changes are covered by `unit`_ and `acceptance`_ tests.
-   - Ensuring that the code coverage percentage from `unit`_ tests does not decrease; thus, the `Coveralls check`_ reports a green status.
+   - Ensuring that the code coverage percentage from `unit`_ tests does not decrease; thus, both `Coveralls`_ and `Codecov`_ checks report a green status.
+     If one of them fails and turns red, then it might be considered that some code lines are not covered.
+     Online code coverage reports provide good explanatory information, but it is possible to generate local coverage reports (refer to the ":ref:`b-code-coverage`" section).
    - Updating any `documentation`_ affected by the changes, with a required review of the appropriate `feature`_ document.
    - Verifying that the feature is necessary and does not duplicate existing Ocelot features.
 
 5. A pull request must meet the following criteria before merging:
 
-   - All new code must be covered by `unit`_ tests.
+   - All new code must be covered by `unit`_ tests. Read the process details in the ":ref:`b-code-coverage`" section.
    - There must be at least one `acceptance`_ test for the happy path of the new code.
    - Tests must pass locally, in Visual Studio Test Explorer or in terminal after performing ``dotnet test`` command.
    - The build must have a green status on repository `Actions`_ as passed *checks* of the pull request (aka `Checks`_ tab).
