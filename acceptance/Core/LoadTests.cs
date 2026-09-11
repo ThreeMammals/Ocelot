@@ -3,7 +3,7 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Testing.Steps;
 using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests.Core;
+namespace Ocelot.Acceptance.Core;
 
 /// <summary>
 /// TODO Move to separate Performance Testing (load testing) project.

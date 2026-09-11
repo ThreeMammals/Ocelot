@@ -4,7 +4,7 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Configuration;
 
 [Trait("Feat", "1672")] // https://github.com/ThreeMammals/Ocelot/issues/1672
 public sealed class DefaultVersionPolicyTests : Steps

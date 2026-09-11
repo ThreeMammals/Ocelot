@@ -3,6 +3,9 @@
 
 Authentication
 ==============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 In order to authenticate routes and subsequently use any of Ocelot's claims based features such as authorization or modifying the request with values from the token,
 users must register authentication services in their `Program`_ as usual but they provide a `scheme`_ 
@@ -439,4 +442,4 @@ This is a way to restrict access to a Route on a per scope basis.
 .. _2336: https://github.com/ThreeMammals/Ocelot/pull/2336
 .. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

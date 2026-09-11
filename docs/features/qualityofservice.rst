@@ -13,6 +13,10 @@
 
 Quality of Service
 ==================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
   | Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
   | Repository: `Ocelot.QualityOfService.Polly <https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly>`__
@@ -50,17 +54,17 @@ The table below summarises the key differences between the two QoS implementatio
       - ``.AddQualityOfService()``
       - ``.AddPolly()``
     * - Circuit Breaker
-      - ✔ Custom (count mode & ratio mode)
-      - ✔ Polly ``CircuitBreakerResilienceStrategy``
+      - :htm:`✔` :pdf:`\checkmark` Custom (count mode & ratio mode)
+      - :htm:`✔` :pdf:`\checkmark` Polly ``CircuitBreakerResilienceStrategy``
     * - Per-request Timeout
-      - ✔ ``CancellationToken``-based
-      - ✔ Polly ``TimeoutResilienceStrategy``
+      - :htm:`✔` :pdf:`\checkmark` ``CancellationToken``-based
+      - :htm:`✔` :pdf:`\checkmark` Polly ``TimeoutResilienceStrategy``
     * - Full Polly resilience pipeline
-      - ✘
-      - ✔
+      - :htm:`✘` :pdf:`\ding{56}`
+      - :htm:`✔` :pdf:`\ding{52}`
     * - Extensibility API
-      - ✘
-      - ✔ (custom providers, handlers, error maps)
+      - :htm:`✘` :pdf:`\ding{56}`
+      - :htm:`✔` :pdf:`\ding{52}` (custom providers, handlers, error maps)
     * - Invalid-value handling
       - Silent default substitution
       - Logged warning + default substitution
@@ -268,7 +272,7 @@ The built-in handler silently substitutes a default when an option is unset or o
       - 5000 ms
       - Duration the circuit stays open before transitioning to ``HalfOpen``.
     * - ``MinimumThroughput``
-      - ≥ 2
+      - :htm:`&ge; 2` :pdf:`\geq 2`
       - 100
       - Set to ``0`` or negative to **disable** circuit-breaking entirely.
     * - ``FailureRatio``
@@ -293,9 +297,9 @@ Installation (Polly)
 
 To utilise *Quality of Service* via the `Polly`_ library, begin by importing the appropriate `Ocelot.QualityOfService.Polly`_ extension package:
 
-.. code-block:: powershell
+.. code-block:: shell
 
-    Install-Package Ocelot.QualityOfService.Polly
+  dotnet add package Ocelot.QualityOfService.Polly
 
 Next, in your `Program`_, incorporate `Polly`_ services by invoking the ``AddPolly()`` extension on the ``OcelotBuilder``, as shown below [#f1]_:
 
@@ -582,6 +586,7 @@ Absolute timeout [#f4]_
 
 If a *QoS* section is not included, *QoS* will not be applied, and Ocelot will enforce an absolute timeout of 90 seconds (defined by the ``DownstreamRoute`` `DefTimeout`_ constant) for all downstream requests.
 This absolute timeout is configurable via the ``DownstreamRoute`` `DefaultTimeoutSeconds`_ static C# property.
+When this Ocelot Core timeout is reached, Ocelot returns ``504 Gateway Timeout``.
 For more information, refer to the :ref:`config-default-timeout` section of the :doc:`../features/configuration` chapter.
 
 .. _qos-notes-value-constraints:
@@ -702,4 +707,4 @@ Finally, to define your own set of exceptions for mapping, you can apply the fol
 .. _23.2: https://github.com/ThreeMammals/Ocelot/releases/tag/23.2.0
 .. _24.0: https://github.com/ThreeMammals/Ocelot/releases/tag/24.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0-beta.3
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0

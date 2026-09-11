@@ -3,12 +3,16 @@
 
 Delegating Handlers
 ===================
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
-    **MS Learn Documentation:**
+  **MS Learn Documentation:**
 
-    * `DelegatingHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler>`_
-    * `HTTP Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/http-message-handlers>`_
-    * `HttpClient Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/httpclient-message-handlers>`_
+  * `DelegatingHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler>`_
+  * `HTTP Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/http-message-handlers>`_
+  * `HttpClient Message Handlers in ASP.NET Web API <https://learn.microsoft.com/en-us/aspnet/web-api/overview/advanced/httpclient-message-handlers>`_
 
 Ocelot allows the user to add `delegating handlers <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.delegatinghandler>`_ to the ``HttpClient`` transport. [#f1]_
 

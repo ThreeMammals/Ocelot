@@ -1,5 +1,8 @@
 Authorization
 =============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot supports claims based authorization which is run post authentication.
 This means if you have a route you want to authorize, you can add the following to your route configuration:

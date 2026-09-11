@@ -2,7 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Logging;
 
-namespace Ocelot.AcceptanceTests.QualityOfService;
+namespace Ocelot.Acceptance.QualityOfService;
 
 public class FakeQualityOfServiceDelegatingHandler : DelegatingHandler
 {

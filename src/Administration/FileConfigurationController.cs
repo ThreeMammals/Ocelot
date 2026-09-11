@@ -8,6 +8,7 @@ using Ocelot.Errors;
 namespace Ocelot.Administration;
 
 // [ApiController] // TODO: Make it ApiController
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize]
 [Route("configuration")]
 public class FileConfigurationController : Controller

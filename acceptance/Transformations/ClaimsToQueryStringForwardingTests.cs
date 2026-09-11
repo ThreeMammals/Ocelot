@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.AcceptanceTests.Authorization;
+using Ocelot.Acceptance.Authorization;
 using Ocelot.Configuration.File;
 using Ocelot.Testing.Authentication;
 
-namespace Ocelot.AcceptanceTests.Transformations;
+namespace Ocelot.Acceptance.Transformations;
 
 /// <summary>
 /// Feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/claimstransformation.rst#claims-to-query-string-parameters">Claims to Query String Parameters</see>.

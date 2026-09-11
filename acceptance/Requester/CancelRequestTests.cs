@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Requester;
 
-/// <summary>
-/// TODO This test must be moved to another feat namespace, probably to Requester or to Routing...
-/// </summary>
 public sealed class CancelRequestTests : Steps
 {
+    /// <summary>
+    /// TODO Need tests for Multiplexer. Current tests cover Requester only.
+    /// </summary>
     [Fact]
     [Trait("Bug", "893")] // https://github.com/ThreeMammals/Ocelot/issues/893
     [Trait("PR", "1367")] // https://github.com/ThreeMammals/Ocelot/pull/1367

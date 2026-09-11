@@ -4,7 +4,7 @@ using Ocelot.Middleware;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests.Transformations;
+namespace Ocelot.Acceptance.Transformations;
 
 /// <summary>
 /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/headerstransformation.rst">Headers Transformation</see>.

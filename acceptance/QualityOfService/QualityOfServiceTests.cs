@@ -8,7 +8,7 @@ using Ocelot.QualityOfService;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.QualityOfService;
+namespace Ocelot.Acceptance.QualityOfService;
 
 [Trait("Feat", "23")] // https://github.com/ThreeMammals/Ocelot/issues/23
 [Trait("Feat", "39")] // https://github.com/ThreeMammals/Ocelot/pull/39
@@ -235,11 +235,11 @@ public sealed class QualityOfServiceTests : QosSteps
             var route = GivenRoute(port, new(new FileQoSOptions()));
             var configuration = GivenConfiguration(route);
             this
-                .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, defTimeoutMs + 500, body)) // 3.5s > 3s -> ServiceUnavailable
+                .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, defTimeoutMs + 500, body)) // 3.5s > 3s -> GatewayTimeout
                 .And(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunningAsync(WithQualityOfService))
                 .When(x => WhenIGetUrlOnTheApiGateway("/"))
-                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable)) // after 3 secs -> Timeout exception aka request cancellation
+                .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
             .BDDfy();
         }
         finally

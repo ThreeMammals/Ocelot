@@ -489,17 +489,17 @@ public sealed class FileConfigurationPollerTests : UnitTest, IDisposable
         });
 
         await _poller.StartAsync(CancelMe);
-        await Task.Delay(200, CancelMe); // let several polls happen
-        var countBefore = Volatile.Read(ref pollCount);
+        await Task.Delay(250, CancelMe); // let several polls happen -> 100 + 100 + 50 buffer = 250 ms
+        var countBefore = Volatile.Read(ref pollCount); // expect at least 2 polls to have occurred
 
         // Act
-        await _poller.StopAsync(CancelMe);
+        await _poller.StopAsync(CancelMe); // time marker is 250 ms
 
-        await Task.Delay(200, CancelMe); // wait to verify no new polls occur
+        await Task.Delay(200, CancelMe); // wait to verify no new polls occur, time marker is 450 ms
 
         // Assert
-        var v = Volatile.Read(ref pollCount);
-        Assert.Equal(countBefore, v); // No new polls should occur after StopAsync
+        var actual = Volatile.Read(ref pollCount);
+        Assert.Equal(countBefore, actual); // No new polls should occur after StopAsync
     }
 
     [Fact]

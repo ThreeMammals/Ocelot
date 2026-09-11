@@ -3,7 +3,7 @@ using Ocelot.Metadata;
 using Ocelot.Middleware;
 using System.Globalization;
 
-namespace Ocelot.AcceptanceTests.Metadata;
+namespace Ocelot.Acceptance.Metadata;
 
 [Trait("Feat", "738")] // https://github.com/ThreeMammals/Ocelot/issues/738
 public sealed class DownstreamMetadataTests : Steps

@@ -3,6 +3,9 @@
 
 Load Balancer
 =============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
 
 Ocelot can load balance across available downstream services for each route.
 This means you can scale your downstream services, and Ocelot can use them effectively.

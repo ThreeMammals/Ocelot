@@ -3,6 +3,10 @@
 
 Logging
 =======
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
   | MS Learn: `Logging in .NET Core and ASP.NET Core`_
   | Interfaces: `ILoggerFactory <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.iloggerfactory>`_ and `ILogger<T> <https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger-1>`_

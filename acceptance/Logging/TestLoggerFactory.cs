@@ -2,7 +2,7 @@
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
-namespace Ocelot.AcceptanceTests.Logging;
+namespace Ocelot.Acceptance.Logging;
 
 public class TestLoggerFactory<TConsumer> : IOcelotLoggerFactory
 {

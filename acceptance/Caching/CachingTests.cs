@@ -3,7 +3,7 @@ using Ocelot.Configuration.File;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace Ocelot.AcceptanceTests.Caching;
+namespace Ocelot.Acceptance.Caching;
 
 public sealed class CachingTests : Steps
 {

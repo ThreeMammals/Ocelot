@@ -9,7 +9,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Testing.Steps;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.Configuration;
+namespace Ocelot.Acceptance.Configuration;
 
 public sealed class ConfigurationMergeTests : DiscoverySteps
 {

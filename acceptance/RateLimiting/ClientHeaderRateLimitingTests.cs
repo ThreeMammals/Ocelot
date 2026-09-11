@@ -7,7 +7,7 @@ using Ocelot.RateLimiting;
 using Ocelot.Testing.Steps;
 using System.Runtime.InteropServices;
 
-namespace Ocelot.AcceptanceTests.RateLimiting;
+namespace Ocelot.Acceptance.RateLimiting;
 
 public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 {

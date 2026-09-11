@@ -4,7 +4,7 @@ using Ocelot.Testing.Steps;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace Ocelot.AcceptanceTests.QualityOfService;
+namespace Ocelot.Acceptance.QualityOfService;
 
 public class QosSteps : TimeoutSteps
 {

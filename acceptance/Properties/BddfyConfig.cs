@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using TestStack.BDDfy.Configuration;
 
-namespace Ocelot.AcceptanceTests.Properties;
+namespace Ocelot.Acceptance.Properties;
 
 public static class BddfyConfig
 {

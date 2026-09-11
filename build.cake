@@ -1,12 +1,11 @@
-﻿#tool dotnet:?package=GitVersion.Tool
-#tool nuget:?package=ReportGenerator
+﻿#tool dotnet:?package=GitVersion.Tool&version=6.8.2
+#tool nuget:?package=ReportGenerator&version=5.5.10
 
-#addin nuget:?package=Cake.Http
 // Switch from Newtonsoft to System.Text.Json lib!
 #addin nuget:?package=Newtonsoft.Json
 #addin nuget:?package=System.Text.Encodings.Web
-
 #r "Spectre.Console"
+
 using Spectre.Console;
 
 using System.Collections.Generic;
@@ -102,9 +101,9 @@ Task("Tests")
 Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("CreateArtifacts")
-	.IsDependentOn("PublishGitHubRelease")
-    .IsDependentOn("PublishToNuget");
+	.IsDependentOn("CreateArtifacts");
+	//.IsDependentOn("PublishGitHubRelease")
+	//.IsDependentOn("PublishToNuget");
 
 Task("Restore")
     .Does(() =>
@@ -210,9 +209,10 @@ Task("CreateReleaseNotes")
 	.Does(() =>
 	{
         Information($"Generating release notes at {releaseNotesFile}");
-        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude net*");
-        var lastRelease = lastReleaseTags.First();
+        var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
+        var lastRelease = "24.1.0"; // lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
+        var HEAD = "25.0.0"; // "HEAD";
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
@@ -227,7 +227,7 @@ Task("CreateReleaseNotes")
         }
 
         const bool debugUserEmail = false;
-        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..HEAD")
+        var shortlogSummary = GitHelper($"shortlog --no-merges --numbered --summary --email {lastRelease}..{HEAD}")
             .ToList();
         var re = new Regex(@"^[\s\t]*(?'commits'\d+)[\s\t]+(?'author'.*)[\s\t]+<(?'email'.*)>.*$");
         static SummaryItem CreateSummaryItem(System.Text.RegularExpressions.Match m) => new()
@@ -274,8 +274,9 @@ Task("CreateReleaseNotes")
         Information(string.Join(NL, starring));
 
         // Honoring aka Top Contributors
-        var coreTeamNames = new List<string> { "Raman Maksimchuk", "Raynald Messié", "Guillaume Gnaegi" }; // Ocelot Core team members should not be in Top 3 Chart
-        var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "redbird_project@yahoo.fr", "58469901+ggnaegi@users.noreply.github.com" };
+        var coreTeamNames = new List<string> { "Raman Maksimchuk", "ocelotgateway", " Ocelot Robo" }; // Ocelot Core team members should not be in Top 3 Chart
+        var coreTeamEmails = new List<string> { "dotnet044@gmail.com", "163584778+ocelotgateway@users.noreply.github.com" };
+        string[] hearts = [":heart:", ":blue_heart:", ":green_heart:", ":orange_heart:", ":yellow_heart:", ":light_blue_heart:", ":purple_heart:", ":grey_heart:", ":black_heart:"];
         static CommitsGroupingItem CreateCommitsGroupingItem(IGrouping<int, SummaryItem> g) => new()
         {
             Commits = g.Key,
@@ -292,41 +293,49 @@ Task("CreateReleaseNotes")
             breaker: log => false, // (log.Count >= 3), // going to create Top 3
             byCommits: (log, group) =>
             {
+                int n = log.Count;
                 var place = Place(log.Count);
                 var author = group.Authors.First();
-                return Honor(place, author, group.Commits);
+                return Honor(n, place, author, group.Commits);
             },
             byFiles: (log, group, fGroup) =>
             {
+                int n = log.Count;
                 var place = Place(log.Count);
                 var contributor = fGroup.Contributors.First();
-                return HonorForFiles(place, contributor.Contributor, group.Commits, contributor.Files);
+                return HonorForFiles(n, place, contributor.Contributor, group.Commits, contributor.Files);
             },
             byInsertions: (log, group, fGroup, insGroup) =>
             {
+                int n = log.Count;
                 var place = Place(log.Count);
                 var contributor = insGroup.Contributors.First();
-                return HonorForInsertions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions);
+                return HonorForInsertions(n, place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions);
             },
             byDeletions: (log, group, fGroup, insGroup, contributor) =>
             {
+                int n = log.Count;
                 var place = Place(log.Count);
-                return HonorForDeletions(place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
+                return HonorForDeletions(n, place, contributor.Contributor, group.Commits, contributor.Files, contributor.Insertions, contributor.Deletions);
             });
         Information("------==< TOP Contributors >==------");
         Information(string.Join(NL, topContributors));
 
         // local helpers
-        static string Place(int i) => ++i == 1 ? "1st" : i == 2 ? "2nd" : i == 3 ? "3rd" : $"{i}th";
-        static string Plural(int n) => n == 1 ? "" : "s";
-        static string Honor(string place, string author, int commits, string suffix = null)
-            => $"{place[0]}<sup>{place[1..]}</sup> :{place}_place_medal: goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
-        static string HonorForFiles(string place, string author, int commits, int files, string suffix = null)
-            => Honor(place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
-        static string HonorForInsertions(string place, string author, int commits, int files, int insertions, string suffix = null)
-            => HonorForFiles(place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
-        static string HonorForDeletions(string place, string author, int commits, int files, int insertions, int deletions)
-            => HonorForInsertions(place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
+        string Place(int i)
+            => ++i == 1 ? "1st" : i == 2 ? "2nd" : i == 3 ? "3rd" : $"{i}th";
+        string Plural(int n)
+            => n == 1 ? "" : "s";
+        string Emoji(int i)
+            => i < 3 ? $":{Place(i)}_place_medal:" : hearts[i % hearts.Length];
+        string Honor(int n, string place, string author, int commits, string suffix = null)
+            => $"{n+1}<sup>{place[^2..]}</sup> {Emoji(n)} goes to **{author}** for delivering **{commits}** feature{Plural(commits)} {suffix ?? ""}";
+        string HonorForFiles(int n, string place, string author, int commits, int files, string suffix = null)
+            => Honor(n, place, author, commits, $"in **{files}** file{Plural(files)} changed {suffix ?? ""}");
+        string HonorForInsertions(int n, string place, string author, int commits, int files, int insertions, string suffix = null)
+            => HonorForFiles(n, place, author, commits, files, $"with **{insertions}** insertion{Plural(insertions)} {suffix ?? ""}");
+        string HonorForDeletions(int n, string place, string author, int commits, int files, int insertions, int deletions)
+            => HonorForInsertions(n, place, author, commits, files, insertions, $"and **{deletions}** deletion{Plural(deletions)}");
         List<string> IterateCommits(List<CommitsGroupingItem> commitsGrouping, Predicate<List<string>> breaker,
             Func<List<string>, CommitsGroupingItem, string> byCommits,
             Func<List<string>, CommitsGroupingItem, FilesGroupingItem, string> byFiles,
@@ -368,7 +377,7 @@ Task("CreateReleaseNotes")
                     {
                         if (!statistics.Exists(s => s.Contributor == author))
                         {
-                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..HEAD");
+                            var shortstat = GitHelper($"log --no-merges --author=\"{author}\" --shortstat --pretty=oneline {lastRelease}..{HEAD}");
                             var data = shortstat
                                 .Where(x => shortstatRegex.IsMatch(x))
                                 .Select(x => shortstatRegex.Match(x))
@@ -428,20 +437,20 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        // releaseNotes.Add("### Honoring :medal_sports: aka Top Contributors :clap:");
-        // releaseNotes.AddRange(topContributors.Take(3)); // Top 3 only, disabled 'breaker' logic
-        // releaseNotes.Add("");
-        // releaseNotes.Add("### Starring :star: aka Release Influencers :bowtie:");
-        // releaseNotes.AddRange(starring);
-        // releaseNotes.Add("");
-        // releaseNotes.Add($"### Features in Release {releaseVersion}");
-        // releaseNotes.Add("");
-        // releaseNotes.Add("<details><summary>Logbook</summary>");
-        // releaseNotes.Add("");
-        // var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..HEAD");
-        // releaseNotes.AddRange(commitsHistory);
-        // releaseNotes.Add("</details>");
-        // releaseNotes.Add("");
+        releaseNotes.Add("### Honoring :medal_sports: Top 5 Contributors :clap:");
+        releaseNotes.AddRange(topContributors.Take(5)); // Top 3 only, disabled 'breaker' logic
+        releaseNotes.Add("");
+        releaseNotes.Add("### Starring :star: Release Influencers :bowtie:");
+        releaseNotes.AddRange(starring);
+        releaseNotes.Add("");
+        releaseNotes.Add($"### Features in Release {releaseVersion}");
+        releaseNotes.Add("");
+        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("");
+        var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..{HEAD}");
+        releaseNotes.AddRange(commitsHistory);
+        releaseNotes.Add("</details>");
+        releaseNotes.Add("");
         WriteReleaseNotes();
 	});
 
@@ -954,19 +963,28 @@ private void PublishPackages(ConvertableDirectoryPath packagesDir, ConvertableFi
 
 private bool PackageExists(string packageId, string version)
 {
-	var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
-	try
-	{
-		var response = HttpGet(url);
-		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} exists");
-		return true;
-	}
-	catch (Exception ex)
-	{
-		Warning(ex.ToString());
-		Information($"{nameof(PackageExists)}: Package ver.{packageId}.{version} does NOT exist");
-	}
-	return false;
+    var url = $"https://api.nuget.org/v3-flatcontainer/{packageId.ToLowerInvariant()}/{version}/{packageId.ToLowerInvariant()}.{version}.nupkg";
+    try
+    {
+        using (var client = new System.Net.Http.HttpClient())
+        {
+            // Only need the headers – no need to download the whole package
+            var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Head, url);
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            if (response.IsSuccessStatusCode)
+            {
+                Information($"{nameof(PackageExists)}: Package {packageId}.{version} exists");
+                return true;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Warning(ex.ToString());
+    }
+    
+    Information($"{nameof(PackageExists)}: Package {packageId}.{version} does NOT exist");
+    return false;
 }
 
 private void SetupGitHubClient(System.Net.Http.HttpClient client)

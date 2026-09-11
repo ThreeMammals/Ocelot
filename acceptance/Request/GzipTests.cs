@@ -4,7 +4,7 @@ using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Request;
 
 public sealed class GzipTests : Steps
 {

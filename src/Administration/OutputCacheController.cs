@@ -5,7 +5,8 @@ using Ocelot.Cache;
 namespace Ocelot.Administration;
 
 // [ApiController] // TODO: Make it ApiController
-//[Authorize(Policy = "OcelotAdministration")]
+// [Authorize(Policy = "OcelotAdministration")]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize]
 [Route("outputcache")]
 public class OutputCacheController : Controller

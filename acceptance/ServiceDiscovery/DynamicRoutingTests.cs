@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
-using Ocelot.AcceptanceTests.Caching;
-using Ocelot.AcceptanceTests.QualityOfService;
-using Ocelot.AcceptanceTests.Requester;
+using Ocelot.Acceptance.Caching;
+using Ocelot.Acceptance.QualityOfService;
+using Ocelot.Acceptance.Requester;
 using Ocelot.Configuration;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -12,7 +12,7 @@ using Ocelot.Requester;
 using Ocelot.Testing.Authentication;
 using Ocelot.Testing.Steps;
 
-namespace Ocelot.AcceptanceTests.ServiceDiscovery;
+namespace Ocelot.Acceptance.ServiceDiscovery;
 
 /// <summary>
 /// These tests are based on the custom service discovery provider, abstracting from currently implemented discovery providers and focusing on the dynamic routing features.

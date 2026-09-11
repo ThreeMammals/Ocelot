@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.Responder;
 
 public sealed class ReasonPhraseTests : Steps
 {

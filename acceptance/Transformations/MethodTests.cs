@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 
-namespace Ocelot.AcceptanceTests.Transformations;
+namespace Ocelot.Acceptance.Transformations;
 
 public sealed class MethodTests : Steps
 {

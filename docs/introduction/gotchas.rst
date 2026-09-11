@@ -5,8 +5,12 @@
 
 Hosting Gotchas
 ===============
+.. contents:: Table of Contents
+   :depth: 2
+   :local:
+.. _break: http://break.do
 
-    Microsoft Learn: `Web server implementations in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/>`_
+  Microsoft Learn: `Web server implementations in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/>`_
 
 Many errors and incidents (gotchas) are related to web server hosting scenarios.
 Please review deployment and web hosting common user scenarios below depending on your web server.

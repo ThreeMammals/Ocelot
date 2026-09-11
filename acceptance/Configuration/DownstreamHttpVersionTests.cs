@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Ocelot.Configuration.File;
 using System.Security.Authentication;
 
-namespace Ocelot.AcceptanceTests.Configuration;
+namespace Ocelot.Acceptance.Configuration;
 
 [Trait("PR", "1127")] // https://github.com/ThreeMammals/Ocelot/pull/1127
 [Trait("Feat", "1124")] // https://github.com/ThreeMammals/Ocelot/issues/1124

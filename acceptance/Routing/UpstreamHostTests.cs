@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.AcceptanceTests.Routing;
+namespace Ocelot.Acceptance.Routing;
 
 /// <summary>
 /// Feature: <see href="https://ocelot.readthedocs.io/en/latest/features/routing.html#upstream-host">Upstream Host</see>,

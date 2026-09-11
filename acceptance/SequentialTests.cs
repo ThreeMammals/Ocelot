@@ -1,6 +1,6 @@
 ﻿[assembly: CollectionBehavior(DisableTestParallelization = true)] // WTF?
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance;
 
 /// <summary>
 /// Apply <see cref="CollectionAttribute"/> to classes to disable parallelization.

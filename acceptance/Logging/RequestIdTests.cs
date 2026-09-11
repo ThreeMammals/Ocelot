@@ -1,4 +1,4 @@
-﻿namespace Ocelot.AcceptanceTests;
+﻿namespace Ocelot.Acceptance.Logging;
 
 public sealed class RequestIdTests : Steps
 {

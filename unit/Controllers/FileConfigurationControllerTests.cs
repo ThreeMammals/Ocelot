@@ -121,6 +121,19 @@ public class FileConfigurationControllerTests : UnitTest
         Assert.Equal("Exception: Service failed" + NL, msg);
     }
 
+    [Fact]
+    [Trait("Bug", "989")] // https://github.com/ThreeMammals/Ocelot/issues/989
+    [Trait("PR", "2412")] // https://github.com/ThreeMammals/Ocelot/pull/2412
+    public void Should_have_ignore_api_attribute_to_hide_in_swagger()
+    {
+        // Arrange, Act
+        var attr = Attribute.GetCustomAttribute(typeof(FileConfigurationController), typeof(ApiExplorerSettingsAttribute)) as ApiExplorerSettingsAttribute;
+
+        // Assert
+        Assert.NotNull(attr);
+        Assert.True(attr.IgnoreApi);
+    }
+
     private class FakeError : Error
     {
         public FakeError() : base(string.Empty, OcelotErrorCode.CannotAddDataError, 404)

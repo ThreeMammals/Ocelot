@@ -1,9 +1,9 @@
-﻿using Ocelot.AcceptanceTests.Properties;
+﻿using Ocelot.Acceptance.Properties;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using TestStack.BDDfy.Configuration;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance;
 
 public class Steps : AcceptanceSteps
 {

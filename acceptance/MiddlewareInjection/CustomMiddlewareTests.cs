@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Middleware;
 using System.Diagnostics;
 
-namespace Ocelot.AcceptanceTests;
+namespace Ocelot.Acceptance.MiddlewareInjection;
 
 [Trait("Commit", "ab5d7fa")] // https://github.com/ThreeMammals/Ocelot/commit/ab5d7fa33da5578a9a0b463016e42b417dd9d55e
 public class CustomMiddlewareTests : Steps

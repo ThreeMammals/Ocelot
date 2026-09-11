@@ -225,6 +225,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             primaryConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile); // will be created after merging
             globalConfigFileName = files.Single(f => f.Contains(ConfigurationBuilderExtensions.GlobalConfigFile));
             files.Add(primaryConfigFileName); // to be deleted
+            EnsureThereIsNoFile(primaryConfigFileName); // assume the file has been created by a parallel test
 
             // Act
             var configRoot = new ConfigurationBuilder()
@@ -257,6 +258,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             primaryConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile); // will be created after merging
             globalConfigFileName = files.Single(f => f.Contains(ConfigurationBuilderExtensions.GlobalConfigFile));
             files.Add(primaryConfigFileName); // to be deleted
+            EnsureThereIsNoFile(primaryConfigFileName); // assume the file has been created by a parallel test
 
             // Act - using default parameters (ToFile, no custom file names, no optional/reloadOnChange overrides)
             var configRoot = new ConfigurationBuilder()
@@ -288,6 +290,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             primaryConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile); // will be created after merging
             globalConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.GlobalConfigFile);
             files.Add(primaryConfigFileName); // to be deleted
+            EnsureThereIsNoFile(primaryConfigFileName); // assume the file has been created by a parallel test
 
             // Act
             var configRoot = new ConfigurationBuilder()
@@ -316,6 +319,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             var configuration = GivenCombinedFileConfigurationObject();
             primaryConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile); // will be created after merging
             files.Add(primaryConfigFileName); // to be deleted
+            EnsureThereIsNoFile(primaryConfigFileName); // assume the file has been created by a parallel test
 
             // Act - using default MergeOcelotJson.ToFile
             var configRoot = new ConfigurationBuilder()
@@ -344,6 +348,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             primaryConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.PrimaryConfigFile); // will be created after merging
             globalConfigFileName = Path.Combine(Environment.CurrentDirectory, ConfigurationBuilderExtensions.GlobalConfigFile);
             files.Add(primaryConfigFileName); // to be deleted
+            EnsureThereIsNoFile(primaryConfigFileName); // assume the file has been created by a parallel test
 
             // Act - with optional=true and reloadOnChange=true
             var configRoot = new ConfigurationBuilder()
@@ -373,6 +378,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             FileConfiguration configuration = new();
             configuration.GlobalConfiguration.RequestIdKey = TestName();
             primaryConfigFileName = CreateConfigFile(Environment.CurrentDirectory, string.Empty, configuration, ConfigurationBuilderExtensions.PrimaryConfigFile);
+            files.Add(primaryConfigFileName); // to be deleted
 
             // Act
             var root = new ConfigurationBuilder()
@@ -401,6 +407,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
             FileConfiguration configuration = new();
             configuration.GlobalConfiguration.RequestIdKey = TestName();
             primaryConfigFileName = CreateConfigFile(Environment.CurrentDirectory, string.Empty, configuration, ConfigurationBuilderExtensions.PrimaryConfigFile);
+            files.Add(primaryConfigFileName); // to be deleted
 
             // Act
             var root = new ConfigurationBuilder()
@@ -430,6 +437,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         FileConfiguration configuration = new();
         configuration.GlobalConfiguration.RequestIdKey = TestName();
         primaryConfigFileName = CreateConfigFile(TestID, string.Empty, configuration, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        files.Add(primaryConfigFileName); // to be deleted
 
         // Act
         var root = new ConfigurationBuilder()
@@ -459,6 +467,7 @@ public sealed class ConfigurationBuilderExtensionsTests : ConfigurationBuilderEx
         FileConfiguration configuration = new();
         configuration.GlobalConfiguration.RequestIdKey = TestName();
         primaryConfigFileName = CreateConfigFile(TestID, string.Empty, configuration, ConfigurationBuilderExtensions.PrimaryConfigFile);
+        files.Add(primaryConfigFileName); // to be deleted
 
         // Act
         var root = new ConfigurationBuilder()

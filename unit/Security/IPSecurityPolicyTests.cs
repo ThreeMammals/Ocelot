@@ -6,6 +6,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Ocelot.UnitTests.Security;
 
@@ -516,14 +517,28 @@ public sealed class IPSecurityPolicyTests : UnitTest
         var cts = new CancellationTokenSource();
         _context.RequestAborted = cts.Token;
         var options = new FileSecurityOptions();
-        SetupContext(options);
+        
+        // Create a mock context that introduces delay when accessing RemoteIpAddress
+        // This ensures the Task.Run has time to be cancelled before the sync method completes
+        const int RemoteIpAddressTimeoutMilliseconds = 100; // 100ms delay
+        var mockConnection = new MockConnectionInfo(_context.Connection.RemoteIpAddress, RemoteIpAddressTimeoutMilliseconds);
+        var contextWithDelay = new DefaultHttpContext()
+        {
+            RequestAborted = cts.Token
+        };
+        contextWithDelay.Features.Set<ConnectionInfo>(mockConnection);
+        contextWithDelay.Items.UpsertDownstreamRequest(_context.Items.DownstreamRequest());
+        
+        var securityOptions = _securityOptionsCreator.Create(options, Empty);
+        _downstreamRouteBuilder.WithSecurityOptions(securityOptions);
+        contextWithDelay.Items.UpsertDownstreamRoute(_downstreamRouteBuilder.Build());
 
         // Act
-        var task = _policy.SecurityAsync(_context.Items.DownstreamRoute(), _context);
+        var securityAsync = _policy.SecurityAsync(contextWithDelay.Items.DownstreamRoute(), contextWithDelay);
         cts.Cancel();
 
-        // Assert - Should handle cancellation gracefully without throwing
-        var ex = await Record.ExceptionAsync(() => task);
+        // Assert - Should handle cancellation gracefully and throw TaskCanceledException
+        var ex = await Record.ExceptionAsync(() => securityAsync);
         Assert.NotNull(ex);
         Assert.IsType<TaskCanceledException>(ex);
     }
@@ -558,4 +573,32 @@ public sealed class IPSecurityPolicyTests : UnitTest
         Assert.True(actual.IsError);
     }
     #endregion
+
+    /// <summary>
+    /// Mock connection that introduces a 100ms delay when accessing RemoteIpAddress.
+    /// This gives the cancellation token time to trigger before the synchronous Security() method completes.
+    /// </summary>
+    private class MockConnectionInfo(IPAddress ipAddress, int remoteIpAddressTimeout) : ConnectionInfo
+    {
+        private readonly IPAddress _ipAddress = ipAddress;
+        private readonly int _remoteIpAddressTimeout = remoteIpAddressTimeout;
+
+        public override IPAddress RemoteIpAddress
+        {
+            get
+            {
+                Thread.Sleep(_remoteIpAddressTimeout);
+                return _ipAddress;
+            }
+            set { }
+        }
+
+        public override string Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override int RemotePort { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override IPAddress LocalIpAddress { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override int LocalPort { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override X509Certificate2 ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    }
 }

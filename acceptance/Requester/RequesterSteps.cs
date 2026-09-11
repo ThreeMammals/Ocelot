@@ -4,7 +4,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Logging;
 using Ocelot.Requester;
 
-namespace Ocelot.AcceptanceTests.Requester;
+namespace Ocelot.Acceptance.Requester;
 
 public class RequesterSteps : Steps
 {
