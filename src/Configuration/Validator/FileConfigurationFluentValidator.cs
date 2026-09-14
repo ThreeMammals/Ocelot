@@ -60,6 +60,12 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
         RuleForEach(configuration => configuration.Aggregates)
             .Must((config, aggregateRoute) => DoesNotContainRoutesWithSpecificRequestIdKeys(aggregateRoute, config.Routes))
             .WithMessage((_, aggregateRoute) => $"{nameof(aggregateRoute)} {aggregateRoute.UpstreamPathTemplate} contains Route with specific RequestIdKey, this is not possible with Aggregates");
+
+        // DynamicRoutes are not routed through RouteFluentValidator (it validates FileRoute only), so mirror
+        // just the WebSocket.BufferSize check here rather than leave dynamic routes unvalidated for this option.
+        RuleForEach(configuration => configuration.DynamicRoutes)
+            .Must((_, route) => route.WebSocket == null || !route.WebSocket.BufferSize.HasValue || route.WebSocket.BufferSize.Value > 0)
+            .WithMessage((_, route) => $"WebSocket.BufferSize is negative or zero for the dynamic route {route.ServiceName ?? route.Key}");
     }
 
     private const string ServiceFabric = ServiceFabricServiceDiscoveryProvider.Type;

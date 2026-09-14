@@ -113,6 +113,30 @@ public class WebSocketsSteps : AcceptanceSteps
         }
     }
 
+    protected static async Task EchoLargeAsync(WebSocket ws, CancellationToken token)
+    {
+        try
+        {
+            var buffer = new byte[1024 * 64];
+            WebSocketReceiveResult result;
+            while (true)
+            {
+                Array.Clear(buffer);
+                result = await ws.ReceiveAsync(buffer, token);
+                if (result.CloseStatus.HasValue)
+                    break;
+                var echo = new ArraySegment<byte>(buffer, 0, result.Count);
+                await ws.SendAsync(echo, result.MessageType, result.EndOfMessage, token);
+            }
+
+            await ws.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, token);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
     protected virtual async Task MessageAsync(WebSocket webSocket, CancellationToken token)
     {
         try

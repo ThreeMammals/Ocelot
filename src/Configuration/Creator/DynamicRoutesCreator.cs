@@ -16,6 +16,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
     private readonly IRouteKeyCreator _loadBalancerKeyCreator;
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
+    private readonly IWebSocketOptionsCreator _webSocketOptionsCreator;
 
     public DynamicRoutesCreator(
         IAuthenticationOptionsCreator authOptionsCreator,
@@ -27,7 +28,8 @@ public class DynamicRoutesCreator : IDynamicsCreator
         IRateLimitOptionsCreator rateLimitOptionsCreator,
         IRouteKeyCreator loadBalancerKeyCreator,
         IVersionCreator versionCreator,
-        IVersionPolicyCreator versionPolicyCreator)
+        IVersionPolicyCreator versionPolicyCreator,
+        IWebSocketOptionsCreator webSocketOptionsCreator)
     {
         _authOptionsCreator = authOptionsCreator;
         _cacheOptionsCreator = cacheOptionsCreator;
@@ -39,6 +41,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
         _versionCreator = versionCreator;
         _versionPolicyCreator = versionPolicyCreator;
+        _webSocketOptionsCreator = webSocketOptionsCreator;
     }
 
     public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
@@ -78,6 +81,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
         var qosOptions = _qosOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var rlOptions = _rateLimitOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var timeout = CreateTimeout(dynamicRoute, globalConfiguration);
+        var webSocketOptions = _webSocketOptionsCreator.Create(dynamicRoute, globalConfiguration);
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithAuthenticationOptions(authOptions)
             .WithCacheOptions(cacheOptions)
@@ -93,6 +97,7 @@ public class DynamicRoutesCreator : IDynamicsCreator
             .WithServiceName(dynamicRoute.ServiceName)
             .WithServiceNamespace(dynamicRoute.ServiceNamespace)
             .WithTimeout(timeout)
+            .WithWebSocketOptions(webSocketOptions)
             .Build();
         return new Route(true, downstreamRoute); // IsDynamic -> true
     }

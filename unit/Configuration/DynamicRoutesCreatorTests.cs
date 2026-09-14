@@ -17,12 +17,14 @@ public class DynamicRoutesCreatorTests : UnitTest
     private readonly Mock<IMetadataCreator> _metadataCreator = new();
     private readonly Mock<ICacheOptionsCreator> _cacheCreator = new();
     private readonly Mock<IAuthenticationOptionsCreator> _authCreator = new();
+    private readonly Mock<IWebSocketOptionsCreator> _webSocketOptionsCreator = new();
     private IReadOnlyList<Route> _result;
     private FileConfiguration _fileConfig;
     private RateLimitOptions[] _rlo;
     private Version _version;
     private HttpVersionPolicy _versionPolicy;
     private Dictionary<string, string> _expectedMetadata;
+    private WebSocketOptions _ws;
 
     public DynamicRoutesCreatorTests()
     {
@@ -35,7 +37,8 @@ public class DynamicRoutesCreatorTests : UnitTest
             _rloCreator.Object,
             _lbKeyCreator.Object,
             _versionCreator.Object,
-            _versionPolicyCreator.Object);
+            _versionPolicyCreator.Object,
+            _webSocketOptionsCreator.Object);
     }
 
     [Fact]
@@ -73,6 +76,7 @@ public class DynamicRoutesCreatorTests : UnitTest
         GivenTheVersionCreatorReturns();
         GivenTheVersionPolicyCreatorReturns();
         GivenTheMetadataCreatorReturns();
+        GivenTheWebSocketOptionsCreatorReturns();
 
         // Act
         _result = _creator.Create(_fileConfig);
@@ -162,6 +166,7 @@ public class DynamicRoutesCreatorTests : UnitTest
             _metadataCreator.Verify(x => x.Create(dynamicRoute.Metadata, _fileConfig.GlobalConfiguration), Times.Once);
             _versionCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersion), Times.Once);
             _versionPolicyCreator.Verify(x => x.Create(dynamicRoute.DownstreamHttpVersionPolicy), Times.Exactly(2));
+            _webSocketOptionsCreator.Verify(x => x.Create(dynamicRoute, _fileConfig.GlobalConfiguration), Times.Once);
         });
     }
 
@@ -176,6 +181,7 @@ public class DynamicRoutesCreatorTests : UnitTest
             dr.DownstreamHttpVersion.ShouldBe(_version);
             dr.DownstreamHttpVersionPolicy.ShouldBe(_versionPolicy);
             dr.ServiceName.ShouldBe(_fileConfig.DynamicRoutes[i].ServiceName);
+            dr.WebSocket.ShouldBe(_ws);
         }
     }
 
@@ -199,6 +205,12 @@ public class DynamicRoutesCreatorTests : UnitTest
         };
         _metadataCreator.Setup(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()))
             .Returns(new MetadataOptions() { Metadata = _expectedMetadata });
+    }
+
+    private void GivenTheWebSocketOptionsCreatorReturns()
+    {
+        _ws = new WebSocketOptions(65536);
+        _webSocketOptionsCreator.Setup(x => x.Create(It.IsAny<FileDynamicRoute>(), It.IsAny<FileGlobalConfiguration>())).Returns(_ws);
     }
 
     private void GivenTheRloCreatorReturns()

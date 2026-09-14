@@ -20,7 +20,10 @@
           "Host": "echo.websocket.org",
           "Port": 443
         }
-      ]
+      ],
+      "WebSocket": {
+        "BufferSize": 65536
+      }
     }
   ],
   "GlobalConfiguration": {

@@ -42,10 +42,10 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         await Proxy(context, request, route);
     }
 
-    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, CancellationToken cancellation)
+    protected virtual async Task PumpAsync(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellation)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(BufferSize); // TODO Better to add validation or log warning early, a constraint is required.
-        var buffer = new byte[BufferSize];
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize); // TODO Better to add validation or log warning early, a constraint is required.
+        var buffer = new byte[bufferSize];
         while (true)
         {
             WebSocketReceiveResult result = default;
@@ -96,6 +96,9 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
         }
 
         var client = _factory.CreateClient(); // new ClientWebSocket();
+        int bufferSize = route.WebSocket?.BufferSize ?? BufferSize;
+        client.Options.SetBuffer(bufferSize, bufferSize);
+
         if (route.DangerousAcceptAnyServerCertificateValidator)
         {
             client.Options.RemoteCertificateValidationCallback = (request, certificate, chain, errors) => true;
@@ -139,8 +142,8 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
 
         using var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol);
         await Task.WhenAll(
-            PumpAsync(client.ToWebSocket(), server, context.RequestAborted),
-            PumpAsync(server, client.ToWebSocket(), context.RequestAborted));
+            PumpAsync(client.ToWebSocket(), server, bufferSize, context.RequestAborted),
+            PumpAsync(server, client.ToWebSocket(), bufferSize, context.RequestAborted));
     }
 
     /// <summary>

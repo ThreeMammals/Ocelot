@@ -46,4 +46,5 @@ public abstract class FileRouteBase : IRouteGrouping
     /// </remarks>
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
     public int? Timeout { get; set; }
+    public FileWebSocketOptions WebSocket { get; set; }
 }

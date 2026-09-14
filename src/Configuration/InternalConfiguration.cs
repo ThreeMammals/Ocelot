@@ -25,4 +25,5 @@ public class InternalConfiguration : IInternalConfiguration
     public Route[] Routes { get; init; }
     public ServiceProviderConfiguration ServiceProviderConfiguration { get; init; }
     public int? Timeout { get; init; }
+    public WebSocketOptions WebSocket { get; init; }
 }

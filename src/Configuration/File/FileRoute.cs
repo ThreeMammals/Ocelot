@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Configuration.File;
+namespace Ocelot.Configuration.File;
 
 /// <summary>
 /// Represents the JSON structure of a standard static route (no service discovery).
@@ -99,6 +99,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         to.UpstreamHost = from.UpstreamHost;
         to.UpstreamHttpMethod = new(from.UpstreamHttpMethod);
         to.UpstreamPathTemplate = from.UpstreamPathTemplate;
+        to.WebSocket = from.WebSocket is null ? null : new(from.WebSocket);
     }
 
     public override string ToString()

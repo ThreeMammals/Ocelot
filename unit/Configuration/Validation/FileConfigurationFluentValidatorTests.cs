@@ -112,6 +112,33 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
     }
 
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(65536, true)]
+    [InlineData(0, false)]
+    [InlineData(-1, false)]
+    public async Task Configuration_validates_WebSocketBufferSize_on_DynamicRoutes(int? bufferSize, bool valid)
+    {
+        // Arrange
+        var configuration = new FileConfiguration();
+        configuration.DynamicRoutes.Add(new FileDynamicRoute
+        {
+            ServiceName = "test",
+            WebSocket = new() { BufferSize = bufferSize },
+        });
+        GivenAConfiguration(configuration);
+
+        // Act
+        await WhenIValidateTheConfiguration();
+
+        // Assert
+        ThenThereAreErrors(!valid);
+        if (!valid)
+        {
+            ThenTheErrorMessageAtPositionIs(0, "WebSocket.BufferSize is negative or zero for the dynamic route test");
+        }
+    }
+
     [Fact]
     public async Task Configuration_is_invalid_if_service_discovery_options_specified_dynamically_but_service_discovery_handler()
     {

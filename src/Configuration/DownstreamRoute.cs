@@ -39,7 +39,8 @@ public class DownstreamRoute
         HttpVersionPolicy downstreamHttpVersionPolicy,
         Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
         MetadataOptions metadataOptions,
-        int? timeout)
+        int? timeout,
+        WebSocketOptions webSocket = null)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
         AddHeadersToDownstream = addHeadersToDownstream;
@@ -74,6 +75,7 @@ public class DownstreamRoute
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
         Timeout = timeout;
+        WebSocket = webSocket;
     }
 
     public string Key { get; }
@@ -135,6 +137,8 @@ public class DownstreamRoute
     /// <value>An <see cref="int"/> value in seconds.</value>
     public static int DefaultTimeoutSeconds { get => defaultTimeoutSeconds; set => defaultTimeoutSeconds = value >= LowTimeout ? value : DefTimeout; }
     private static int defaultTimeoutSeconds = DefTimeout;
+
+    public WebSocketOptions WebSocket { get; }
 
     public string Name() => Name(false);
 
