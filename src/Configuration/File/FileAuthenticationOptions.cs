@@ -5,7 +5,9 @@ namespace Ocelot.Configuration.File;
 public class FileAuthenticationOptions
 {
     public FileAuthenticationOptions()
-    { }
+    {
+        RequiredRole = new();
+    }
 
     public FileAuthenticationOptions(string authScheme) : this()
         => AuthenticationProviderKeys = [authScheme];
@@ -18,6 +20,10 @@ public class FileAuthenticationOptions
         AuthenticationProviderKey = options.AuthenticationProviderKey;
         AuthenticationProviderKeys = new string[options.AuthenticationProviderKeys.Length];
         Array.Copy(options.AuthenticationProviderKeys, AuthenticationProviderKeys, options.AuthenticationProviderKeys.Length);
+        RequiredRole = options.RequiredRole;
+        ScopeKey = options.ScopeKey;
+        RoleKey = options.RoleKey;
+        PolicyName = options.PolicyName;
     }
 
     public List<string> AllowedScopes { get; set; }
@@ -31,6 +37,11 @@ public class FileAuthenticationOptions
 
     public string[] AuthenticationProviderKeys { get; set; }
 
+    public List<string> RequiredRole { get; set; }
+    public string ScopeKey { get; set; }
+    public string RoleKey { get; set; }
+    public string PolicyName { get; set; }
+
     /// <summary>Checks whether authentication schemes are specified (not empty, exist).</summary>
     /// <value><see langword="true"/> if an authentication scheme is defined; otherwise, <see langword="false"/>.</value>
     public bool HasScheme => AuthenticationProviderKey.IsNotEmpty()
@@ -42,5 +53,9 @@ public class FileAuthenticationOptions
         .Append($"{nameof(AllowedScopes)}:[{AllowedScopes.NotNull().Select(x => $"'{x}'").Csv()}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
         .Append($"{nameof(AuthenticationProviderKeys)}:[{AuthenticationProviderKeys.NotNull().Select(x => $"'{x}'").Csv()}]")
+        .Append($",{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole).Append("]")
+        .Append($",{nameof(ScopeKey)}:[").AppendJoin(',', ScopeKey).Append("]")
+        .Append($",{nameof(RoleKey)}:[").AppendJoin(',', RoleKey).Append("]")
+        .Append($",{nameof(PolicyName)}:[").AppendJoin(',', PolicyName).Append(']')
         .ToString();
 }

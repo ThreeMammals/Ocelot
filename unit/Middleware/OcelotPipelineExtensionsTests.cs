@@ -373,6 +373,7 @@ public class OcelotPipelineExtensionsTests : UnitTest
         services.AddSingleton(Mock.Of<IAddHeadersToRequest>()); // for ClaimsToHeadersMiddleware
         services.AddSingleton(Mock.Of<IClaimsAuthorizer>()); // for AuthorizationMiddleware
         services.AddSingleton(Mock.Of<IScopesAuthorizer>()); // for AuthorizationMiddleware
+        services.AddSingleton(Mock.Of<IRolesAuthorizer>()); // for AuthorizationMiddleware
         services.AddSingleton(Mock.Of<IAddClaimsToRequest>()); // for ClaimsToClaimsMiddleware
         services.AddSingleton(Mock.Of<IRequestScopedDataRepository>()); // for RequestIdMiddleware, ExceptionHandlerMiddleware
         services.AddSingleton(Mock.Of<IRateLimiting>()); // for RateLimitingMiddleware
