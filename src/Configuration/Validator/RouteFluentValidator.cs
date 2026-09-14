@@ -56,7 +56,9 @@ public partial class RouteFluentValidator : AbstractValidator<FileRoute>
                 .WithMessage("{PropertyName} {PropertyValue} contains scheme");
         });
 
-        When(route => route.RateLimitOptions != null && route.RateLimitOptions.EnableRateLimiting != false, () =>
+        When(route => route.RateLimitOptions != null
+                && route.RateLimitOptions.EnableRateLimiting != false
+                && string.IsNullOrWhiteSpace(route.RateLimitOptions.Policy), () =>
         {
             RuleFor(route => route.RateLimitOptions.Limit)
                 .Must(limit => !limit.HasValue || (limit.HasValue && limit.Value > 0))
