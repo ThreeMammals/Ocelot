@@ -29,15 +29,16 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
         var upstreamHost = hostHeader.Contains(':')
             ? hostHeader.Split(':')[0]
             : hostHeader;
-        var upstreamHeaders = httpContext.Request.Headers;
+        IDictionary<string, string> upstreamHeaders = httpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString());
 
         Logger.LogDebug(() => $"Upstream URL path: {upstreamUrlPath}");
 
         var provider = _factory.Get(internalConfiguration);
-        var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders);
+        var requestHeaders = httpContext.Request.Headers;
+        var response = provider.Get(upstreamUrlPath, upstreamQueryString, httpContext.Request.Method, internalConfiguration, upstreamHost, upstreamHeaders, requestHeaders);
         if (response.IsError)
         {
-            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors because {provider.GetType().Name} returned the following ->{response.Errors.ToErrorString(true)}");
+            Logger.LogWarning(() => $"{MiddlewareName} setting pipeline errors because {provider.GetType().Name} returned the following -> {response.Errors.ToErrorString(true)}");
             httpContext.Items.UpsertErrors(response.Errors);
             return;
         }

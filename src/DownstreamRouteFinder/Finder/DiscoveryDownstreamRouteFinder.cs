@@ -29,7 +29,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
-        IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
+        IInternalConfiguration configuration, string upstreamHost, IDictionary<string, string> upstreamHeaders, IHeaderDictionary requestHeaders)
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
@@ -47,7 +47,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
         // TODO: Could it be that the static route functionality was possibly lost here? -> StaticRoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
+        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(/*upstreamHeaders*/ requestHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)

@@ -44,6 +44,7 @@ public class StaticRoutesCreatorTests : UnitTest
     private HttpVersionPolicy _expectedVersionPolicy;
     private Dictionary<string, UpstreamHeaderTemplate> _uht;
     private Dictionary<string, string> _expectedMetadata;
+    private readonly Mock<IUpstreamHeaderRoutingOptionsCreator> _uhroCreator;
 
     public StaticRoutesCreatorTests()
     {
@@ -64,6 +65,7 @@ public class StaticRoutesCreatorTests : UnitTest
         _versionPolicyCreator = new Mock<IVersionPolicyCreator>();
         _uhtpCreator = new Mock<IUpstreamHeaderTemplatePatternCreator>();
         _metadataCreator = new Mock<IMetadataCreator>();
+        _uhroCreator = new Mock<IUpstreamHeaderRoutingOptionsCreator>();
 
         _creator = new StaticRoutesCreator(
             _cthCreator.Object,
@@ -82,7 +84,8 @@ public class StaticRoutesCreatorTests : UnitTest
             _versionCreator.Object,
             _versionPolicyCreator.Object,
             _uhtpCreator.Object,
-            _metadataCreator.Object);
+            _metadataCreator.Object,
+            _uhroCreator.Object);
     }
 
     [Fact]
