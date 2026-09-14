@@ -1,7 +1,7 @@
 ﻿using KubeClient;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Provider.Kubernetes;
+using Ocelot.Discovery.KubeClient;
 using Ocelot.Samples.Web;
 
 //_ = OcelotHostBuilder.Create(args);
