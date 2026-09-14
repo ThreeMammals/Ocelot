@@ -20,8 +20,8 @@
     <None Include="..\..\..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot" Version="25.0.0-beta.3" />
-    <PackageReference Include="Ocelot.Provider.Kubernetes" Version="25.0.0-beta.3" />
+    <PackageReference Include="Ocelot" Version="25.0.0" />
+    <PackageReference Include="Ocelot.Discovery.KubeClient" Version="25.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />

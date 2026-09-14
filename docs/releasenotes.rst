@@ -1,4 +1,6 @@
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1
 .. _.NET 8: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 .. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 .. _.NET 10: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
@@ -18,18 +20,18 @@ Welcome to the Ocelot `25.0`_ documentation!
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
 
-.. The major version `25.0.0`_ includes several patches, the history of which is outlined below.
+The major version `25.0.0`_ includes several patches, the history of which is outlined below.
 
-.. .. admonition:: Patches
+.. admonition:: Patches
 
-..   - `25.0.1`_, on September 1, 2026: Issue `3000`_ patch ...
+  - `25.0.1`_, on September 14, 2026: Reference SDK `10.0.401 <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>`_ (Runtime `10.0.12 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md>`_)
 
 .. _release-notes:
 
 📢 Release Notes
 -----------------
 
-  | Release Tag: `25.0.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0>`_
+  | Release Tag: `25.0.0`_
   | Release Codename: `.NET 10 <https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/>`__
   | Release Date: July 29, 2026
 

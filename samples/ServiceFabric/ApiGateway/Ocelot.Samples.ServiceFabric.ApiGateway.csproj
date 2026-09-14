@@ -23,8 +23,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceFabric" Version="12.0.997-beta" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.6.235" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="11.7.157" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.7.157" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Ocelot.csproj" />

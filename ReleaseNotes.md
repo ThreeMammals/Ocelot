@@ -4,6 +4,15 @@
 Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
+
+##  :package: Reference SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Runtime [10.0.12](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md) patch (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
+> SDK: [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+> Patched version: [25.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0)
+
+Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions of all [Ocelot packages](https://github.com/ThreeMammals/Ocelot/blob/develop/ReleaseRadar.md) based on .NET SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on September 8, 2026. For more details about SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) a.k.a. Runtime [10.0.12](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md), see the [.NET 10.0.12 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md) as part of [.NET 10 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
+
+<!--
+
 ## Upgrade to [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) SDK (TFM `net10.0`, version [25.0](https://www.nuget.org/packages/Ocelot/{0})) a.k.a. the [.NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/) release
 > **Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)** :point_left:
 > Codenamed: [.NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/)
@@ -120,3 +129,5 @@ For successful contributions, maintainers will announce an identity-verification
 - **[Administration](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/administration.rst)**: Issue #989 was patched by @mmustafasenoglu in pull request #2412.
 
   The `{{adminPath}}/configuration` and `{{adminPath}}/outputcache/{{region}}` endpoints are now decorated with `[ApiExplorerSettings(IgnoreApi = true)]` so that they no longer appear in Swagger/OpenAPI documentation generated for the downstream API surface.
+
+-->
