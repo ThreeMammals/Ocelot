@@ -150,6 +150,46 @@ public class OutputCacheMiddlewareTests : UnitTest
         Assert.Equal(expected, msg);
     }
 
+    [Theory]
+    [InlineData(null, HttpStatusCode.OK)]
+    [InlineData(null, HttpStatusCode.Forbidden)]
+    [InlineData(null, HttpStatusCode.InternalServerError)]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.Forbidden)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    public async Task Should_cache_when_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var response = new HttpResponseMessage(responseCode);
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalled(Times.Once);
+    }
+
+    [Theory]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.InternalServerError)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.BadRequest)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    public async Task Should_not_cache_when_not_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var response = new HttpResponseMessage(responseCode);
+        GivenResponseIsNotCached(response);
+        GivenTheDownstreamRouteIs(new CacheOptions(100, "kanken", null, false, statusCodes));
+
+        // Act
+        await WhenICallTheMiddlewareAsync();
+
+        // Assert
+        ThenTheCacheAddIsCalled(Times.Never);
+    }
+
     private async Task WhenICallTheMiddlewareAsync()
     {
         _middleware = new OutputCacheMiddleware(_next, _loggerFactory.Object, _cache.Object, _cacheGenerator.Object);
