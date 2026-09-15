@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration.Creator;
+﻿using Microsoft.AspNetCore.Routing;
+using Ocelot.Configuration.Creator;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Values;
 
@@ -40,6 +41,7 @@ public class DownstreamRouteBuilder
     private Dictionary<string, UpstreamHeaderTemplate> _upstreamHeaders;
     private MetadataOptions _metadataOptions;
     private int? _timeout;
+    private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
 
     public DownstreamRouteBuilder()
     {
@@ -250,6 +252,12 @@ public class DownstreamRouteBuilder
     public DownstreamRouteBuilder WithTimeout(int? timeout)
     {
         _timeout = timeout;
+        return this;
+    }
+
+    public DownstreamRouteBuilder WithUpstreamHeaderRoutingOptions(UpstreamHeaderRoutingOptions routingOptions)
+    {
+        _upstreamHeaderRoutingOptions = routingOptions;
         return this;
     }
 
