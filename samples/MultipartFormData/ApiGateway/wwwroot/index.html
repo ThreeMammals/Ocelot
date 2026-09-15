@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ocelot Multipart Upload</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1e293b;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    main {
+      width: min(100% - 32px, 560px);
+      padding: 32px;
+      background: #ffffff;
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      box-shadow: 0 18px 48px rgb(15 23 42 / 10%);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.75rem;
+      font-weight: 650;
+    }
+
+    p {
+      margin: 0 0 24px;
+      color: #52606d;
+      line-height: 1.5;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #bcccdc;
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Ocelot Multipart Upload</h1>
+    <p>Send a text field and file through the gateway to the downstream service.</p>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <label>
+        Description
+        <input name="description" value="issue-714" required>
+      </label>
+      <label>
+        File
+        <input name="file" type="file" required>
+      </label>
+      <button type="submit">Upload</button>
+    </form>
+  </main>
+</body>
+</html>
