@@ -11,7 +11,7 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ubuntu, macos, windows]
-        framework: [net8, net9, net10]
+        framework: [net10] # net8, net9, 
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -45,7 +45,6 @@ jobs:
           src/packages.lock.json
           testing/packages.lock.json
           unit/packages.lock.json
-        # samples/**/packages.lock.json
     - name: .NET Info
       run: dotnet --info
     - name: Add DNS-records
@@ -103,10 +102,12 @@ jobs:
             src/packages.lock.json
             testing/packages.lock.json
             unit/packages.lock.json
-          # samples/**/packages.lock.json
+      - name: Install Tools
+        run: dotnet tool restore
       - name: Cake Build
         uses: cake-build/cake-action@v3
         with:
+          cake-version: tool-manifest
           target: Release
         env:
           OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
