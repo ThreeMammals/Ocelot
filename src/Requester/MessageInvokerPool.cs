@@ -96,6 +96,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             UseProxy = options.UseProxy,
             MaxConnectionsPerServer = options.MaxConnectionsPerServer,
             PooledConnectionLifetime = options.PooledConnectionLifeTime,
+            Credentials = options.UseDefaultCredentials ? CredentialCache.DefaultCredentials : null,
         };
 
         if (options.UseCookieContainer)
