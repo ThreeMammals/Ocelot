@@ -540,15 +540,15 @@ Task("UnitTests")
 			var settings = new DotNetTestSettings
 			{
 				Configuration = compileConfig,
-				ResultsDirectory = artifactsForUnitTestsDir,
+				ResultsDirectory = artifactsForUnitTestsDir, // ./artifacts/UnitTests
 				/*
-          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
-            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
+                dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
+                  --results-directory ./artifacts/UnitTests --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
 				*/
 				ArgumentCustomization = args => args
 					.Append("--no-restore")
 					.Append("--no-build")
-					.Append("--verbosity:" + verbosity)
+					.Append("--verbosity " + verbosity)
 					.Append("--coverlet")
 					.Append("--coverlet-include \"[Ocelot*]*\"")
 					.Append("--coverlet-exclude \"[Ocelot.Testing]*\""),
