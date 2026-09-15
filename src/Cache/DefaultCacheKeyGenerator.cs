@@ -6,8 +6,9 @@ namespace Ocelot.Cache;
 public class DefaultCacheKeyGenerator : ICacheKeyGenerator
 {
     public const char Delimiter = '-';
-    
-    public async ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
+
+    // TODO: Split the code into protected virtual methods for easier fine-tuning
+    public virtual async ValueTask<string> GenerateRequestCacheKey(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute)
     {
         var builder = new StringBuilder()
             .Append(downstreamRequest.Method)
