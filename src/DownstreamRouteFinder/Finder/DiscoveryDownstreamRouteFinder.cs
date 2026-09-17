@@ -18,20 +18,25 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
+    private readonly IDownstreamServiceFinder _serviceFinder;
 
     public DiscoveryDownstreamRouteFinder(
         IRouteKeyCreator routeKeyCreator,
-        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
+        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
+        IDownstreamServiceFinder serviceFinder)
     {
         _cache = new();
         _routeKeyCreator = routeKeyCreator;
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
+        _serviceFinder = serviceFinder;
     }
 
     public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
+        var serviceName = _serviceFinder.GetServiceName(upstreamUrlPath, upstreamQueryString, upstreamHttpMethod, upstreamHost, configuration,
+            out var serviceNamespace);
+
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
         var dynamicRoute = configuration.Routes
             .Where(r => r.IsDynamic) // process dynamic routes only
