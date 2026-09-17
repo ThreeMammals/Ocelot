@@ -18,20 +18,19 @@ Quality of Service
    :local:
 .. _break: http://break.do
 
-  | Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
-  | Repository: `Ocelot.QualityOfService.Polly <https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly>`__
+  Label: |QoS_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/QoS}{QoS}`
 
 Ocelot supports *Quality of Service* (QoS) features that allow you to protect downstream services from overload and control request flow on a per-route basis.
 Two implementations are available and are **mutually exclusive** — exactly one may be active at a time:
 
 * :ref:`qos-builtin` — included in the Ocelot core package; no additional dependencies required.
-* :ref:`qos-polly-installation` via `Polly`_ — a full-featured resilience pipeline powered by the well-regarded `Polly`_ .NET library (`repository <https://github.com/App-vNext/Polly>`_).
+* :ref:`qos-polly-installation` via `Polly`_ * — a full-featured resilience pipeline powered by the well-regarded `Polly`_ .NET library (`repository <https://github.com/App-vNext/Polly>`_).
 
 The last registration wins: calling ``AddQualityOfService()`` after ``AddPolly()`` replaces the Polly handler, and vice versa.
 
 .. note::
   
-  `Polly`_ v7 syntax is no longer supported as of version `23.2`_, when the Ocelot team upgraded Polly `from v7 to v8 <https://www.pollydocs.org/migration-v8.html>`_.
+  \* `Polly`_ v7 syntax is no longer supported as of version `23.2`_, when the Ocelot team upgraded Polly `from v7 to v8 <https://www.pollydocs.org/migration-v8.html>`_.
 
 .. _qos-implementations-overview:
 
@@ -294,6 +293,8 @@ Installation (Polly)
 --------------------
 .. _Ocelot.Provider.Polly: https://www.nuget.org/packages/Ocelot.Provider.Polly
 .. _Ocelot.QualityOfService.Polly: https://www.nuget.org/packages/Ocelot.QualityOfService.Polly
+
+  Repository: `Ocelot.QualityOfService.Polly <https://github.com/ThreeMammals/Ocelot.QualityOfService.Polly>`__
 
 To utilise *Quality of Service* via the `Polly`_ library, begin by importing the appropriate `Ocelot.QualityOfService.Polly`_ extension package:
 
