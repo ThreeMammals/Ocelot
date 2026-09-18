@@ -7,6 +7,8 @@
   <Project Path="samples/Kubernetes/ApiGateway/Ocelot.Samples.Kubernetes.ApiGateway.csproj" />
   <Project Path="samples/Kubernetes/DownstreamService/Ocelot.Samples.Kubernetes.DownstreamService.csproj" />
   <Project Path="samples/Metadata/Ocelot.Samples.Metadata.csproj" />
+  <Project Path="samples/MultipartFormData/ApiGateway/Ocelot.Samples.MultipartFormData.ApiGateway.csproj" />
+  <Project Path="samples/MultipartFormData/DownstreamService/Ocelot.Samples.MultipartFormData.DownstreamService.csproj" />
   <Project Path="samples/OpenTracing/Ocelot.Samples.OpenTracing.csproj" />
   <Project Path="samples/ServiceDiscovery/ApiGateway/Ocelot.Samples.ServiceDiscovery.ApiGateway.csproj" />
   <Project Path="samples/ServiceDiscovery/DownstreamService/Ocelot.Samples.ServiceDiscovery.DownstreamService.csproj" />
