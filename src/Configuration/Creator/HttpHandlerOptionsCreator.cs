@@ -69,6 +69,7 @@ public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
         options.MaxConnectionsPerServer ??= globalOptions.MaxConnectionsPerServer ?? int.MaxValue;
         options.PooledConnectionLifetimeSeconds ??= globalOptions.PooledConnectionLifetimeSeconds ?? HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds;
         options.UseCookieContainer ??= globalOptions.UseCookieContainer ?? false;
+        options.UseDefaultCredentials ??= globalOptions.UseDefaultCredentials ?? false;
         options.UseProxy ??= globalOptions.UseProxy ?? false;
         options.UseTracing ??= globalOptions.UseTracing ?? false;
         var useTracing = _tracer != null && options.UseTracing.Value;

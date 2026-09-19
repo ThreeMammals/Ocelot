@@ -263,6 +263,28 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
         _ocelotLogger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never());
     }
 
+    [Fact]
+    [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
+    [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
+    public void CreateHandler_UseDefaultCredentialsIsTrue_CredentialsAreInitialized()
+    {
+        // Arrange
+        HttpHandlerOptions opts = new() { UseDefaultCredentials = true };
+        var route = GivenRoute(null, null, http: opts);
+        GivenTheFactoryReturnsNothing();
+        GivenAMessageInvokerPool();
+
+        // Act
+        var actual = CreateHandler().Invoke(_pool, [route]) as SocketsHttpHandler;
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.NotNull(actual.Credentials); // !
+        Assert.IsAssignableFrom<NetworkCredential>(actual.Credentials);
+        Assert.Equal("SystemNetworkCredential", actual.Credentials.GetType().Name);
+    }
+    private MethodInfo CreateHandler() => _pool.GetType().GetMethod(nameof(CreateHandler), BindingFlags.NonPublic | BindingFlags.Instance);
+
     private void AndAHandlerFactory() => _handlerFactory = GetHandlerFactory();
 
     private async Task WhenICallTheClient(string url)
@@ -380,10 +402,10 @@ public class MessageInvokerPoolBase : UnitTest
     public static int Ms(int seconds) => 1000 * seconds;
 
     protected static DownstreamRoute GivenRoute(int? qosTimeout, int? routeTimeout,
-        bool dangerousAcceptAnyServerCertificateValidator = false)
+        bool dangerousAcceptAnyServerCertificateValidator = false, HttpHandlerOptions http = null)
     {
         var qosOptions = new QoSOptions(qosTimeout.HasValue ? Ms(qosTimeout.Value) : null); // !!!
-        var handlerOptions = new HttpHandlerOptions()
+        HttpHandlerOptions handlerOptions = http ?? new()
         {
             MaxConnectionsPerServer = int.MaxValue,
             UseCookieContainer = true,
