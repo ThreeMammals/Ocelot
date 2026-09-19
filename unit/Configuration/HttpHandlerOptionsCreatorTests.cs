@@ -326,7 +326,8 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     }
 
     [Fact]
-    [Trait("Feat", "657")]
+    [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
+    [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
     public void Should_create_options_with_useDefaultCredentials_false_as_default()
     {
         // Arrange
@@ -340,7 +341,8 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
     }
 
     [Fact]
-    [Trait("Feat", "657")]
+    [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
+    [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
     public void Should_create_options_with_UseDefaultCredentials_true_if_set()
     {
         // Arrange
