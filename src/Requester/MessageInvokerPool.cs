@@ -96,18 +96,16 @@ public class MessageInvokerPool : IMessageInvokerPool
             UseProxy = options.UseProxy,
             MaxConnectionsPerServer = options.MaxConnectionsPerServer,
             PooledConnectionLifetime = options.PooledConnectionLifeTime,
-            Credentials = options.UseDefaultCredentials ? CredentialCache.DefaultCredentials : null,
         };
 
+        if (options.UseDefaultCredentials)
+            handler.Credentials = CredentialCache.DefaultCredentials;
+
         if (options.UseCookieContainer)
-        {
             handler.CookieContainer = new CookieContainer();
-        }
 
         if (!route.DangerousAcceptAnyServerCertificateValidator)
-        {
             return handler;
-        }
 
         handler.SslOptions = new SslClientAuthenticationOptions
         {
