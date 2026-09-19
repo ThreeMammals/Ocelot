@@ -11,16 +11,16 @@ public class FileHttpHandlerOptions
         MaxConnectionsPerServer = from.MaxConnectionsPerServer;
         PooledConnectionLifetimeSeconds = from.PooledConnectionLifetimeSeconds;
         UseCookieContainer = from.UseCookieContainer;
+        UseDefaultCredentials = from.UseDefaultCredentials;
         UseProxy = from.UseProxy;
         UseTracing = from.UseTracing;
-        UseDefaultCredentials = from.UseDefaultCredentials;
     }
 
     public bool? AllowAutoRedirect { get; set; }
     public int? MaxConnectionsPerServer { get; set; }
     public int? PooledConnectionLifetimeSeconds { get; set; }
     public bool? UseCookieContainer { get; set; }
+    public bool? UseDefaultCredentials { get; set; }
     public bool? UseProxy { get; set; }
     public bool? UseTracing { get; set; }
-    public bool? UseDefaultCredentials { get; set; }
 }

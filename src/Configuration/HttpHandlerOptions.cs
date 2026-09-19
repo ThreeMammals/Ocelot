@@ -22,9 +22,9 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
             ? from.MaxConnectionsPerServer.Value : int.MaxValue;
         PooledConnectionLifeTime = TimeSpan.FromSeconds(from.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
         UseCookieContainer = from.UseCookieContainer ?? false;
+        UseDefaultCredentials = from.UseDefaultCredentials ?? false;
         UseProxy = from.UseProxy ?? false;
         UseTracing = from.UseTracing ?? false;
-        UseDefaultCredentials = from.UseDefaultCredentials ?? false;
     }
 
     public HttpHandlerOptions(FileHttpHandlerOptions from, bool useTracing)
@@ -44,6 +44,15 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// </summary>
     /// <value>UseCookieContainer.</value>
     public bool UseCookieContainer { get; init; }
+
+    /// <summary>
+    /// Specify is <see cref="SocketsHttpHandler.Credentials"/> set.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
+    /// The property value instructs to initialize the <see cref="SocketsHttpHandler.Credentials"/> by default credentials.
+    /// </value>
+    public bool UseDefaultCredentials { get; init; }
 
     /// <summary>
     /// Specify is handler has to use a opentracing.
@@ -71,13 +80,4 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// </summary>
     /// <value>PooledConnectionLifeTime.</value>
     public TimeSpan PooledConnectionLifeTime { get; init; }
-
-    /// <summary>
-    /// Specify is UseDefaultCredentials set on HttpClientHandler.
-    /// </summary>
-    /// <value>
-    /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
-    /// The property value is assignable to the <see cref="HttpClientHandler.UseDefaultCredentials"/> one.
-    /// </value>
-    public bool UseDefaultCredentials { get; init; }
 }
