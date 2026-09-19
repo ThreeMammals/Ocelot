@@ -98,6 +98,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(111, actual.MaxConnectionsPerServer);
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
     }
@@ -141,6 +142,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(111, actual.MaxConnectionsPerServer);
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
     }
@@ -186,6 +188,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(111, actual.MaxConnectionsPerServer);
         Assert.Equal(111, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.False(actual.UseCookieContainer);
+        Assert.False(actual.UseDefaultCredentials);
         Assert.False(actual.UseProxy);
         Assert.False(actual.UseTracing);
 
@@ -199,6 +202,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(333, actual.MaxConnectionsPerServer);
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
 
@@ -208,6 +212,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(333, actual.MaxConnectionsPerServer);
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
 
@@ -217,6 +222,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(333, actual.MaxConnectionsPerServer);
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
 
@@ -229,6 +235,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.True(actual.AllowAutoRedirect); // route
         Assert.Equal(333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
     }
@@ -300,6 +307,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             MaxConnectionsPerServer = isDef ? null : 333,
             PooledConnectionLifetimeSeconds = isDef ? null : 333,
             UseCookieContainer = isDef ? null : true,
+            UseDefaultCredentials = isDef ? null : true,
             UseProxy = isDef ? null : true,
             UseTracing = isDef ? null : true,
         };
@@ -309,6 +317,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             MaxConnectionsPerServer = isDef ? null : 111,
             PooledConnectionLifetimeSeconds = isDef ? null : 111,
             UseCookieContainer = isDef ? null : false,
+            UseDefaultCredentials = isDef ? null : false,
             UseProxy = isDef ? null : false,
             UseTracing = isDef ? null : false,
         };
@@ -321,41 +330,30 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         Assert.Equal(isDef ? int.MaxValue : 333, actual.MaxConnectionsPerServer);
         Assert.Equal(isDef ? HttpHandlerOptions.DefaultPooledConnectionLifetimeSeconds : 333, actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.Equal(!isDef, actual.UseCookieContainer);
+        Assert.Equal(!isDef, actual.UseDefaultCredentials);
         Assert.Equal(!isDef, actual.UseProxy);
         Assert.Equal(hasTracer && !isDef, actual.UseTracing); // the useTracing parameter takes absolute priority
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
     [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
     [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
-    public void Should_create_options_with_useDefaultCredentials_false_as_default()
-    {
-        // Arrange
-        FileHttpHandlerOptions opts = new();
-
-        // Act
-        var actual = _creator.Create(opts);
-
-        // Assert
-        Assert.False(actual.UseDefaultCredentials);
-    }
-
-    [Fact]
-    [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
-    [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
-    public void Should_create_options_with_UseDefaultCredentials_true_if_set()
+    public void Create_UseDefaultCredentials(bool? useDefaultCredentials, bool expected)
     {
         // Arrange
         FileHttpHandlerOptions opts = new()
         {
-            UseDefaultCredentials = true,
+            UseDefaultCredentials = useDefaultCredentials,
         };
 
         // Act
         var actual = _creator.Create(opts);
 
         // Assert
-        Assert.True(actual.UseDefaultCredentials);
+        Assert.Equal(expected, actual.UseDefaultCredentials);
     }
 
     private static FileHttpHandlerOptions RouteOptions() => new()
@@ -364,6 +362,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
         MaxConnectionsPerServer = 333,
         PooledConnectionLifetimeSeconds = 333,
         UseCookieContainer = true,
+        UseDefaultCredentials = true,
         UseProxy = true,
         UseTracing = true,
     };
@@ -377,6 +376,7 @@ public class HttpHandlerOptionsCreatorTests : UnitTest
             MaxConnectionsPerServer = 111,
             PooledConnectionLifetimeSeconds = 111,
             UseCookieContainer = false,
+            UseDefaultCredentials = false,
             UseProxy = false,
             UseTracing = false,
         },
