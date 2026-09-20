@@ -6,6 +6,8 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace Ocelot.Acceptance.WebSockets;
 
@@ -86,6 +88,48 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
             .And(x => customMiddlewareInvoked.ShouldBe(!injectViaType, null))
         .BDDfy();
     }
+
+    [Fact]
+    [Trait("Feat", "2386")] // https://github.com/ThreeMammals/Ocelot/issues/2386
+    [Trait("PR", "2390")] // https://github.com/ThreeMammals/Ocelot/pull/2390
+    public async Task ShouldProxyWebSocketWithConfiguredBufferSize()
+    {
+        int port = PortFinder.GetRandomPort();
+        var route = GivenRoute("/ws", port);
+        route.WebSocket = new FileWebSocketOptions { BufferSize = 65536 }; // 64 KB — overrides the 4096 default
+        var configuration = GivenConfiguration(route);
+        int ocelotPort = PortFinder.GetRandomPort();
+        var ocelotUrl = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
+        this
+            .Given(_ => GivenThereIsAConfiguration(configuration))
+            .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
+            .And(_ => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoLargeAsync))
+            .When(_ => WhenIConnectAndSendALargePayload(ocelotUrl))
+            .Then(_ => ThenTheLargePayloadIsEchoedBack())
+        .BDDfy();
+    }
+
+    private string _largePayload;
+    private string _largePayloadReceived;
+
+    private async Task WhenIConnectAndSendALargePayload(Uri ocelotUrl)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var client = new ClientWebSocket();
+        await client.ConnectAsync(ocelotUrl, cts.Token);
+
+        // 32 KB payload — larger than the 4096-byte default buffer
+        _largePayload = new string('A', 1024 * 32);
+        var upload = Encoding.UTF8.GetBytes(_largePayload);
+        await client.SendAsync(new ArraySegment<byte>(upload), WebSocketMessageType.Text, true, cts.Token);
+
+        var downloadBuffer = new byte[1024 * 64];
+        var result = await client.ReceiveAsync(new ArraySegment<byte>(downloadBuffer), cts.Token);
+        _largePayloadReceived = Encoding.UTF8.GetString(downloadBuffer, 0, result.Count);
+        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token);
+    }
+
+    private void ThenTheLargePayloadIsEchoedBack() => _largePayloadReceived.ShouldBe(_largePayload);
 
     private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
     {

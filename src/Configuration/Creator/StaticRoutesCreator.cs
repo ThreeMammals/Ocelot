@@ -23,6 +23,7 @@ public class StaticRoutesCreator : IRoutesCreator
     private readonly IVersionCreator _versionCreator;
     private readonly IVersionPolicyCreator _versionPolicyCreator;
     private readonly IMetadataCreator _metadataCreator;
+    private readonly IWebSocketOptionsCreator _webSocketOptionsCreator;
 
     public StaticRoutesCreator(
         IClaimsToThingCreator claimsToThingCreator,
@@ -41,7 +42,8 @@ public class StaticRoutesCreator : IRoutesCreator
         IVersionCreator versionCreator,
         IVersionPolicyCreator versionPolicyCreator,
         IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
-        IMetadataCreator metadataCreator)
+        IMetadataCreator metadataCreator,
+        IWebSocketOptionsCreator webSocketOptionsCreator)
     {
         _routeKeyCreator = routeKeyCreator;
         _loadBalancerOptionsCreator = loadBalancerOptionsCreator;
@@ -61,6 +63,7 @@ public class StaticRoutesCreator : IRoutesCreator
         _versionPolicyCreator = versionPolicyCreator;
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
         _metadataCreator = metadataCreator;
+        _webSocketOptionsCreator = webSocketOptionsCreator;
     }
 
     public IReadOnlyList<Route> Create(FileConfiguration fileConfiguration)
@@ -117,6 +120,8 @@ public class StaticRoutesCreator : IRoutesCreator
 
         var metadata = _metadataCreator.Create(fileRoute.Metadata, globalConfiguration);
 
+        var webSocketOptions = _webSocketOptionsCreator.Create(fileRoute, globalConfiguration);
+
         var route = new DownstreamRouteBuilder()
             .WithAddHeadersToDownstream(hAndRs.AddHeadersToDownstream)
             .WithAddHeadersToUpstream(hAndRs.AddHeadersToUpstream)
@@ -151,6 +156,7 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
             .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
+            .WithWebSocketOptions(webSocketOptions)
             .Build();
         return route;
     }

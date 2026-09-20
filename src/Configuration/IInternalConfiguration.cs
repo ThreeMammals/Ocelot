@@ -18,4 +18,5 @@ public interface IInternalConfiguration // TODO Inherit : Microsoft.Extensions.C
     Route[] Routes { get; }
     ServiceProviderConfiguration ServiceProviderConfiguration { get; }
     int? Timeout { get; }
+    WebSocketOptions WebSocket { get; }
 }

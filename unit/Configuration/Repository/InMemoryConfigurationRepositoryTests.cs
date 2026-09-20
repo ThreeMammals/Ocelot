@@ -98,5 +98,6 @@ public class InMemoryConfigurationRepositoryTests : UnitTest
         public RateLimitOptions RateLimitOptions => throw new NotImplementedException();
         public int? Timeout => throw new NotImplementedException();
         public CacheOptions CacheOptions => throw new NotImplementedException();
+        public WebSocketOptions WebSocket => throw new NotImplementedException();
     }
 }

@@ -195,6 +195,26 @@ public class RouteFluentValidatorTests : UnitTest
             result.ThenSingleErrorIs(errorMessage);
     }
 
+    [Theory]
+    [InlineData(null, true, null)]
+    [InlineData(-1, false, "WebSocket.BufferSize is negative or zero for the route /test")]
+    [InlineData(0, false, "WebSocket.BufferSize is negative or zero for the route /test")]
+    [InlineData(65536, true, null)]
+    public async Task ShouldValidate_WebSocketOptions_BufferSize(int? bufferSize, bool valid, string errorMessage)
+    {
+        // Arrange
+        var route = GivenRoute();
+        route.WebSocket = new() { BufferSize = bufferSize };
+
+        // Act
+        var result = await _validator.ValidateAsync(route, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsValid.ShouldBe(valid);
+        if (!result.IsValid)
+            result.ThenSingleErrorIs(errorMessage);
+    }
+
     [Fact]
     public async Task Should_not_be_valid_if_enable_rate_limiting_true_and_period_is_empty()
     {
