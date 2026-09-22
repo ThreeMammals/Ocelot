@@ -1,26 +1,21 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Hosting;
 using Ocelot.Configuration.File;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Principal;
 using _HttpSys_ = Microsoft.AspNetCore.Server.HttpSys;
 
 namespace Ocelot.Acceptance.Authentication;
 
 public sealed class WindowsAuthTests : Steps
 {
-    private IHost _httpSysHost;
-
     [Fact]
     [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
     [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
-    public async Task Should_use_default_credentials_for_http_sys_windows_authentication()
+    public async Task Should_use_default_credentials_for_HttpSys_server()
     {
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
             $"Testing Windows Authentication with HTTP.sys is not applicable on the \"{RuntimeInformation.OSDescription}\" platform.");
@@ -45,40 +40,38 @@ public sealed class WindowsAuthTests : Steps
 #pragma warning disable CA1416 // Validate platform compatibility
     private Task MapWindowsAuthentication(HttpContext context)
     {
-        if (context.User.Identity?.IsAuthenticated != true)
+        var response = context.Response;
+        var identity = context.User.Identity;
+        var currentUser = WindowsIdentity.GetCurrent();
+        if (identity is not null && identity.IsAuthenticated &&
+            identity is WindowsIdentity && identity.Name == currentUser.Name)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
+            response.StatusCode = StatusCodes.Status200OK;
+            return response.WriteAsync("Windows Authentication succeeded", context.RequestAborted);
         }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status200OK;
-            return context.Response.WriteAsync("Windows Authentication succeeded", context.RequestAborted);
-        }
-    }
-    private Task GivenThereIsAWindowsAuthenticatedServiceRunningOn(int port)
-    {
-        var url = DownstreamUrl(port);
-        void ConfigureHttpSys(IWebHostBuilder builder) => builder
-            .UseUrls(url)
-            .Configure(app => app.Run(MapWindowsAuthentication))
-            .UseHttpSys(options =>
-            {
-                options.Authentication.Schemes = _HttpSys_.AuthenticationSchemes.Negotiate;
-            });
 
-        _httpSysHost = TestHostBuilder
-            .CreateHost()
-            .ConfigureWebHost(ConfigureHttpSys)
-            .Build();
-        return _httpSysHost.StartAsync(CancelMe);
+        response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
     }
+    private void UseNegotiateAuthentication(HttpSysOptions options)
+    {
+        var auth = options.Authentication;
+        auth.Schemes = _HttpSys_.AuthenticationSchemes.Negotiate;
+        auth.AllowAnonymous = false;
+    }
+    private void WindowsAuthApp(IApplicationBuilder app) => app
+        .Run(MapWindowsAuthentication);
+    private void ConfigureHttpSys(IWebHostBuilder builder) => builder
+        .Configure(WindowsAuthApp)
+        .UseHttpSys(UseNegotiateAuthentication);
+
+#if NET10_0_OR_GREATER
+    private Task<IHost>
+#else
+    private Task<IWebHost>
+#endif
+    GivenThereIsAWindowsAuthenticatedServiceRunningOn(int port)
+        => handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, NoServices, NoApplications, ConfigureHttpSys);
 #pragma warning restore CA1416
 #pragma warning restore IDE0079
-
-    public override void Dispose()
-    {
-        _httpSysHost?.Dispose();
-        base.Dispose();
-    }
 }
