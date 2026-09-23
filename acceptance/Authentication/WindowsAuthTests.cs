@@ -12,10 +12,14 @@ namespace Ocelot.Acceptance.Authentication;
 
 public sealed class WindowsAuthTests : Steps
 {
-    [Fact]
+    private const string SuccessfulResposeBody = "Windows Authentication succeeded";
+
+    [Theory]
+    [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)]
+    [InlineData(false, HttpStatusCode.Unauthorized, "")]
     [Trait("Feat", "657")] // https://github.com/ThreeMammals/Ocelot/issues/657
     [Trait("PR", "1521")] // https://github.com/ThreeMammals/Ocelot/pull/1521
-    public async Task Should_use_default_credentials_for_HttpSys_server()
+    public async Task ShouldUseDefaultCredentialsForHttpSysServer(bool useCredentials, HttpStatusCode statusCode, string body)
     {
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
             $"Testing Windows Authentication with HTTP.sys is not applicable on the \"{RuntimeInformation.OSDescription}\" platform.");
@@ -24,7 +28,7 @@ public sealed class WindowsAuthTests : Steps
         var route = GivenRoute(port);
         route.HttpHandlerOptions = new FileHttpHandlerOptions
         {
-            UseDefaultCredentials = true,
+            UseDefaultCredentials = useCredentials,
         };
         var configuration = GivenConfiguration(route);
 
@@ -32,8 +36,8 @@ public sealed class WindowsAuthTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBeOk();
-        await ThenTheResponseBodyShouldBeAsync("Windows Authentication succeeded");
+        ThenTheStatusCodeShouldBe(statusCode);
+        await ThenTheResponseBodyShouldBeAsync(body);
     }
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -47,7 +51,7 @@ public sealed class WindowsAuthTests : Steps
             identity is WindowsIdentity && identity.Name == currentUser.Name)
         {
             response.StatusCode = StatusCodes.Status200OK;
-            return response.WriteAsync("Windows Authentication succeeded", context.RequestAborted);
+            return response.WriteAsync(SuccessfulResposeBody, context.RequestAborted);
         }
 
         response.StatusCode = StatusCodes.Status401Unauthorized;
