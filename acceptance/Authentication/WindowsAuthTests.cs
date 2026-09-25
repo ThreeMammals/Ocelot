@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Ocelot.Configuration.File;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using _HttpSys_ = Microsoft.AspNetCore.Server.HttpSys;
@@ -57,9 +58,14 @@ public sealed class WindowsAuthTests : Steps
     private void ConfigureHttpSys(IWebHostBuilder builder) => builder
         .UseHttpSys(WithNegotiateAuthentication);
 
-    [Theory]
-    [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)]
-    [InlineData(false, HttpStatusCode.Unauthorized, "")]
+    /// <summary>
+    /// TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using "setspn" command.
+    /// This Kestrel user must be registered in an Active Directory Domain Controller, and the local testing host must be authenticated via the Kerberos auth service to obtain a ticket.Otherwise, the test and overall authentication will fail inside the Negotiate library.
+    /// </summary>
+    [Theory(DisplayName = "TODO " + nameof(ShouldUseDefaultCredentialsForKestrelServer),
+        Skip = "TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using \"setspn\" command.")]
+    [InlineData(false, HttpStatusCode.Unauthorized, "")] // TODO Actual status must be HttpStatusCode.Unauthorized
+    [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)] // TODO Actual status must be HttpStatusCode.OK
     public async Task ShouldUseDefaultCredentialsForKestrelServer(bool useCredentials, HttpStatusCode statusCode, string body)
     {
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
@@ -72,6 +78,16 @@ public sealed class WindowsAuthTests : Steps
             UseDefaultCredentials = useCredentials,
         };
         var configuration = GivenConfiguration(route);
+
+        static string GetMachineFqdn()
+        {
+            string domainName = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            string hostName = Dns.GetHostName();
+            if (!hostName.EndsWith(domainName))
+                hostName += "." + domainName;
+            return hostName;
+        }
+        var fqdn = GetMachineFqdn();
 
         await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, KestrelServices, KestrelAuthApp, ConfigureKestrel);
         GivenThereIsAConfiguration(configuration);
