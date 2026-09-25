@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Win32;
 using Ocelot.Configuration.File;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -60,7 +61,8 @@ public sealed class WindowsAuthTests : Steps
 
     /// <summary>
     /// TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using "setspn" command.
-    /// This Kestrel user must be registered in an Active Directory Domain Controller, and the local testing host must be authenticated via the Kerberos auth service to obtain a ticket.Otherwise, the test and overall authentication will fail inside the Negotiate library.
+    /// This Kestrel user must be registered in an Active Directory Domain Controller, and the local testing host must be authenticated via the Kerberos auth service to obtain a ticket.
+    /// Otherwise, the test and overall authentication will fail inside the Negotiate library.
     /// </summary>
     [Theory(DisplayName = "TODO " + nameof(ShouldUseDefaultCredentialsForKestrelServer),
         Skip = "TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using \"setspn\" command.")]
@@ -79,7 +81,7 @@ public sealed class WindowsAuthTests : Steps
         };
         var configuration = GivenConfiguration(route);
 
-        static string GetMachineFqdn()
+        static string GetMachineFQDN()
         {
             string domainName = IPGlobalProperties.GetIPGlobalProperties().DomainName;
             string hostName = Dns.GetHostName();
@@ -87,7 +89,7 @@ public sealed class WindowsAuthTests : Steps
                 hostName += "." + domainName;
             return hostName;
         }
-        var fqdn = GetMachineFqdn();
+        var fqdn = GetMachineFQDN();
 
         await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, KestrelServices, KestrelAuthApp, ConfigureKestrel);
         GivenThereIsAConfiguration(configuration);
@@ -111,6 +113,55 @@ public sealed class WindowsAuthTests : Steps
         .UseAuthentication()
         .UseAuthorization()
         .Run(MapWindowsAuthentication);
+
+    [Theory]
+    // [InlineData(false, HttpStatusCode.Unauthorized, "")]
+    [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)]
+    public async Task ShouldUseDefaultCredentialsForIISExpressServer(bool useCredentials, HttpStatusCode statusCode, string body)
+    {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+            $"Testing Windows Authentication with IIS Express is not applicable on the \"{RuntimeInformation.OSDescription}\" platform.");
+
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        route.HttpHandlerOptions = new FileHttpHandlerOptions
+        {
+            UseDefaultCredentials = useCredentials,
+        };
+        var configuration = GivenConfiguration(route);
+
+        // DevOps
+        var isIIS = IsIISExpressInstalled();
+        Assert.SkipWhen(!isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
+
+        await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, IISExpressServices, IISExpressAuthApp, ConfigureIISExpress);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(statusCode);
+        await ThenTheResponseBodyShouldBeAsync(body);
+    }
+    public static bool IsIISExpressInstalled()
+    {
+        // IIS Express is a 32-bit application, so we must specify the Registry32 view
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var iisExpressKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\IISExpress");
+        // If the key exists, IIS Express is installed
+        return iisExpressKey != null;
+    }
+    private void WithDefaultPolicy(AuthorizationOptions options)
+        => options.FallbackPolicy = options.DefaultPolicy;
+    private void IISExpressServices(IServiceCollection services)
+    {
+        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
+        services.AddAuthorization(WithDefaultPolicy);
+    }
+    private void IISExpressAuthApp(IApplicationBuilder app) => app
+        .UseAuthentication()
+        .UseAuthorization()
+        .Run(MapWindowsAuthentication);
+    private void ConfigureIISExpress(IWebHostBuilder builder)
+        => builder.UseIISIntegration();
 
     private Task MapWindowsAuthentication(HttpContext context)
     {
