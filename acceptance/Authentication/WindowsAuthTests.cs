@@ -7,7 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;
 using Ocelot.Configuration.File;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using _HttpSys_ = Microsoft.AspNetCore.Server.HttpSys;
@@ -33,10 +36,7 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        route.HttpHandlerOptions = new FileHttpHandlerOptions
-        {
-            UseDefaultCredentials = useCredentials,
-        };
+        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
 
         await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, HttpSysServices, HttpSysAuthApp, ConfigureHttpSys);
@@ -64,8 +64,7 @@ public sealed class WindowsAuthTests : Steps
     /// This Kestrel user must be registered in an Active Directory Domain Controller, and the local testing host must be authenticated via the Kerberos auth service to obtain a ticket.
     /// Otherwise, the test and overall authentication will fail inside the Negotiate library.
     /// </summary>
-    [Theory(DisplayName = "TODO " + nameof(ShouldUseDefaultCredentialsForKestrelServer),
-        Skip = "TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using \"setspn\" command.")]
+    [Theory(Skip = "TODO Actually testing the Kestrel web server requires setting up a Windows user to run under using \"setspn\" command.")]
     [InlineData(false, HttpStatusCode.Unauthorized, "")] // TODO Actual status must be HttpStatusCode.Unauthorized
     [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)] // TODO Actual status must be HttpStatusCode.OK
     public async Task ShouldUseDefaultCredentialsForKestrelServer(bool useCredentials, HttpStatusCode statusCode, string body)
@@ -75,10 +74,7 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        route.HttpHandlerOptions = new FileHttpHandlerOptions
-        {
-            UseDefaultCredentials = useCredentials,
-        };
+        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
 
         static string GetMachineFQDN()
@@ -122,24 +118,63 @@ public sealed class WindowsAuthTests : Steps
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
             $"Testing Windows Authentication with IIS Express is not applicable on the \"{RuntimeInformation.OSDescription}\" platform.");
 
-        var port = PortFinder.GetRandomPort();
-        var route = GivenRoute(port);
-        route.HttpHandlerOptions = new FileHttpHandlerOptions
-        {
-            UseDefaultCredentials = useCredentials,
-        };
-        var configuration = GivenConfiguration(route);
-
         // DevOps
         var isIIS = IsIISExpressInstalled();
-        Assert.SkipWhen(!isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
+        // Assert.SkipWhen(!isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
+        Assert.True(isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
 
-        await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, IISExpressServices, IISExpressAuthApp, ConfigureIISExpress);
-        GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGateway("/");
-        ThenTheStatusCodeShouldBe(statusCode);
-        await ThenTheResponseBodyShouldBeAsync(body);
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        //route.DownstreamHostAndPorts[0].Port = 44388;
+        //route.DownstreamScheme = Uri.UriSchemeHttps;
+        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
+        var configuration = GivenConfiguration(route);
+
+        //await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, IISExpressServices, IISExpressAuthApp, ConfigureIISExpress);
+        //GivenThereIsAConfiguration(configuration);
+        //GivenOcelotIsRunning();
+        //await WhenIGetUrlOnTheApiGateway("/");
+        //ThenTheStatusCodeShouldBe(statusCode);
+        //await ThenTheResponseBodyShouldBeAsync(body);
+        var path = Directory.GetCurrentDirectory();
+        string acceptance = ClimbToFolder(path, nameof(acceptance));
+        if (acceptance is null) throw new DirectoryNotFoundException($"Folder '{nameof(acceptance)}' not above '{path}'");
+        path = Path.Combine(acceptance, "Authentication", "WinAuthWebApp");
+        var (outputDir, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj");
+        var iisProcess = await LaunchIISExpressAsync(port, path);
+        try
+        {
+            GivenThereIsAConfiguration(configuration);
+            GivenOcelotIsRunning();
+            await WhenIGetUrlOnTheApiGateway("/");
+            //ThenTheStatusCodeShouldBe(statusCode);
+            //await ThenTheResponseBodyShouldBeAsync(body);
+            response.ShouldNotBeNull();
+            var body2 = await response.Content.ReadAsStringAsync(CancelMe);
+            ThenTheStatusCodeShouldBe(statusCode);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+        finally
+        {
+            iisProcess?.Kill(true);
+            await Task.Delay(500, CancelMe); // Allow cleanup
+        }
+    }
+    static string ClimbToFolder(string path, string upFolder)
+    {
+        var dir = Directory.Exists(path)
+            ? new DirectoryInfo(path)
+            : new DirectoryInfo(Path.GetDirectoryName(Path.GetFullPath(path)));
+        while (dir is not null)
+        {
+            if (string.Equals(dir.Name, upFolder, StringComparison.OrdinalIgnoreCase))
+                return dir.FullName;
+            dir = dir.Parent;
+        }
+        return null; // upFolder never found
     }
     public static bool IsIISExpressInstalled()
     {
@@ -148,6 +183,97 @@ public sealed class WindowsAuthTests : Steps
         using var iisExpressKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\IISExpress");
         // If the key exists, IIS Express is installed
         return iisExpressKey != null;
+    }
+    private static string GetIISExpressPath()
+    {
+        var paths = new[]
+        {
+            @"C:\Program Files\IIS Express\iisexpress.exe",
+            @"C:\Program Files (x86)\IIS Express\iisexpress.exe"
+        };
+        return paths.FirstOrDefault(File.Exists);
+    }
+    private async Task<(int, Stopwatch)> PublishProjectAsync(string csprojPath, string configuration = "Release", string outputDir = null)
+    {
+        var args = new List<string>
+            {
+                "publish",
+                $"\"{csprojPath}\"",
+                "-c", configuration ?? "Release"
+            };
+
+        if (!string.IsNullOrWhiteSpace(outputDir))
+        {
+            args.Add("-o");
+            args.Add($"\"{outputDir}\"");
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = string.Join(" ", args),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        using var process = new Process { StartInfo = startInfo };
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data is not null)
+                Console.WriteLine(e.Data);
+        };
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data is not null)
+                Console.Error.WriteLine(e.Data);
+        };
+
+        Stopwatch watcher = Stopwatch.StartNew();
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        await process.WaitForExitAsync(CancelMe);
+        watcher.Stop();
+        return (process.ExitCode, watcher);
+    }
+    private async Task<(string, Stopwatch)> CompileProjectAsync(string path, string project, string outputDir = null, string configuration = "Release")
+    {
+        if (!Path.Exists(path))
+            throw new DirectoryNotFoundException($"Path not found: {path}");
+        outputDir ??= Path.Combine(path, "bin", "published");
+        var proj = Path.Combine(path, project);
+        if (!File.Exists(proj))
+            throw new FileNotFoundException($"Project file not found: {proj}");
+        (int exitCode, Stopwatch watcher) = await PublishProjectAsync(proj, configuration, outputDir);
+        if (exitCode != 0) throw new InvalidOperationException($"dotnet publish failed with {exitCode}");
+        return (outputDir, watcher);
+    }
+    private async Task<Process> LaunchIISExpressAsync(int port,
+        string appPath = "C:\\Users\\rmaks\\source\\WinAuthWebApp-published",
+        [CallerMemberName] string appName = "")
+    {
+        var iisExpressPath = GetIISExpressPath(); // e.g., "C:\Program Files\IIS Express\iisexpress.exe"
+        if (string.IsNullOrEmpty(iisExpressPath))
+            throw new InvalidOperationException("IIS Express not found");
+
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = iisExpressPath,
+            // Arguments = $"/path:\"{appPath}\" /port:{port} /config:\"{appPath}\\applicationhost.config\" /systray:false",
+            // iisexpress.exe /config:"C:\path\to\applicationhost.config" /site:WinAuthWebApp /systray:false
+            Arguments = $"/config:\"{appPath}\\applicationhost.config\" /site:WinAuthWebApp /systray:false",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        var process = Process.Start(psi);
+        // Store process reference for cleanup in test teardown
+        await Task.Delay(2000, CancelMe); // Wait for IIS Express to start
+        return process;
     }
     private void WithDefaultPolicy(AuthorizationOptions options)
         => options.FallbackPolicy = options.DefaultPolicy;

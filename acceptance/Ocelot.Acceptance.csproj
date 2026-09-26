@@ -19,6 +19,9 @@
     <NoWarn>$(NoWarn);CS0618;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Authentication\WinAuthWebApp\Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="appsettings.product.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
