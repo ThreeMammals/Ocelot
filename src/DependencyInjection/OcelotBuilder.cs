@@ -136,32 +136,33 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotMetadata();
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
-    }
+        Services.AddAspNetRateLimiting(configurationRoot);
+  }
 
-    /// <summary>
-    /// Adds default ASP.NET services which are the minimal part of the gateway core.
-    /// <para>
-    /// Finally the builder adds Newtonsoft.Json services via the <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/> extension-method.<br/>
-    /// To remove these services, use custom builder in the <see cref="ServiceCollectionExtensions.AddOcelotUsingBuilder(IServiceCollection, Func{IMvcCoreBuilder, Assembly, IMvcCoreBuilder})"/> extension-method.
-    /// </para>
-    /// </summary>
-    /// <remarks>
-    /// Note that the following <see cref="IServiceCollection"/> extensions being called:<br/>
-    /// - <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>, impossible to remove.<br/>
-    /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
-    /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
-    /// <para>
-    /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called:<br/>
-    /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
-    /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
-    /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
-    /// - <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/>, removable.
-    /// </para>
-    /// </remarks>
-    /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
-    /// <param name="assembly">The web app assembly.</param>
-    /// <returns>An <see cref="IMvcCoreBuilder"/> object.</returns>
-    protected IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
+  /// <summary>
+  /// Adds default ASP.NET services which are the minimal part of the gateway core.
+  /// <para>
+  /// Finally the builder adds Newtonsoft.Json services via the <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/> extension-method.<br/>
+  /// To remove these services, use custom builder in the <see cref="ServiceCollectionExtensions.AddOcelotUsingBuilder(IServiceCollection, Func{IMvcCoreBuilder, Assembly, IMvcCoreBuilder})"/> extension-method.
+  /// </para>
+  /// </summary>
+  /// <remarks>
+  /// Note that the following <see cref="IServiceCollection"/> extensions being called:<br/>
+  /// - <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>, impossible to remove.<br/>
+  /// - <see cref="AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(IServiceCollection)"/><br/>
+  /// - <see cref="EncoderServiceCollectionExtensions.AddWebEncoders(IServiceCollection)"/>.
+  /// <para>
+  /// Warning! The following <see cref="IMvcCoreBuilder"/> extensions being called:<br/>
+  /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddApplicationPart(IMvcCoreBuilder, Assembly)"/><br/>
+  /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddControllersAsServices(IMvcCoreBuilder)"/><br/>
+  /// - <see cref="MvcCoreMvcCoreBuilderExtensions.AddAuthorization(IMvcCoreBuilder)"/><br/>
+  /// - <see cref="NewtonsoftJsonMvcCoreBuilderExtensions.AddNewtonsoftJson(IMvcCoreBuilder)"/>, removable.
+  /// </para>
+  /// </remarks>
+  /// <param name="builder">The default builder being returned by <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> extension-method.</param>
+  /// <param name="assembly">The web app assembly.</param>
+  /// <returns>An <see cref="IMvcCoreBuilder"/> object.</returns>
+  protected IMvcCoreBuilder AddDefaultAspNetServices(IMvcCoreBuilder builder, Assembly assembly)
     {
         Services
             .AddMiddlewareAnalysis()

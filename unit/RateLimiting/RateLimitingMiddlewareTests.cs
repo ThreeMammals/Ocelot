@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -255,6 +256,36 @@ public class RateLimitingMiddlewareTests : UnitTest
         var body = await ds.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("Rate limiting client could not be identified for the route '?' due to a missing or unknown client ID header required by rule '3/1s/w1s'!", body);
         _logger.Verify(x => x.LogWarning(err.Message), Times.Once);
+    }
+
+    [Fact]
+    [Trait("Feat", "2138")]
+    public async Task Should_add_EnableRateLimittingAttribute_When_AspNetRateLimiting()
+    {
+        // Arrange
+        const long limit = 3L;
+        RateLimitOptions options = new()
+        {
+            ClientIdHeader = "ClientId",
+            Rule = new("1s", "1s", limit),
+            Policy = "testPolicy",
+        };
+        var downstreamRoute = GivenDownstreamRoute(options);
+        var route = GivenRoute(downstreamRoute);
+        var dsHolder = new _DownstreamRouteHolder_(new(), route);
+
+        // Act
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit+1, dsHolder);
+
+        // Assert
+        _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
+        contexts.ForEach(ctx =>
+        {
+            var endpoint = ctx.GetEndpoint();
+            endpoint.ShouldNotBeNull();
+            var rateLimitAttribute = endpoint.Metadata.GetMetadata<EnableRateLimitingAttribute>();
+            rateLimitAttribute.PolicyName.ShouldBe("testPolicy");
+        });
     }
 
     private static RateLimitOptions GivenRateLimitOptions(RateLimitRule rule = null, [CallerMemberName] string testName = null) => new(

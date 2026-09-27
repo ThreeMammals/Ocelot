@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -66,6 +68,32 @@ public static class Features
     public static IServiceCollection AddOcelotRateLimiting(this IServiceCollection services) => services
         .AddSingleton<IRateLimiting, RateLimiting.RateLimiting>()
         .AddSingleton<IRateLimitStorage, MemoryCacheRateLimitStorage>();
+    
+    /// <summary>
+    /// Ocelot feature: <see href="">AspNet Rate Limiting</see>.
+    /// </summary>
+    /// <remarks>
+    /// Read The Docs: <see href="">Rate Limiting</see>.
+    /// </remarks>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="configurationRoot">Root configuration object.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddAspNetRateLimiting(this IServiceCollection services, IConfiguration configurationRoot)
+    {
+        var globalRateLimitOptions = configurationRoot.Get<FileConfiguration>()?.GlobalConfiguration?.RateLimitOptions;
+        var rejectStatusCode = globalRateLimitOptions?.HttpStatusCode ?? StatusCodes.Status429TooManyRequests;
+        var rejectedMessage = globalRateLimitOptions?.QuotaExceededMessage ?? "API calls quota exceeded!";
+        services.AddRateLimiter(options =>
+        {
+            // TODO Need private method
+            options.OnRejected = async (rejectedContext, token) =>
+            {
+                rejectedContext.HttpContext.Response.StatusCode = rejectStatusCode;
+                await rejectedContext.HttpContext.Response.WriteAsync(rejectedMessage, token);
+            };
+        });
+        return services;
+    }
 
     /// <summary>
     /// Ocelot feature: <see href="https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/caching.rst">Request Caching</see>.
