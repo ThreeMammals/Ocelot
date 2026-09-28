@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using _HttpSys_ = Microsoft.AspNetCore.Server.HttpSys;
 
 namespace Ocelot.Acceptance.Authentication;
@@ -125,37 +126,22 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        //route.DownstreamHostAndPorts[0].Port = 44388;
-        //route.DownstreamScheme = Uri.UriSchemeHttps;
         route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
 
-        //await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, IISExpressServices, IISExpressAuthApp, ConfigureIISExpress);
-        //GivenThereIsAConfiguration(configuration);
-        //GivenOcelotIsRunning();
-        //await WhenIGetUrlOnTheApiGateway("/");
-        //ThenTheStatusCodeShouldBe(statusCode);
-        //await ThenTheResponseBodyShouldBeAsync(body);
         var path = Directory.GetCurrentDirectory();
         string acceptance = ClimbToFolder(path, nameof(acceptance));
         if (acceptance is null) throw new DirectoryNotFoundException($"Folder '{nameof(acceptance)}' not above '{path}'");
         path = Path.Combine(acceptance, "Authentication", "WinAuthWebApp");
-        var (outputDir, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj");
-        var iisProcess = await LaunchIISExpressAsync(port, path);
+        var (publishedTo, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj", configuration: "Debug");
+        using var iisProcess = await LaunchIISExpressAsync(port, publishedTo);
         try
         {
             GivenThereIsAConfiguration(configuration);
             GivenOcelotIsRunning();
             await WhenIGetUrlOnTheApiGateway("/");
-            //ThenTheStatusCodeShouldBe(statusCode);
-            //await ThenTheResponseBodyShouldBeAsync(body);
-            response.ShouldNotBeNull();
-            var body2 = await response.Content.ReadAsStringAsync(CancelMe);
             ThenTheStatusCodeShouldBe(statusCode);
-        }
-        catch (Exception ex)
-        {
-            throw;
+            await ThenTheResponseBodyShouldBeAsync(body);
         }
         finally
         {
@@ -193,13 +179,15 @@ public sealed class WindowsAuthTests : Steps
         };
         return paths.FirstOrDefault(File.Exists);
     }
-    private async Task<(int, Stopwatch)> PublishProjectAsync(string csprojPath, string configuration = "Release", string outputDir = null)
+    private async Task<(int, Stopwatch)> PublishProjectAsync(string csprojPath,
+        string configuration = "Release", string framework = "net10.0", string outputDir = null)
     {
         var args = new List<string>
             {
                 "publish",
                 $"\"{csprojPath}\"",
-                "-c", configuration ?? "Release"
+                "-c", configuration ?? "Release",
+                "-f", framework ?? "net10.0"
             };
 
         if (!string.IsNullOrWhiteSpace(outputDir))
@@ -238,7 +226,8 @@ public sealed class WindowsAuthTests : Steps
         watcher.Stop();
         return (process.ExitCode, watcher);
     }
-    private async Task<(string, Stopwatch)> CompileProjectAsync(string path, string project, string outputDir = null, string configuration = "Release")
+    private async Task<(string, Stopwatch)> CompileProjectAsync(string path, string project,
+        string outputDir = null, string configuration = "Release", string framework = "net10.0")
     {
         if (!Path.Exists(path))
             throw new DirectoryNotFoundException($"Path not found: {path}");
@@ -246,9 +235,26 @@ public sealed class WindowsAuthTests : Steps
         var proj = Path.Combine(path, project);
         if (!File.Exists(proj))
             throw new FileNotFoundException($"Project file not found: {proj}");
-        (int exitCode, Stopwatch watcher) = await PublishProjectAsync(proj, configuration, outputDir);
+        (int exitCode, Stopwatch watcher) = await PublishProjectAsync(proj, configuration, framework, outputDir);
         if (exitCode != 0) throw new InvalidOperationException($"dotnet publish failed with {exitCode}");
         return (outputDir, watcher);
+    }
+    private async Task ConfigureIISExpressApplicationHost(string appPath,
+        Dictionary<string, object> replacements,
+        string templateFile = "applicationhost.config.txt")
+    {
+        var path = Path.Combine(appPath, templateFile);
+        string template = await File.ReadAllTextAsync(path, Encoding.UTF8, CancelMe);
+
+        var builder = new StringBuilder(template);
+        foreach (var kvp in replacements)
+        {
+            builder.Replace(kvp.Key, kvp.Value?.ToString() ?? string.Empty);
+        }
+
+        var outputPath = Path.Combine(appPath, Path.GetFileNameWithoutExtension(templateFile));
+        await File.WriteAllTextAsync(outputPath, builder.ToString(),
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), CancelMe);
     }
     private async Task<Process> LaunchIISExpressAsync(int port,
         string appPath = "C:\\Users\\rmaks\\source\\WinAuthWebApp-published",
@@ -258,13 +264,17 @@ public sealed class WindowsAuthTests : Steps
         if (string.IsNullOrEmpty(iisExpressPath))
             throw new InvalidOperationException("IIS Express not found");
 
-
+        await ConfigureIISExpressApplicationHost(appPath, new()
+        {
+            ["{OcelotApp}"] = appName,
+            ["{OcelotPath}"] = appPath,
+            ["{OcelotPort}"] = port
+        });
         var psi = new ProcessStartInfo
         {
             FileName = iisExpressPath,
             // Arguments = $"/path:\"{appPath}\" /port:{port} /config:\"{appPath}\\applicationhost.config\" /systray:false",
-            // iisexpress.exe /config:"C:\path\to\applicationhost.config" /site:WinAuthWebApp /systray:false
-            Arguments = $"/config:\"{appPath}\\applicationhost.config\" /site:WinAuthWebApp /systray:false",
+            Arguments = $"/config:\"{appPath}\\applicationhost.config\" /site:{appName} /systray:false",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
