@@ -112,41 +112,40 @@ public sealed class WindowsAuthTests : Steps
         .Run(MapWindowsAuthentication);
 
     [Theory]
-    // [InlineData(false, HttpStatusCode.Unauthorized, "")]
-    [InlineData(true, HttpStatusCode.OK, SuccessfulResposeBody)]
-    public async Task ShouldUseDefaultCredentialsForIISExpressServer(bool useCredentials, HttpStatusCode statusCode, string body)
+    [InlineData(true, HttpStatusCode.OK)]
+    [InlineData(false, HttpStatusCode.Unauthorized)]
+    public async Task ShouldUseDefaultCredentialsForIISExpressServer(bool useCredentials, HttpStatusCode statusCode)
     {
         Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
             $"Testing Windows Authentication with IIS Express is not applicable on the \"{RuntimeInformation.OSDescription}\" platform.");
 
-        // DevOps
-        var isIIS = IsIISExpressInstalled();
-        // Assert.SkipWhen(!isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
-        Assert.True(isIIS, $"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
+        IsIISExpressInstalled().ShouldBeTrue($"IIS Express is not installed on \"{RuntimeInformation.OSDescription}\"");
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
 
+        // Run downstream service in IIS Express environment
         var path = Directory.GetCurrentDirectory();
         string acceptance = ClimbToFolder(path, nameof(acceptance));
         if (acceptance is null) throw new DirectoryNotFoundException($"Folder '{nameof(acceptance)}' not above '{path}'");
         path = Path.Combine(acceptance, "Authentication", "WinAuthWebApp");
         var (publishedTo, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj", configuration: "Debug");
-        using var iisProcess = await LaunchIISExpressAsync(port, publishedTo);
+        using var iis = await LaunchIISExpressAsync(port, publishedTo);
         try
         {
-            GivenThereIsAConfiguration(configuration);
-            GivenOcelotIsRunning();
             await WhenIGetUrlOnTheApiGateway("/");
             ThenTheStatusCodeShouldBe(statusCode);
-            await ThenTheResponseBodyShouldBeAsync(body);
+            if (statusCode == HttpStatusCode.OK)
+                await ThenTheResponseBodyShouldBeAsync(SuccessfulResposeBody);
         }
         finally
         {
-            iisProcess?.Kill(true);
-            await Task.Delay(500, CancelMe); // Allow cleanup
+            if (!iis.HasExited) iis.Kill(true);
+            await iis.WaitForExitAsync(CancelMe);
         }
     }
     static string ClimbToFolder(string path, string upFolder)
@@ -206,25 +205,25 @@ public sealed class WindowsAuthTests : Steps
             CreateNoWindow = true
         };
 
-        using var process = new Process { StartInfo = startInfo };
-        process.OutputDataReceived += (_, e) =>
+        using var dotnet = new Process { StartInfo = startInfo };
+        dotnet.OutputDataReceived += (_, e) =>
         {
             if (e.Data is not null)
                 Console.WriteLine(e.Data);
         };
-        process.ErrorDataReceived += (_, e) =>
+        dotnet.ErrorDataReceived += (_, e) =>
         {
             if (e.Data is not null)
                 Console.Error.WriteLine(e.Data);
         };
 
         Stopwatch watcher = Stopwatch.StartNew();
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        await process.WaitForExitAsync(CancelMe);
+        dotnet.Start();
+        dotnet.BeginOutputReadLine();
+        dotnet.BeginErrorReadLine();
+        await dotnet.WaitForExitAsync(CancelMe);
         watcher.Stop();
-        return (process.ExitCode, watcher);
+        return (dotnet.ExitCode, watcher);
     }
     private async Task<(string, Stopwatch)> CompileProjectAsync(string path, string project,
         string outputDir = null, string configuration = "Release", string framework = "net10.0")
@@ -280,10 +279,37 @@ public sealed class WindowsAuthTests : Steps
             UseShellExecute = false,
             CreateNoWindow = true
         };
-        var process = Process.Start(psi);
-        // Store process reference for cleanup in test teardown
-        await Task.Delay(2000, CancelMe); // Wait for IIS Express to start
-        return process;
+        var iisexpress = Process.Start(psi)
+            ?? throw new InvalidOperationException("IIS Express failed to start");
+
+        await WaitUntilOnlineAsync(port, iisexpress, CancelMe);
+        return iisexpress;
+    }
+    private static async Task WaitUntilOnlineAsync(int port, Process iis, CancellationToken ct, int? waitSeconds = 5)
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+        var url = DownstreamUrl(port);
+        var waitNoMore = TimeSpan.FromSeconds(waitSeconds ?? 5);
+        var watcher = Stopwatch.StartNew();
+        while (watcher.Elapsed < waitNoMore)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (iis.HasExited)
+                throw new InvalidOperationException($"IIS Express exited. ExitCode={iis.ExitCode}");
+
+            try
+            {
+                using var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+                if ((int)response.StatusCode is >= StatusCodes.Status200OK and < StatusCodes.Status500InternalServerError)
+                    return;
+            }
+            catch (HttpRequestException) { }
+            catch (TaskCanceledException) when (!ct.IsCancellationRequested) { }
+
+            await Task.Delay(200, ct);
+        }
+
+        throw new TimeoutException($"IIS Express did not become ready at {url}");
     }
     private void WithDefaultPolicy(AuthorizationOptions options)
         => options.FallbackPolicy = options.DefaultPolicy;
