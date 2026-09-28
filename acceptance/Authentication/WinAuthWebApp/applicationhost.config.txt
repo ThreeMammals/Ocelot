@@ -133,8 +133,8 @@
     <system.applicationHost>
 
         <applicationPools>
+            <add name="{OcelotApp}Pool" managedRuntimeVersion="" managedPipelineMode="Integrated" autoStart="true" />
             <add name="Clr4IntegratedAppPool" managedRuntimeVersion="" managedPipelineMode="Integrated" autoStart="true" />
-            <add name="WinAuthAppPool" managedRuntimeVersion="" managedPipelineMode="Integrated" autoStart="true" />
             <add name="Clr4ClassicAppPool" managedRuntimeVersion="v4.0" managedPipelineMode="Classic" CLRConfigFile="%IIS_USER_HOME%\config\aspnet.config" autoStart="true" />
             <add name="Clr2IntegratedAppPool" managedRuntimeVersion="v2.0" managedPipelineMode="Integrated" CLRConfigFile="%IIS_USER_HOME%\config\aspnet.config" autoStart="true" />
             <add name="Clr2ClassicAppPool" managedRuntimeVersion="v2.0" managedPipelineMode="Classic" CLRConfigFile="%IIS_USER_HOME%\config\aspnet.config" autoStart="true" />
@@ -164,8 +164,8 @@
                 </bindings>
             </site>-->
           <site name="{OcelotApp}" id="1">
-            <application path="/" applicationPool="WinAuthAppPool">
-              <virtualDirectory path="/" physicalPath="{OcelotPath}\published\" />
+            <application path="/" applicationPool="{OcelotApp}Pool">
+              <virtualDirectory path="/" physicalPath="{OcelotPath}" />
             </application>
             <bindings>
               <binding protocol="http" bindingInformation="*:{OcelotPort}:localhost" />
