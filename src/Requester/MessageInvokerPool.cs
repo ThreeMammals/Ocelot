@@ -98,15 +98,14 @@ public class MessageInvokerPool : IMessageInvokerPool
             PooledConnectionLifetime = options.PooledConnectionLifeTime,
         };
 
+        if (options.UseDefaultCredentials)
+            handler.Credentials = CredentialCache.DefaultCredentials;
+
         if (options.UseCookieContainer)
-        {
             handler.CookieContainer = new CookieContainer();
-        }
 
         if (!route.DangerousAcceptAnyServerCertificateValidator)
-        {
             return handler;
-        }
 
         handler.SslOptions = new SslClientAuthenticationOptions
         {

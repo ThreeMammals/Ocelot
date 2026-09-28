@@ -27,6 +27,7 @@ public class FileGlobalHttpHandlerOptionsTests
             MaxConnectionsPerServer = 111,
             PooledConnectionLifetimeSeconds = 222,
             UseCookieContainer = true,
+            UseDefaultCredentials = true,
             UseProxy = true,
             UseTracing = true,
         };
@@ -42,6 +43,7 @@ public class FileGlobalHttpHandlerOptionsTests
         Assert.Equal(111, actual.MaxConnectionsPerServer);
         Assert.Equal(222, actual.PooledConnectionLifetimeSeconds);
         Assert.True(actual.UseCookieContainer);
+        Assert.True(actual.UseDefaultCredentials);
         Assert.True(actual.UseProxy);
         Assert.True(actual.UseTracing);
     }
