@@ -385,6 +385,33 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         .BDDfy();
     }
 
+    [Fact]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    public void Should_match_one_header_value_when_browser_sends_client_hints()
+    {
+        var port = PortFinder.GetRandomPort();
+        var headerName = "country_code";
+        var headerValue = "PL";
+        var secChUa = "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"";
+        var secChUaMobile = "?0";
+        var route = GivenRouteWithUpstreamHeaderTemplates(port, new()
+        {
+            [headerName] = headerValue,
+        });
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader("sec-ch-ua", secChUa))
+            .And(x => GivenIAddAHeader("sec-ch-ua-mobile", secChUaMobile))
+            .And(x => GivenIAddAHeader(headerName, headerValue))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+        .BDDfy();
+    }
+
     private static string Hello() => Hello("Jolanta");
     private static string Hello(string who) => $"Hello from {who}";
 
