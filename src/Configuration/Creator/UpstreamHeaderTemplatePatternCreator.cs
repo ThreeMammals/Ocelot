@@ -21,8 +21,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
     public IDictionary<string, UpstreamHeaderTemplate> Create(IHeaderDictionary upstreamHeaderTemplates, bool routeIsCaseSensitive)
     {
-        var headers = upstreamHeaderTemplates.ToDictionary(h => h.Key, h => h.Value.ToString()); // TODO Review usage
-        return Create(headers, routeIsCaseSensitive);
+        return new Dictionary<string, UpstreamHeaderTemplate>();
     }
 
     protected virtual IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)
