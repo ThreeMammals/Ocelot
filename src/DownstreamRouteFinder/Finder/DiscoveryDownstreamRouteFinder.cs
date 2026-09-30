@@ -98,11 +98,10 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
         downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
-        _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);
-        return downstreamRouteHolder;
+        return _cache.GetOrAdd(loadBalancerKey, downstreamRouteHolder);
     }
 
-    private static string GetDownstreamPath(string upstreamUrlPath)
+    internal static string GetDownstreamPath(string upstreamUrlPath)
     {
         int index = upstreamUrlPath.IndexOf(Slash, 1);
         return index != -1

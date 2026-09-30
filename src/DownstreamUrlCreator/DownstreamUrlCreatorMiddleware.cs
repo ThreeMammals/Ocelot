@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -35,7 +36,10 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         var downstreamRoute = context.Items.DownstreamRoute();
         var placeholders = context.Items.TemplatePlaceholderNameAndValues();
-        var downstreamPath = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
+        var downstreamPathTemplate = context.Items.DownstreamRouteHolder()?.Route.IsDynamic == true
+            ? DiscoveryDownstreamRouteFinder.GetDownstreamPath(context.Request.Path.ToString())
+            : downstreamRoute.DownstreamPathTemplate.Value;
+        var downstreamPath = _replacer.Replace(downstreamPathTemplate, placeholders);
         if (downstreamPath.Value.IsEmpty())
         {
             throw new NotSupportedException($"{_replacer.GetType().Name} returned an empty {nameof(DownstreamPath)} for the route {downstreamRoute.Name()}.");
