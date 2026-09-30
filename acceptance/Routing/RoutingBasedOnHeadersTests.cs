@@ -4,13 +4,13 @@ using Ocelot.Configuration.File;
 
 namespace Ocelot.Acceptance.Routing;
 
-[Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
 [Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360
 public sealed class RoutingBasedOnHeadersTests : Steps
 {
     private string _downstreamPath;
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -33,6 +33,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_one_header_value_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -56,6 +57,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_two_header_values_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -83,6 +85,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_not_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
@@ -105,6 +108,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_not_match_one_header_value_when_no_headers()
     {
         var port = PortFinder.GetRandomPort();
@@ -125,6 +129,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_not_match_two_header_values_when_one_different()
     {
         var port = PortFinder.GetRandomPort();
@@ -151,6 +156,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_not_match_two_header_values_when_one_not_existing()
     {
         var port = PortFinder.GetRandomPort();
@@ -176,6 +182,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_not_match_one_header_value_when_header_duplicated()
     {
         var port = PortFinder.GetRandomPort();
@@ -198,6 +205,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_aggregated_route_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -224,6 +232,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_aggregated_route_not_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
@@ -249,6 +258,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_header_placeholder()
     {
         var port = PortFinder.GetRandomPort();
@@ -271,6 +281,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_header_placeholder_not_in_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
@@ -293,6 +304,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_distinguish_route_for_different_roles()
     {
         var port = PortFinder.GetRandomPort();
@@ -316,6 +328,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_header_and_url_placeholders()
     {
         var port = PortFinder.GetRandomPort();
@@ -338,6 +351,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_header_with_braces()
     {
         var port = PortFinder.GetRandomPort();
@@ -360,6 +374,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
     }
 
     [Fact]
+    [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
     public void Should_match_two_headers_with_the_same_name()
     {
         var port = PortFinder.GetRandomPort();
@@ -379,6 +394,34 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             .And(x => GivenOcelotIsRunning())
             .And(x => GivenIAddAHeader(headerName, headerValue1))
             .And(x => GivenIAddAHeader(headerName, headerValue2))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseBodyShouldBe(Hello()))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
+    public void Should_match_one_header_value_when_browser_sends_client_hints()
+    {
+        var port = PortFinder.GetRandomPort();
+        var headerName = "country_code";
+        var headerValue = "PL";
+        var secChUa = "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"";
+        var secChUaMobile = "?0";
+        var route = GivenRouteWithUpstreamHeaderTemplates(port, new()
+        {
+            [headerName] = headerValue,
+        });
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => x.GivenThereIsAServiceRunningOn(port))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .And(x => GivenIAddAHeader("sec-ch-ua", secChUa))
+            .And(x => GivenIAddAHeader("sec-ch-ua-mobile", secChUaMobile))
+            .And(x => GivenIAddAHeader(headerName, headerValue))
             .When(x => WhenIGetUrlOnTheApiGateway("/"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(Hello()))

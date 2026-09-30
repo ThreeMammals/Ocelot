@@ -351,6 +351,29 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         downstream.LoadBalancerOptions.ExpiryInMs.ShouldBe(3);
     }
 
+    [Fact]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
+    public void Should_not_create_upstream_header_templates_from_request_headers()
+    {
+        // Arrange
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        _upstreamHeaders = new HeaderDictionary()
+        {
+            { "sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"" },
+            { "sec-ch-ua-mobile", "?0" },
+        };
+        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator());
+
+        // Act
+        _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+
+        // Assert
+        _result.Data.Route.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
+        _result.Data.Route.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
+    }
+
     private void ThenTheDownstreamRouteIsCreated(string serviceName = null, string serviceNamespace = null, string lbType = null, string lbKey = null)
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
