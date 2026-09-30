@@ -782,6 +782,36 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         Assert.Equal("?", result.ToString());
     }
 
+    [Theory]
+    [InlineData("/service/second", "", "http://localhost:5000/second")]
+    [InlineData("/service/second/", "?id=2", "http://localhost:5000/second/?id=2")]
+    [InlineData("/namespace.service/third/path", "?id=3", "http://localhost:5000/third/path?id=3")]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    public async Task Should_create_downstream_path_of_dynamic_route_from_upstream_path(string upstreamPath, string query, string expected)
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithServiceName("service")
+            .WithDownstreamPathTemplate("/first")
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        var holder = new DownstreamRouteHolder(new(), new Route(true, downstreamRoute));
+        GivenTheDownStreamRouteIs(holder);
+        _httpContext.Items.UpsertDownstreamRoute(holder);
+        _httpContext.Request.Path = upstreamPath;
+        GivenTheDownstreamRequestUriIs("http://localhost:5000" + upstreamPath + query);
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Returns((string template, List<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        _httpContext.Items.DownstreamRequest().ToHttpRequestMessage().RequestUri.OriginalString
+            .ShouldBe(expected, "Should create downstream path from upstream path of dynamic route");
+    }
+
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
     private static HttpMethod AsHttpMethod(string method) => new(method);
 

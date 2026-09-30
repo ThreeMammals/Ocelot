@@ -374,6 +374,30 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.Route.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
     }
 
+    [Fact]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    public async Task Should_cache_one_downstream_route_for_concurrent_requests()
+    {
+        // Arrange
+        const int Requests = 16;
+        GivenInternalConfiguration();
+        GivenTheConfiguration();
+        using var barrier = new Barrier(Requests);
+        DownstreamRoute WhenICreateConcurrently(int request)
+        {
+            barrier.SignalAndWait();
+            return _finder.Get($"/auth/path{request}", _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders)
+                .Data.Route.DownstreamRoute[0];
+        }
+
+        // Act
+        var routes = await Task.WhenAll(Enumerable.Range(0, Requests)
+            .Select(request => Task.Factory.StartNew(() => WhenICreateConcurrently(request), TaskCreationOptions.LongRunning)));
+
+        // Assert
+        routes.Distinct().Count().ShouldBe(1, "Should cache one downstream route for concurrent requests");
+    }
+
     private void ThenTheDownstreamRouteIsCreated(string serviceName = null, string serviceNamespace = null, string lbType = null, string lbKey = null)
     {
         _result.Data.Route.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe("/test");
