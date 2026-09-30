@@ -38,8 +38,7 @@ public class UpstreamHeaderTemplatePatternCreatorTests
             .Template.ShouldBe(expected, message);
     }
 
-    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
-    [Theory(DisplayName = "Should return empty collection for request headers")]
+    [Theory]
     [InlineData("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"", false)]
     [InlineData("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"", true)]
     [InlineData("sec-ch-ua-mobile", "?0", false)]
@@ -47,6 +46,8 @@ public class UpstreamHeaderTemplatePatternCreatorTests
     [InlineData("Accept", "*/*", false)]
     [InlineData("Accept", "text/html", false)]
     [InlineData("Accept", "text/html", true)]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
     public void Create_WithRequestHeaders_ShouldReturnEmptyCollection(string key, string value, bool routeIsCaseSensitive)
     {
         // Arrange
@@ -59,6 +60,6 @@ public class UpstreamHeaderTemplatePatternCreatorTests
         var actual = _creator.Create(headers, routeIsCaseSensitive);
 
         // Assert
-        actual.ShouldNotBeNull().ShouldBeEmpty();
+        actual.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
     }
 }

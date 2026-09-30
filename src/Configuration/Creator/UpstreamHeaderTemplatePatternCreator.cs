@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure;
 using Ocelot.Values;
 
@@ -21,7 +22,7 @@ public partial class UpstreamHeaderTemplatePatternCreator : IUpstreamHeaderTempl
 
     public IDictionary<string, UpstreamHeaderTemplate> Create(IHeaderDictionary upstreamHeaderTemplates, bool routeIsCaseSensitive)
     {
-        return new Dictionary<string, UpstreamHeaderTemplate>();
+        return new Dictionary<string, UpstreamHeaderTemplate>(); // TODO Under development!
     }
 
     protected virtual IDictionary<string, UpstreamHeaderTemplate> Create(IDictionary<string, string> upstreamHeaderTemplates, bool routeIsCaseSensitive)

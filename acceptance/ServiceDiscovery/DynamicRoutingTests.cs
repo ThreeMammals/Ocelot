@@ -51,29 +51,6 @@ public class DynamicRoutingTests : DiscoverySteps
     }
 
     [Fact]
-    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
-    public void ShouldRouteRequestWithChromiumClientHintHeaders()
-    {
-        var ports = PortFinder.GetPorts(1);
-        var serviceName = ServiceName();
-        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
-        var configuration = GivenDynamicRouting(new()
-        {
-            { serviceName, serviceUrls },
-        });
-        this
-            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithDiscovery))
-            .And(x => GivenIAddAHeader("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\""))
-            .And(x => GivenIAddAHeader("sec-ch-ua-mobile", "?0"))
-            .When(x => WhenIGetUrlOnTheApiGateway($"/{serviceName}/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
-        .BDDfy();
-    }
-
-    [Fact]
     [Trait("Feat", "585")] // https://github.com/ThreeMammals/Ocelot/issues/585
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/issues/2319
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
@@ -570,6 +547,30 @@ public class DynamicRoutingTests : DiscoverySteps
             .When(x => steps.TestRouteCircuitBreaker(ports2, $"/{route2.ServiceName}/", globalOptions, 0, EnabledDiscovery)) // test global scenario
             .And(x => steps.TestRouteTimeout(ports3, $"/{route3.ServiceName}/", route3.QoSOptions))
             .Then(x => ThenServicesShouldHaveBeenCalledTimes(1, 1, 3, 1, 2, 0))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
+    public void ShouldRouteRequestWithChromiumClientHintHeaders()
+    {
+        var ports = PortFinder.GetPorts(1);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery))
+            .And(x => GivenIAddAHeader("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\""))
+            .And(x => GivenIAddAHeader("sec-ch-ua-mobile", "?0"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/{serviceName}/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(1))
         .BDDfy();
     }
 

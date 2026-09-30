@@ -353,6 +353,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     [Fact]
     [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
     public void Should_not_create_upstream_header_templates_from_request_headers()
     {
         // Arrange
@@ -369,8 +370,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
 
         // Assert
-        _result.Data.Route.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty();
-        _result.Data.Route.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty();
+        _result.Data.Route.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
+        _result.Data.Route.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
     }
 
     private void ThenTheDownstreamRouteIsCreated(string serviceName = null, string serviceNamespace = null, string lbType = null, string lbKey = null)
