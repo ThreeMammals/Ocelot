@@ -23,4 +23,5 @@ public class Route
     public string UpstreamHost { get; init; }
     public HashSet<HttpMethod> UpstreamHttpMethod { get; init; }
     public UpstreamPathTemplate UpstreamTemplatePattern { get; init; }
+    public UpstreamHeaderRoutingOptions UpstreamHeaderRoutingOptions { get; init; }
 }
