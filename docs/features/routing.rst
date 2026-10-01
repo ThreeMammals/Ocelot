@@ -476,6 +476,11 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
   As a quick recipe, the Ocelot team recommends increasing the route :ref:`config-timeout` in your configuration.
   This adjustment can help resolve timeout-related issues with sluggish downstream services, ultimately reducing occurrences of `504 (Gateway Timeout)`_.
 
+* **Special characters in templates**.
+  Apart from placeholders, the ``UpstreamPathTemplate`` is matched literally, so characters such as ``$``, ``(``, ``)`` and ``.`` match only themselves. [#f9]_
+  This allows OData paths like ``/odata/$metadata`` or ``/odata/Products(1)`` to be routed without any escaping.
+  Please note that regular expressions are not supported in templates; use :ref:`routing-placeholders` instead.
+
 .. _break: http://break.do
 
   **Note**: For comprehensive documentation regarding errors and status codes in Ocelot, please refer to the :doc:`../features/errorcodes` chapter.
@@ -493,6 +498,8 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
   However, this feature is only available for :ref:`static routes <config-route-schema>` and is not supported by :ref:`dynamic routing <routing-dynamic>` (refer to the :ref:`schema <config-dynamic-route-schema>`).
 .. [#f8] The ":ref:`Dynamic Routing <routing-dynamic>`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
   Refer to complete reference in the ":doc:`../features/servicediscovery`" chapter: :ref:`Dynamic Routing <sd-dynamic-routing>`.
+.. [#f9] Before version `25.1`_, the ``UpstreamPathTemplate`` was converted into a regular expression without escaping, so templates with special characters failed to match their own paths or matched unrelated ones (see issues `859`_ and `2143`_).
+  The fix was delivered as part of the `25.1`_ release.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings
@@ -506,11 +513,13 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. _473: https://github.com/ThreeMammals/Ocelot/issues/473
 .. _628: https://github.com/ThreeMammals/Ocelot/issues/628
 .. _748: https://github.com/ThreeMammals/Ocelot/issues/748
+.. _859: https://github.com/ThreeMammals/Ocelot/issues/859
 .. _952: https://github.com/ThreeMammals/Ocelot/issues/952
 .. _1174: https://github.com/ThreeMammals/Ocelot/issues/1174
 .. _1312: https://github.com/ThreeMammals/Ocelot/pull/1312
 .. _1400: https://github.com/ThreeMammals/Ocelot/issues/1400
 .. _2072: https://github.com/ThreeMammals/Ocelot/discussions/2072
+.. _2143: https://github.com/ThreeMammals/Ocelot/issues/2143
 .. _2165: https://github.com/ThreeMammals/Ocelot/issues/2165
 .. _2199: https://github.com/ThreeMammals/Ocelot/issues/2199
 .. _2403: https://github.com/ThreeMammals/Ocelot/issues/2403
@@ -526,3 +535,4 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. _23.4: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.0
 .. _23.4.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.4.1
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.1: https://github.com/ThreeMammals/Ocelot/milestone/12
