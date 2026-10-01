@@ -734,6 +734,49 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
+    [Theory]
+    [InlineData("/v3/Orders/$query", "/v1/Orders/$query", "/v3/Orders/$query", "/v1/Orders/$query")]
+    [InlineData("/v3/Orders/$query", "/v1/Orders/$query", "/v3/Orders/%24query", "/v1/Orders/$query")]
+    [InlineData("/api/{id}/$count", "/api/{id}/$count", "/api/5/$count", "/api/5/$count")]
+    [InlineData("/odata/Products(1)", "/odata/Products(1)", "/odata/Products(1)", "/odata/Products(1)")]
+    [InlineData("/odata/Products(1)", "/odata/Products(1)", "/odata/Products%281%29", "/odata/Products(1)")]
+    [InlineData("/odata/Products({key})/Name", "/api/products/{key}/name", "/odata/Products(1)/Name", "/api/products/1/name")]
+    [Trait("Bug", "2143")] // https://github.com/ThreeMammals/Ocelot/issues/2143
+    public void Should_match_route_when_upstream_path_template_contains_special_characters(string upstreamPath, string downstreamPath, string requestUrl, string expectedDownstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstreamPath, downstreamPath);
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, expectedDownstreamPath, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheDownstreamUrlPathShouldBe(expectedDownstreamPath))
+            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
+        .BDDfy();
+    }
+
+    [Theory]
+    [InlineData("/api/v1.0/items", "/api/v1X0/items")]
+    [InlineData("/files/.well-known", "/files")]
+    [InlineData("/api/items|admin", "/api/admin")]
+    [Trait("Bug", "2143")] // https://github.com/ThreeMammals/Ocelot/issues/2143
+    public void Should_not_match_route_when_path_differs_from_upstream_path_template_by_special_characters(string upstreamPath, string requestUrl)
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, upstreamPath, upstreamPath);
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, upstreamPath, HttpStatusCode.OK, "Hello from Laura"))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway(requestUrl))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
+        .BDDfy();
+    }
+
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
