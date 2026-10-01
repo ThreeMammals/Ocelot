@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
@@ -15,7 +13,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
 {
     private readonly Mock<IDownstreamRouteProvider> _finder;
     private readonly Mock<IDownstreamRouteProviderFactory> _factory;
-    private Response<DownstreamRouteHolder> _downstreamRoute;
+    private Response<Route> _route;
     private IInternalConfiguration _config;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
@@ -43,11 +41,9 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
         var config = new InternalConfiguration();
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            .WithUpstreamHttpMethod(["Get"])
             .Build();
-        GivenTheDownStreamRouteFinderReturns(new(
-            new List<PlaceholderNameAndValue>(),
-            new Route(downstreamRoute, HttpMethod.Get)));
+        GivenTheDownStreamRouteFinderReturns(new Route(downstreamRoute, HttpMethod.Get)); // without placeholders
         GivenTheFollowingConfig(config);
 
         // Act
@@ -63,17 +59,17 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
         _httpContext.Items.SetIInternalConfiguration(config);
     }
 
-    private void GivenTheDownStreamRouteFinderReturns(DownstreamRouteHolder downstreamRoute)
+    private void GivenTheDownStreamRouteFinderReturns(Route route)
     {
-        _downstreamRoute = new OkResponse<DownstreamRouteHolder>(downstreamRoute);
+        _route = new OkResponse<Route>(route);
         _finder
             .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<IHeaderDictionary>()))
-            .Returns(_downstreamRoute);
+            .Returns(_route);
     }
 
     private void ThenTheScopedDataRepositoryIsCalledCorrectly()
     {
-        _httpContext.Items.TemplatePlaceholderNameAndValues().ShouldBe(_downstreamRoute.Data.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.TemplatePlaceholderNameAndValues().ShouldBe(_route.Data.TemplatePlaceholderNameAndValues);
         _httpContext.Items.IInternalConfiguration().ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
     }
 }
