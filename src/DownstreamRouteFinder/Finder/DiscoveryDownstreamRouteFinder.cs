@@ -15,7 +15,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     public const char Slash = '/';
     public const char Question = '?';
 
-    private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
+    private readonly ConcurrentDictionary<string, Route> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
 
@@ -28,7 +28,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
     }
 
-    public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
@@ -40,10 +40,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var loadBalancerKey = dynamicRoute != null
             ? dynamicRoute.LoadBalancerKey
             : _routeKeyCreator.Create(serviceNamespace, serviceName, configuration.LoadBalancerOptions);
-        if (_cache.TryGetValue(loadBalancerKey, out var downstreamRouteHolder))
-        {
-            return downstreamRouteHolder;
-        }
+        if (_cache.TryGetValue(loadBalancerKey, out var cachedRoute))
+            return new OkResponse<Route>(cachedRoute);
 
         // TODO: Could it be that the static route functionality was possibly lost here? -> StaticRoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
@@ -97,8 +95,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
-        downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new([], route));
-        return _cache.GetOrAdd(loadBalancerKey, downstreamRouteHolder);
+        var cached = _cache.GetOrAdd(loadBalancerKey, route);
+        return new OkResponse<Route>(cached);
     }
 
     /// <summary>

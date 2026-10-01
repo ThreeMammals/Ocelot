@@ -36,7 +36,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         var downstreamRoute = context.Items.DownstreamRoute();
         var placeholders = context.Items.TemplatePlaceholderNameAndValues();
-        var downstreamPathTemplate = context.Items.DownstreamRouteHolder()?.Route.IsDynamic == true
+        var downstreamPathTemplate = context.Items.Route()?.IsDynamic == true
             ? DiscoveryDownstreamRouteFinder.GetDownstreamPath(context.Request.Path.ToString()) // TODO Consider extending the IDownstreamRouteProvider interface and injecting it
             : downstreamRoute.DownstreamPathTemplate.Value; // TODO Consider overriding the constructor with a second version that has a Func<T> callback. For a dynamic route, DownstreamPathTemplate should be empty, but with an initialized callback.
         var downstreamPath = _replacer.Replace(downstreamPathTemplate, placeholders);

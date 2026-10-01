@@ -27,9 +27,9 @@ public static class HttpItemsExtensions
         input.Upsert("TemplatePlaceholderNameAndValues", tPNV);
     }
 
-    public static void UpsertDownstreamRoute(this IDictionary<object, object> input, DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+    public static void UpsertRoute(this IDictionary<object, object> input, Route route)
     {
-        input.Upsert("DownstreamRouteHolder", downstreamRoute);
+        input.Upsert(nameof(Route), route);
     }
 
     public static void UpsertErrors(this IDictionary<object, object> input, List<Error> errors)
@@ -59,13 +59,11 @@ public static class HttpItemsExtensions
         return errors ?? new();
     }
 
-    public static DownstreamRouteFinder.DownstreamRouteHolder
-        DownstreamRouteHolder(this IDictionary<object, object> input) =>
-        input.Get<DownstreamRouteFinder.DownstreamRouteHolder>("DownstreamRouteHolder");
+    public static Route Route(this IDictionary<object, object> input)
+        => input.Get<Route>(nameof(Route));
 
-    public static List<PlaceholderNameAndValue>
-        TemplatePlaceholderNameAndValues(this IDictionary<object, object> input) =>
-        input.Get<List<PlaceholderNameAndValue>>("TemplatePlaceholderNameAndValues");
+    public static List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues(this IDictionary<object, object> input)
+        => input.Get<List<PlaceholderNameAndValue>>("TemplatePlaceholderNameAndValues");
 
     public static DownstreamRequest DownstreamRequest(this IDictionary<object, object> input) =>
         input.Get<DownstreamRequest>("DownstreamRequest");
