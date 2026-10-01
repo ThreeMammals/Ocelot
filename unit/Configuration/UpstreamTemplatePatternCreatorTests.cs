@@ -332,6 +332,69 @@ public class UpstreamTemplatePatternCreatorTests : UnitTest
         actual.Pattern.ShouldNotBeNull().ToString().ShouldBe("$^");
     }
 
+    [Theory]
+    [InlineData("/v3/Orders/$query", @"^(?i)/v3/Orders/\$query$")]
+    [InlineData("/api/{id}/$count", @"^(?i)/api/[^/]+/\$count$")]
+    [InlineData("/odata/Products(1)", @"^(?i)/odata/Products\(1\)$")]
+    [InlineData("/odata/Products({key})", @"^(?i)/odata/Products\(.*\)$")]
+    [InlineData("/odata/Orders?$filter={filter}", @"^(?i)/odata/Orders(/$|/\?|\?|$)\$filter=.*$")]
+    [InlineData("/odata/Orders/?$filter={filter}", @"^(?i)/odata/Orders(/$|/\?|\?|$)\$filter=.*$")]
+    [InlineData("/api/v1.0/items", @"^(?i)/api/v1\.0/items$")]
+    [InlineData("/files/.well-known", @"^(?i)/files/\.well-known$")]
+    [InlineData("/api/a+b", @"^(?i)/api/a\+b$")]
+    [InlineData("/api/(v1", @"^(?i)/api/\(v1$")]
+    [InlineData("/api/v1)", @"^(?i)/api/v1\)$")]
+    [InlineData("/api/[v1", @"^(?i)/api/\[v1$")]
+    [Trait("Bug", "2143")] // https://github.com/ThreeMammals/Ocelot/issues/2143
+    public void Should_escape_special_characters_of_template(string urlPathTemplate, string expectedTemplate)
+    {
+        // Arrange
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
+
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.Template.ShouldBe(expectedTemplate);
+        result.Priority.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("/v3/Orders/$query", "/v3/Orders/$query", true)]
+    [InlineData("/v3/Orders/$query", "/v3/Orders/query", false)]
+    [InlineData("/odata/$metadata", "/odata/$metadata", true)]
+    [InlineData("/api/{id}/$count", "/api/5/$count", true)]
+    [InlineData("/odata/Products(1)", "/odata/Products(1)", true)]
+    [InlineData("/odata/Products({key})", "/odata/Products(1)", true)]
+    [InlineData("/odata/Products({key})", "/odata/Products1", false)]
+    [InlineData("/odata/Products({key})?$select={select}", "/odata/Products(1)?$select=Name", true)]
+    [InlineData("/api/a+b", "/api/a+b", true)]
+    [InlineData("/api/a+b", "/api/aab", false)]
+    [InlineData("/api/v1.0/items", "/api/v1.0/items", true)]
+    [InlineData("/api/v1.0/items", "/api/v1X0/items", false)]
+    [InlineData("/api/v1.0/{everything}", "/api/v1.0", true)]
+    [InlineData("/files/.well-known", "/files/.well-known", true)]
+    [InlineData("/files/.well-known", "/files", false)]
+    [InlineData("/api/items|admin", "/api/admin", false)]
+    [Trait("Bug", "2143")] // https://github.com/ThreeMammals/Ocelot/issues/2143
+    public void Should_match_special_characters_of_template_literally(string urlPathTemplate, string requestPath, bool shouldMatch)
+    {
+        // Arrange
+        var fileRoute = new FileRoute
+        {
+            UpstreamPathTemplate = urlPathTemplate,
+        };
+
+        // Act
+        var result = _creator.Create(fileRoute);
+
+        // Assert
+        result.ShouldMatchWithRegex(requestPath, shouldMatch);
+    }
+
     private static Type Me { get; } = typeof(UpstreamTemplatePatternCreator);
     private static MethodInfo GetRegex { get; } = Me.GetMethod(nameof(GetRegex), BindingFlags.NonPublic | BindingFlags.Instance);
     private static MethodInfo CreateTemplate { get; } = Me.GetMethod(nameof(CreateTemplate), BindingFlags.NonPublic | BindingFlags.Instance);
