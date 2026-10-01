@@ -576,6 +576,7 @@ public class DynamicRoutingTests : DiscoverySteps
 
     [Fact]
     [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
     public void ShouldForwardEachRequestToItsOwnDownstreamPath()
     {
         var ports = PortFinder.GetPorts(1);
@@ -607,6 +608,7 @@ public class DynamicRoutingTests : DiscoverySteps
 
     [Fact]
     [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
     public void ShouldUseOneHttpHandlerForAllDownstreamPathsOfService()
     {
         var ports = PortFinder.GetPorts(1);

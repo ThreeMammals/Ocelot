@@ -97,10 +97,16 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
-        downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
+        downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new([], route));
         return _cache.GetOrAdd(loadBalancerKey, downstreamRouteHolder);
     }
 
+    /// <summary>
+    /// Gets the downstream path part of the URL without the service name.
+    /// Thus, the first segment of the upstream URL is removed.
+    /// </summary>
+    /// <param name="upstreamUrlPath">The URL with the service name in the first segment.</param>
+    /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
     internal static string GetDownstreamPath(string upstreamUrlPath)
     {
         int index = upstreamUrlPath.IndexOf(Slash, 1);
