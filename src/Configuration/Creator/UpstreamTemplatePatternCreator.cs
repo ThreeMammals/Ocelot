@@ -22,7 +22,7 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
 
     public UpstreamPathTemplate Create(IRouteUpstream route)
     {
-        var upstreamTemplate = route.UpstreamPathTemplate;
+        var upstreamTemplate = EscapeExceptBraces(route.UpstreamPathTemplate);
         var placeholders = new List<string>();
 
         for (var i = 0; i < upstreamTemplate.Length; i++)
@@ -44,11 +44,11 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
 
         var containsQueryString = false;
 
-        if (upstreamTemplate.Contains('?'))
+        if (upstreamTemplate.Contains(@"\?"))
         {
             containsQueryString = true;
             upstreamTemplate = upstreamTemplate.Replace(
-                upstreamTemplate.Contains("/?") ? "/?" : "?",
+                upstreamTemplate.Contains(@"/\?") ? @"/\?" : @"\?",
                 @"(/$|/\?|\?|$)");
         }
 
@@ -122,4 +122,11 @@ public class UpstreamTemplatePatternCreator : IUpstreamTemplatePatternCreator
 
     private static bool IsPlaceHolder(string upstreamTemplate, int i)
         => upstreamTemplate[i] == '{';
+
+    /// <summary>Escapes all characters except braces, eg { and }.</summary>
+    /// <remarks>The <see cref="Regex.Escape(string)"/> method escapes the left brace but never the right one.</remarks>
+    /// <param name="input">The upstream path template.</param>
+    /// <returns>The escaped <see cref="string"/>.</returns>
+    private static string EscapeExceptBraces(string input)
+        => Regex.Escape(input).Replace(@"\{", "{");
 }
