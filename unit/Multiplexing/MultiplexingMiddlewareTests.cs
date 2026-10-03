@@ -16,7 +16,7 @@ namespace Ocelot.UnitTests.Multiplexing;
 public class MultiplexingMiddlewareTests : UnitTest
 {
     private MultiplexingMiddleware _middleware;
-    private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
+    private Route _route;
     private int _count;
     private readonly DefaultHttpContext _httpContext;
     private readonly Mock<IResponseAggregatorFactory> factory;
@@ -514,7 +514,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
     private void GivenTheFollowing(Route route)
     {
-        _downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
-        _httpContext.Items.UpsertDownstreamRoute(_downstreamRoute);
+        _route = route;
+        _httpContext.Items.UpsertRoute(_route);
     }
 }

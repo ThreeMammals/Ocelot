@@ -25,10 +25,10 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
         _headerPlaceholderFinder = headerPlaceholderFinder;
     }
 
-    public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var downstreamRoutes = new List<DownstreamRouteHolder>();
+        var downstreamRoutes = new List<Route>();
 
         var applicableRoutes = configuration.Routes
             .Where(r => !r.IsDynamic && RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost)) // process static routes only
@@ -40,18 +40,19 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
             var headersMatch = _headerMatcher.Match(upstreamHeaders, route.UpstreamHeaderTemplates);
             if (urlMatch.Match && headersMatch)
             {
-                downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route, upstreamHeaders));
+                var updated = GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route, upstreamHeaders);
+                downstreamRoutes.Add(updated);
             }
         }
 
         if (downstreamRoutes.Count != 0)
         {
-            var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.Route.UpstreamHost));
-            var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.Route.UpstreamHost));
-            return new OkResponse<DownstreamRouteHolder>(notNullOption ?? nullOption);
+            var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.UpstreamHost));
+            var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.UpstreamHost));
+            return new OkResponse<Route>(notNullOption ?? nullOption);
         }
 
-        return new ErrorResponse<DownstreamRouteHolder>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
+        return new ErrorResponse<Route>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
     }
 
     private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
@@ -62,14 +63,13 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
                (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
     }
 
-    private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, IHeaderDictionary upstreamHeaders)
+    private Route GetPlaceholderNamesAndValues(string path, string query, Route route, IHeaderDictionary upstreamHeaders)
     {
-        var templatePlaceholderNameAndValues = _pathPlaceholderFinder
-            .Find(path, query, route.UpstreamTemplatePattern.OriginalValue)
-            .Data;
+        var placeholders = _pathPlaceholderFinder.Find(path, query, route.UpstreamTemplatePattern.OriginalValue)
+            .Data; // TODO Adjust the interface. Lol!
         var headerPlaceholders = _headerPlaceholderFinder.Find(upstreamHeaders, route.UpstreamHeaderTemplates);
-        templatePlaceholderNameAndValues.AddRange(headerPlaceholders);
-
-        return new DownstreamRouteHolder(templatePlaceholderNameAndValues, route);
+        placeholders.AddRange(headerPlaceholders);
+        route.TemplatePlaceholderNameAndValues.AddRange(placeholders); // No double object creation. Awesome!
+        return route;
     }
 }

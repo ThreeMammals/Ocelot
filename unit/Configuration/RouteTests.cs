@@ -13,15 +13,17 @@ public class RouteTests
 
         // Assert
         Assert.NotNull(r.DownstreamRoute);
+        Assert.NotNull(r.UpstreamHttpMethod);
+        Assert.NotNull(r.TemplatePlaceholderNameAndValues);
         Assert.Empty(r.DownstreamRoute);
+        Assert.Empty(r.UpstreamHttpMethod);
+        Assert.Empty(r.TemplatePlaceholderNameAndValues);
 
         Assert.False(r.IsDynamic);
         Assert.Null(r.Aggregator);
-        Assert.NotNull(r.DownstreamRoute);
         Assert.Null(r.DownstreamRouteConfig);
         Assert.Null(r.UpstreamHeaderTemplates);
         Assert.Null(r.UpstreamHost);
-        Assert.Null(r.UpstreamHttpMethod);
         Assert.Null(r.UpstreamTemplatePattern);
     }
 

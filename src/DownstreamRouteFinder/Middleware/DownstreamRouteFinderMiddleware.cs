@@ -42,11 +42,11 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
             return;
         }
 
-        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
+        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
 
         // why set both of these on HttpContext
         httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
-        httpContext.Items.UpsertDownstreamRoute(response.Data);
+        httpContext.Items.UpsertRoute(response.Data);
 
         await _next.Invoke(httpContext);
     }
