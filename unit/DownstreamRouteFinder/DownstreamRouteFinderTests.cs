@@ -577,6 +577,37 @@ public class DownstreamRouteFinderTests : UnitTest
         _result.IsError.ShouldBeTrue();
     }
 
+    [Fact]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
+    public void Should_not_modify_placeholders_of_configured_route()
+    {
+        // Arrange
+        var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
+        _upstreamQuery = string.Empty;
+        _upstreamHttpMethod = "Get";
+        var route = GivenRoute(downstream: "/api/products/{id}", upstream: "/products/{id}");
+        _routesConfig = [route];
+        GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
+        GivenTheHeadersMatcherReturns(true);
+        GivenTheHeaderPlaceholderAndNameFinderReturns([]);
+        _urlPlaceholderFinder
+            .Setup(x => x.Find(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns<string, string, string>((path, query, template) => new OkResponse<List<PlaceholderNameAndValue>>([new("{id}", path.Split('/')[^1])]));
+
+        // Act
+        var first = _routeFinder.Get("/products/1", _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders).Data;
+        var second = _routeFinder.Get("/products/2", _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders).Data;
+
+        // Assert
+        route.TemplatePlaceholderNameAndValues.ShouldBeEmpty();
+        first.ShouldNotBeSameAs(route);
+        first.DownstreamRoute.ShouldBeSameAs(route.DownstreamRoute);
+        first.TemplatePlaceholderNameAndValues.ShouldHaveSingleItem().Value.ShouldBe("1");
+        second.TemplatePlaceholderNameAndValues.ShouldHaveSingleItem().Value.ShouldBe("2");
+    }
+
     private static Route GivenRoute(bool? isDynamic = null, string downstream = null,
         List<string> upstreamMethods = null, string method = null,
         UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null,
