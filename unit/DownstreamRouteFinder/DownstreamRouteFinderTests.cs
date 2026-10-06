@@ -503,8 +503,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
 
         // Assert
-        var r = GivenRoute(priority: 1);
-        r.TemplatePlaceholderNameAndValues.AddRange(urlPlaceholders.Union(headerPlaceholders));
+        var r = GivenRoute(
+            priority: 1,
+            placeholders: [.. urlPlaceholders.Union(headerPlaceholders)]
+        );
         ThenTheFollowingIsReturned(r);
         ThenTheUrlMatcherIsCalledCorrectly();
     }
@@ -601,7 +603,7 @@ public class DownstreamRouteFinderTests : UnitTest
         var second = _routeFinder.Get("/products/2", _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders).Data;
 
         // Assert
-        route.TemplatePlaceholderNameAndValues.ShouldBeEmpty();
+        route.TemplatePlaceholderNameAndValues.ShouldBeNull(); // !!!
         first.ShouldNotBeSameAs(route);
         first.DownstreamRoute.ShouldBeSameAs(route.DownstreamRoute);
         first.TemplatePlaceholderNameAndValues.ShouldHaveSingleItem().Value.ShouldBe("1");
@@ -612,19 +614,20 @@ public class DownstreamRouteFinderTests : UnitTest
         List<string> upstreamMethods = null, string method = null,
         UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null,
         string host = null,
-        IDictionary<string, UpstreamHeaderTemplate> headers = null)
+        IDictionary<string, UpstreamHeaderTemplate> headers = null,
+        List<PlaceholderNameAndValue> placeholders = null)
     {
         var route = GivenDownstreamRoute(downstream, upstreamMethods, method, upTemplate, upstream, priority);
         upstream ??= "someUpstreamPath";
         upTemplate ??= new(upstream, priority ?? 1, false, upstream);
         upstreamMethods ??= [method ?? HttpMethods.Get];
-        return new(isDynamic ?? false)
+        return new(isDynamic ?? false, route)
         {
-            DownstreamRoute = [route],
             UpstreamHttpMethod = upstreamMethods.Select(m => new HttpMethod(m)).ToHashSet(),
             UpstreamTemplatePattern = upTemplate,
             UpstreamHost = host,
             UpstreamHeaderTemplates = headers,
+            TemplatePlaceholderNameAndValues = placeholders,
         };
     }
 

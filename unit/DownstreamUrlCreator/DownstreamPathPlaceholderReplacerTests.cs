@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Route = Ocelot.Configuration.Route;
 
@@ -79,8 +80,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_one_template_variable()
     {
         // Arrange
-        var route = GivenRoute("productservice/products/{productId}/");
-        route.TemplatePlaceholderNameAndValues.Add(new("{productId}", "1"));
+        var route = GivenRoute("productservice/products/{productId}/",
+            [
+                new("{productId}", "1")
+            ]);
 
         // Act
         var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
@@ -93,8 +96,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_one_template_variable_with_path_after()
     {
         // Arrange
-        var route = GivenRoute("productservice/products/{productId}/variants");
-        route.TemplatePlaceholderNameAndValues.Add(new("{productId}", "1"));
+        var route = GivenRoute("productservice/products/{productId}/variants",
+            [
+                new("{productId}", "1")
+            ]);
 
         // Act
         var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
@@ -107,9 +112,8 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_two_template_variable()
     {
         // Arrange
-        var route = GivenRoute("productservice/products/{productId}/variants/{variantId}");
-        route.TemplatePlaceholderNameAndValues
-            .AddRange([
+        var route = GivenRoute("productservice/products/{productId}/variants/{variantId}",
+            [
                 new("{productId}", "1"),
                 new("{variantId}", "12"),
             ]);
@@ -125,9 +129,8 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_three_template_variable()
     {
         // Arrange
-        var route = GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}");
-        route.TemplatePlaceholderNameAndValues
-            .AddRange([
+        var route = GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}",
+            [
                 new("{productId}", "1"),
                 new("{variantId}", "12"),
                 new("{categoryId}", "34"),
@@ -140,14 +143,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
         dsPath.Value.ShouldBe("productservice/category/34/products/1/variants/12");
     }
 
-    private static Route GivenRoute(string downstream = null, string method = null)
+    private static Route GivenRoute(string downstream = null, List<PlaceholderNameAndValue> placeholders = null)
     {
-        var route = GivenDownstreamRoute(downstream, method);
-        return new()
-        {
-            DownstreamRoute = [route],
-            UpstreamHttpMethod = [method is null ? HttpMethod.Get : new(method)],
-        };
+        var route = GivenDownstreamRoute(downstream, HttpMethods.Get);
+        return new(route, HttpMethod.Get, placeholders);
     }
 
     private static DownstreamRoute GivenDownstreamRoute(string downstream = null, string method = null)

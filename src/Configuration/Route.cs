@@ -10,28 +10,36 @@ public class Route
     public Route(bool isDynamic) : this() => IsDynamic = isDynamic;
     public Route(bool isDynamic, DownstreamRoute route) : this(route) => IsDynamic = isDynamic;
     public Route(DownstreamRoute route) => DownstreamRoute.Add(route);
-    public Route(DownstreamRoute route, HttpMethod method = null, IEnumerable<PlaceholderNameAndValue> placeholders = null)
+    public Route(DownstreamRoute route, HttpMethod method = null, List<PlaceholderNameAndValue> placeholders = null)
     {
         DownstreamRoute.Add(route);
         UpstreamHttpMethod.Add(method ?? HttpMethod.Get);
-        TemplatePlaceholderNameAndValues.AddRange(placeholders ?? []);
+        TemplatePlaceholderNameAndValues = placeholders ?? [];
     }
 
-    /// <summary>Initializes a new instance of the <see cref="Route"/> class.</summary>
-    /// <remarks>This is the copying constructor which replaces the placeholders, keeping the original route unchanged.</remarks>
+    /// <summary>Makes shallow copy of the route.</summary>
     /// <param name="from">The object to copy the properties from.</param>
-    /// <param name="placeholders">The placeholders of the current request.</param>
-    public Route(Route from, List<PlaceholderNameAndValue> placeholders)
+    public Route(Route from)
     {
         IsDynamic = from.IsDynamic;
         Aggregator = from.Aggregator;
         DownstreamRoute = from.DownstreamRoute;
         DownstreamRouteConfig = from.DownstreamRouteConfig;
-        TemplatePlaceholderNameAndValues = placeholders;
+        TemplatePlaceholderNameAndValues = from.TemplatePlaceholderNameAndValues;
         UpstreamHeaderTemplates = from.UpstreamHeaderTemplates;
         UpstreamHost = from.UpstreamHost;
         UpstreamHttpMethod = from.UpstreamHttpMethod;
         UpstreamTemplatePattern = from.UpstreamTemplatePattern;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Route"/> class replacing the placeholders, keeping the original '<paramref name="from"/>' route unchanged.</summary>
+    /// <remarks>This is based on the copying constructor.</remarks>
+    /// <param name="from">The object to copy the properties from.</param>
+    /// <param name="placeholders">The placeholders of the current request URL or headers.</param>
+    public Route(Route from, List<PlaceholderNameAndValue> placeholders)
+        : this(from)
+    {
+        TemplatePlaceholderNameAndValues = placeholders;
     }
 
     public bool IsDynamic { get; }
