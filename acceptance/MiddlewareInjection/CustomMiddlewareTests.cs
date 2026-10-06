@@ -217,6 +217,56 @@ public class CustomMiddlewareTests : Steps
         .BDDfy();
     }
 
+    [Fact]
+    [Trait("PR", "1497")] // https://github.com/ThreeMammals/Ocelot/pull/1497
+    public void Should_call_after_http_authentication_middleware()
+    {
+        var pipelineConfiguration = new OcelotPipelineConfiguration
+        {
+            AfterAuthenticationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
+    [Fact]
+    [Trait("PR", "1497")] // https://github.com/ThreeMammals/Ocelot/pull/1497
+    public void Should_call_after_authorization_middleware()
+    {
+        var pipelineConfiguration = new OcelotPipelineConfiguration
+        {
+            AfterAuthorizationMiddleware = async (ctx, next) =>
+            {
+                _counter++;
+                await next.Invoke();
+            },
+        };
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port);
+        var configuration = GivenConfiguration(route);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => x.ThenTheCounterIs(1))
+            .BDDfy();
+    }
+
     private Task<int> GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)
         => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
             async app => await app.UseMiddleware<T>(middleware).UseOcelot());
