@@ -69,7 +69,6 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
             .Data; // TODO Adjust the interface. Lol!
         var headerPlaceholders = _headerPlaceholderFinder.Find(upstreamHeaders, route.UpstreamHeaderTemplates);
         placeholders.AddRange(headerPlaceholders);
-        route.TemplatePlaceholderNameAndValues.AddRange(placeholders); // No double object creation. Awesome!
-        return route;
+        return new Route(route, placeholders);
     }
 }

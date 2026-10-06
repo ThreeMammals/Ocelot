@@ -17,6 +17,23 @@ public class Route
         TemplatePlaceholderNameAndValues.AddRange(placeholders ?? []);
     }
 
+    /// <summary>Initializes a new instance of the <see cref="Route"/> class.</summary>
+    /// <remarks>This is the copying constructor which replaces the placeholders, keeping the original route unchanged.</remarks>
+    /// <param name="from">The object to copy the properties from.</param>
+    /// <param name="placeholders">The placeholders of the current request.</param>
+    public Route(Route from, List<PlaceholderNameAndValue> placeholders)
+    {
+        IsDynamic = from.IsDynamic;
+        Aggregator = from.Aggregator;
+        DownstreamRoute = from.DownstreamRoute;
+        DownstreamRouteConfig = from.DownstreamRouteConfig;
+        TemplatePlaceholderNameAndValues = placeholders;
+        UpstreamHeaderTemplates = from.UpstreamHeaderTemplates;
+        UpstreamHost = from.UpstreamHost;
+        UpstreamHttpMethod = from.UpstreamHttpMethod;
+        UpstreamTemplatePattern = from.UpstreamTemplatePattern;
+    }
+
     public bool IsDynamic { get; }
     public string Aggregator { get; init; }
     public List<DownstreamRoute> DownstreamRoute { get; init; } = [];
