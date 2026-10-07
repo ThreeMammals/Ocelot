@@ -15,7 +15,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     public const char Slash = '/';
     public const char Question = '?';
 
-    private readonly ConcurrentDictionary<string, OkResponse<DownstreamRouteHolder>> _cache;
+    private readonly ConcurrentDictionary<string, Route> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
 
@@ -28,7 +28,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
     }
 
-    public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
         var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
@@ -40,10 +40,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var loadBalancerKey = dynamicRoute != null
             ? dynamicRoute.LoadBalancerKey
             : _routeKeyCreator.Create(serviceNamespace, serviceName, configuration.LoadBalancerOptions);
-        if (_cache.TryGetValue(loadBalancerKey, out var downstreamRouteHolder))
-        {
-            return downstreamRouteHolder;
-        }
+        if (_cache.TryGetValue(loadBalancerKey, out var cachedRoute))
+            return new OkResponse<Route>(cachedRoute);
 
         // TODO: Could it be that the static route functionality was possibly lost here? -> StaticRoutesCreator.SetUpRoute -> _upstreamTemplatePatternCreator
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
@@ -97,12 +95,17 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
-        downstreamRouteHolder = new OkResponse<DownstreamRouteHolder>(new DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route));
-        _cache.AddOrUpdate(loadBalancerKey, downstreamRouteHolder, (x, y) => downstreamRouteHolder);
-        return downstreamRouteHolder;
+        var cached = _cache.GetOrAdd(loadBalancerKey, route);
+        return new OkResponse<Route>(cached);
     }
 
-    private static string GetDownstreamPath(string upstreamUrlPath)
+    /// <summary>
+    /// Gets the downstream path part of the URL without the service name.
+    /// Thus, the first segment of the upstream URL is removed.
+    /// </summary>
+    /// <param name="upstreamUrlPath">The URL with the service name in the first segment.</param>
+    /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
+    internal static string GetDownstreamPath(string upstreamUrlPath)
     {
         int index = upstreamUrlPath.IndexOf(Slash, 1);
         return index != -1

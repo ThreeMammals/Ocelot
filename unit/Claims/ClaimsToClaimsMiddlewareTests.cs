@@ -35,7 +35,7 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
     public async Task Should_call_claims_to_request_correctly()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
+        var dr = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
             .WithClaimsToClaims(new()
             {
@@ -43,15 +43,13 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
             })
             .WithUpstreamHttpMethod([HttpMethods.Get])
             .Build();
-        var downstreamRoute = new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            new Route()
-            {
-                DownstreamRoute = [route],
-                UpstreamHttpMethod = [HttpMethod.Get],
-            });
+        var route = new Route()
+        {
+            DownstreamRoute = [dr],
+            UpstreamHttpMethod = [HttpMethod.Get],
+        };
 
-        GivenTheDownStreamRouteIs(downstreamRoute);
+        GivenTheDownStreamRouteIs(route);
         GivenTheAddClaimsToRequestReturns();
 
         // Act
@@ -61,11 +59,10 @@ public class ClaimsToClaimsMiddlewareTests : UnitTest
         ThenTheClaimsToRequestIsCalledCorrectly();
     }
 
-    private void GivenTheDownStreamRouteIs(Ocelot.DownstreamRouteFinder.DownstreamRouteHolder downstreamRoute)
+    private void GivenTheDownStreamRouteIs(Route route)
     {
-        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-
-        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
     }
 
     private void GivenTheAddClaimsToRequestReturns()

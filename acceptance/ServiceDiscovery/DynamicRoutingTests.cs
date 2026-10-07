@@ -574,6 +574,63 @@ public class DynamicRoutingTests : DiscoverySteps
         .BDDfy();
     }
 
+    [Fact]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
+    public void ShouldForwardEachRequestToItsOwnDownstreamPath()
+    {
+        var ports = PortFinder.GetPorts(1);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscovery))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/{serviceName}/first"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/first"))
+            .When(x => WhenIGetUrlOnTheApiGateway($"/{serviceName}/second?id=2"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/second?id=2"))
+            .When(x => WhenIPostUrlOnTheApiGateway($"/{serviceName}/orders?flag&q=a+b", "{}", "application/json"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/orders?flag&q=a+b"))
+            .When(x => WhenIDeleteUrlOnTheApiGateway($"/{serviceName}/orders/7?force=true"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/orders/7?force=true"))
+            .And(x => ThenAllServicesShouldHaveBeenCalledTimes(4))
+        .BDDfy();
+    }
+
+    [Fact]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
+    public void ShouldUseOneHttpHandlerForAllDownstreamPathsOfService()
+    {
+        var ports = PortFinder.GetPorts(1);
+        var serviceName = ServiceName();
+        var serviceUrls = ports.Select(DownstreamUrl).ToArray();
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        var paths = Enumerable.Range(1, 10).Select(i => $"/users/{i}").ToArray();
+        var urls = paths.Select(path => $"/{serviceName}{path}").ToArray();
+        this
+            .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(urls.Length, urls))
+            .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
+            .And(x => ThenEachResponsePathShouldBe(paths))
+            .And(x => ThenOneHttpHandlerShouldBeCreated(serviceName))
+        .BDDfy();
+    }
+
     private FileDynamicRoute GivenLbRoute(string serviceName, string serviceNamespace = null,
         string loadBalancer = null, string key = null) => new()
         {
@@ -624,6 +681,22 @@ public class DynamicRoutingTests : DiscoverySteps
             var request = tracer.Requests.Keys.SingleOrDefault(k => k.RequestUri.AbsoluteUri.StartsWith(url));
             (request is not null).ShouldBe(useTracing);
         }
+    }
+
+    private void ThenEachResponsePathShouldBe(string[] paths)
+    {
+        foreach (var (index, response) in Responses)
+        {
+            response.ShouldNotBeNull().Headers.GetValues(HeaderNames.Path).ShouldHaveSingleItem()
+                .ShouldBe(paths[index], "Should forward the request to its own downstream path");
+        }
+    }
+
+    private void ThenOneHttpHandlerShouldBeCreated(string serviceName)
+    {
+        var pool = OcelotServices.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
+        pool.ShouldNotBeNull().CreatedHandlers.Keys.Count(route => route.ServiceName == serviceName)
+            .ShouldBe(1, "Should use one HTTP handler for all downstream paths of the service");
     }
 
     public override string ServiceNamespace() => nameof(DynamicRoutingTests);

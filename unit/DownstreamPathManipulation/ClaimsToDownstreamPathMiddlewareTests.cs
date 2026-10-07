@@ -40,21 +40,19 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
+        var dr = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
-                    .WithClaimsToDownstreamPath(new List<ClaimToThing>
-                    {
+                    .WithClaimsToDownstreamPath(
+                    [
                         new("UserId", "Subject", string.Empty, 0),
-                    })
-                    .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    ])
+                    .WithUpstreamHttpMethod(["Get"])
                     .Build();
-        var downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            new Route(route, HttpMethod.Get));
+        var route = new Route(dr, HttpMethod.Get);
 
         // Arrange: Given The Down Stream Route Is
-        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
 
         // Arrange: Given The Change Downstream Path Returns Ok
         _changePath.Setup(x => x.ChangeDownstreamPath(

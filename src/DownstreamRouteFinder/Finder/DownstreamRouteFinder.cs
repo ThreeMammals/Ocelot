@@ -14,10 +14,8 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
     private readonly IHeaderPlaceholderNameAndValueFinder _headerPlaceholderFinder;
 
     public DownstreamRouteFinder(
-        IUrlPathToUrlTemplateMatcher urlMatcher,
-        IPlaceholderNameAndValueFinder pathPlaceholderFinder,
-        IHeadersToHeaderTemplatesMatcher headerMatcher,
-        IHeaderPlaceholderNameAndValueFinder headerPlaceholderFinder)
+        IUrlPathToUrlTemplateMatcher urlMatcher, IPlaceholderNameAndValueFinder pathPlaceholderFinder,
+        IHeadersToHeaderTemplatesMatcher headerMatcher, IHeaderPlaceholderNameAndValueFinder headerPlaceholderFinder)
     {
         _urlMatcher = urlMatcher;
         _pathPlaceholderFinder = pathPlaceholderFinder;
@@ -25,10 +23,10 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
         _headerPlaceholderFinder = headerPlaceholderFinder;
     }
 
-    public Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var downstreamRoutes = new List<DownstreamRouteHolder>();
+        var downstreamRoutes = new List<Route>();
 
         var applicableRoutes = configuration.Routes
             .Where(r => !r.IsDynamic && RouteIsApplicableToThisRequest(r, httpMethod, upstreamHost)) // process static routes only
@@ -40,18 +38,19 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
             var headersMatch = _headerMatcher.Match(upstreamHeaders, route.UpstreamHeaderTemplates);
             if (urlMatch.Match && headersMatch)
             {
-                downstreamRoutes.Add(GetPlaceholderNamesAndValues(upstreamUrlPath, upstreamQueryString, route, upstreamHeaders));
+                var newRoute = FindPlaceholders(route, upstreamUrlPath, upstreamQueryString, upstreamHeaders);
+                downstreamRoutes.Add(newRoute);
             }
         }
 
-        if (downstreamRoutes.Count != 0)
-        {
-            var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.Route.UpstreamHost));
-            var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.Route.UpstreamHost));
-            return new OkResponse<DownstreamRouteHolder>(notNullOption ?? nullOption);
-        }
+        // Something abnormal has happened, so return shortly.
+        // TODO: Add headers info to the error
+        if (downstreamRoutes.Count == 0)
+            return new ErrorResponse<Route>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
 
-        return new ErrorResponse<DownstreamRouteHolder>(new UnableToFindDownstreamRouteError(upstreamUrlPath, httpMethod));
+        var notNullOption = downstreamRoutes.FirstOrDefault(x => !string.IsNullOrEmpty(x.UpstreamHost));
+        var nullOption = downstreamRoutes.FirstOrDefault(x => string.IsNullOrEmpty(x.UpstreamHost));
+        return new OkResponse<Route>(notNullOption ?? nullOption);
     }
 
     private static bool RouteIsApplicableToThisRequest(Route route, string httpMethod, string upstreamHost)
@@ -62,14 +61,21 @@ public class DownstreamRouteFinder : IDownstreamRouteProvider
                (string.IsNullOrEmpty(route.UpstreamHost) || route.UpstreamHost == upstreamHost);
     }
 
-    private DownstreamRouteHolder GetPlaceholderNamesAndValues(string path, string query, Route route, IHeaderDictionary upstreamHeaders)
+    /// <summary>
+    /// Finds placeholder values via both URL and header processing for the route,
+    /// finally returning a new instance of <see cref="Route"/> with an initialized <see cref="Route.TemplatePlaceholderNameAndValues"/> collection for safe consumption by scoped services.
+    /// </summary>
+    /// <param name="route">The current route.</param>
+    /// <param name="path">The path part of the request URL.</param>
+    /// <param name="query">The query string part of the request URL.</param>
+    /// <param name="upstreamHeaders">The headers of the request.</param>
+    /// <returns>A new <see cref="Route"/> instance to be consumed.</returns>
+    protected virtual Route FindPlaceholders(Route route, string path, string query, IHeaderDictionary upstreamHeaders)
     {
-        var templatePlaceholderNameAndValues = _pathPlaceholderFinder
-            .Find(path, query, route.UpstreamTemplatePattern.OriginalValue)
-            .Data;
+        var placeholders = _pathPlaceholderFinder.Find(path, query, route.UpstreamTemplatePattern.OriginalValue)
+            .Data; // TODO Adjust the interface. Lol!
         var headerPlaceholders = _headerPlaceholderFinder.Find(upstreamHeaders, route.UpstreamHeaderTemplates);
-        templatePlaceholderNameAndValues.AddRange(headerPlaceholders);
-
-        return new DownstreamRouteHolder(templatePlaceholderNameAndValues, route);
+        placeholders.AddRange(headerPlaceholders);
+        return new Route(route, placeholders);
     }
 }

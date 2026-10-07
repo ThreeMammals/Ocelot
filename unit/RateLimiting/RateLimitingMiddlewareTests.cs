@@ -9,7 +9,6 @@ using Ocelot.Request.Middleware;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using _DownstreamRouteHolder_ = Ocelot.DownstreamRouteFinder.DownstreamRouteHolder;
 using _RateLimiting_ = Ocelot.RateLimiting.RateLimiting;
 
 namespace Ocelot.UnitTests.RateLimiting;
@@ -52,14 +51,13 @@ public class RateLimitingMiddlewareTests : UnitTest
         const long limit = 3L;
         var downstreamRoute = GivenDownstreamRoute(rule: new("1s", "100s", limit));
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act, Assert
-        await WhenICallTheMiddlewareMultipleTimes(limit, dsHolder);
+        await WhenICallTheMiddlewareMultipleTimes(limit, route);
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
 
         // Act, Assert: the next request should fail
-        await WhenICallTheMiddlewareMultipleTimes(3, dsHolder);
+        await WhenICallTheMiddlewareMultipleTimes(3, route);
         _downstreamResponses.ShouldNotBeNull();
         for (int i = 0; i < _downstreamResponses.Count; i++)
         {
@@ -82,10 +80,9 @@ public class RateLimitingMiddlewareTests : UnitTest
                 .WithRateLimitOptions(options)
                 .Build();
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder);
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, route);
 
         // Assert
         _downstreamResponses.ShouldNotBeNull();
@@ -105,10 +102,9 @@ public class RateLimitingMiddlewareTests : UnitTest
         };
         var downstreamRoute = GivenDownstreamRoute(options);
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act
-        await WhenICallTheMiddlewareWithWhiteClient(dsHolder);
+        await WhenICallTheMiddlewareWithWhiteClient(route);
 
         // Assert
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
@@ -128,12 +124,11 @@ public class RateLimitingMiddlewareTests : UnitTest
         };
         var downstreamRoute = GivenDownstreamRoute(options);
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
         var originalContext = new DefaultHttpContext();
         _contextAccessor.SetupGet(x => x.HttpContext).Returns(originalContext);
 
         // Act
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder, null, originalContext);
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, route, null, originalContext);
 
         // Assert
         originalContext.Response.ShouldNotBeNull();
@@ -160,12 +155,11 @@ public class RateLimitingMiddlewareTests : UnitTest
         };
         var downstreamRoute = GivenDownstreamRoute(options);
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
         var originalContext = hasContext ? new DefaultHttpContext() : null;
         _contextAccessor.SetupGet(x => x.HttpContext).Returns(originalContext);
 
         // Act
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder, null, originalContext);
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, route, null, originalContext);
 
         // Assert
         _logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Exactly(loggedTimes));
@@ -207,10 +201,9 @@ public class RateLimitingMiddlewareTests : UnitTest
         var rule = new RateLimitRule("1s", "30s", limit); // bug scenario
         var downstreamRoute = GivenDownstreamRoute(rule: rule);
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act, Assert: 100 requests must be successful
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit, dsHolder); // make 100 requests, but not exceed the limit
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(limit, route); // make 100 requests, but not exceed the limit
         _downstreamResponses.ForEach(dsr => dsr.ShouldBeNull());
         contexts.ForEach(ctx =>
         {
@@ -220,7 +213,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         });
 
         // Act, Assert: the next 101st request should fail
-        contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder);
+        contexts = await WhenICallTheMiddlewareMultipleTimes(1, route);
         _downstreamResponses.ShouldNotBeNull();
         var ds = _downstreamResponses.SingleOrDefault().ShouldNotBeNull();
         ds.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests, $"Downstream Response no {limit + 1}");
@@ -239,10 +232,9 @@ public class RateLimitingMiddlewareTests : UnitTest
         // Arrange
         var downstreamRoute = GivenDownstreamRoute();
         var route = GivenRoute(downstreamRoute);
-        var dsHolder = new _DownstreamRouteHolder_(new(), route);
 
         // Act
-        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, dsHolder, "bla-bla-header:spy");
+        var contexts = await WhenICallTheMiddlewareMultipleTimes(1, route, "bla-bla-header:spy");
 
         // Assert
         var ctx = contexts[0].ShouldNotBeNull();
@@ -281,7 +273,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         UpstreamHttpMethod = [HttpMethod.Get],
     };
 
-    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, _DownstreamRouteHolder_ holder, string header = null, HttpContext originalContext = null)
+    private async Task<List<HttpContext>> WhenICallTheMiddlewareMultipleTimes(long times, Route route, string header = null, HttpContext originalContext = null)
     {
         var contexts = new List<HttpContext>();
         _downstreamResponses.Clear();
@@ -291,9 +283,9 @@ public class RateLimitingMiddlewareTests : UnitTest
             var stream = GetFakeStream($"{i}");
             context.Response.Body = stream;
             context.Response.RegisterForDispose(stream);
-            context.Items.UpsertDownstreamRoute(holder.Route.DownstreamRoute[0]);
-            context.Items.UpsertTemplatePlaceholderNameAndValues(holder.TemplatePlaceholderNameAndValues);
-            context.Items.UpsertDownstreamRoute(holder);
+            context.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
+            context.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+            context.Items.UpsertRoute(route);
             var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
             header ??= "ClientId:ocelotclient1";
@@ -315,7 +307,7 @@ public class RateLimitingMiddlewareTests : UnitTest
         return new MemoryStream(data, 0, data.Length);
     }
 
-    private async Task WhenICallTheMiddlewareWithWhiteClient(_DownstreamRouteHolder_ holder)
+    private async Task WhenICallTheMiddlewareWithWhiteClient(Route route)
     {
         const string ClientId = "ocelotclient2";
         for (var i = 0; i < 10; i++)
@@ -324,9 +316,9 @@ public class RateLimitingMiddlewareTests : UnitTest
             var stream = GetFakeStream($"{i}");
             context.Response.Body = stream;
             context.Response.RegisterForDispose(stream);
-            context.Items.UpsertDownstreamRoute(holder.Route.DownstreamRoute[0]);
-            context.Items.UpsertTemplatePlaceholderNameAndValues(holder.TemplatePlaceholderNameAndValues);
-            context.Items.UpsertDownstreamRoute(holder);
+            context.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
+            context.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+            context.Items.UpsertRoute(route);
             var request = new HttpRequestMessage(new HttpMethod("GET"), _url);
             request.Headers.Add("ClientId", ClientId);
             context.Items.UpsertDownstreamRequest(new DownstreamRequest(request));
