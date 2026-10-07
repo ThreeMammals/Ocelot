@@ -1,7 +1,9 @@
 # Ocelot Multipart Form Data
 > A minimal browser form sample for forwarding `multipart/form-data` uploads through Ocelot.
 
-This sample demonstrates issue [#714](https://github.com/ThreeMammals/Ocelot/issues/714) with a real HTML page. The browser posts a text field and a file to the gateway, Ocelot forwards the request to the downstream service, and the downstream service reads the form and file from `IFormCollection`.
+This sample demonstrates the current multipart forwarding behavior related to [#714](https://github.com/ThreeMammals/Ocelot/issues/714) with a real HTML page. The browser posts a text field and a file to the gateway, Ocelot forwards the request to the downstream service, and the downstream service reads the form and file from `IFormCollection`.
+
+The original issue is no longer reproducible for regular routing on the current codebase, so this sample acts as an executable regression scenario for the supported behavior.
 
 ## Instructions
 
