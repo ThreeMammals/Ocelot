@@ -70,11 +70,35 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenUser("test", "Copy", TestName());
 
         // Act
-        var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-        var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext, route });
+        var actual = await CreateThreadContextAsync(_httpContext, route);
 
         // Assert
         AssertUsers(actual);
+    }
+
+    private MethodInfo CreateThreadContextAsync()
+        => _middleware.GetType().GetMethod(nameof(CreateThreadContextAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+
+    private Task<HttpContext> CreateThreadContextAsync(HttpContext source, DownstreamRoute route)
+        => (Task<HttpContext>)CreateThreadContextAsync().Invoke(_middleware, [source, route]);
+
+    [Fact]
+    [Trait("PR", "1826")]
+    public async Task CreateThreadContextAsync_CopyHeaders_ToTarget()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        _httpContext.Request.Headers.Append(TestName() + 1, "value1");
+        _httpContext.Request.Headers.Append(TestName() + 2, "value2");
+
+        // Act
+        var target = await CreateThreadContextAsync(_httpContext, route);
+
+        // Assert
+        target.Request.Headers.TryGetValue(TestName() + 1, out var h1).ShouldBeTrue();
+        Assert.Equal("value1", h1);
+        target.Request.Headers.TryGetValue(TestName() + 2, out var h2).ShouldBeTrue();
+        Assert.Equal("value2", h2);
     }
 
     [Fact]

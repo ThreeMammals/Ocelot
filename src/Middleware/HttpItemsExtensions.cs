@@ -79,7 +79,6 @@ public static class HttpItemsExtensions
 
     private static void Upsert<T>(this IDictionary<object, object> input, string key, T value)
     {
-        // TODO Re-implement with TryAdd
         if (input.ContainsKey(key))
             input.Remove(key);
 
