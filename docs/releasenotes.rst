@@ -20,7 +20,7 @@ Welcome
 .. Welcome to the Ocelot `25.0`_ documentation!
 
 .. warning::
-  | Version `25.1 <https://github.com/ThreeMammals/Ocelot/milestone/12>`_ is in development! Full Changelog: `25.0.0...develop <https://github.com/ThreeMammals/Ocelot/compare/25.0.0...develop>`_
+  | Version `25.1 <https://github.com/ThreeMammals/Ocelot/milestone/12>`_ is in development! Full changelog: `release/25.0...develop <https://github.com/ThreeMammals/Ocelot/compare/release/25.0...develop>`_
   | Read the latest **25.0** documentation here: `v25.0 <https://ocelot.readthedocs.io/en/25.0/>`_
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
