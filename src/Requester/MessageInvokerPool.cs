@@ -31,7 +31,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         return _handlersPool.GetOrAdd(
             new MessageInvokerCacheKey(downstreamRoute),
             cacheKey => new Lazy<HttpMessageInvoker>(() => CreateMessageInvoker(cacheKey.Route))
-        ).Value;
+        ).Value; // WTF? Creating Lazy instance and then immediately unwrapping the value from the lazy obj? WoW!
     }
 
     public virtual void Clear() => _handlersPool.Clear();
