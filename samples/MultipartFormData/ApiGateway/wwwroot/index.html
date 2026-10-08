@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ocelot Multipart Upload</title>
+</head>
+<body>
+  <main>
+    <h1>Ocelot Multipart Upload</h1>
+    <p>Send a text field and file through the gateway to the downstream service.</p>
+
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <label>
+        Description
+        <input name="description" value="issue-714" required>
+      </label>
+
+      <label>
+        File
+        <input name="file" type="file" required>
+      </label>
+
+      <button type="submit">Upload</button>
+    </form>
+  </main>
+</body>
+</html>
