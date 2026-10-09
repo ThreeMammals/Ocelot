@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;
-using Ocelot.Configuration.File;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -126,7 +124,7 @@ public sealed class WindowsAuthTests : Steps
         route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        GivenOcelotIsRunning(); // TODO Ocelot must run HTTP.sys
 
         // Run downstream service in IIS Express environment
         var path = Directory.GetCurrentDirectory();
@@ -134,6 +132,12 @@ public sealed class WindowsAuthTests : Steps
         if (acceptance is null) throw new DirectoryNotFoundException($"Folder '{nameof(acceptance)}' not above '{path}'");
         path = Path.Combine(acceptance, "Authentication", "WinAuthWebApp");
         var (publishedTo, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj", configuration: "Debug");
+
+        // Register folders to be cleaned up by Dispose()
+        Folders.Add(publishedTo);
+        Folders.Add(Path.Combine(path, "bin"));
+        Folders.Add(Path.Combine(path, "obj"));
+
         using var iis = await LaunchIISExpressAsync(port, publishedTo);
         try
         {
