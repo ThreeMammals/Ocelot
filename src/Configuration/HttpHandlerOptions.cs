@@ -22,6 +22,7 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
             ? from.MaxConnectionsPerServer.Value : int.MaxValue;
         PooledConnectionLifeTime = TimeSpan.FromSeconds(from.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
         UseCookieContainer = from.UseCookieContainer ?? false;
+        UseDefaultCredentials = from.UseDefaultCredentials ?? false;
         UseProxy = from.UseProxy ?? false;
         UseTracing = from.UseTracing ?? false;
     }
@@ -45,6 +46,15 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     public bool UseCookieContainer { get; init; }
 
     /// <summary>
+    /// Specify is <see cref="SocketsHttpHandler.Credentials"/> set.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
+    /// The property value instructs to initialize the <see cref="SocketsHttpHandler.Credentials"/> by default credentials.
+    /// </value>
+    public bool UseDefaultCredentials { get; init; }
+
+    /// <summary>
     /// Specify is handler has to use a opentracing.
     /// </summary>
     /// <value>UseTracing.</value>
@@ -59,7 +69,10 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// <summary>
     /// Specify the maximum of concurrent connection to a network endpoint.
     /// </summary>
-    /// <value>MaxConnectionsPerServer.</value>
+    /// <value>
+    /// The maximum number of concurrent connections (per server endpoint) allowed by an <see cref="HttpClient"/> object.
+    /// The property value is assignable to the <see cref="HttpClientHandler.MaxConnectionsPerServer"/> one.
+    /// </value>
     public int MaxConnectionsPerServer { get; init; }
 
     /// <summary>
