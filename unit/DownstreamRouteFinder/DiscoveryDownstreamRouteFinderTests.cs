@@ -37,7 +37,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();
-        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
+        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object, new DownstreamServiceFinder());
         _upstreamQuery = string.Empty;
     }
 
