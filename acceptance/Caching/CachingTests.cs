@@ -158,6 +158,72 @@ public sealed class CachingTests : Steps
         .BDDfy();
     }
 
+    [Theory]
+    [InlineData(null, HttpStatusCode.OK)]
+    [InlineData(null, HttpStatusCode.Forbidden)]
+    [InlineData(null, HttpStatusCode.InternalServerError)]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData(new int[] { (int)HttpStatusCode.OK, (int)HttpStatusCode.Forbidden }, HttpStatusCode.OK)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.Forbidden)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    [Trait("PR", "2337")] // https://github.com/ThreeMammals/Ocelot/pull/2337
+    public void Should_cache_when_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var port = PortFinder.GetRandomPort();
+        var options = new FileCacheOptions
+        {
+            TtlSeconds = 100,
+            StatusCodes = statusCodes,
+        };
+        var (testBody1String, testBody2String) = TestBodiesFactory();
+        var configuration = GivenFileConfiguration(port, options);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloFromLaura, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloFromTom, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .And(x => ThenTheContentLengthIs(HelloFromLaura.Length))
+            .BDDfy();
+    }
+
+    [Theory]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.InternalServerError)]
+    [InlineData(new int[] { StatusCodes.Status200OK, StatusCodes.Status403Forbidden }, HttpStatusCode.BadRequest)]
+    [Trait("Feat", "741")] // https://github.com/ThreeMammals/Ocelot/issues/741
+    [Trait("PR", "2337")] // https://github.com/ThreeMammals/Ocelot/pull/2337
+    public void Should_not_cache_when_not_whitelisted(int[] statusCodes, HttpStatusCode responseCode)
+    {
+        // Arrange
+        var port = PortFinder.GetRandomPort();
+        var options = new FileCacheOptions
+        {
+            TtlSeconds = 100,
+            StatusCodes = statusCodes,
+        };
+        var (testBody1String, testBody2String) = TestBodiesFactory();
+        var configuration = GivenFileConfiguration(port, options);
+
+        this.Given(x => x.GivenThereIsAServiceRunningOn(port, responseCode, HelloFromLaura, null, null))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromLaura))
+            .Given(x => x.GivenTheServiceNowReturns(port, responseCode, HelloFromTom, null, null))
+            .When(x => WhenIGetUrlOnTheApiGateway("/"))
+            .Then(x => ThenTheStatusCodeShouldBe(responseCode))
+            .And(x => ThenTheResponseBodyShouldBe(HelloFromTom))
+            .And(x => ThenTheContentLengthIs(HelloFromTom.Length))
+            .BDDfy();
+    }
+
     [Fact]
     [Trait("Feat", "1172")] // https://github.com/ThreeMammals/Ocelot/pull/1172
     public void Should_clean_cached_response_by_cache_header_via_new_caching_key()
