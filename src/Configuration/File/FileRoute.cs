@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Configuration.File;
+namespace Ocelot.Configuration.File;
 
 /// <summary>
 /// Represents the JSON structure of a standard static route (no service discovery).
@@ -19,6 +19,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         SecurityOptions = new FileSecurityOptions();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHeaderTransform = new Dictionary<string, string>();
+        UpstreamHeaderRoutingOptions = new FileUpstreamHeaderRoutingOptions();
         UpstreamHttpMethod = new();
     }
 
@@ -44,6 +45,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
     public Dictionary<string, string> RouteClaimsRequirement { get; set; }
     public bool RouteIsCaseSensitive { get; set; }
     public FileSecurityOptions SecurityOptions { get; set; }
+    public FileUpstreamHeaderRoutingOptions UpstreamHeaderRoutingOptions { get; set; }
     public IDictionary<string, string> UpstreamHeaderTemplates { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
     public string UpstreamHost { get; set; }
@@ -94,6 +96,7 @@ public class FileRoute : FileRouteBase, IRouteUpstream, IRouteGrouping, IRouteRa
         to.ServiceName = from.ServiceName;
         to.ServiceNamespace = from.ServiceNamespace;
         to.Timeout = from.Timeout;
+        to.UpstreamHeaderRoutingOptions = from.UpstreamHeaderRoutingOptions;
         to.UpstreamHeaderTemplates = new Dictionary<string, string>(from.UpstreamHeaderTemplates);
         to.UpstreamHeaderTransform = new Dictionary<string, string>(from.UpstreamHeaderTransform);
         to.UpstreamHost = from.UpstreamHost;

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -534,7 +534,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
+        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate upstream path or routing header mapping");
     }
 
     [Fact]
@@ -566,7 +566,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
+        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate upstream path or routing header mapping");
     }
 
     [Fact]
@@ -598,7 +598,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
+        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate upstream path or routing header mapping");
     }
 
     [Fact]
@@ -868,7 +868,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
         // Assert
         ThenTheResultIsNotValid();
-        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate");
+        ThenTheErrorMessageAtPositionIs(0, "route /asdf/ has duplicate upstream path or routing header mapping");
     }
 
     [Fact]

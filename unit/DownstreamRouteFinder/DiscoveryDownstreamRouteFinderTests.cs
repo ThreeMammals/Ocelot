@@ -21,7 +21,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private string _upstreamHost;
     private string _upstreamUrlPath;
     private string _upstreamHttpMethod;
-    private IHeaderDictionary _upstreamHeaders;
+    private /*IHeaderDictionary*/ Dictionary<string, string> _upstreamHeaders;
     private IInternalConfiguration _configuration;
     private Response<Ocelot.DownstreamRouteFinder.DownstreamRouteHolder> _resultTwo;
     private readonly string _upstreamQuery;
@@ -29,6 +29,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
+    private readonly IHeaderDictionary _requestHeaders;
 
     public DiscoveryDownstreamRouteFinderTests()
     {
@@ -39,6 +40,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _rateLimitOptions = new RateLimitOptions();
         _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
+        _requestHeaders = new HeaderDictionary();
     }
 
     [Fact]
@@ -387,7 +389,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _upstreamHost = "doesnt matter";
         _upstreamUrlPath = "/auth/test";
         _upstreamHttpMethod = "GET";
-        _upstreamHeaders = new HeaderDictionary()
+        _upstreamHeaders = new() // HeaderDictionary()
         {
             { "testHeader", "testHeaderValue" },
         };
@@ -420,11 +422,11 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     private void WhenICreate()
     {
-        _result = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        _result = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders, _requestHeaders);
     }
 
     private void WhenICreateAgain()
     {
-        _resultTwo = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        _resultTwo = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders, _requestHeaders);
     }
 }

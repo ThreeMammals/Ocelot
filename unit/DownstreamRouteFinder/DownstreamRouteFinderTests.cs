@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -24,8 +25,10 @@ public class DownstreamRouteFinderTests : UnitTest
     private UrlMatch _match;
     private string _upstreamHttpMethod;
     private string _upstreamHost;
-    private IHeaderDictionary _upstreamHeaders;
+    private Dictionary<string, string> _upstreamHeaders;
     private string _upstreamQuery;
+    private UpstreamHeaderRoutingOptions _upstreamHeaderRoutingOptions;
+    private readonly HeaderDictionary _requestHeaders;
 
     public DownstreamRouteFinderTests()
     {
@@ -34,6 +37,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _urlPlaceholderFinder = new Mock<IPlaceholderNameAndValueFinder>();
         _headerPlaceholderFinder = new Mock<IHeaderPlaceholderNameAndValueFinder>();
         _routeFinder = new _DownstreamRouteFinder_(_mockUrlMatcher.Object, _urlPlaceholderFinder.Object, _mockHeadersMatcher.Object, _headerPlaceholderFinder.Object);
+        _requestHeaders = new();
     }
 
     [Fact]
@@ -57,7 +61,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -86,7 +90,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -113,7 +117,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -142,7 +146,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -172,7 +176,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -200,7 +204,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -226,7 +230,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         _result.IsError.ShouldBeTrue();
@@ -252,7 +256,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -279,7 +283,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -306,7 +310,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         _result.IsError.ShouldBeTrue();
@@ -333,7 +337,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -362,7 +366,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -392,7 +396,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         _result.IsError.ShouldBeTrue();
@@ -419,7 +423,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         _result.IsError.ShouldBeTrue();
@@ -446,7 +450,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheUrlMatcherIsCalledCorrectly(1, 0);
@@ -473,7 +477,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -490,7 +494,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        var upstreamHeaders = new HeaderDictionary()
+        var upstreamHeaders = new Dictionary<string, string>() // new HeaderDictionary()
         {
             ["header1"] = "headerValue1",
             ["header2"] = "headerValue2",
@@ -518,7 +522,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         ThenTheFollowingIsReturned(new(
@@ -541,7 +545,10 @@ public class DownstreamRouteFinderTests : UnitTest
         };
         _upstreamUrlPath = "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
-        _upstreamHeaders = new HeaderDictionary() { { "header1", "headerValue1" } };
+        _upstreamHeaders = new() // new HeaderDictionary()
+        {
+            { "header1", "headerValue1" },
+        };
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
         _routesConfig = new()
@@ -555,7 +562,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
 
         // Assert
         _result.IsError.ShouldBeTrue();
@@ -585,17 +592,98 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act, Assert
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
         _result.Data.Route.IsDynamic.ShouldBeFalse();
 
         // Act, Assert 2
         _routesConfig.RemoveAll(r => !r.IsDynamic); // remove all static routes
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
         _result.IsError.ShouldBeTrue();
     }
 
-    private static Route GivenRoute(bool? isDynamic = null, string downstream = null,
+    private void GivenUpstreamHeaderRoutingOptionsEnabled()
+    {
+        _upstreamUrlPath = "matchInUrlMatcher/";
+        GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>([]));
+        GivenUpstreamHeaderRoutingOptions();
+        _routesConfig =
+        [
+            GivenRoute(priority: 1),
+        ];
+        GivenTheConfigurationIs(string.Empty, new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlMatcherReturns(new UrlMatch(true));
+        _upstreamHttpMethod = "Get";
+    }
+
+    [Fact]
+    [Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360
+    [Trait("PR", "1684")] // https://github.com/ThreeMammals/Ocelot/pull/1684
+    public void Should_not_return_route_with_upstream_header_routing_options_enabled_and_no_request_headers()
+    {
+        GivenUpstreamHeaderRoutingOptionsEnabled();
+        WhenICallTheFinder();
+        ThenAnErrorResponseIsReturned();
+    }
+
+    [Fact]
+    [Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360
+    [Trait("PR", "1684")] // https://github.com/ThreeMammals/Ocelot/pull/1684
+    public void Should_not_return_route_with_upstream_header_routing_options_enabled_and_non_matching_request_headers()
+    {
+        GivenUpstreamHeaderRoutingOptionsEnabled();
+        GivenNonEmptyNonMatchingRequestHeaders();
+        WhenICallTheFinder();
+        ThenAnErrorResponseIsReturned();
+    }
+
+    [Fact]
+    [Trait("Feat", "360")] // https://github.com/ThreeMammals/Ocelot/issues/360
+    [Trait("PR", "1684")] // https://github.com/ThreeMammals/Ocelot/pull/1684
+    public void Should_return_route_with_upstream_header_routing_options_enabled_and_matching_request_headers()
+    {
+        GivenUpstreamHeaderRoutingOptionsEnabled();
+        GivenNonEmptyMatchingRequestHeaders();
+
+        WhenICallTheFinder();
+
+        // Assert
+        ThenTheFollowingIsReturned(new(
+            new List<PlaceholderNameAndValue>(),
+            GivenRoute(priority: 1)));
+        ThenTheUrlMatcherIsCalledCorrectly();
+    }
+
+    private void GivenUpstreamHeaderRoutingOptions()
+    {
+        var headers = new Dictionary<string, ICollection<string>>()
+            {
+                { "header", ["value"] },
+            };
+        _upstreamHeaderRoutingOptions = new UpstreamHeaderRoutingOptions(headers, UpstreamHeaderRoutingTriggerMode.All);
+    }
+
+    private void GivenNonEmptyNonMatchingRequestHeaders()
+    {
+        _requestHeaders.Add("header", new StringValues(["mismatch"]));
+    }
+
+    private void GivenNonEmptyMatchingRequestHeaders()
+    {
+        _requestHeaders.Add("header", new StringValues(["value"]));
+    }
+
+    private void WhenICallTheFinder()
+    {
+        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders, _requestHeaders);
+    }
+
+    private void ThenAnErrorResponseIsReturned()
+    {
+        _result.IsError.ShouldBeTrue();
+    }
+
+    private Route GivenRoute(bool? isDynamic = null, string downstream = null,
         List<string> upstreamMethods = null, string method = null,
         UpstreamPathTemplate upTemplate = null, string upstream = null, int? priority = null,
         string host = null,
@@ -612,6 +700,7 @@ public class DownstreamRouteFinderTests : UnitTest
             UpstreamTemplatePattern = upTemplate,
             UpstreamHost = host,
             UpstreamHeaderTemplates = headers,
+            UpstreamHeaderRoutingOptions = _upstreamHeaderRoutingOptions,
         };
     }
 
