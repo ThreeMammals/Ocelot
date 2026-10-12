@@ -18,6 +18,7 @@ public class FileRateLimitRule
         Limit = from.Limit;
         Period = from.Period;
         PeriodTimespan = from.PeriodTimespan;
+        Policy = from.Policy;
         Wait = from.Wait;
         StatusCode = from.StatusCode;
         QuotaMessage = from.QuotaMessage;
@@ -75,6 +76,14 @@ public class FileRateLimitRule
     public string KeyPrefix { get; set; }
 
     /// <summary>
+    /// Rate limit policy name. It only takes effect if rate limit middleware type is set to DotNet.
+    /// </summary>
+    /// <value>
+    /// A string of rate limit policy name.
+    /// </value>
+    public string Policy { get; set; }
+
+    /// <summary>
     /// Returns a string that represents the current rule in the format, which defaults to empty string if rate limiting is disabled (<see cref="EnableRateLimiting"/> is <see langword="false"/>).
     /// </summary>
     /// <remarks>Format: <c>H{+,-}:{limit}:{period,-}:w{wait,-}</c>.</remarks>
@@ -84,6 +93,10 @@ public class FileRateLimitRule
         if (EnableRateLimiting == false)
         {
             return string.Empty;
+        }
+        else if (!string.IsNullOrWhiteSpace(Policy))
+        {
+            return $"{nameof(Policy)}:{Policy}";
         }
 
         char hdrSign = EnableHeaders == false ? '-' : '+';
