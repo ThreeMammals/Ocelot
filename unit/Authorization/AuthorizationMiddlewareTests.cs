@@ -14,6 +14,7 @@ public class AuthorizationMiddlewareTests : UnitTest
 {
     private readonly Mock<IClaimsAuthorizer> _claimsAuthorizer;
     private readonly Mock<IScopesAuthorizer> _scopesAuthorizer;
+    private readonly Mock<IRolesAuthorizer> _rolesAuthorizer;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
     private readonly AuthorizationMiddleware _middleware;
@@ -25,11 +26,12 @@ public class AuthorizationMiddlewareTests : UnitTest
         _httpContext = new DefaultHttpContext();
         _claimsAuthorizer = new Mock<IClaimsAuthorizer>();
         _scopesAuthorizer = new Mock<IScopesAuthorizer>();
+        _rolesAuthorizer = new Mock<IRolesAuthorizer>();
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<AuthorizationMiddleware>()).Returns(_logger.Object);
         _next = context => Task.CompletedTask;
-        _middleware = new AuthorizationMiddleware(_next, _claimsAuthorizer.Object, _scopesAuthorizer.Object, _loggerFactory.Object);
+        _middleware = new AuthorizationMiddleware(_next, _claimsAuthorizer.Object, _scopesAuthorizer.Object, _rolesAuthorizer.Object, _loggerFactory.Object);
 
         _logger.Setup(x => x.LogWarning(It.IsAny<Func<string>>()))
             .Callback<Func<string>>(_warnings.Add);
@@ -51,6 +53,7 @@ public class AuthorizationMiddlewareTests : UnitTest
             .WithAuthenticationOptions(new(new("authScheme")))
             .Build();
         GivenTheDownStreamRouteIs(new(), route);
+        GivenRolesAuthorizerReturns(new OkResponse<bool>(false));
         GivenScopesAuthorizerReturns(new OkResponse<bool>(true));
 
         // Act
@@ -121,7 +124,11 @@ public class AuthorizationMiddlewareTests : UnitTest
     }
 
     private void GivenScopesAuthorizerReturns(Response<bool> expected) => _scopesAuthorizer
-            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>()))
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>(), It.IsAny<string>()))
+            .Returns(expected);
+
+    private void GivenRolesAuthorizerReturns(Response<bool> expected) => _rolesAuthorizer
+            .Setup(x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>(), It.IsAny<string>()))
             .Returns(expected);
 
     private void GivenClaimsAuthorizerReturns(Response<bool> expected) => _claimsAuthorizer
@@ -130,7 +137,7 @@ public class AuthorizationMiddlewareTests : UnitTest
 
     private void ThenScopesAuthorizerIsCalled(Func<Times> times = null)
         => _scopesAuthorizer.Verify(
-            x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>()),
+            x => x.Authorize(It.IsAny<ClaimsPrincipal>(), It.IsAny<List<string>>(), It.IsAny<string>()),
             times ?? Times.Once);
     private void ThenClaimsAuthorizerIsCalled(Func<Times> times = null)
         => _claimsAuthorizer.Verify(
