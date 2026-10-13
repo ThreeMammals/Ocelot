@@ -625,7 +625,7 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
     "MaxConnectionsPerServer": 2147483647, // max integer
     "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
-    "UseDefaultCredentials": false,
+    "UseCredentials": false,
     "UseProxy": false,
     "UseTracing": false
   }
@@ -658,9 +658,9 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
         | default: ``false``
       - This enables :doc:`../features/tracing` feature in Ocelot.
         Also refer to the **3rd note** below!
-    * - | ``UseDefaultCredentials``
+    * - | ``UseCredentials``
         | default: ``false``
-      - When set to ``true``, Ocelot will configure the downstream ``SocketsHttpHandler`` to use the process's default credentials (i.e. set ``SocketsHttpHandler.UseDefaultCredentials = true``).
+      - When set to ``true``, Ocelot will configure the downstream ``SocketsHttpHandler`` to use the process's default credentials (i.e. set ``SocketsHttpHandler.UseCredentials = true``).
         This enables pass-through of Windows/Integrated credentials to downstream services when supported by the downstream endpoint and the transport.
         The option is applied when Ocelot constructs handlers for requests (see `MessageInvokerPool <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Requester/MessageInvokerPool.cs>`_ code).
         Use this option only for trusted/private networks, see the :doc:`../features/authorization` and :doc:`../features/authentication` "Pass Through" sections for details and warnings.
@@ -687,7 +687,7 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
   4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
   Since version `24.1`_, global configuration is supported for both static and dynamic routes.
 
-  5. The ``UseDefaultCredentials`` pass-through capability was introduced as part of PR `1521 <https://github.com/ThreeMammals/Ocelot/pull/1521>`_ (see that PR for tests and implementation details).
+  5. The ``UseCredentials`` pass-through capability was introduced as part of PR `1521 <https://github.com/ThreeMammals/Ocelot/pull/1521>`_ (see that PR for tests and implementation details).
   Because this option affects authentication and authorization of downstream services, please also review the :doc:`../features/authorization` and :doc:`../features/authentication` chapters (new "Pass Through" sections) for important warnings and examples on how to use or override credential behavior securely.
 
 .. _ssl-errors:

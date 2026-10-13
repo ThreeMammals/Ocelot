@@ -269,7 +269,7 @@ public class MessageInvokerPoolTests : MessageInvokerPoolBase
     public void CreateHandler_UseDefaultCredentialsIsTrue_CredentialsAreInitialized()
     {
         // Arrange
-        HttpHandlerOptions opts = new() { UseDefaultCredentials = true };
+        HttpHandlerOptions opts = new() { UseCredentials = true };
         var route = GivenRoute(null, null, http: opts);
         GivenTheFactoryReturnsNothing();
         GivenAMessageInvokerPool();

@@ -98,7 +98,7 @@ public class MessageInvokerPool : IMessageInvokerPool
             PooledConnectionLifetime = options.PooledConnectionLifeTime,
         };
 
-        if (options.UseDefaultCredentials)
+        if (options.UseCredentials)
             handler.Credentials = CredentialCache.DefaultCredentials;
 
         if (options.UseCookieContainer)

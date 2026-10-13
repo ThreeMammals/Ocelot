@@ -41,7 +41,7 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
+        route.HttpHandlerOptions = new() { UseCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
 
         await handler.GivenThereIsAServiceRunningOnAsync(port, NoConfiguration, NoLogging, HttpSysServices, HttpSysAuthApp, ConfigureHttpSys);
@@ -79,7 +79,7 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
+        route.HttpHandlerOptions = new() { UseCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
 
         static string GetMachineFQDN()
@@ -127,7 +127,7 @@ public sealed class WindowsAuthTests : Steps
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
-        route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
+        route.HttpHandlerOptions = new() { UseCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
 

@@ -68,7 +68,7 @@ Pass Through Authorization
 --------------------------
 
 Ocelot supports "pass-through" authorization for downstream requests by allowing the downstream HTTP handler to use the host/process credentials.
-This is controlled by the ``UseDefaultCredentials`` option inside :ref:`config-http-handler-options`.
+This is controlled by the ``UseCredentials`` option inside :ref:`config-http-handler-options`.
 
 When to use pass-through authorization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -93,14 +93,14 @@ How it is applied in Ocelot
 
 The option is applied when Ocelot constructs the ``SocketsHttpHandler`` for downstream requests.
 The handler is created by the :class:`MessageInvokerPool` implementation (``MessageInvokerPool.CreateHandler`` overridable method).
-If ``UseDefaultCredentials`` is enabled for a route (or for a global group of routes), Ocelot will configure ``SocketsHttpHandler.UseDefaultCredentials`` (or set ``handler.Credentials``) for the handler used to talk to that downstream service.
+If ``UseCredentials`` is enabled for a route (or for a global group of routes), Ocelot will configure ``SocketsHttpHandler.UseCredentials`` (or set ``handler.Credentials``) for the handler used to talk to that downstream service.
 
 Overriding credentials creation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To customize credential creation (for example, to create credentials per-route based on route metadata or to implement a different credential strategy), override the ``CreateHandler`` method of :class:`MessageInvokerPool`.
 
-Example - set ``UseDefaultCredentials`` or custom ``NetworkCredential``:
+Example - set ``UseCredentials`` or custom ``NetworkCredential``:
 
 .. code-block:: csharp
 
@@ -122,9 +122,9 @@ Example - set ``UseDefaultCredentials`` or custom ``NetworkCredential``:
             var handler = base.CreateHandler(route);
 
             // Enable pass-through (host) credentials when configured
-            if (route.HttpHandlerOptions?.UseDefaultCredentials == true)
+            if (route.HttpHandlerOptions?.UseCredentials == true)
             {
-                handler.UseDefaultCredentials = true;
+                handler.UseCredentials = true;
             }
 
             // Alternatively, set explicit credentials (example retrieving from metadata)

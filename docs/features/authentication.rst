@@ -381,15 +381,15 @@ Links
 Pass Through Authentication
 ---------------------------
 
-Ocelot can be configured to pass the running process (or host) credentials to downstream services by using the new ``UseDefaultCredentials`` option in :ref:`config-http-handler-options`.
+Ocelot can be configured to pass the running process (or host) credentials to downstream services by using the new ``UseCredentials`` option in :ref:`config-http-handler-options`.
 This enables scenarios where downstream services rely on Windows Integrated Authentication or other transport-level credential flows that use the environment identity rather than bearer tokens.
 
 How it works
 ^^^^^^^^^^^^
 
-- The ``UseDefaultCredentials`` boolean (in a route's ``HttpHandlerOptions`` or in the global ``HttpHandlerOptions`` group) is consulted at handler construction time.
+- The ``UseCredentials`` boolean (in a route's ``HttpHandlerOptions`` or in the global ``HttpHandlerOptions`` group) is consulted at handler construction time.
 - Ocelot constructs the downstream handler using the :class:`MessageInvokerPool` implementation. The default implementation (``MessageInvokerPool``) calls its internal ``CreateHandler`` method when the pooled handler is created.
-- When ``UseDefaultCredentials`` is ``true``, the runtime will set the corresponding ``SocketsHttpHandler`` property (``UseDefaultCredentials = true``) or set handler credentials before issuing requests, allowing the downstream service to authenticate using the caller's identity.
+- When ``UseCredentials`` is ``true``, the runtime will set the corresponding ``SocketsHttpHandler`` property (``UseCredentials = true``) or set handler credentials before issuing requests, allowing the downstream service to authenticate using the caller's identity.
 
 Security considerations
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -426,10 +426,10 @@ Example - override to set default credentials or explicit credentials:
             // Call base to get standard configured handler (redirects, pooling, cookies, SSL settings, etc.)
             var handler = base.CreateHandler(route);
 
-            // If the route has UseDefaultCredentials enabled, enable it on the handler:
-            if (route.HttpHandlerOptions?.UseDefaultCredentials == true)
+            // If the route has UseCredentials enabled, enable it on the handler:
+            if (route.HttpHandlerOptions?.UseCredentials == true)
             {
-                handler.UseDefaultCredentials = true;
+                handler.UseCredentials = true;
             }
 
             // Or set explicit credentials (example):

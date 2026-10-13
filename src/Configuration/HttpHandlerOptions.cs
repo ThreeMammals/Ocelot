@@ -22,7 +22,7 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
             ? from.MaxConnectionsPerServer.Value : int.MaxValue;
         PooledConnectionLifeTime = TimeSpan.FromSeconds(from.PooledConnectionLifetimeSeconds ?? DefaultPooledConnectionLifetimeSeconds);
         UseCookieContainer = from.UseCookieContainer ?? false;
-        UseDefaultCredentials = from.UseDefaultCredentials ?? false;
+        UseCredentials = from.UseCredentials ?? false;
         UseProxy = from.UseProxy ?? false;
         UseTracing = from.UseTracing ?? false;
     }
@@ -48,11 +48,11 @@ public class HttpHandlerOptions //: SocketsHttpHandler // TODO Think about using
     /// <summary>
     /// Specify is <see cref="SocketsHttpHandler.Credentials"/> set.
     /// </summary>
+    /// <remarks>The property value instructs to initialize the <see cref="SocketsHttpHandler.Credentials"/> by default credentials.</remarks>
     /// <value>
     /// <see langword="true"/> if the default credentials are used; otherwise <see langword="false"/>. The default value is <see langword="false"/>.
-    /// The property value instructs to initialize the <see cref="SocketsHttpHandler.Credentials"/> by default credentials.
     /// </value>
-    public bool UseDefaultCredentials { get; init; }
+    public bool UseCredentials { get; init; }
 
     /// <summary>
     /// Specify is handler has to use a opentracing.
