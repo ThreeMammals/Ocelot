@@ -130,8 +130,8 @@ public sealed class WindowsAuthTests : Steps
         var path = Directory.GetCurrentDirectory();
         string acceptance = ClimbToFolder(path, nameof(acceptance));
         if (acceptance is null) throw new DirectoryNotFoundException($"Folder '{nameof(acceptance)}' not above '{path}'");
-        path = Path.Combine(acceptance, "Authentication", "WinAuthWebApp");
-        var (publishedTo, compileWatcher) = await CompileProjectAsync(path, "WinAuthWebApp.csproj", configuration: "Debug");
+        path = Path.Combine(acceptance, "Authentication", "WindowsAuthApp");
+        var (publishedTo, compileWatcher) = await CompileProjectAsync(path, "WindowsAuthWebApp.csproj", configuration: "Debug");
 
         // Register folders to be cleaned up by Dispose()
         Folders.Add(publishedTo);

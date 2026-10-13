@@ -1020,7 +1020,7 @@
             </handlers>
         </system.webServer>
     </location>
-    <location path="WinAuthWebApp">
+    <location path="{OcelotApp}">
       <system.webServer>
         <security>
           <authentication>
