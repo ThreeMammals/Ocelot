@@ -11,6 +11,17 @@
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.19.2"
         }
       },
+      "Microsoft.AspNetCore.Authentication.Negotiate": {
+        "type": "Direct",
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "VfOevKtT0kUW4xxUBpwNnHbOHB4BjI1Uf17pRbiLdMwzEQ2k7UU5fAXKFK32kKnvhcrI1zzRCanvtc23k/5y7w==",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Caching.Memory": "10.0.12",
+          "System.DirectoryServices.Protocols": "10.0.12"
+        }
+      },
       "Microsoft.Extensions.Caching.Memory": {
         "type": "Direct",
         "requested": "[10.0.12, )",
@@ -192,6 +203,14 @@
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
       },
+      "Microsoft.AspNetCore.Connections.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "pP5CXSG//gboXUGrgRrrfWxEWJQ1DJLbTo5BulmPp+GaiWf/KbjCCujWlkh7rPTBSWAP+5s4KXti3JAF5akdxA==",
+        "dependencies": {
+          "Microsoft.Extensions.Features": "10.0.12"
+        }
+      },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
         "resolved": "10.0.12",
@@ -298,6 +317,11 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0",
           "Microsoft.Extensions.Options": "10.0.0"
         }
+      },
+      "Microsoft.Extensions.Features": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "GaHsj8gISJ4BtRI4iK4meCil+LAYmv3NWuPKg6d29sw9cNsEN+1N8UMQXA/JhUXdrGTy16+B+YtjY3bco/8jMA=="
       },
       "Microsoft.Extensions.FileProviders.Abstractions": {
         "type": "Transitive",
@@ -557,6 +581,11 @@
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
+      "System.DirectoryServices.Protocols": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "L2PHm7ewfjQYgbhBUB+lXiewxoNo+rhn06geWeUJP3qYCDnkL+Qibv6TEPMlMsF/zab4cU2bE8BWTBqzHZYiYg=="
+      },
       "System.Management": {
         "type": "Transitive",
         "resolved": "6.0.1",
@@ -658,6 +687,17 @@
         "contentHash": "ql5DM/d+K4oQowi7RM7wE5ii5yrpjYI7K4ZPSj/ctVXRAgqJc+CR+zkDAuPfHaBUNb73FBVRUpIkznYw903Qew==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.7.3"
+        }
+      },
+      "Microsoft.AspNetCore.Authentication.Negotiate": {
+        "type": "Direct",
+        "requested": "[8.0.31, )",
+        "resolved": "8.0.31",
+        "contentHash": "cFL5zm3rJKivxAPvpMEXuEN2LObGbSKY+sU+ki3tMEadIB0IXX4IyydRJ+hcn/I4UwgZE4f0RpEbyeibzhxPeA==",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "8.0.31",
+          "Microsoft.Extensions.Caching.Memory": "8.0.1",
+          "System.DirectoryServices.Protocols": "8.0.2"
         }
       },
       "Microsoft.Extensions.Caching.Memory": {
@@ -843,6 +883,15 @@
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
       },
+      "Microsoft.AspNetCore.Connections.Abstractions": {
+        "type": "Transitive",
+        "resolved": "8.0.31",
+        "contentHash": "VuMV15109kwqQ7gpITocFPxqn6WUit1tAz0TuW6Ocvz2cnUybrwa0crueuD9ktS15EgQJ+4e+8odzJwSY/TYhg==",
+        "dependencies": {
+          "Microsoft.Extensions.Features": "8.0.31",
+          "System.IO.Pipelines": "8.0.0"
+        }
+      },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
         "resolved": "8.0.31",
@@ -960,6 +1009,11 @@
           "Microsoft.Extensions.Options": "10.0.0",
           "System.Diagnostics.DiagnosticSource": "10.0.0"
         }
+      },
+      "Microsoft.Extensions.Features": {
+        "type": "Transitive",
+        "resolved": "8.0.31",
+        "contentHash": "H4iY8wRKy2PMwW2f90UHsNcKYAq2zUg0Onf5TfJ4Bz579SlQtgqZPuLs109HO7bNBBZZ77VP5gTPxTVcIHsLRw=="
       },
       "Microsoft.Extensions.FileProviders.Abstractions": {
         "type": "Transitive",
@@ -1225,6 +1279,11 @@
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
+      "System.DirectoryServices.Protocols": {
+        "type": "Transitive",
+        "resolved": "8.0.2",
+        "contentHash": "7pSU+qkmdkwbikAvn4kpvClfyffaR7dYJw7ucBtO5d6m/7wgKZIULOZAGFLMIMOFFmg7xC67TYKptHxcbqQm+Q=="
+      },
       "System.Formats.Asn1": {
         "type": "Transitive",
         "resolved": "10.0.2",
@@ -1351,6 +1410,17 @@
         "contentHash": "mZRc/22fyMmrkLSPXXOkXnfNmTCs8QRrzpI58IPcWAj+2HwfLv07Z3MEBQG4QeGISiOkJtwdR+BHQdwk2xk28A==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.19.2"
+        }
+      },
+      "Microsoft.AspNetCore.Authentication.Negotiate": {
+        "type": "Direct",
+        "requested": "[9.0.20, )",
+        "resolved": "9.0.20",
+        "contentHash": "WP2ZUuWJHmVZGLcBPcevSvL3tZVcn2zyBpSFlYvU9w7Ms32Y9sIekZiiOWw/ri2tU6YNb898hISvmduGFkXXlA==",
+        "dependencies": {
+          "Microsoft.AspNetCore.Connections.Abstractions": "9.0.20",
+          "Microsoft.Extensions.Caching.Memory": "9.0.20",
+          "System.DirectoryServices.Protocols": "9.0.20"
         }
       },
       "Microsoft.Extensions.Caching.Memory": {
@@ -1536,6 +1606,14 @@
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
       },
+      "Microsoft.AspNetCore.Connections.Abstractions": {
+        "type": "Transitive",
+        "resolved": "9.0.20",
+        "contentHash": "mjG+ILLPscZ/CyFlTVISKEqTEy9d7sgfSMmkVZnpYixWi/Jw4GKEUKllHI9OWj8LtEsxIy470ntLQA7DYiqzTw==",
+        "dependencies": {
+          "Microsoft.Extensions.Features": "9.0.20"
+        }
+      },
       "Microsoft.AspNetCore.JsonPatch": {
         "type": "Transitive",
         "resolved": "9.0.20",
@@ -1647,6 +1725,11 @@
           "Microsoft.Extensions.Options": "10.0.0",
           "System.Diagnostics.DiagnosticSource": "10.0.0"
         }
+      },
+      "Microsoft.Extensions.Features": {
+        "type": "Transitive",
+        "resolved": "9.0.20",
+        "contentHash": "vMpn8cI3XXLfkWaAxa/dJZQLasELTkT8Blppd6qaBWC6TD1ANVeagdO9BaTk++d6Q5eV7/ws27XlENUzLNa0QQ=="
       },
       "Microsoft.Extensions.FileProviders.Abstractions": {
         "type": "Transitive",
@@ -1911,6 +1994,11 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
+      },
+      "System.DirectoryServices.Protocols": {
+        "type": "Transitive",
+        "resolved": "9.0.20",
+        "contentHash": "XoPeagEbWTqzCtlhS1+e6vJW/AaV8r5I2UcZuLsfQT/FBwSC3ayt64PwSGGS2fJ7/RDrN5ELuAQ9V5F09f5QYQ=="
       },
       "System.IO.Pipelines": {
         "type": "Transitive",

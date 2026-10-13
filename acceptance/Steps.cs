@@ -1,4 +1,9 @@
-﻿using Ocelot.Acceptance.Properties;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Ocelot.Acceptance.Properties;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using TestStack.BDDfy.Configuration;
@@ -55,5 +60,9 @@ public class Steps : AcceptanceSteps
             async a => await a.UseOcelot(pipelineConfig));
 
     #region TODO: Move to Ocelot.Testing package
+    public static void NoConfiguration(WebHostBuilderContext _, IConfigurationBuilder __) { }
+    public static void NoServices(IServiceCollection _) { }
+    public static void NoLogging(WebHostBuilderContext _, ILoggingBuilder __) { }
+    public static void NoApplications(IApplicationBuilder _) { }
     #endregion
 }

@@ -378,6 +378,73 @@ Links
 * Microsoft Learn: `Mapping, customizing, and transforming claims in ASP.NET Core`_
 * Microsoft .NET Blog: `ASP.NET Core Authentication with IdentityServer4 <https://devblogs.microsoft.com/dotnet/asp-net-core-authentication-with-identityserver4/>`_
 
+Pass Through Authentication
+---------------------------
+
+Ocelot can be configured to pass the running process (or host) credentials to downstream services by using the new ``UseCredentials`` option in :ref:`config-http-handler-options`.
+This enables scenarios where downstream services rely on Windows Integrated Authentication or other transport-level credential flows that use the environment identity rather than bearer tokens.
+
+How it works
+^^^^^^^^^^^^
+
+- The ``UseCredentials`` boolean (in a route's ``HttpHandlerOptions`` or in the global ``HttpHandlerOptions`` group) is consulted at handler construction time.
+- Ocelot constructs the downstream handler using the :class:`MessageInvokerPool` implementation. The default implementation (``MessageInvokerPool``) calls its internal ``CreateHandler`` method when the pooled handler is created.
+- When ``UseCredentials`` is ``true``, the runtime will set the corresponding ``SocketsHttpHandler`` property (``UseCredentials = true``) or set handler credentials before issuing requests, allowing the downstream service to authenticate using the caller's identity.
+
+Security considerations
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Passing credentials to downstream services is sensitive.
+Only enable this behavior for trusted networks and when you understand how credentials will be used by downstream endpoints.
+Do not enable this option for arbitrary public downstream services.
+
+Overriding credential creation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you need to control or customize how credentials are created (for example to provide a specific ``NetworkCredential``,
+to read credentials from route metadata, or to implement a custom credential resolution strategy),
+override the ``CreateHandler`` method in a custom MessageInvokerPool implementation.
+
+Example - override to set default credentials or explicit credentials:
+
+.. code-block:: csharp
+
+    using System.Net;
+    using System.Net.Http;
+    using Ocelot.Configuration;
+    using Ocelot.Logging;
+    using Ocelot.Requester;
+
+    public class CustomMessageInvokerPool : MessageInvokerPool
+    {
+        public CustomMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+            : base(handlerFactory, loggerFactory)
+        { }
+
+        protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
+        {
+            // Call base to get standard configured handler (redirects, pooling, cookies, SSL settings, etc.)
+            var handler = base.CreateHandler(route);
+
+            // If the route has UseCredentials enabled, enable it on the handler:
+            if (route.HttpHandlerOptions?.UseCredentials == true)
+            {
+                handler.UseCredentials = true;
+            }
+
+            // Or set explicit credentials (example):
+            // handler.Credentials = new NetworkCredential("user", "password", "DOMAIN");
+
+            return handler;
+        }
+    }
+
+Register the custom pool in DI (replace default):
+
+.. code-block:: csharp
+
+  services.AddSingleton<IMessageInvokerPool, CustomMessageInvokerPool>();
+
 Roadmap
 -------
 
