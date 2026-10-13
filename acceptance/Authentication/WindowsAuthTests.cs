@@ -3,9 +3,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Win32;
+using Ocelot.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.Logging;
+using Ocelot.Requester;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
@@ -124,7 +130,20 @@ public sealed class WindowsAuthTests : Steps
         route.HttpHandlerOptions = new() { UseDefaultCredentials = useCredentials };
         var configuration = GivenConfiguration(route);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(); // TODO Ocelot must run HTTP.sys
+
+        // GivenOcelotIsRunning(); // TODO Configuring HTTP.sys is quite a challenging task
+        /* static void WithCapturedCredentials(_HttpSys_.HttpSysOptions options)
+        {
+            var auth = options.Authentication;
+            auth.Schemes = _HttpSys_.AuthenticationSchemes.Negotiate | _HttpSys_.AuthenticationSchemes.NTLM;
+            // auth.AllowAnonymous = false;
+#if NET9_0_OR_GREATER
+            auth.CaptureCredentials = true; // Key setting
+#endif
+        }*/
+        static void ConfigureHttpSys(IWebHostBuilder builder)
+            => builder.UseHttpSys(); // (WithCapturedCredentials);
+        int ocPort = await GivenOcelotHostIsRunning(configureServices: MyMessageInvoker.AddOcelot, postConfigureHost: ConfigureHttpSys, useKestrel: false);
 
         // Run downstream service in IIS Express environment
         var path = Directory.GetCurrentDirectory();
@@ -347,3 +366,21 @@ public sealed class WindowsAuthTests : Steps
 }
 #pragma warning restore CA1416
 #pragma warning restore IDE0079
+
+internal class MyMessageInvoker : MessageInvokerPool
+{
+    public MyMessageInvoker(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+        : base(handlerFactory, loggerFactory) { }
+
+    protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
+    {
+        var handler = base.CreateHandler(route);
+        // handler.Credentials = CredentialCache.DefaultNetworkCredentials;
+        return handler;
+    }
+
+    public static void AddOcelot(IServiceCollection services) => services
+        .AddOcelot()
+        .Services.RemoveAll<IMessageInvokerPool>()
+        .AddSingleton<IMessageInvokerPool, MyMessageInvoker>();
+}

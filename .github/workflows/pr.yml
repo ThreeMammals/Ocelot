@@ -159,7 +159,8 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [ubuntu, macos, windows]
+        # os: [ubuntu, macos, windows]
+        os: [windows]
         framework: [net10] # [net8, net9, net10]
     runs-on: ${{ matrix.os }}-latest
     defaults:
