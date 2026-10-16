@@ -24,7 +24,7 @@ app.UseStaticFiles();
 app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/" && context.Request.Method == "GET")
-    {
+{
         context.Response.StatusCode = StatusCodes.Status200OK;
         context.Response.ContentType = "text/html; charset=utf-8";
         var htmlContent = await GetWelcomeHtmlAsync(context.RequestAborted);
@@ -33,7 +33,7 @@ app.Use(async (context, next) =>
     else
     {
         await next();
-    }
+}
 });
 
 // IF Ocelot version is 24.1 and lower

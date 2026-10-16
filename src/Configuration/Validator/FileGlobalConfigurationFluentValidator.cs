@@ -14,5 +14,12 @@ public class FileGlobalConfigurationFluentValidator : AbstractValidator<FileGlob
 
         RuleFor(configuration => configuration.AuthenticationOptions)
             .SetValidator(authValidator);
+
+        When(configuration => configuration.WebSocket != null, () =>
+        {
+            RuleFor(configuration => configuration.WebSocket.BufferSize)
+                .Must(size => !size.HasValue || size.Value > 0)
+                .WithMessage("GlobalConfiguration.WebSocket.BufferSize is negative or zero");
+        });
     }
 }
