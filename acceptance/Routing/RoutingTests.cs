@@ -734,6 +734,27 @@ public sealed class RoutingTests : Steps
         .BDDfy();
     }
 
+    [Fact]
+    [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
+    [Trait("PR", "2429")] // https://github.com/ThreeMammals/Ocelot/pull/2429
+    public void Should_replace_placeholders_with_values_of_each_request()
+    {
+        var port = PortFinder.GetRandomPort();
+        var route = GivenRoute(port, "/products/{productId}", "/api/products/{productId}");
+        var configuration = GivenConfiguration(route);
+        this
+            .Given(x => GivenThereIsAServiceRunningOn(port, "/", MapDownstreamPath))
+            .And(x => GivenThereIsAConfiguration(configuration))
+            .And(x => GivenOcelotIsRunning())
+            .When(x => WhenIGetUrlOnTheApiGateway("/products/1"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/api/products/1"))
+            .When(x => WhenIGetUrlOnTheApiGateway("/products/2"))
+            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+            .And(x => ThenTheDownstreamUrlPathShouldBe("/api/products/2"))
+        .BDDfy();
+    }
+
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatusCode);
@@ -748,6 +769,12 @@ public sealed class RoutingTests : Steps
             context.Response.StatusCode = oK ? (int)statusCode : (int)HttpStatusCode.NotFound;
             return context.Response.WriteAsync(oK ? responseBody : "Downstream path didn't match base path");
         }
+    }
+
+    private Task MapDownstreamPath(HttpContext context)
+    {
+        _downstreamPath = context.Request.Path.Value;
+        return context.Response.WriteAsync(_downstreamPath);
     }
 
     private void ThenTheDownstreamUrlPathShouldBe(string expectedDownstreamPath)

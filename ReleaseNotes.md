@@ -5,11 +5,34 @@ Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
 
-##  :package: Reference SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Runtime [10.0.12](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md) patch (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
-> SDK: [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
-> Patched version: [25.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0)
+## :package: Reference SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md) patch (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
 
-Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions of all [Ocelot packages](https://github.com/ThreeMammals/Ocelot/blob/develop/ReleaseRadar.md) based on .NET SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on September 8, 2026. For more details about SDK [10.0.401](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) a.k.a. Runtime [10.0.12](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md), see the [.NET 10.0.12 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md) as part of [.NET 10 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
+> SDK: [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)  
+> Patched versions: [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0), [25.0.1](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1)
+
+Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions of all [Ocelot packages](https://github.com/ThreeMammals/Ocelot/blob/develop/ReleaseRadar.md) based on .NET SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on October 13, 2026. For more details about SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (also known as Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md)), see the [.NET 10.0.13 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md) as part of the [.NET 10 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
+
+## :fire: Hotfix for bugs #2352 and #2428 (version [{0}](https://www.nuget.org/packages/Ocelot/{0})), a.k.a. [Dynamic Routing](https://ocelot.readthedocs.io/en/25.0/features/servicediscovery.html#dynamic-routing) patch :package:
+
+> Affected Milestones: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13), [Summer '25](https://github.com/ThreeMammals/Ocelot/milestone/9)  
+> Hotfixed versions: [24.1.0](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) ("Globality"), [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0), [25.0.1](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1) (".NET 10")  
+> Read the Docs: [Ocelot 25.0](https://ocelot.readthedocs.io/en/25.0/) with [PDF](https://ocelot.readthedocs.io/_/downloads/en/25.0/pdf/)
+
+:fire: Hotfixed bugs are #2352 and #2428. A sincere and heartfelt "Thank You" goes to @xiexihui, @elenacalugaru, and @alin-popa for reporting these critical bugs.
+:heart: A special "Thank You" goes to **Beka Mosulishvili** (@bekammo) for the professional and timely contributions in pull requests #2427 and #2429.
+
+## :exclamation: Breaking Changes :exclamation:
+
+**Interface Breaking Changes**:
+- Interface FQN: [Ocelot.DownstreamRouteFinder.Finder.IDownstreamRouteProvider](https://github.com/ThreeMammals/Ocelot/blob/25.0.1/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs)
+- Deleted type FQN: [Ocelot.DownstreamRouteFinder.DownstreamRouteHolder](https://github.com/ThreeMammals/Ocelot/blob/25.0.1/src/DownstreamRouteFinder/DownstreamRouteHolder.cs)
+
+The [IDownstreamRouteProvider.Get](https://github.com/ThreeMammals/Ocelot/blob/{0}/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs) method now returns `Response<Route>` (previously `Response<DownstreamRouteHolder>`). The `DownstreamRouteHolder` class has been removed. Placeholders are now stored directly on `Route.TemplatePlaceholderNameAndValues`. Custom implementations of `IDownstreamRouteProvider` and any code that references `DownstreamRouteHolder` require updates and recompilation.
+
+**Other changes affecting deployments**:
+
+1. [Dynamic Routing](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/servicediscovery.rst#dynamic-routing) no longer attempts to build [upstream header templates](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#upstream-headers) from incoming request headers (fixes `RegexParseException` on certain browser headers such as `sec-ch-ua`). An empty collection is returned instead. Static routing is unchanged.
+2. Reference updated to .NET SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) / Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md).
 
 <!--
 

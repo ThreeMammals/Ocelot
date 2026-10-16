@@ -28,8 +28,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        var downstreamRouteHolder = context.Items.DownstreamRouteHolder();
-        var route = downstreamRouteHolder.Route;
+        var route = context.Items.Route();
         var downstreamRoutes = route.DownstreamRoute;
 
         // Case 1: if websocket request or single downstream route

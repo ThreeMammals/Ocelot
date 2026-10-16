@@ -4,7 +4,7 @@ using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
-namespace Ocelot.DownstreamRouteFinder.Middleware;
+namespace Ocelot.DownstreamRouteFinder;
 
 public class DownstreamRouteFinderMiddleware : OcelotMiddleware
 {
@@ -12,12 +12,11 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     private readonly IDownstreamRouteProviderFactory _factory;
 
     public DownstreamRouteFinderMiddleware(RequestDelegate next,
-        IOcelotLoggerFactory loggerFactory,
-        IDownstreamRouteProviderFactory downstreamRouteFinder)
+        IOcelotLoggerFactory loggerFactory, IDownstreamRouteProviderFactory providerFactory)
         : base(loggerFactory.CreateLogger<DownstreamRouteFinderMiddleware>())
     {
         _next = next;
-        _factory = downstreamRouteFinder;
+        _factory = providerFactory;
     }
 
     public async Task Invoke(HttpContext httpContext)
@@ -42,11 +41,11 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
             return;
         }
 
-        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.Route.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
+        Logger.LogDebug(() => $"Downstream templates: {string.Join(", ", response.Data.DownstreamRoute.Select(r => r.DownstreamPathTemplate.Value))}");
 
-        // why set both of these on HttpContext
+        // why set both of these on HttpContext, asked Mr. Tom LoL :)
+        httpContext.Items.UpsertRoute(response.Data);
         httpContext.Items.UpsertTemplatePlaceholderNameAndValues(response.Data.TemplatePlaceholderNameAndValues);
-        httpContext.Items.UpsertDownstreamRoute(response.Data);
 
         await _next.Invoke(httpContext);
     }
