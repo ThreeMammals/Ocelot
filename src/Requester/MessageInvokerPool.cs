@@ -92,6 +92,7 @@ public class MessageInvokerPool : IMessageInvokerPool
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = options.AllowAutoRedirect,
+            EnableMultipleHttp2Connections = options.EnableMultipleHttp2Connections,
             UseCookies = options.UseCookieContainer,
             UseProxy = options.UseProxy,
             MaxConnectionsPerServer = options.MaxConnectionsPerServer,

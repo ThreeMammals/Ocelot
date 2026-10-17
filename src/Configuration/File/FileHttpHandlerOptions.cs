@@ -13,9 +13,11 @@ public class FileHttpHandlerOptions
         UseCookieContainer = from.UseCookieContainer;
         UseProxy = from.UseProxy;
         UseTracing = from.UseTracing;
+        EnableMultipleHttp2Connections = from.EnableMultipleHttp2Connections;
     }
 
     public bool? AllowAutoRedirect { get; set; }
+    public bool? EnableMultipleHttp2Connections { get; set; }
     public int? MaxConnectionsPerServer { get; set; }
     public int? PooledConnectionLifetimeSeconds { get; set; }
     public bool? UseCookieContainer { get; set; }
