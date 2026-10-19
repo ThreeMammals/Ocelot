@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Logging;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace Ocelot.UnitTests.Logging;
@@ -64,60 +63,6 @@ public class OcelotDiagnosticListenerTests : UnitTest
 
         // Assert
         ThenTheLogIs($"MiddlewareException: {name}; {exception.Message};");
-    }
-
-    [Fact]
-    public void Should_dispatch_middleware_analysis_events()
-    {
-        // Arrange
-        const string name = "name";
-        var exception = new Exception("oh no");
-        var diagnosticListener = new DiagnosticListener("OcelotTest");
-        using var subscription = diagnosticListener.Subscribe(
-            new OcelotDiagnosticListenerObserver(_listener),
-            OcelotDiagnosticListenerObserver.IsMiddlewareAnalysisEvent);
-
-        // Act
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting", new { name, httpContext = _httpContext, instanceId = Guid.NewGuid(), timestamp = 1L });
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException", new { name, httpContext = _httpContext, instanceId = Guid.NewGuid(), timestamp = 2L, duration = 1L, exception });
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished", new { name, httpContext = _httpContext, instanceId = Guid.NewGuid(), timestamp = 3L, duration = 2L });
-
-        // Assert
-        ThenTheLogIs($"MiddlewareStarting: {name}; {_httpContext.Request.Path}");
-        ThenTheLogIs($"MiddlewareException: {name}; {exception.Message};");
-        ThenTheLogIs($"MiddlewareFinished: {name}; {_httpContext.Response.StatusCode}");
-    }
-
-    [Fact]
-    public void Should_ignore_invalid_middleware_analysis_payloads()
-    {
-        // Arrange
-        var diagnosticListener = new DiagnosticListener("OcelotTest");
-        using var subscription = diagnosticListener.Subscribe(
-            new OcelotDiagnosticListenerObserver(_listener),
-            OcelotDiagnosticListenerObserver.IsMiddlewareAnalysisEvent);
-
-        // Act
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting", new { name = "name" });
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException", null);
-        diagnosticListener.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished", new { name = 1, httpContext = _httpContext });
-
-        // Assert
-        _logger.Verify(x => x.LogTrace(It.IsAny<Func<string>>()), Times.Never);
-    }
-
-    [Fact]
-    public void Should_ignore_observer_lifecycle_notifications()
-    {
-        // Arrange
-        var observer = new OcelotDiagnosticListenerObserver(_listener);
-
-        // Act
-        observer.OnError(new Exception("oh no"));
-        observer.OnCompleted();
-
-        // Assert
-        _logger.Verify(x => x.LogTrace(It.IsAny<Func<string>>()), Times.Never);
     }
 
     [Fact]

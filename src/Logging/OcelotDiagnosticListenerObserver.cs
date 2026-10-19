@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Ocelot.Logging;
@@ -9,7 +10,7 @@ internal sealed class OcelotDiagnosticListenerObserver : IObserver<KeyValuePair<
     private const string MiddlewareException = "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException";
     private const string MiddlewareFinished = "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished";
 
-    private static readonly ConcurrentDictionary<(Type PayloadType, string PropertyName), PropertyInfo> Properties = new();
+    private static readonly ConcurrentDictionary<(Type PayloadType, string PropertyName), Func<object, object>> PropertyGetters = new();
 
     private readonly OcelotDiagnosticListener _listener;
 
@@ -60,15 +61,30 @@ internal sealed class OcelotDiagnosticListenerObserver : IObserver<KeyValuePair<
             return false;
         }
 
-        var property = Properties.GetOrAdd(
+        var getter = PropertyGetters.GetOrAdd(
             (payload.GetType(), propertyName),
-            static key => key.PayloadType.GetProperty(key.PropertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase));
-        if (property?.GetValue(payload) is T typedValue)
+            static key => CreateGetter(key.PayloadType, key.PropertyName));
+        if (getter(payload) is T typedValue)
         {
             value = typedValue;
             return true;
         }
 
         return false;
+    }
+
+    private static Func<object, object> CreateGetter(Type payloadType, string propertyName)
+    {
+        var property = payloadType.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+        if (property is null)
+        {
+            return static _ => null;
+        }
+
+        var payload = Expression.Parameter(typeof(object), "payload");
+        var typedPayload = Expression.Convert(payload, payloadType);
+        var propertyValue = Expression.Property(typedPayload, property);
+        var boxedValue = Expression.Convert(propertyValue, typeof(object));
+        return Expression.Lambda<Func<object, object>>(boxedValue, payload).Compile();
     }
 }
