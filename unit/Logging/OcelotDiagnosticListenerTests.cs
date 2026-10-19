@@ -107,6 +107,20 @@ public class OcelotDiagnosticListenerTests : UnitTest
     }
 
     [Fact]
+    public void Should_ignore_observer_lifecycle_notifications()
+    {
+        // Arrange
+        var observer = new OcelotDiagnosticListenerObserver(_listener);
+
+        // Act
+        observer.OnError(new Exception("oh no"));
+        observer.OnCompleted();
+
+        // Assert
+        _logger.Verify(x => x.LogTrace(It.IsAny<Func<string>>()), Times.Never);
+    }
+
+    [Fact]
     public void Event()
     {
         // Arrange
