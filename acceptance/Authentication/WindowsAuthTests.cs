@@ -384,3 +384,24 @@ internal class MyMessageInvoker : MessageInvokerPool
         .Services.RemoveAll<IMessageInvokerPool>()
         .AddSingleton<IMessageInvokerPool, MyMessageInvoker>();
 }
+
+public class CustomMessageInvokerPool : MessageInvokerPool
+{
+    public CustomMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+        : base(handlerFactory, loggerFactory)
+    { }
+
+    protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
+    {
+        var handler = base.CreateHandler(route);
+        if (route.HttpHandlerOptions.UseCredentials)
+        {
+            handler.Credentials = new NetworkCredential("user", "password", "DOMAIN");
+        }
+        return handler;
+    }
+
+    public static void AddOcelot(IServiceCollection services) => services
+        .AddOcelot()
+        .Services.AddOcelotRequester<CustomMessageInvokerPool>();
+}

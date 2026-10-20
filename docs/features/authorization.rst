@@ -64,85 +64,105 @@ Another option is preparing before the actual authorization in ``PreAuthorizatio
         }
     });
 
-Pass Through Authorization
---------------------------
+.. _authorization-pass-through:
 
-Ocelot supports "pass-through" authorization for downstream requests by allowing the downstream HTTP handler to use the host/process credentials.
+Pass Through Authorization [#f1]_
+---------------------------------
+
+  MS Learn: `Configure Windows Authentication in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth>`_
+
+Ocelot supports *"pass-through" authorization* for downstream requests by allowing the downstream HTTP handler to use the host/process credentials.
 This is controlled by the ``UseCredentials`` option inside :ref:`config-http-handler-options`.
 
-When to use pass-through authorization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**When to use?**
 
 - Useful when Ocelot and downstream services are deployed in the same trusted network (for example, an intranet or Windows domain environment), and downstream services expect Integrated/Windows authentication (Negotiate/NTLM).
 - Useful for scenarios where you don't want to re-issue tokens from the gateway but instead want the gateway to let the underlying transport layer authenticate using the gateway host identity.
 
-Strong warning - security implications
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Security implications**
 
-Pass-through authorization effectively allows the gateway's process identity to authenticate to downstream services. This is safe only when:
+*Pass-through authorization* effectively allows the gateway's process identity to authenticate to downstream services. This is safe only when:
 
 * Ocelot and downstream services are in a trusted network under your control (e.g., a private corporate network, a Docker network).
 * You understand the credential flow (Kerberos / NTLM) and have hard requirements for audience and scope.
 * You **do not** expose downstream services directly to untrusted networks while using this mode.
 
-Never enable pass-through credentials for arbitrary public downstream services.
-Doing so can inadvertently leak host credentials or allow downstream services to authenticate on behalf of the gateway in ways you may not intend.
+.. warning::
+  Never enable *pass-through* credentials for arbitrary **public** downstream services.
+  Doing so can inadvertently leak host credentials or allow downstream services to authenticate on behalf of the gateway in ways you may not intend.
 
-How it is applied in Ocelot
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. note::
+  The ``UseCredentials`` option is applied when Ocelot constructs the :class:`SocketsHttpHandler` for downstream requests.
+  The handler is created by the :class:`MessageInvokerPool` implementation.
+  If ``UseCredentials`` is enabled for a route (or for a global group of routes), Ocelot configures ``SocketsHttpHandler.Credentials`` on the handler used to talk to that downstream service.
 
-The option is applied when Ocelot constructs the ``SocketsHttpHandler`` for downstream requests.
-The handler is created by the :class:`MessageInvokerPool` implementation (``MessageInvokerPool.CreateHandler`` overridable method).
-If ``UseCredentials`` is enabled for a route (or for a global group of routes), Ocelot will configure ``SocketsHttpHandler.UseCredentials`` (or set ``handler.Credentials``) for the handler used to talk to that downstream service.
+Overriding credentials
+^^^^^^^^^^^^^^^^^^^^^^
 
-Overriding credentials creation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To customize credential creation (for example, to create credentials per-route based on route metadata or to implement a different credential strategy), override the ``CreateHandler`` method of :class:`MessageInvokerPool`.
-
-Example - set ``UseCredentials`` or custom ``NetworkCredential``:
+To customize credential creation (for example, to create credentials per-route based on route :doc:`../features/metadata` or to implement a different credential strategy),
+override the ``CreateHandler`` method of :class:`MessageInvokerPool`.
 
 .. code-block:: csharp
+  :emphasize-lines: 22
 
-    using System.Net;
-    using System.Net.Http;
-    using Ocelot.Configuration;
-    using Ocelot.Logging;
-    using Ocelot.Requester;
+  using Ocelot.Configuration;
+  using Ocelot.Logging;
+  using Ocelot.Metadata;
+  using Ocelot.Requester;
 
-    public class WindowsAuthMessageInvokerPool : MessageInvokerPool
-    {
-        public WindowsAuthMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
-            : base(handlerFactory, loggerFactory)
-        {
-        }
+  public class WindowsAuthMessageInvokerPool : MessageInvokerPool
+  {
+      public WindowsAuthMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+          : base(handlerFactory, loggerFactory) { }
 
-        protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
-        {
-            var handler = base.CreateHandler(route);
+      protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
+      {
+          var handler = base.CreateHandler(route);
+          if (!route.HttpHandlerOptions.UseCredentials)
+              return handler;
 
-            // Enable pass-through (host) credentials when configured
-            if (route.HttpHandlerOptions?.UseCredentials == true)
-            {
-                handler.UseCredentials = true;
-            }
+          var domain = route.GetMetadata<string>("auth/domain");
+          var user = route.GetMetadata<string>("auth/user");
+          var pswd = route.GetMetadata<string>("auth/password");
+          if (!string.IsNullOrEmpty(user))
+          {
+              handler.Credentials = new NetworkCredential(user, pswd, domain);
+          }
+          return handler;
+      }
+  }
 
-            // Alternatively, set explicit credentials (example retrieving from metadata)
-            // var domain = route.GetMetadata<string>("auth/domain");
-            // var user = route.GetMetadata<string>("auth/user");
-            // var pwd = route.GetMetadata<string>("auth/password");
-            // if (!string.IsNullOrEmpty(user))
-            // {
-            //     handler.Credentials = new NetworkCredential(user, pwd, domain);
-            // }
+Finally, register the custom pool in DI container (replace default):
 
-            return handler;
-        }
-    }
+.. code-block:: csharp
+  :emphasize-lines: 5
 
-See also
-^^^^^^^^
+  using Ocelot.Requester;
 
-- Example tests and acceptance coverage for Windows auth are included in PR `#1521 <https://github.com/ThreeMammals/Ocelot/pull/1521>`_
-  (see `WindowsAuthTests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+WindowsAuthTests&type=code>`_ in that PR for a usage pattern and tests).
-- Additional security guidance and when to use route-level overrides are in :doc:`../features/authentication` (Pass Through Authentication).
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .Services.AddOcelotRequester<WindowsAuthMessageInvokerPool>();
+
+.. note::
+  There is currently no dedicated sample for this feature,
+  but you can find a working example in the `WindowsAuthTests <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+WindowsAuthTests&type=code>`_ to borrow ideas from.
+  It would also be a good item to add to our :ref:`authorization-roadmap`.
+
+.. _authorization-roadmap:
+
+Roadmap
+-------
+
+It would be worth adding the following to the *roadmap*:
+
+* A sample for the *authorization* feature, including :ref:`authorization-middleware` injection, :ref:`authorization-pass-through`, and custom credential creation.
+
+""""
+
+.. [#f1] The ":ref:`authorization-pass-through`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
+
+.. _239: https://github.com/ThreeMammals/Ocelot/issues/239
+.. _657: https://github.com/ThreeMammals/Ocelot/issues/657
+.. _2121: https://github.com/ThreeMammals/Ocelot/issues/2121
+.. _1521: https://github.com/ThreeMammals/Ocelot/pull/1521
+.. _25.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0

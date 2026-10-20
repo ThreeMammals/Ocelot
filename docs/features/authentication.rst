@@ -378,72 +378,69 @@ Links
 * Microsoft Learn: `Mapping, customizing, and transforming claims in ASP.NET Core`_
 * Microsoft .NET Blog: `ASP.NET Core Authentication with IdentityServer4 <https://devblogs.microsoft.com/dotnet/asp-net-core-authentication-with-identityserver4/>`_
 
-Pass Through Authentication
----------------------------
+.. _authentication-pass-through:
+
+Pass Through Authentication [#f6]_
+----------------------------------
+
+  MS Learn: `Configure Windows Authentication in ASP.NET Core <https://learn.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth>`_
 
 Ocelot can be configured to pass the running process (or host) credentials to downstream services by using the new ``UseCredentials`` option in :ref:`config-http-handler-options`.
-This enables scenarios where downstream services rely on Windows Integrated Authentication or other transport-level credential flows that use the environment identity rather than bearer tokens.
+This enables scenarios where downstream services rely on Windows Integrated Authentication or other transport-level credential flows that use the environment identity rather than :ref:`bearer tokens <authentication-identity-server>`.
 
-How it works
-^^^^^^^^^^^^
+**How it works**
 
 - The ``UseCredentials`` boolean (in a route's ``HttpHandlerOptions`` or in the global ``HttpHandlerOptions`` group) is consulted at handler construction time.
 - Ocelot constructs the downstream handler using the :class:`MessageInvokerPool` implementation. The default implementation (``MessageInvokerPool``) calls its internal ``CreateHandler`` method when the pooled handler is created.
-- When ``UseCredentials`` is ``true``, the runtime will set the corresponding ``SocketsHttpHandler`` property (``UseCredentials = true``) or set handler credentials before issuing requests, allowing the downstream service to authenticate using the caller's identity.
+- When ``UseCredentials`` is ``true``, the runtime sets the corresponding ``SocketsHttpHandler.Credentials`` property to the system credentials before issuing requests, allowing the Ocelot client to authenticate to the downstream service using Ocelot's identity.
 
-Security considerations
-^^^^^^^^^^^^^^^^^^^^^^^
+.. admonition:: Security considerations
+  :class: warning
 
-Passing credentials to downstream services is sensitive.
-Only enable this behavior for trusted networks and when you understand how credentials will be used by downstream endpoints.
-Do not enable this option for arbitrary public downstream services.
+  Passing credentials to downstream services is sensitive.
+  Only enable this behavior for trusted networks and when you understand how credentials will be used by downstream endpoints.
+  Do not enable this option for arbitrary public downstream services.
 
-Overriding credential creation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Overriding credentials
+^^^^^^^^^^^^^^^^^^^^^^
 
-If you need to control or customize how credentials are created (for example to provide a specific ``NetworkCredential``,
-to read credentials from route metadata, or to implement a custom credential resolution strategy),
-override the ``CreateHandler`` method in a custom MessageInvokerPool implementation.
-
-Example - override to set default credentials or explicit credentials:
+If you need to control or customize how credentials are created (for example to provide a specific :class:`NetworkCredential`,
+to read credentials from route :doc:`../features/metadata`, or to implement a custom credential resolution strategy),
+override the ``CreateHandler`` method in a custom :class:`MessageInvokerPool` implementation.
 
 .. code-block:: csharp
+  :emphasize-lines: 15
 
-    using System.Net;
-    using System.Net.Http;
     using Ocelot.Configuration;
     using Ocelot.Logging;
     using Ocelot.Requester;
 
-    public class CustomMessageInvokerPool : MessageInvokerPool
+    public class MyMessageInvokerPool : MessageInvokerPool
     {
-        public CustomMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
-            : base(handlerFactory, loggerFactory)
-        { }
+        public MyMessageInvokerPool(IDelegatingHandlerFactory handlerFactory, IOcelotLoggerFactory loggerFactory)
+            : base(handlerFactory, loggerFactory) { }
 
         protected override SocketsHttpHandler CreateHandler(DownstreamRoute route)
         {
-            // Call base to get standard configured handler (redirects, pooling, cookies, SSL settings, etc.)
             var handler = base.CreateHandler(route);
-
-            // If the route has UseCredentials enabled, enable it on the handler:
-            if (route.HttpHandlerOptions?.UseCredentials == true)
+            if (route.HttpHandlerOptions.UseCredentials)
             {
-                handler.UseCredentials = true;
+                handler.Credentials = new NetworkCredential("user", "password", "DOMAIN");
             }
-
-            // Or set explicit credentials (example):
-            // handler.Credentials = new NetworkCredential("user", "password", "DOMAIN");
-
             return handler;
         }
     }
 
-Register the custom pool in DI (replace default):
+Register the custom pool in DI container (replace default):
 
 .. code-block:: csharp
+  :emphasize-lines: 5
 
-  services.AddSingleton<IMessageInvokerPool, CustomMessageInvokerPool>();
+  using Ocelot.Requester;
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .Services.AddOcelotRequester<MyMessageInvokerPool>();
 
 Roadmap
 -------
@@ -462,21 +459,27 @@ Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussion
 .. [#f5] The ":ref:`authentication-allowed-scopes`" feature fully supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the ``scope`` claim in the ``ScopesAuthorizer`` service, which is part of the :ref:`authorization-middleware`.
   Refer to section `4.2. "scope" (Scopes) Claim`_.
   This enhancement was requested in bug `913`_, fixed in pull request `1478`_, and the patch was rolled out as part of the `24.1`_ release.
+.. [#f6] The ":ref:`authentication-pass-through`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
 
 .. _RFC 8693: https://datatracker.ietf.org/doc/html/rfc8693
 .. _4.2. "scope" (Scopes) Claim: https://datatracker.ietf.org/doc/html/rfc8693#name-scope-scopes-claim
 
+.. _239: https://github.com/ThreeMammals/Ocelot/issues/239
 .. _446: https://github.com/ThreeMammals/Ocelot/issues/446
 .. _585: https://github.com/ThreeMammals/Ocelot/issues/585
+.. _657: https://github.com/ThreeMammals/Ocelot/issues/657
 .. _740: https://github.com/ThreeMammals/Ocelot/issues/740
 .. _842: https://github.com/ThreeMammals/Ocelot/issues/842
 .. _913: https://github.com/ThreeMammals/Ocelot/issues/913
 .. _1414: https://github.com/ThreeMammals/Ocelot/issues/1414
 .. _1478: https://github.com/ThreeMammals/Ocelot/pull/1478
+.. _1521: https://github.com/ThreeMammals/Ocelot/pull/1521
 .. _1580: https://github.com/ThreeMammals/Ocelot/issues/1580
 .. _2114: https://github.com/ThreeMammals/Ocelot/pull/2114
+.. _2121: https://github.com/ThreeMammals/Ocelot/issues/2121
 .. _2316: https://github.com/ThreeMammals/Ocelot/issues/2316
 .. _2336: https://github.com/ThreeMammals/Ocelot/pull/2336
 .. _23.0: https://github.com/ThreeMammals/Ocelot/releases/tag/23.0.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0

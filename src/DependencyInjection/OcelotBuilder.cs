@@ -132,10 +132,10 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotConfigurationRepository();
         Services.AddOcelotHeaderRouting();
         Services.AddOcelotLogging();
-        Services.AddOcelotMessageInvokerPool();
         Services.AddOcelotMetadata();
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
+        Services.AddOcelotRequester();
     }
 
     /// <summary>
