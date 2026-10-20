@@ -4,9 +4,7 @@ namespace Ocelot.Requester;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddOcelotMessageInvokerPool(this IServiceCollection services)
-    {
-        services.AddSingleton<IHttpRequester, MessageInvokerHttpRequester>();
-        services.AddSingleton<IMessageInvokerPool, MessageInvokerPool>();
-    }
+    public static IServiceCollection AddOcelotMessageInvokerPool(this IServiceCollection services) => services
+        .AddSingleton<IHttpRequester, MessageInvokerHttpRequester>()
+        .AddSingleton<IMessageInvokerPool, MessageInvokerPool>();
 }
