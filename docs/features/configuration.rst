@@ -675,7 +675,8 @@ These options can be set at the route or global level for both static and :ref:`
   We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
   Just look at your response headers and forward the cookies back with your next request!
 
-  3. The ``UseCredentials`` option affects authentication and authorization of downstream services, please also review the ":ref:`authentication-pass-through`" and ":ref:`authorization-pass-through`" sections for details,
+  3. The ``UseCredentials`` option affects authentication and authorization of downstream services,
+  please also review the ":ref:`Pass Through Authentication <authentication-pass-through>`" and ":ref:`Pass Through Authorization <authorization-pass-through>`" sections for details,
   important warnings and examples on how to use or override credential behavior securely.
   Note, the option is available as of version `25.1`_.
   

@@ -155,11 +155,11 @@ Roadmap
 
 It would be worth adding the following to the *roadmap*:
 
-* A sample for the *authorization* feature, including :ref:`authorization-middleware` injection, :ref:`authorization-pass-through`, and custom credential creation.
+* A sample for the *authorization* feature, including :ref:`authorization-middleware` injection, :ref:`Pass Through Authorization <authorization-pass-through>`, and custom credential creation.
 
 """"
 
-.. [#f1] The ":ref:`authorization-pass-through`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
+.. [#f1] The ":ref:`Pass Through Authorization <authorization-pass-through>`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
 
 .. _239: https://github.com/ThreeMammals/Ocelot/issues/239
 .. _657: https://github.com/ThreeMammals/Ocelot/issues/657

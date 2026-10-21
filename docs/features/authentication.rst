@@ -459,7 +459,7 @@ Please open a "`Show and tell <https://github.com/ThreeMammals/Ocelot/discussion
 .. [#f5] The ":ref:`authentication-allowed-scopes`" feature fully supports `RFC 8693`_ (OAuth 2.0 Token Exchange) for the ``scope`` claim in the ``ScopesAuthorizer`` service, which is part of the :ref:`authorization-middleware`.
   Refer to section `4.2. "scope" (Scopes) Claim`_.
   This enhancement was requested in bug `913`_, fixed in pull request `1478`_, and the patch was rolled out as part of the `24.1`_ release.
-.. [#f6] The ":ref:`authentication-pass-through`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
+.. [#f6] The ":ref:`Pass Through Authentication <authentication-pass-through>`" feature was requested in issues [`239`_, `657`_, `2121`_], implemented in pull request `1521`_, and released as part of version `25.1`_.
 
 .. _RFC 8693: https://datatracker.ietf.org/doc/html/rfc8693
 .. _4.2. "scope" (Scopes) Claim: https://datatracker.ietf.org/doc/html/rfc8693#name-scope-scopes-claim
