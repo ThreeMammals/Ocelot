@@ -246,24 +246,27 @@ public class AcceptanceSteps : IDisposable
     }
 
     protected async Task<int> GivenOcelotHostIsRunning(
-        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
-        Action<IServiceCollection>? configureServices,
-        Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? сonfigureWebHost, Action<IWebHostBuilder>? postConfigureHost,
-        // Action<TestServer>? configureServer,
-        Action<HttpClient>? configureClient)
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate = null,
+        Action<IServiceCollection>? configureServices = null,
+        Action<IApplicationBuilder>? configureApp = null,
+        Action<IWebHostBuilder>? сonfigureWebHost = null,
+        Action<IWebHostBuilder>? postConfigureHost = null,
+        // Action<TestServer>? configureServer = null,
+        Action<HttpClient>? configureClient = null,
+        int? port = null, bool useKestrel = true)
     {
-        int port = PortFinder.GetRandomPort();
-        var baseUrl = DownstreamUrl(port);
+        port ??= PortFinder.GetRandomPort();
+        var baseUrl = DownstreamUrl(port.Value);
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder
-                .UseKestrel()
                 .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
                 .ConfigureServices(configureServices ?? WithAddOcelot)
                 .Configure(configureApp ?? WithUseOcelot)
                 .UseUrls(baseUrl);
-                //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            if (useKestrel)
+                builder.UseKestrel();
             postConfigureHost?.Invoke(builder);
         }
         var host = TestHostBuilder
@@ -277,7 +280,7 @@ public class AcceptanceSteps : IDisposable
         ocelotClient = ocelotServer?.CreateClient();
         ocelotClient ??= new() { BaseAddress = new(baseUrl), };
         configureClient?.Invoke(ocelotClient);
-        return port;
+        return port.Value;
     }
 
     protected IServiceProvider OcelotServices { get => ocelotServer?.Services ?? ocelotHost!.Services; }
