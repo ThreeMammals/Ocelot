@@ -3,8 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 

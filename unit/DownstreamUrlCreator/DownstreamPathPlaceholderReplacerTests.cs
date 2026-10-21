@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
+using Route = Ocelot.Configuration.Route;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
 
@@ -15,12 +15,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_no_template_variables()
     {
         // Arrange
-        var holder = new DownstreamRouteHolder(
-                new List<PlaceholderNameAndValue>(),
-                GivenRoute());
+        var route = GivenRoute();
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe(string.Empty);
@@ -30,12 +28,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_no_template_variables_with_slash()
     {
         // Arrange
-        var holder = new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            GivenRoute("/"));
+        var route = GivenRoute("/");
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("/");
@@ -45,12 +41,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_no_slash()
     {
         // Arrange
-        var holder = new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            GivenRoute("api"));
+        var route = GivenRoute("api");
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("api");
@@ -60,12 +54,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_one_slash()
     {
         // Arrange
-        var holder = new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            GivenRoute("api/"));
+        var route = GivenRoute("api/");
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("api/");
@@ -75,12 +67,10 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_multiple_slash()
     {
         // Arrange
-        var holder = new DownstreamRouteHolder(
-            new List<PlaceholderNameAndValue>(),
-            GivenRoute("api/product/products/"));
+        var route = GivenRoute("api/product/products/");
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("api/product/products/");
@@ -90,16 +80,13 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_one_template_variable()
     {
         // Arrange
-        var templateVariables = new List<PlaceholderNameAndValue>
-        {
-            new("{productId}", "1"),
-        };
-        var holder = new DownstreamRouteHolder(
-            templateVariables,
-            GivenRoute("productservice/products/{productId}/"));
+        var route = GivenRoute("productservice/products/{productId}/",
+            [
+                new("{productId}", "1")
+            ]);
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("productservice/products/1/");
@@ -109,16 +96,13 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_one_template_variable_with_path_after()
     {
         // Arrange
-        var templateVariables = new List<PlaceholderNameAndValue>
-        {
-            new("{productId}", "1"),
-        };
-        var holder = new DownstreamRouteHolder(
-            templateVariables,
-            GivenRoute("productservice/products/{productId}/variants"));
+        var route = GivenRoute("productservice/products/{productId}/variants",
+            [
+                new("{productId}", "1")
+            ]);
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("productservice/products/1/variants");
@@ -128,17 +112,14 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_two_template_variable()
     {
         // Arrange
-        var templateVariables = new List<PlaceholderNameAndValue>
-        {
-            new("{productId}", "1"),
-            new("{variantId}", "12"),
-        };
-        var holder = new DownstreamRouteHolder(
-            templateVariables,
-            GivenRoute("productservice/products/{productId}/variants/{variantId}"));
+        var route = GivenRoute("productservice/products/{productId}/variants/{variantId}",
+            [
+                new("{productId}", "1"),
+                new("{variantId}", "12"),
+            ]);
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("productservice/products/1/variants/12");
@@ -148,31 +129,24 @@ public class DownstreamPathPlaceholderReplacerTests : UnitTest
     public void Can_replace_url_three_template_variable()
     {
         // Arrange
-        var templateVariables = new List<PlaceholderNameAndValue>
-        {
-            new("{productId}", "1"),
-            new("{variantId}", "12"),
-            new("{categoryId}", "34"),
-        };
-        var holder = new DownstreamRouteHolder(
-            templateVariables,
-            GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}"));
+        var route = GivenRoute("productservice/category/{categoryId}/products/{productId}/variants/{variantId}",
+            [
+                new("{productId}", "1"),
+                new("{variantId}", "12"),
+                new("{categoryId}", "34"),
+            ]);
 
         // Act
-        var dsPath = _replacer.Replace(holder.Route.DownstreamRoute[0].DownstreamPathTemplate.Value, holder.TemplatePlaceholderNameAndValues);
+        var dsPath = _replacer.Replace(route.DownstreamRoute[0].DownstreamPathTemplate.Value, route.TemplatePlaceholderNameAndValues);
 
         // Assert
         dsPath.Value.ShouldBe("productservice/category/34/products/1/variants/12");
     }
 
-    private static Route GivenRoute(string downstream = null, string method = null)
+    private static Route GivenRoute(string downstream = null, List<PlaceholderNameAndValue> placeholders = null)
     {
-        var route = GivenDownstreamRoute(downstream, method);
-        return new()
-        {
-            DownstreamRoute = [route],
-            UpstreamHttpMethod = [method is null ? HttpMethod.Get : new(method)],
-        };
+        var route = GivenDownstreamRoute(downstream, HttpMethods.Get);
+        return new(route, HttpMethod.Get, placeholders);
     }
 
     private static DownstreamRoute GivenDownstreamRoute(string downstream = null, string method = null)

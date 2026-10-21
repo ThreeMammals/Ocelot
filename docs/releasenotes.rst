@@ -1,14 +1,4 @@
-.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-.. _25.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1
-.. _25.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
-.. _.NET 8: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
-.. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
-.. _.NET 10: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
-.. _Ocelot: https://www.nuget.org/packages/Ocelot
-.. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot.Testing
-.. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
-.. role::  htm(raw)
+.. role:: htm(raw)
     :format: html
 
 .. _welcome:
@@ -16,6 +6,15 @@
 #######
 Welcome
 #######
+.. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1
+.. _25.0.2: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.2
+.. _25.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+.. _10.0.401: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
+.. _10.0.402: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
+.. _2352: https://github.com/ThreeMammals/Ocelot/issues/2352
+.. _2428: https://github.com/ThreeMammals/Ocelot/issues/2428
 
 .. Welcome to the Ocelot `25.0`_ documentation!
 
@@ -29,7 +28,9 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 
 .. .. admonition:: Patches
 
-..   - `25.0.1`_, on September 14, 2026: Reference SDK `10.0.401 <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>`_ (Runtime `10.0.12 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md>`_)
+..   - `25.0.1`_, on September 14, 2026: Reference SDK `10.0.401`_ (Runtime `10.0.12 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md>`_)
+..   - `25.0.2`_, on October 15, 2026: Reference SDK `10.0.402`_ (Runtime `10.0.13 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md>`_).
+..     Hotfix for bugs `2352`_ and `2428`_, a :ref:`Dynamic Routing <sd-dynamic-routing>` patch.
 
 .. _release-notes:
 
@@ -39,6 +40,20 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
   | Release Tag: `25.1.0`_ (to be created)
   | Release Codename: `Rise of Ocelot <https://github.com/ThreeMammals/Ocelot/milestone/12>`_
   | Release Date: ... 2026
+
+.. _TFMs: https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-versions
+.. _supported frameworks: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle
+.. _.NET 10 milestone: https://github.com/ThreeMammals/Ocelot/milestone/13
+.. _integrated extension packages: https://www.nuget.org/profiles/ThreeMammals
+.. _the monorepo: https://github.com/ThreeMammals/Ocelot/tree/24.1.0/src
+.. _dedicated repositories: https://github.com/orgs/ThreeMammals/repositories?q=Ocelot.
+.. _WebSockets middleware: https://github.com/ThreeMammals/Ocelot/blob/develop/src/WebSockets/WebSocketsProxyMiddleware.cs
+.. _Polly: https://www.nuget.org/packages/Polly/
+.. _Release Radar: https://github.com/ThreeMammals/Ocelot/blob/develop/ReleaseRadar.md
+.. _DevOps: https://github.com/ThreeMammals/Ocelot/labels/DevOps
+.. _.NET 8: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+.. _.NET 9: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+.. _.NET 10: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
 To be added...
 
@@ -100,6 +115,8 @@ To be added...
 
 🆙 What's Updated?
 --------------------
+.. _Ocelot: https://www.nuget.org/packages/Ocelot
+.. _Ocelot.Testing: https://github.com/ThreeMammals/Ocelot.Testing
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes/
 .. _Ocelot.Cache.CacheManager: https://www.nuget.org/packages/Ocelot.Cache.CacheManager/
 .. _Ocelot.Tracing.Butterfly: https://www.nuget.org/packages/Ocelot.Tracing.Butterfly/
