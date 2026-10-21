@@ -17,13 +17,22 @@ public sealed class AuthenticationOptions
         AllowAnonymous = options.AllowAnonymous ?? false;
         AllowedScopes = options.AllowedScopes ?? new();
         AuthenticationProviderKeys = Merge(options.AuthenticationProviderKey, options.AuthenticationProviderKeys ?? Array.Empty<string>());
+        PolicyName = options.PolicyName;
+        RequiredRole = options.RequiredRole;
+        ScopeKey = options.ScopeKey;
+        RoleKey = options.RoleKey;
     }
 
-    public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys)
+    public AuthenticationOptions(List<string> allowedScopes, string[] authenticationProviderKeys,
+        List<string> requiredRole = null, string scopeKey = null, string roleKey = null, string policyName = null)
     {
         AllowAnonymous = false;
         AllowedScopes = allowedScopes ?? new();
         AuthenticationProviderKeys = authenticationProviderKeys ?? Array.Empty<string>();
+        PolicyName = policyName;
+        RequiredRole = requiredRole;
+        ScopeKey = scopeKey;
+        RoleKey = roleKey;
     }
 
     private static string[] Merge(string primaryKey, string[] keys)
@@ -47,6 +56,11 @@ public sealed class AuthenticationOptions
     /// <remarks>The order in the collection matters: first successful authentication result wins.</remarks>
     /// <value>An array of <see langword="string"/> values of the scheme names.</value>
     public string[] AuthenticationProviderKeys { get; init; }
+
+    public List<string> RequiredRole { get; }
+    public string ScopeKey { get; }
+    public string RoleKey { get; }
+    public string PolicyName { get; }
 
     public bool HasScheme => AuthenticationProviderKeys.Any(k => !k.IsEmpty());
 }
