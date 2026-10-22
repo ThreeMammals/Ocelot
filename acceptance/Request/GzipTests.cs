@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.Acceptance.Request;
@@ -39,7 +41,7 @@ public sealed class GzipTests : Steps
 
         ms.Position = 0;
         var content = new StreamContent(ms);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        content.Headers.ContentType = new(MediaTypeNames.Application.Json);
         content.Headers.ContentEncoding.Add("gzip");
         return content;
     }
@@ -48,7 +50,7 @@ public sealed class GzipTests : Steps
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
-            if (context.Request.Headers.TryGetValue("Content-Encoding", out var contentEncoding))
+            if (context.Request.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncoding))
             {
                 contentEncoding.First().ShouldBe("gzip");
 

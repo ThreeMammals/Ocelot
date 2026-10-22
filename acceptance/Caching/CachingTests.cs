@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.Net.Mime;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -108,16 +109,16 @@ public sealed class CachingTests : Steps
             .Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody2String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody2String))
             .And(x => ThenTheCounterValueShouldBe(2))
@@ -142,16 +143,16 @@ public sealed class CachingTests : Steps
             .Given(x => x.GivenThereIsAnEchoServiceRunningOn(port))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody1String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, "application/json")))
+            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent(testBody2String, Encoding.UTF8, MediaTypeNames.Application.Json)))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseBodyShouldBe(testBody1String))
             .And(x => ThenTheCounterValueShouldBe(1))

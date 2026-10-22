@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
@@ -287,14 +288,14 @@ public class RequestMapperTests : UnitTest
         var md5Bytes = MD5.HashData(bytes);
 
         GivenTheInputRequestHasContent("This is my content");
-        _inputRequest.ContentType = "application/json";
-        _inputRequest.Headers.Append("Content-Encoding", "gzip, compress");
-        _inputRequest.Headers.Append("Content-Language", "english");
-        _inputRequest.Headers.Append("Content-Location", "/my-receipts/38");
-        _inputRequest.Headers.Append("Content-Range", "bytes 1-2/*");
-        _inputRequest.Headers.Append("Content-Disposition", "inline");
+        _inputRequest.ContentType = MediaTypeNames.Application.Json;
+        _inputRequest.Headers.Append(HeaderNames.ContentEncoding, "gzip, compress");
+        _inputRequest.Headers.Append(HeaderNames.ContentLanguage, "english");
+        _inputRequest.Headers.Append(HeaderNames.ContentLocation, "/my-receipts/38");
+        _inputRequest.Headers.Append(HeaderNames.ContentRange, "bytes 1-2/*");
+        _inputRequest.Headers.Append(HeaderNames.ContentDisposition, "inline");
         var base64 = Convert.ToBase64String(md5Bytes);
-        _inputRequest.Headers.Append("Content-MD5", base64);
+        _inputRequest.Headers.Append(HeaderNames.ContentMD5, base64);
         _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -303,7 +304,7 @@ public class RequestMapperTests : UnitTest
         WhenMapped();
 
         // Assert
-        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheMappedRequestHasContentTypeHeader(MediaTypeNames.Application.Json);
         Assert.NotNull(_mappedRequest.Content);
         _mappedRequest.Content.Headers.ContentEncoding.ToArray()[0].ShouldBe("gzip");
         _mappedRequest.Content.Headers.ContentEncoding.ToArray()[1].ShouldBe("compress");
@@ -323,14 +324,14 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Content.Headers.ContentDisposition.DispositionType.ShouldBe("inline");
 
         // Assert: Then The Content-* Headers Are Not Added To Non Content Headers
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentMD5");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentRange");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentLanguage");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentEncoding");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentLocation");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Length");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Type");
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentDisposition);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentMD5);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentRange);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLanguage);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentEncoding);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLocation);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLength);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentType);
     }
 
     [Fact]
@@ -338,7 +339,7 @@ public class RequestMapperTests : UnitTest
     {
         // Arrange
         GivenTheInputRequestHasContent("This is my content");
-        _inputRequest.ContentType = "application/json";
+        _inputRequest.ContentType = MediaTypeNames.Application.Json;
         _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -347,7 +348,7 @@ public class RequestMapperTests : UnitTest
         WhenMapped();
 
         // Assert
-        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheMappedRequestHasContentTypeHeader(MediaTypeNames.Application.Json);
 
         // Assert: Then The Other Content Type Headers Are Not Mapped
         Assert.NotNull(_mappedRequest.Content);

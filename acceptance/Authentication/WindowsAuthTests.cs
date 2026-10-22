@@ -379,10 +379,9 @@ internal class MyMessageInvoker : MessageInvokerPool
         return handler;
     }
 
-    public static void AddOcelot(IServiceCollection services) => services
-        .AddOcelot()
-        .Services.RemoveAll<IMessageInvokerPool>()
-        .AddSingleton<IMessageInvokerPool, MyMessageInvoker>();
+    public static void AddOcelot(IServiceCollection services)
+        => services.AddOcelot()
+        .Services.AddOcelotRequester<MyMessageInvoker>();
 }
 
 public class CustomMessageInvokerPool : MessageInvokerPool

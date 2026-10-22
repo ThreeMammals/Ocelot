@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 
@@ -47,7 +48,7 @@ public class HttpContextResponder : IHttpResponder
         if (downstream.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
-                new Header("Content-Length", new[] { downstream.Content.Headers.ContentLength.ToString() }));
+                new Header(HeaderNames.ContentLength, [downstream.Content.Headers.ContentLength.ToString()]));
         }
 
         if (downstream.StatusCode != HttpStatusCode.NotModified && context.Response.ContentLength != 0)
@@ -66,7 +67,7 @@ public class HttpContextResponder : IHttpResponder
         if (downstream.Content.Headers.ContentLength != null)
         {
             AddHeaderIfDoesntExist(context,
-                new Header("Content-Length", new[] { downstream.Content.Headers.ContentLength.ToString() }));
+                new Header(HeaderNames.ContentLength, [downstream.Content.Headers.ContentLength.ToString()]));
         }
 
         if (context.Response.ContentLength != 0)

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
+using System.Net.Mime;
 
 namespace Ocelot.Acceptance.Request;
 
@@ -34,7 +36,7 @@ public sealed class ContentTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        var contentType = "application/json";
+        var contentType = MediaTypeNames.Application.Json;
         this
             .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
             .And(x => GivenThereIsAConfiguration(configuration))
@@ -111,7 +113,7 @@ public sealed class ContentTests : Steps
         {
             _contentType = context.Request.ContentType;
             _contentLength = context.Request.ContentLength;
-            _contentTypeHeaderExists = context.Request.Headers.TryGetValue("Content-Type", out var value);
+            _contentTypeHeaderExists = context.Request.Headers.TryGetValue(HeaderNames.ContentType, out var value);
             context.Response.StatusCode = (int)statusCode;
             return context.Response.WriteAsync(responseBody);
         });
