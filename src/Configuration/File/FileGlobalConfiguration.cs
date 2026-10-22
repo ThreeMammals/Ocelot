@@ -7,6 +7,7 @@ public class FileGlobalConfiguration
         AuthenticationOptions = new();
         BaseUrl = default;
         CacheOptions = default;
+        ConnectionClose = false;
         DownstreamHeaderTransform = new Dictionary<string, string>();
         DownstreamHttpVersion = default;
         DownstreamHttpVersionPolicy = default;
@@ -27,6 +28,7 @@ public class FileGlobalConfiguration
     public FileGlobalAuthenticationOptions AuthenticationOptions { get; set; }
     public string BaseUrl { get; set; }
     public FileGlobalCacheOptions CacheOptions { get; set; }
+    public bool ConnectionClose { get; set; }
     public IDictionary<string, string> DownstreamHeaderTransform { get; set; }
     public string DownstreamHttpVersion { get; set; }
     public string DownstreamHttpVersionPolicy { get; set; }
