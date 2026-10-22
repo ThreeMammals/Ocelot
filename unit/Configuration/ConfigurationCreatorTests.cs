@@ -21,6 +21,7 @@ public class ConfigurationCreatorTests : UnitTest
     private readonly Mock<IRateLimitOptionsCreator> _rlCreator;
     private readonly Mock<ICacheOptionsCreator> _coCreator;
     private readonly Mock<IAuthenticationOptionsCreator> _authCreator;
+    private readonly Mock<IWebSocketOptionsCreator> _webSocketOptionsCreator;
     private FileConfiguration _fileConfig;
     private Route[] _routes;
     private ServiceProviderConfiguration _spc;
@@ -29,6 +30,7 @@ public class ConfigurationCreatorTests : UnitTest
     private HttpHandlerOptions _hho;
     private CacheOptions _co;
     private AuthenticationOptions _ao;
+    private WebSocketOptions _ws;
     private AdministrationPath _adminPath;
     private readonly ServiceCollection _serviceCollection;
 
@@ -44,6 +46,7 @@ public class ConfigurationCreatorTests : UnitTest
         _rlCreator = new Mock<IRateLimitOptionsCreator>();
         _coCreator = new Mock<ICacheOptionsCreator>();
         _authCreator = new Mock<IAuthenticationOptionsCreator>();
+        _webSocketOptionsCreator = new Mock<IWebSocketOptionsCreator>();
         _serviceCollection = new ServiceCollection();
     }
 
@@ -103,6 +106,7 @@ public class ConfigurationCreatorTests : UnitTest
         _result.HttpHandlerOptions.ShouldBe(_hho);
         _result.CacheOptions.ShouldBe(_co);
         _result.AuthenticationOptions.ShouldBe(_ao);
+        _result.WebSocket.ShouldBe(_ws);
         _result.Routes.ShouldBe(_routes);
         _result.RequestId.ShouldBe(_fileConfig.GlobalConfiguration.RequestIdKey);
         _result.DownstreamScheme.ShouldBe(_fileConfig.GlobalConfiguration.DownstreamScheme);
@@ -124,6 +128,7 @@ public class ConfigurationCreatorTests : UnitTest
         _mdCreator.Verify(x => x.Create(It.IsAny<IDictionary<string, string>>(), It.IsAny<FileGlobalConfiguration>()), Times.Once);
         _vCreator.Verify(x => x.Create(It.IsAny<string>()), Times.Once);
         _rlCreator.Verify(x => x.Create(It.IsAny<FileGlobalConfiguration>()), Times.Once);
+        _webSocketOptionsCreator.Verify(x => x.Create(It.IsAny<FileWebSocketOptions>()), Times.Once);
     }
 
     private void GivenTheAdminPath([CallerMemberName] string testName = nameof(ConfigurationCreatorTests))
@@ -145,12 +150,14 @@ public class ConfigurationCreatorTests : UnitTest
         _hho = new HttpHandlerOptions();
         _co = new(new(), "region");
         _ao = new();
+        _ws = new WebSocketOptions(4096);
         _spcCreator.Setup(x => x.Create(It.IsAny<FileGlobalConfiguration>())).Returns(_spc);
         _lboCreator.Setup(x => x.Create(It.IsAny<FileLoadBalancerOptions>())).Returns(_lbo);
         _qosCreator.Setup(x => x.Create(It.IsAny<FileQoSOptions>())).Returns(_qoso);
         _hhoCreator.Setup(x => x.Create(It.IsAny<FileHttpHandlerOptions>())).Returns(_hho);
         _coCreator.Setup(x => x.Create(It.IsAny<FileCacheOptions>())).Returns(_co);
         _authCreator.Setup(x => x.Create(It.IsAny<FileAuthenticationOptions>())).Returns(_ao);
+        _webSocketOptionsCreator.Setup(x => x.Create(It.IsAny<FileWebSocketOptions>())).Returns(_ws);
     }
 
     private void WhenICreate()
@@ -166,7 +173,8 @@ public class ConfigurationCreatorTests : UnitTest
             _vpCreator.Object,
             _mdCreator.Object,
             _rlCreator.Object,
-            _coCreator.Object);
+            _coCreator.Object,
+            _webSocketOptionsCreator.Object);
         _result = _creator.Create(_fileConfig, _routes);
     }
 }

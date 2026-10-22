@@ -66,7 +66,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .WithRateLimitOptions(configuration.RateLimitOptions)
             .WithUpstreamHeaders(upstreamHeaderTemplates as Dictionary<string, UpstreamHeaderTemplate>)
             .WithUpstreamPathTemplate(upstreamPathTemplate)
-            .WithTimeout(configuration.Timeout);
+            .WithTimeout(configuration.Timeout)
+            .WithWebSocketOptions(configuration.WebSocket);
         if (dynamicRoute != null)
         {
             // We are set to replace IInternalConfiguration global options with the current options from actual dynamic route
@@ -84,7 +85,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
                 .WithRateLimitOptions(dynamicRoute.RateLimitOptions)
                 .WithServiceName(serviceName/*dynamicRoute.ServiceName*/)
                 .WithServiceNamespace(serviceNamespace/*dynamicRoute.ServiceNamespace*/)
-                .WithTimeout(dynamicRoute.Timeout);
+                .WithTimeout(dynamicRoute.Timeout)
+                .WithWebSocketOptions(dynamicRoute.WebSocket);
         }
 
         var downstreamRoute = routeBuilder.Build();

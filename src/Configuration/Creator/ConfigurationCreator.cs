@@ -17,6 +17,7 @@ public class ConfigurationCreator : IConfigurationCreator
     private readonly IMetadataCreator _metadataCreator;
     private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
     private readonly ICacheOptionsCreator _cacheOptionsCreator;
+    private readonly IWebSocketOptionsCreator _webSocketOptionsCreator;
 
     public ConfigurationCreator(
         IServiceProvider serviceProvider,
@@ -29,7 +30,8 @@ public class ConfigurationCreator : IConfigurationCreator
         IVersionPolicyCreator versionPolicyCreator,
         IMetadataCreator metadataCreator,
         IRateLimitOptionsCreator rateLimitOptionsCreator,
-        ICacheOptionsCreator cacheOptionsCreator)
+        ICacheOptionsCreator cacheOptionsCreator,
+        IWebSocketOptionsCreator webSocketOptionsCreator)
     {
         _adminPath = serviceProvider.GetService<IAdministrationPath>();
         _authOptionsCreator = authOptionsCreator;
@@ -42,6 +44,7 @@ public class ConfigurationCreator : IConfigurationCreator
         _metadataCreator = metadataCreator;
         _rateLimitOptionsCreator = rateLimitOptionsCreator;
         _cacheOptionsCreator = cacheOptionsCreator;
+        _webSocketOptionsCreator = webSocketOptionsCreator;
     }
 
     public InternalConfiguration Create(FileConfiguration configuration, Route[] routes)
@@ -58,6 +61,7 @@ public class ConfigurationCreator : IConfigurationCreator
         var metadataOptions = _metadataCreator.Create(null, globalConfiguration);
         var rateLimitOptions = _rateLimitOptionsCreator.Create(globalConfiguration);
         var cacheOptions = _cacheOptionsCreator.Create(globalConfiguration.CacheOptions);
+        var webSocketOptions = _webSocketOptionsCreator.Create(globalConfiguration.WebSocket);
 
         return new InternalConfiguration(routes)
         {
@@ -75,6 +79,7 @@ public class ConfigurationCreator : IConfigurationCreator
             RequestId = globalConfiguration.RequestIdKey,
             ServiceProviderConfiguration = serviceProviderConfiguration,
             Timeout = globalConfiguration.Timeout,
+            WebSocket = webSocketOptions,
         };
     }
 }
