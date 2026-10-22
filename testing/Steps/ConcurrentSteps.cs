@@ -207,7 +207,7 @@ public class ConcurrentSteps : AcceptanceSteps
         foreach (var r in Responses)
         {
             var response = r.Value.ShouldNotBeNull();
-            var portHeader = response.Headers.GetValues("Port").Csv() ?? string.Empty;
+            var portHeader = response.Headers.GetValues(HeaderNames.Port).Csv() ?? string.Empty;
             int port = int.Parse(portHeader);
             int i = Array.IndexOf(ports, port);
             var expectedBody = expected[i];

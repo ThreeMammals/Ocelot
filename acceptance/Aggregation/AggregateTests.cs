@@ -15,6 +15,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.Acceptance.Aggregation;
@@ -410,7 +411,7 @@ public sealed class AggregateTests : Steps
             var parts = ctx.Request.Path.Value?.Trim('/').Split('/');
             var ok = parts?.Length == 2 && parts[0] == "users" && int.TryParse(parts[1], out var id);
             ctx.Response.StatusCode = ok ? (int)HttpStatusCode.OK : (int)HttpStatusCode.BadRequest;
-            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentType = MediaTypeNames.Application.Json;
             return ctx.Response.WriteAsync(ok
                 ? $"{{\"id\":{parts![1]},\"name\":\"User-{parts[1]}\"}}"
                 : "{\"error\":\"bad id\"}");
@@ -433,7 +434,7 @@ public sealed class AggregateTests : Steps
         handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Response.StatusCode = (int)statusCode;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = MediaTypeNames.Application.Json;
             return context.Response.WriteAsync(responseBody);
         });
     }

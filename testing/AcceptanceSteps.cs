@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -337,7 +338,7 @@ public class AcceptanceSteps : IDisposable
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-        requestMessage.Headers.Add("Cookie", cookie.ToString());
+        requestMessage.Headers.Add(HeaderNames.Cookie, cookie.ToString());
         return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage, CancelMe);
     }
     #endregion
@@ -410,7 +411,7 @@ public class AcceptanceSteps : IDisposable
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
         content.Add(dataContent, name);
-        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+        content.Headers.ContentDisposition = new("form-data");
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = content,

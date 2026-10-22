@@ -10,7 +10,9 @@ using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Requester;
 using Ocelot.Testing.Authentication;
+using Ocelot.Testing.Requester;
 using Ocelot.Testing.Steps;
+using System.Net.Mime;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
 
@@ -596,7 +598,7 @@ public class DynamicRoutingTests : DiscoverySteps
             .When(x => WhenIGetUrlOnTheApiGateway($"/{serviceName}/second?id=2"))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/second?id=2"))
-            .When(x => WhenIPostUrlOnTheApiGateway($"/{serviceName}/orders?flag&q=a+b", "{}", "application/json"))
+            .When(x => WhenIPostUrlOnTheApiGateway($"/{serviceName}/orders?flag&q=a+b", "{}", MediaTypeNames.Application.Json))
             .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
             .And(x => ThenTheResponseHeaderIs(HeaderNames.Path, "/orders?flag&q=a+b"))
             .When(x => WhenIDeleteUrlOnTheApiGateway($"/{serviceName}/orders/7?force=true"))
@@ -624,7 +626,7 @@ public class DynamicRoutingTests : DiscoverySteps
             .Given(x => GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName))
             .And(x => GivenThereIsAConfiguration(configuration))
             .And(x => GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting))
-            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(urls.Length, urls))
+            .When(x => WhenIGetUrlOnTheApiGatewayConcurrently(urls.Length, urls)) // TODO As the first cold request, it sends 10 requests to a SD provider to return a service instance.
             .Then(x => ThenAllStatusCodesShouldBe(HttpStatusCode.OK))
             .And(x => ThenEachResponsePathShouldBe(paths))
             .And(x => ThenOneHttpHandlerShouldBeCreated(serviceName))
@@ -663,7 +665,7 @@ public class DynamicRoutingTests : DiscoverySteps
     {
         var pool = OcelotServices.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
         pool.ShouldNotBeNull();
-        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestTracer;
+        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestOcelotTracer;
         tracer.ShouldNotBeNull();
         foreach (var kv in pool.CreatedHandlers.Where(x => x.Key.ServiceName == serviceName))
         {

@@ -1,14 +1,28 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 
 namespace Ocelot.Request.Mapper;
 
 public class RequestMapper : IRequestMapper
 {
-    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase) { "host", "transfer-encoding" };
-    private static readonly string[] ContentHeaders = { "Content-Length", "Content-Language", "Content-Location", "Content-Range", "Content-MD5", "Content-Disposition", "Content-Encoding" };
+    private static readonly HashSet<string> UnsupportedHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        HeaderNames.Host,
+        HeaderNames.TransferEncoding
+    };
+    private static readonly HashSet<string> ContentHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        HeaderNames.ContentDisposition,
+        HeaderNames.ContentEncoding,
+        HeaderNames.ContentLanguage,
+        HeaderNames.ContentLength,
+        HeaderNames.ContentLocation,
+        HeaderNames.ContentMD5,
+        HeaderNames.ContentRange,
+    };
 
     public HttpRequestMessage Map(HttpRequest request, DownstreamRoute downstreamRoute)
     {
@@ -50,7 +64,7 @@ public class RequestMapper : IRequestMapper
         if (!string.IsNullOrEmpty(request.ContentType))
         {
             content.Headers
-                .TryAddWithoutValidation("Content-Type", new[] { request.ContentType });
+                .TryAddWithoutValidation(HeaderNames.ContentType, [request.ContentType]);
         }
 
         // The performance might be improved by retrieving the matching headers from the request

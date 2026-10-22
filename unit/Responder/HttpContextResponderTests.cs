@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 using Ocelot.Responder;
@@ -24,7 +25,7 @@ public class HttpContextResponderTests
         var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
             new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Transfer-Encoding", new List<string> {"woop"}),
+                new(HeaderNames.TransferEncoding, ["woop"]),
             }, "some reason");
 
         // Act
@@ -63,8 +64,10 @@ public class HttpContextResponderTests
         await _responder.SetResponseOnHttpContext(httpContext, response);
 
         // Assert
-        var header = httpContext.Response.Headers["Content-Length"];
-        header.First().ShouldBe("4");
+        var header = httpContext.Response.Headers.ContentLength;
+        Assert.NotNull(header);
+        Assert.True(header.HasValue);
+        Assert.Equal(4, header.Value);
     }
 
     [Fact]

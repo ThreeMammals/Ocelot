@@ -6,6 +6,7 @@ using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.UnitTests.Multiplexing;
@@ -42,12 +43,12 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
 
         var commentsDownstreamContext = new DefaultHttpContext();
-        commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
         commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
 
         var userDetailsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptyfirstNamestring.Empty:string.Emptyabolfazlstring.Empty,string.EmptylastNamestring.Empty:string.Emptyrajabpourstring.Empty},{string.Emptyidstring.Empty:2,string.EmptyfirstNamestring.Empty:string.Emptyrezastring.Empty,string.EmptylastNamestring.Empty:string.Emptyrezaeistring.Empty}]";
         var userDetailsDownstreamContext = new DefaultHttpContext();
-        userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
         userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
 
         var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
@@ -59,7 +60,7 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
 
         // Assert
         await ThenTheContentIs(upstreamContext, expected);
-        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
         ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
     }
 
@@ -95,7 +96,7 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
 
         // Assert
         await ThenTheContentIs(upstreamContext, expected);
-        ThenTheContentTypeIs(upstreamContext, "application/json");
+        ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
         ThenTheReasonPhraseIs(upstreamContext, "cannot return from aggregate..which reason phrase would you use?");
     }
 

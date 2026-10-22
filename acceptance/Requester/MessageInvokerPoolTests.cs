@@ -7,6 +7,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
+using Ocelot.Testing.Requester;
 
 namespace Ocelot.Acceptance.Requester;
 
@@ -179,7 +180,7 @@ public sealed class MessageInvokerPoolTests : RequesterSteps
     private void ThenRouteHttpHandlerOptionsAre(FileRoute route, int maxConnections, int seconds, bool useTracing)
     {
         var pool = OcelotServices.GetService<IMessageInvokerPool>() as TestMessageInvokerPool;
-        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestTracer;
+        var tracer = OcelotServices.GetService<IOcelotTracer>() as TestOcelotTracer;
         var kv = pool.ShouldNotBeNull()
             .CreatedHandlers.Single(x => x.Key.UpstreamPathTemplate.OriginalValue == route.UpstreamPathTemplate);
         var downstream = kv.Key;
