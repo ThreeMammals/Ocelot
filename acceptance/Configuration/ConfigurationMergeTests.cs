@@ -38,11 +38,9 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
             .SetBasePath(context.HostingEnvironment.ContentRootPath)
             .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, globalConfigFileName, null, false, false);
         var testName = TestName();
-        this
-            .Given(x => GivenOcelotIsRunning(configureDelegate))
-            .Then(x => TheOcelotPrimaryConfigFileExists(fileExist))
-            .And(x => ThenGlobalConfigurationHasBeenMerged(testName))
-        .BDDfy();
+        GivenOcelotIsRunning(configureDelegate);
+        TheOcelotPrimaryConfigFileExists(fileExist);
+        ThenGlobalConfigurationHasBeenMerged(testName);
     }
 
     [Theory]
@@ -68,18 +66,16 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
                 .AddOcelot(_folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
                 .AddJsonFile(environmentPath);
         var testName = TestName();
-        this
-            .Given(x => GivenThereIsAConfiguration(globalConfig, globalPath))
-            .And(x => GivenThereIsAConfiguration(routeAConfig, routeAPath))
-            .And(x => GivenThereIsAConfiguration(routeBConfig, routeBPath))
-            .And(x => GivenThereIsAConfiguration(environmentConfig, environmentPath))
-            .When(x => GivenOcelotIsRunning(configureDelegate, null, null, null, host => host.UseEnvironment("Env"), null, null)) // Act
-            .Then(x => TheOcelotPrimaryConfigFileExists(false))
-            .And(x => ThenGlobalConfigurationHasBeenMerged(testName))
-            .And(x => ThenPrimaryConfigFileExistsInTheFolder(_folder, fileExist))
-            .And(x => ThenConfigurationExistsInTheInternalConfigurationRepository())
-            .And(x => ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName))
-        .BDDfy();
+        GivenThereIsAConfiguration(globalConfig, globalPath);
+        GivenThereIsAConfiguration(routeAConfig, routeAPath);
+        GivenThereIsAConfiguration(routeBConfig, routeBPath);
+        GivenThereIsAConfiguration(environmentConfig, environmentPath);
+        GivenOcelotIsRunning(configureDelegate, null, null, null, host => host.UseEnvironment("Env"), null, null); // Act
+        TheOcelotPrimaryConfigFileExists(false);
+        ThenGlobalConfigurationHasBeenMerged(testName);
+        ThenPrimaryConfigFileExistsInTheFolder(_folder, fileExist);
+        ThenConfigurationExistsInTheInternalConfigurationRepository();
+        ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName);
     }
 
     [Fact]
@@ -160,15 +156,14 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
     }
   ]
 }";
-        this.Given(x => GivenIWriteAConfiguration(globalPath, ocelotGlobalJson))
-            .And(x => GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson))
-            .And(x => GivenIWriteAConfiguration(yServicesPath, ocelotYServicesJson))
-            .When(x => GivenOcelotIsRunning(WithConfigurationFolder))
-            .Then(x => ThenConfigContentShouldHaveANumberOfRoutes(_folder, 3, 0))
-            .And(x => ShouldMergeWithCustomPropertyInXservices("/gw/serviceMethodA/byNumber/{number}"))
-            .And(x => ShouldMergeWithCustomPropertyInYservices("/b/{action}"))
-            .And(x => ShouldMergeWithCustomGlobalProperty("/{global}"))
-        .BDDfy();
+        await GivenIWriteAConfiguration(globalPath, ocelotGlobalJson);
+        await GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson);
+        await GivenIWriteAConfiguration(yServicesPath, ocelotYServicesJson);
+        GivenOcelotIsRunning(WithConfigurationFolder);
+        await ThenConfigContentShouldHaveANumberOfRoutes(_folder, 3, 0);
+        ShouldMergeWithCustomPropertyInXservices("/gw/serviceMethodA/byNumber/{number}");
+        ShouldMergeWithCustomPropertyInYservices("/b/{action}");
+        ShouldMergeWithCustomGlobalProperty("/{global}");
     }
 
     [Fact]
@@ -264,13 +259,12 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
             var myCustomOptions = route["MyCustomOptions"].ToObject<MyCustomOptions>().ShouldNotBeNull();
             myCustomOptions.Enabled.ShouldBeFalse();
         };
-        this.Given(x => GivenIWriteAConfiguration(globalPath, ocelotGlobalJson))
-            .And(x => GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson))
-            .When(x => GivenOcelotIsRunning(WithConfigurationFolder, WithDiscovery)) // We need to configure discovery to suppress Ocelot's startup validation errors
-            .Then(x => ThenConfigContentShouldHaveANumberOfRoutes(_folder, 0, 2))
-            .And(x => ShouldMergeWithCustomPropertyInGlobalConfiguration.Invoke())
-            .And(x => ShouldMergeWithCustomPropertyInNotificationService.Invoke())
-        .BDDfy();
+        await GivenIWriteAConfiguration(globalPath, ocelotGlobalJson);
+        await GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson);
+        GivenOcelotIsRunning(WithConfigurationFolder, WithDiscovery); // We need to configure discovery to suppress Ocelot's startup validation errors
+        await ThenConfigContentShouldHaveANumberOfRoutes(_folder, 0, 2);
+        ShouldMergeWithCustomPropertyInGlobalConfiguration.Invoke();
+        ShouldMergeWithCustomPropertyInNotificationService.Invoke();
     }
     class MyCustomOptions
     {
