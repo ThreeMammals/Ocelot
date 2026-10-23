@@ -17,15 +17,13 @@ public class TimeoutTests : TimeoutSteps
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, RouteTimeoutSeconds, GlobalTimeoutSeconds); // !!!
         var body = Body();
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> GatewayTimeout
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway())
-            .Then(x => ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500)) // (2.0, 2.5) s
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
-            .And(x => ThenTheResponseBodyShouldBeAsync(string.Empty))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenImWatchingWhenIGetUrlOnTheApiGateway();
+        ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500); // (2.0, 2.5) s
+        ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
+        await ThenTheResponseBodyShouldBeAsync(string.Empty);
     }
 
     [Fact]
@@ -49,14 +47,12 @@ public class TimeoutTests : TimeoutSteps
             ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             await ThenTheResponseBodyShouldBeAsync(string.Empty);
         };
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> GatewayTimeout
-            .And(x => GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs, body)) // 2s -> GatewayTimeout
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenImWatchingBothRoutesWhenIGetUrlOnTheApiGateway(route1, route2))
-            .Then(x => watchers.ToList().ForEach(thenAssertAllWatchersHavingTheTimeoutIsInRange))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
+        GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenImWatchingBothRoutesWhenIGetUrlOnTheApiGateway(route1, route2);
+        watchers.ToList().ForEach(thenAssertAllWatchersHavingTheTimeoutIsInRange);
     }
     private Stopwatch[] watchers = default;
     private async Task WhenImWatchingBothRoutesWhenIGetUrlOnTheApiGateway(FileRoute route1, FileRoute route2)
@@ -74,15 +70,13 @@ public class TimeoutTests : TimeoutSteps
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, RouteTimeoutSeconds); // !!!
         var body = Body();
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body)) // 3s > 2s -> GatewayTimeout
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway())
-            .Then(x => ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), serviceTimeoutMs))
-            .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
-            .And(x => ThenTheResponseBodyShouldBe(string.Empty))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 3s > 2s -> GatewayTimeout
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenImWatchingWhenIGetUrlOnTheApiGateway();
+        ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), serviceTimeoutMs);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
+        ThenTheResponseBodyShouldBe(string.Empty);
     }
 
     [Collection(nameof(SequentialTests))]
@@ -100,15 +94,13 @@ public class TimeoutTests : TimeoutSteps
                 var port = PortFinder.GetRandomPort();
                 var configuration = GivenConfiguration(port, routeTimeout: null, globalTimeout: null); // !!! no route timeout -> DownstreamRoute.DefaultTimeoutSeconds
                 var body = Body();
-                this
-                    .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body)) // 3.5s > 3s -> GatewayTimeout
-                    .And(x => GivenThereIsAConfiguration(configuration))
-                    .And(x => GivenOcelotIsRunning())
-                    .When(x => WhenImWatchingWhenIGetUrlOnTheApiGateway())
-                    .Then(x => ThenTimeoutIsInRange(_watcher, Ms(DownstreamRoute.LowTimeout), serviceTimeoutMs))
-                    .And(x => ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout)) // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
-                    .And(x => ThenTheResponseBodyShouldBe(string.Empty))
-                .BDDfy();
+                GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 3.5s > 3s -> GatewayTimeout
+                GivenThereIsAConfiguration(configuration);
+                GivenOcelotIsRunning();
+                await WhenImWatchingWhenIGetUrlOnTheApiGateway();
+                ThenTimeoutIsInRange(_watcher, Ms(DownstreamRoute.LowTimeout), serviceTimeoutMs);
+                ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
+                ThenTheResponseBodyShouldBe(string.Empty);
             }
             finally
             {
