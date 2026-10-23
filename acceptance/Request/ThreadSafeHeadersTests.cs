@@ -14,18 +14,16 @@ public sealed class ThreadSafeHeadersTests : Steps
 
     [Fact]
     [Trait("Feat", "61")] // https://github.com/ThreeMammals/Ocelot/pull/61
-    public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
+    public async Task Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests)))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests)))
-            .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests));
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests));
+        ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
