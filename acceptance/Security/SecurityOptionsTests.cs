@@ -10,7 +10,7 @@ public sealed class SecurityOptionsTests : Steps
 {
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_call_with_allowed_ip_in_global_config()
+    public async Task Should_call_with_allowed_ip_in_global_config()
     {
         var ip = "192.168.1.35";
         var port = PortFinder.GetRandomPort();
@@ -22,16 +22,16 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Fabrizio");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
         ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_block_call_with_blocked_ip_in_global_config()
+    public async Task Should_block_call_with_blocked_ip_in_global_config()
     {
         var ip = "192.168.1.55";
         var port = PortFinder.GetRandomPort();
@@ -43,15 +43,15 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
         ThenTheResponseHeaderExists(ForwardedHeadersDefaults.XForwardedForHeaderName, false);
     }
 
     [Fact]
-    public void Should_call_with_allowed_ip_in_route_config()
+    public async Task Should_call_with_allowed_ip_in_route_config()
     {
         var ip = "192.168.1.1";
         var port = PortFinder.GetRandomPort();
@@ -67,15 +67,15 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Fabrizio");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
         ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
-    public void Should_block_call_with_blocked_ip_in_route_config()
+    public async Task Should_block_call_with_blocked_ip_in_route_config()
     {
         var ip = "192.168.1.1";
         var port = PortFinder.GetRandomPort();
@@ -91,15 +91,15 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
+    public async Task Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
     {
         var ip = "192.168.1.55";
         var port = PortFinder.GetRandomPort();
@@ -115,16 +115,16 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Fabrizio");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
         ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
+    public async Task Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
     {
         var ip = "192.168.1.35";
         var port = PortFinder.GetRandomPort();
@@ -140,10 +140,10 @@ public sealed class SecurityOptionsTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithUseForwardedHeaders);
         GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
-        WhenIGetUrlOnTheApiGateway("/worldPath");
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
 
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     private static void GivenRouteForwardingClientIpAddressViaHeader(FileRoute r, string header)
