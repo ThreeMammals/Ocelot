@@ -130,8 +130,7 @@ public sealed class DownstreamMetadataTests : Steps
             NumberStyle = numberStyles.ToString(),
             CurrentCulture = cultureName,
         };
-        var body = Body();
-        GivenThereIsAServiceRunningOn(port, body);
+        GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler));
         await WhenIGetUrlOnTheApiGateway("/");
@@ -228,10 +227,10 @@ public sealed class DownstreamMetadataTests : Steps
         {
             var downstreamRoute = _httpContextAccessor.HttpContext?.Items.DownstreamRoute();
 
-            if (downstreamRoute.MetadataOptions.Metadata.ContainsKey(nameof(StringArrayConfig)))
+            if (downstreamRoute.MetadataOptions.Metadata.TryGetValue(nameof(StringArrayConfig), out string value))
             {
                 var currentConfig =
-                    Enum.Parse<StringArrayConfig>(downstreamRoute.MetadataOptions.Metadata[nameof(StringArrayConfig)]);
+                    Enum.Parse<StringArrayConfig>(value);
                 downstreamRoute.MetadataOptions.Metadata.Remove(nameof(StringArrayConfig));
 
                 (Dictionary<string, string> _, Dictionary<string, string[]> targetDictionary) =
@@ -242,7 +241,7 @@ public sealed class DownstreamMetadataTests : Steps
                     Assert.Equal(targetDictionary[key], downstreamRoute.GetMetadata<string[]>(key));
                 }
             }
-            else if (downstreamRoute.MetadataOptions.Metadata.ContainsKey(nameof(NumberConfig)))
+            else if (downstreamRoute.MetadataOptions.Metadata.TryGetValue(nameof(NumberConfig), out string numberValue))
             {
                 downstreamRoute.MetadataOptions.Metadata.Remove(nameof(NumberConfig));
 
@@ -286,9 +285,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -305,9 +304,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -324,9 +323,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -343,9 +342,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -362,9 +361,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
