@@ -25,7 +25,6 @@ public sealed class AuthenticationTests : AuthSteps
     [Fact]
     public async Task Should_return_response_200_using_identity_server()
     {
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
@@ -34,17 +33,16 @@ public sealed class AuthenticationTests : AuthSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
-        await GivenIHaveAToken(testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken();
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
     public async Task Should_return_response_401_using_identity_server_with_token_requested_for_other_api()
     {
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
@@ -53,8 +51,8 @@ public sealed class AuthenticationTests : AuthSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithOtherApiBearerAuthentication);
         await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
-        await GivenIHaveAToken("api2", null, null, null, testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken("api2");
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized);
     }
@@ -73,18 +71,16 @@ public sealed class AuthenticationTests : AuthSteps
     [Fact]
     public async Task Should_return_201_using_identity_server_access_token()
     {
-        var body = Body();
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, method: HttpMethods.Post);
         var configuration = GivenConfiguration(route);
 
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
-        await GivenIHaveAToken(testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken();
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIPostUrlOnTheApiGateway("/", "postContent");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Created);
     }
@@ -96,7 +92,6 @@ public sealed class AuthenticationTests : AuthSteps
     [InlineData(false, HttpStatusCode.Unauthorized)]
     public async Task Should_use_global_authentication(bool hasToken, HttpStatusCode status)
     {
-        var body = Body();
         var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
@@ -106,16 +101,16 @@ public sealed class AuthenticationTests : AuthSteps
 
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
         await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
         await GivenIHaveAddedATokenToMyRequestIfRequired(hasToken);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(status);
-        ThenTheResponseBodyShouldBe(hasToken ? body : string.Empty);
+        await ThenTheResponseBodyShouldBeAsync(hasToken ? Body() : string.Empty);
     }
 
-    private async Task GivenIHaveAddedATokenToMyRequestIfRequired(bool hasToken) => hasToken
-        ? await GivenIHaveAToken().ContinueWith(t => GivenIHaveAddedATokenToMyRequest())
+    private Task GivenIHaveAddedATokenToMyRequestIfRequired(bool hasToken) => hasToken
+        ? GivenIHaveAToken().ContinueWith(t => GivenIHaveAddedATokenToMyRequest())
         : Task.CompletedTask;
 
     [Fact]
@@ -123,7 +118,6 @@ public sealed class AuthenticationTests : AuthSteps
     [Trait("Feat", "842")] // https://github.com/ThreeMammals/Ocelot/issues/842
     public async Task Should_allow_anonymous_route_and_return_200_when_global_auth_options_and_no_token()
     {
-        var body = Body();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, allowAnonymous: true);
         route.AuthenticationOptions.AuthenticationProviderKeys = [];
@@ -132,11 +126,11 @@ public sealed class AuthenticationTests : AuthSteps
 
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK);
         await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBody(body);
+        await ThenTheResponseBodyAsync();
     }
 
     [Fact]
@@ -145,8 +139,6 @@ public sealed class AuthenticationTests : AuthSteps
     [Trait("PR", "2336")] // https://github.com/ThreeMammals/Ocelot/pull/2336
     public async Task ShouldApplyGlobalAuthenticationOptions_ForStaticRoutes()
     {
-        var body = Body();
-        var testName = TestName();
         var ports = PortFinder.GetPorts(3);
         var route1 = GivenAuthRoute(ports[0], "/route1",
             options: null); // no opts -> use global opts
@@ -167,29 +159,29 @@ public sealed class AuthenticationTests : AuthSteps
 
         var scopes = new string[] { "api", "apiGlobal", "Mr.Who" };
 
-        GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body);
-        GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body);
-        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body);
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1");
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(withAuth);
         await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
-        await GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBody(body);
+        await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0], null, null, null, testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route2");
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBody(body);
+        await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken("Mr.Who", null, null, null, testName); // should be different scope of route #3 which is "invalid-scope"
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken("Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
@@ -217,34 +209,31 @@ public sealed class AuthenticationTests : AuthSteps
             {
                 RouteKeys = ["R2"],
             };
-
-        var body = Body();
-        var testName = TestName();
         var scopes = new string[] { "api", "apiGlobal", "Mr.Who" };
 
-        GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body);
-        GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body);
-        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body);
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1");
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2");
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
 
-        await GivenIHaveAToken("Mr.Who", null, null, null, testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken("Mr.Who");
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheStatusCodeShouldBeOk(); // auth is switched off and the scope doesn't matter
-        ThenTheResponseBody(body);
+        await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName);
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0]);
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route2");
         ThenTheStatusCodeShouldBeOk(); // global scope has been accepted
-        ThenTheResponseBody(body);
+        await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken("Mr.Who", null, null, null, testName); // should be different scope of route #3 which is "invalid-scope"
-        await GivenIHaveAddedATokenToMyRequest();
+        await GivenIHaveAToken("Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 }
