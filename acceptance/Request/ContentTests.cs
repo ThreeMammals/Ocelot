@@ -23,7 +23,7 @@ public sealed class ContentTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
         ThenTheContentTypeShouldBeEmpty();
         ThenTheContentLengthShouldBeZero();
     }

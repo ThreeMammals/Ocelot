@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.IO.Compression;
-using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 
@@ -24,7 +23,7 @@ public sealed class GzipTests : Steps
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input));
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     private static StreamContent GivenThePostHasGzipContent(object input)

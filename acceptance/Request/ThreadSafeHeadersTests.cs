@@ -22,7 +22,7 @@ public sealed class ThreadSafeHeadersTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests));
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests));
+        await WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests));
         ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
 
@@ -32,7 +32,7 @@ public sealed class ThreadSafeHeadersTests : Steps
         base.GivenThereIsAServiceRunningOn(port, statusCode, headerKey);
     }
 
-    private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
+    private Task WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
     {
         var tasks = new Task[times];
         for (var i = 0; i < times; i++)
@@ -41,8 +41,7 @@ public sealed class ThreadSafeHeadersTests : Steps
             var rint = random.Next(0, 50);
             tasks[i] = GetForThreadSafeHeadersTest(urlCopy, rint, headerKey);
         }
-
-        Task.WaitAll(tasks);
+        return Task.WhenAll(tasks);
     }
 
     private async Task GetForThreadSafeHeadersTest(string url, int random, string headerKey)
