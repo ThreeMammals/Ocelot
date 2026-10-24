@@ -16,14 +16,13 @@ public class TimeoutTests : TimeoutSteps
         int serviceTimeoutMs = Ms(Math.Max(RouteTimeoutSeconds, GlobalTimeoutSeconds)) + 500; // total 4.5 sec
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, RouteTimeoutSeconds, GlobalTimeoutSeconds); // !!!
-        var body = Body();
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs); // 2s -> GatewayTimeout
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenImWatchingWhenIGetUrlOnTheApiGateway();
         ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), Ms(RouteTimeoutSeconds) + 500); // (2.0, 2.5) s
         ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
-        await ThenTheResponseBodyShouldBeAsync(string.Empty);
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
@@ -38,21 +37,20 @@ public class TimeoutTests : TimeoutSteps
         var configuration = GivenConfiguration(route1, route2);
         configuration.GlobalConfiguration.Timeout = GlobalTimeoutSeconds; // !!!
 
-        var body = Body();
         int globalTimeoutMs = Ms(GlobalTimeoutSeconds);
-        Action<Stopwatch> thenAssertAllWatchersHavingTheTimeoutIsInRange = async watcher =>
+        async void ThenAssertAllWatchersHavingTheTimeoutIsInRange(Stopwatch watcher)
         {
             ThenTimeoutIsInRange(watcher, globalTimeoutMs, Ms(DownstreamRoute.DefaultTimeoutSeconds)); // (2.0, 90) so assert roughly
             ThenTimeoutIsInRange(watcher, globalTimeoutMs, globalTimeoutMs + 500); // (2.0, 2.5) so assert precisely
             ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
             await ThenTheResponseBodyShouldBeAsync(string.Empty);
-        };
-        GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
-        GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs, body); // 2s -> GatewayTimeout
+        }
+        GivenThereIsAServiceRunningOn(ports[0], HttpStatusCode.OK, serviceTimeoutMs); // 2s -> GatewayTimeout
+        GivenThereIsAServiceRunningOn(ports[1], HttpStatusCode.OK, serviceTimeoutMs); // 2s -> GatewayTimeout
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenImWatchingBothRoutesWhenIGetUrlOnTheApiGateway(route1, route2);
-        watchers.ToList().ForEach(thenAssertAllWatchersHavingTheTimeoutIsInRange);
+        watchers.ToList().ForEach(ThenAssertAllWatchersHavingTheTimeoutIsInRange);
     }
     private Stopwatch[] watchers = default;
     private async Task WhenImWatchingBothRoutesWhenIGetUrlOnTheApiGateway(FileRoute route1, FileRoute route2)
@@ -69,14 +67,13 @@ public class TimeoutTests : TimeoutSteps
         int serviceTimeoutMs = Ms(RouteTimeoutSeconds + 1); // total 3 sec
         var port = PortFinder.GetRandomPort();
         var configuration = GivenConfiguration(port, RouteTimeoutSeconds); // !!!
-        var body = Body();
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 3s > 2s -> GatewayTimeout
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs); // 3s > 2s -> GatewayTimeout
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenImWatchingWhenIGetUrlOnTheApiGateway();
         ThenTimeoutIsInRange(_watcher, Ms(RouteTimeoutSeconds), serviceTimeoutMs);
         ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 2 secs -> TimeoutException by TimeoutDelegatingHandler
-        ThenTheResponseBodyShouldBe(string.Empty);
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Collection(nameof(SequentialTests))]
@@ -93,14 +90,13 @@ public class TimeoutTests : TimeoutSteps
                 int serviceTimeoutMs = Ms(DownstreamRoute.LowTimeout) + 500; // total 3.5 sec
                 var port = PortFinder.GetRandomPort();
                 var configuration = GivenConfiguration(port, routeTimeout: null, globalTimeout: null); // !!! no route timeout -> DownstreamRoute.DefaultTimeoutSeconds
-                var body = Body();
-                GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs, body); // 3.5s > 3s -> GatewayTimeout
+                GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, serviceTimeoutMs); // 3.5s > 3s -> GatewayTimeout
                 GivenThereIsAConfiguration(configuration);
                 GivenOcelotIsRunning();
                 await WhenImWatchingWhenIGetUrlOnTheApiGateway();
                 ThenTimeoutIsInRange(_watcher, Ms(DownstreamRoute.LowTimeout), serviceTimeoutMs);
                 ThenTheStatusCodeShouldBe(HttpStatusCode.GatewayTimeout); // after 3 secs -> TimeoutException by TimeoutDelegatingHandler
-                ThenTheResponseBodyShouldBe(string.Empty);
+                await ThenTheResponseBodyShouldBeEmpty();
             }
             finally
             {

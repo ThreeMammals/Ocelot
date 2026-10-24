@@ -18,7 +18,7 @@ public sealed class SslTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]

@@ -52,7 +52,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/", httpContent);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class DownstreamHttpVersionTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/", httpContent);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private FileRoute GivenRoute(int port, string scheme, Version httpVersion) => new()

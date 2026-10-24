@@ -37,10 +37,9 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
         Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate = (context, config) => config
             .SetBasePath(context.HostingEnvironment.ContentRootPath)
             .AddOcelot(_initialGlobalConfig, context.HostingEnvironment, where, ocelotConfigFileName, globalConfigFileName, null, false, false);
-        var testName = TestName();
         GivenOcelotIsRunning(configureDelegate);
         TheOcelotPrimaryConfigFileExists(fileExist);
-        ThenGlobalConfigurationHasBeenMerged(testName);
+        ThenGlobalConfigurationHasBeenMerged();
     }
 
     [Theory]
@@ -65,17 +64,16 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
                 .SetBasePath(context.HostingEnvironment.ContentRootPath)
                 .AddOcelot(_folder, context.HostingEnvironment, where) // overloaded version from the user's scenario
                 .AddJsonFile(environmentPath);
-        var testName = TestName();
         GivenThereIsAConfiguration(globalConfig, globalPath);
         GivenThereIsAConfiguration(routeAConfig, routeAPath);
         GivenThereIsAConfiguration(routeBConfig, routeBPath);
         GivenThereIsAConfiguration(environmentConfig, environmentPath);
         GivenOcelotIsRunning(configureDelegate, null, null, null, host => host.UseEnvironment("Env"), null, null); // Act
         TheOcelotPrimaryConfigFileExists(false);
-        ThenGlobalConfigurationHasBeenMerged(testName);
+        ThenGlobalConfigurationHasBeenMerged();
         ThenPrimaryConfigFileExistsInTheFolder(_folder, fileExist);
         ThenConfigurationExistsInTheInternalConfigurationRepository();
-        ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(testName);
+        ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne();
     }
 
     [Fact]
@@ -205,7 +203,7 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
     },
   }
 }";
-        Action ShouldMergeWithCustomPropertyInGlobalConfiguration = () =>
+        void ShouldMergeWithCustomPropertyInGlobalConfiguration()
         {
             var global = _configJObject.OcelotJSection(nameof(FileConfiguration.GlobalConfiguration));
             var sdpOptions = global["ServiceDiscoveryProvider"];
@@ -218,7 +216,7 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
             myOptions["Country"].ToString().ShouldBe("United Kingdom");
             myOptions["Town"].ToString().ShouldBe("Liskeard");
             myOptions["HighTemp"].Value<int>().ShouldBe(37);
-        };
+        }
 
         var xServicesPath = Path.Combine(_folder, string.Format(ConfigurationBuilderExtensions.EnvironmentConfigFile, "X"));
         var ocelotXServicesJson = @"
@@ -246,7 +244,7 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
     }
   ],
 }";
-        Action ShouldMergeWithCustomPropertyInNotificationService = () =>
+        void ShouldMergeWithCustomPropertyInNotificationService()
         {
             var routes = _configJObject.OcelotJSection(nameof(FileConfiguration.DynamicRoutes)) as JArray;
             var route = routes.SingleOrDefault(r => r["ServiceName"].Value<string>() == "notification");
@@ -258,13 +256,13 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
             route["MyCustomDynamicProperty"].Value<string>().ShouldBe("https://my-cluster.ocelot.net");
             var myCustomOptions = route["MyCustomOptions"].ToObject<MyCustomOptions>().ShouldNotBeNull();
             myCustomOptions.Enabled.ShouldBeFalse();
-        };
+        }
         await GivenIWriteAConfiguration(globalPath, ocelotGlobalJson);
         await GivenIWriteAConfiguration(xServicesPath, ocelotXServicesJson);
         GivenOcelotIsRunning(WithConfigurationFolder, WithDiscovery); // We need to configure discovery to suppress Ocelot's startup validation errors
         await ThenConfigContentShouldHaveANumberOfRoutes(_folder, 0, 2);
-        ShouldMergeWithCustomPropertyInGlobalConfiguration.Invoke();
-        ShouldMergeWithCustomPropertyInNotificationService.Invoke();
+        ShouldMergeWithCustomPropertyInGlobalConfiguration();
+        ShouldMergeWithCustomPropertyInNotificationService();
     }
     class MyCustomOptions
     {
@@ -288,7 +286,7 @@ public sealed class ConfigurationMergeTests : DiscoverySteps
         var repository = OcelotServices.GetService<IInternalConfigurationRepository>().ShouldNotBeNull();
         _internalConfig = repository.Get().ShouldNotBeNull();
     }
-    private void ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne(string testName)
+    private void ThenInternalConfigurationHasBeenCreatedFromTheGlobalOne([CallerMemberName] string testName = null)
     {
         _internalConfig.RequestId.ShouldBe(testName);
         _internalConfig.ServiceProviderConfiguration.ConfigurationKey.ShouldBe(testName);

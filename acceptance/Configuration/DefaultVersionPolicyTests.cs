@@ -15,8 +15,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -29,8 +28,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -43,8 +41,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -57,8 +54,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -71,8 +67,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -85,8 +80,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -99,8 +93,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
@@ -113,8 +106,7 @@ public sealed class DefaultVersionPolicyTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body);
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
