@@ -31,7 +31,7 @@ public sealed class AggregateTests : Steps
 
     [Fact]
     [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
-    public void Should_fix_issue_597()
+    public async Task Should_fix_issue_597()
     {
         var port = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port, "key1", "/key1data/{userid}", "/api/values?MailId={userid}");
@@ -52,15 +52,15 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1");
+        await WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
     [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
-    public void Should_return_response_200_with_advanced_aggregate_configs()
+    public async Task Should_return_response_200_with_advanced_aggregate_configs()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -85,15 +85,15 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
     [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
-    public void Should_return_response_200_with_simple_url_user_defined_aggregate()
+    public async Task Should_return_response_200_with_simple_url_user_defined_aggregate()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -106,16 +106,16 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>();
-        WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom");
+        await ThenTheResponseBodyShouldBeAsync("Bye from Laura, Bye from Tom");
         ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url()
+    public async Task Should_return_response_200_with_simple_url()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -127,16 +127,16 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}");
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}");
         ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url_one_service_404()
+    public async Task Should_return_response_200_with_simple_url_one_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -148,16 +148,16 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}");
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":,\"Tom\":{Hello from Tom}}");
         ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url_both_service_404()
+    public async Task Should_return_response_200_with_simple_url_both_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -169,16 +169,16 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/", 404, "");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}");
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":,\"Tom\":}");
         ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_be_thread_safe()
+    public async Task Should_be_thread_safe()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -190,11 +190,11 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIMakeLotsOfDifferentRequestsToTheApiGateway();
+        await WhenIMakeLotsOfDifferentRequestsToTheApiGateway();
         ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
-    private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+    private async Task WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
     {
         var numberOfRequests = 100;
         var aggregateUrl = "/";
@@ -239,7 +239,7 @@ public sealed class AggregateTests : Steps
     [Fact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
     [Trait("Bug", "1396")] // https://github.com/ThreeMammals/Ocelot/issues/1396
     [Trait("PR", "1462")] // https://github.com/ThreeMammals/Ocelot/pull/1462
-    public void Should_return_response_200_with_user_forwarding()
+    public async Task Should_return_response_200_with_user_forwarding()
     {
     //    var port1 = PortFinder.GetRandomPort();
     //    var port2 = PortFinder.GetRandomPort();
@@ -322,7 +322,7 @@ public sealed class AggregateTests : Steps
     #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
-    public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
+    public async Task Should_return_response_200_with_copied_body_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -338,14 +338,14 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2"));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody);
+        await WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
-    public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
+    public async Task Should_return_response_200_with_copied_form_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -365,9 +365,9 @@ public sealed class AggregateTests : Steps
         GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2"));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues);
+        await WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private static string FormatFormCollection(IFormCollection reqForm)
@@ -381,7 +381,7 @@ public sealed class AggregateTests : Steps
     [Fact]
     [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
-    public void Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
+    public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
     {
         const string id = "id"; // placeholder
         var commentsPort = PortFinder.GetRandomPort();
@@ -413,9 +413,9 @@ public sealed class AggregateTests : Steps
         GivenThereIsAServiceRunningOn(usersPort, "/", MapJson);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        WhenIGetUrlOnTheApiGateway("/aggregatecommentuser");
+        await WhenIGetUrlOnTheApiGateway("/aggregatecommentuser");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
