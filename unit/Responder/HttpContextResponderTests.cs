@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Headers;
 using Ocelot.Middleware;
 using Ocelot.Responder;
 
 namespace Ocelot.UnitTests.Responder;
 
-public class HttpContextResponderTests
+public class HttpContextResponderTests : UnitTest
 {
     private readonly HttpContextResponder _responder;
 
@@ -24,7 +25,7 @@ public class HttpContextResponderTests
         var response = new DownstreamResponse(new StringContent(string.Empty), HttpStatusCode.OK,
             new List<KeyValuePair<string, IEnumerable<string>>>
             {
-                new("Transfer-Encoding", new List<string> {"woop"}),
+                new(HeaderNames.TransferEncoding, ["woop"]),
             }, "some reason");
 
         // Act
@@ -63,8 +64,10 @@ public class HttpContextResponderTests
         await _responder.SetResponseOnHttpContext(httpContext, response);
 
         // Assert
-        var header = httpContext.Response.Headers["Content-Length"];
-        header.First().ShouldBe("4");
+        var header = httpContext.Response.Headers.ContentLength;
+        Assert.NotNull(header);
+        Assert.True(header.HasValue);
+        Assert.Equal(4, header.Value);
     }
 
     [Fact]
@@ -112,5 +115,32 @@ public class HttpContextResponderTests
 
         // Act, Assert
         _responder.SetErrorResponseOnContext(httpContext, 500);
+    }
+
+    [Fact]
+    public async Task SetErrorResponseOnContext_HttpContext_DownstreamResponse()
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        using var ms = new MemoryStream();
+        context.Response.Body = ms; // replace Stream.Null !!!
+
+        const string responseBody = "error payload";
+        var downstream = new DownstreamResponse(
+            new StringContent(responseBody),
+            HttpStatusCode.BadRequest,
+            new List<KeyValuePair<string, IEnumerable<string>>>(),
+            "some reason");
+
+        // Act
+        await _responder.SetErrorResponseOnContext(context, downstream);
+
+        // Assert
+        Assert.NotNull(context.Response.Headers.ContentLength);
+        Assert.Equal(downstream.Content.Headers.ContentLength, context.Response.Headers.ContentLength);
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = context.Response.Body.AsString();
+        Assert.Equal(responseBody, body);
     }
 }

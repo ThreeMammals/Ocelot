@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -7,6 +8,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester;
+using System.Net.Mime;
 
 namespace Ocelot.UnitTests.Cache;
 
@@ -46,7 +48,7 @@ public class OutputCacheMiddlewareTests : UnitTest
         };
         var contentHeaders = new Dictionary<string, IEnumerable<string>>
         {
-            { "content-type", new List<string> { "application/json" } },
+            { HeaderNames.ContentType, new List<string> { MediaTypeNames.Application.Json } },
         };
         var cachedResponse = new CachedResponse(HttpStatusCode.OK, headers, string.Empty, contentHeaders, "some reason");
         GivenThereIsACachedResponse(cachedResponse);

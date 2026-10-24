@@ -14,7 +14,7 @@ public sealed class StreamContentTests : Steps
     [Fact]
 #endif
     [Trait("PR", "1972")] // https://github.com/ThreeMammals/Ocelot/pull/1972
-    public void Should_stream_with_content_length()
+    public async Task Should_stream_with_content_length()
     {
 #if NET10_0_OR_GREATER
         Xunit.TestContext.Current.AddWarning(".NET 10 SDK can't handle 1GB — seems like a web server setting is limiting it.");
@@ -26,14 +26,12 @@ public sealed class StreamContentTests : Steps
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
         using var content = new StreamTestContent(contentSize, false);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", content))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(contentSize + ";;" + contentSize))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", content);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(contentSize + ";;" + contentSize);
     }
 
 
@@ -56,20 +54,13 @@ public sealed class StreamContentTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        /*this.Given(x => x.GivenThereIsAServiceRunningOn(port, "/"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StreamTestContent(contentSize, true)))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(";chunked;" + contentSize))
-        .BDDfy();*/
         GivenThereIsAServiceRunningOn(port, "/");
         GivenThereIsAConfiguration(configuration);
         await GivenOcelotIsRunningAsync();
         using var content = new StreamTestContent(contentSize, true);
         await WhenIPostUrlOnTheApiGateway("/", content);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(";chunked;" + contentSize);
+        await ThenTheResponseBodyShouldBeAsync(";chunked;" + contentSize);
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, string basePath)

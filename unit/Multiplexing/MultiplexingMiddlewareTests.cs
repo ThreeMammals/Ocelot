@@ -7,6 +7,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Mime;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -389,7 +390,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         var json = @"[{""userId"":1},{""userId"":2}]";
         context.Items.Add("DownstreamResponse",
-            new DownstreamResponse(new StringContent(json, Encoding.UTF8, "application/json"),
+            new DownstreamResponse(new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json),
                 HttpStatusCode.OK, new List<Header>(), "test"));
         if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
             context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
@@ -505,7 +506,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         return context =>
         {
             var responseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
-            context.Items.Add("DownstreamResponse", new DownstreamResponse(new StringContent(responseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<Header>(), "test"));
+            context.Items.Add("DownstreamResponse", new DownstreamResponse(new StringContent(responseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<Header>(), "test"));
 
             if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
             {

@@ -34,7 +34,7 @@ public sealed class DownstreamMetadataTests : Steps
     [InlineData(typeof(BoolDownStreamMetadataHandler))]
     [InlineData(typeof(DoubleDownStreamMetadataHandler))]
     [InlineData(typeof(SuperDataContainerDownStreamMetadataHandler))]
-    public void ShouldMatchTargetObjects(Type currentType)
+    public async Task ShouldMatchTargetObjects(Type currentType)
     {
         (Dictionary<string, string> sourceDictionary, Dictionary<string, object> _) =
             GetSourceAndTargetDictionary(currentType);
@@ -44,13 +44,11 @@ public sealed class DownstreamMetadataTests : Steps
         route.Metadata = sourceDictionary;
         route.DelegatingHandlers = [currentType.Name];
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(currentType))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        handler.GivenThereIsAServiceRunningOn(port, MapOK);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificHandlerForType(currentType);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -82,7 +80,7 @@ public sealed class DownstreamMetadataTests : Steps
         new[] { ' ', '_', ':' },
         nameof(StringSplitOptions.RemoveEmptyEntries),
         StringArrayConfig.Mix)]
-    public void ShouldMatchTargetStringArrayAccordingToConfiguration(
+    public async Task ShouldMatchTargetStringArrayAccordingToConfiguration(
         string[] separators,
         char[] trimChars,
         string stringSplitOption,
@@ -103,19 +101,17 @@ public sealed class DownstreamMetadataTests : Steps
             TrimChars = trimChars,
             StringSplitOption = stringSplitOption,
         };
-        this
-            .Given(x => handler.GivenThereIsAServiceRunningOn(port, MapOK))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler)))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        handler.GivenThereIsAServiceRunningOn(port, MapOK);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler));
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Theory]
     [InlineData(NumberStyles.Any, "de-CH", NumberConfig.Default)]
     [InlineData(NumberStyles.AllowParentheses | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign, "de-CH", NumberConfig.AlternateNumberStyle)]
-    public void ShouldMatchTargetNumberAccordingToConfiguration(
+    public async Task ShouldMatchTargetNumberAccordingToConfiguration(
         NumberStyles numberStyles,
         string cultureName,
         NumberConfig currentConfig)
@@ -134,14 +130,11 @@ public sealed class DownstreamMetadataTests : Steps
             NumberStyle = numberStyles.ToString(),
             CurrentCulture = cultureName,
         };
-        var body = Body();
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler)))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler));
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -234,10 +227,10 @@ public sealed class DownstreamMetadataTests : Steps
         {
             var downstreamRoute = _httpContextAccessor.HttpContext?.Items.DownstreamRoute();
 
-            if (downstreamRoute.MetadataOptions.Metadata.ContainsKey(nameof(StringArrayConfig)))
+            if (downstreamRoute.MetadataOptions.Metadata.TryGetValue(nameof(StringArrayConfig), out string value))
             {
                 var currentConfig =
-                    Enum.Parse<StringArrayConfig>(downstreamRoute.MetadataOptions.Metadata[nameof(StringArrayConfig)]);
+                    Enum.Parse<StringArrayConfig>(value);
                 downstreamRoute.MetadataOptions.Metadata.Remove(nameof(StringArrayConfig));
 
                 (Dictionary<string, string> _, Dictionary<string, string[]> targetDictionary) =
@@ -248,7 +241,7 @@ public sealed class DownstreamMetadataTests : Steps
                     Assert.Equal(targetDictionary[key], downstreamRoute.GetMetadata<string[]>(key));
                 }
             }
-            else if (downstreamRoute.MetadataOptions.Metadata.ContainsKey(nameof(NumberConfig)))
+            else if (downstreamRoute.MetadataOptions.Metadata.TryGetValue(nameof(NumberConfig), out string numberValue))
             {
                 downstreamRoute.MetadataOptions.Metadata.Remove(nameof(NumberConfig));
 
@@ -292,9 +285,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -311,9 +304,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -330,9 +323,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -349,9 +342,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);
@@ -368,9 +361,9 @@ public sealed class DownstreamMetadataTests : Steps
 
             targetDictionary = new Dictionary<string, string[]>
             {
-                { "Key1", new[] { "Value1", "Value2", "Value3" } },
-                { "Key2", new[] { "Value2", "Value3", "Value4" } },
-                { "Key3", new[] { "Value3", "Value4", "Value5" } },
+                { "Key1", [ "Value1", "Value2", "Value3" ] },
+                { "Key2", [ "Value2", "Value3", "Value4" ] },
+                { "Key3", [ "Value3", "Value4", "Value5" ] },
             };
 
             return (sourceDictionary, targetDictionary);

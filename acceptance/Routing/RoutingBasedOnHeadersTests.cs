@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Configuration.File;
 
@@ -11,7 +11,7 @@ public sealed class RoutingBasedOnHeadersTests : Steps
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_one_header_value()
+    public async Task Should_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -21,20 +21,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, headerValue);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_one_header_value_when_more_headers()
+    public async Task Should_match_one_header_value_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -44,21 +43,20 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader("other", "otherValue"))
-            .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader("other", "otherValue");
+        GivenIAddAHeader(headerName, headerValue);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_two_header_values_when_more_headers()
+    public async Task Should_match_two_header_values_when_more_headers()
     {
         var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -71,22 +69,21 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => GivenIAddAHeader("other", "otherValue"))
-            .And(x => GivenIAddAHeader(headerName2, headerValue2))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName1, headerValue1);
+        GivenIAddAHeader("other", "otherValue");
+        GivenIAddAHeader(headerName2, headerValue2);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_not_match_one_header_value()
+    public async Task Should_not_match_one_header_value()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -97,19 +94,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, anotherHeaderValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, anotherHeaderValue);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_not_match_one_header_value_when_no_headers()
+    public async Task Should_not_match_one_header_value_when_no_headers()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -119,18 +115,17 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_not_match_two_header_values_when_one_different()
+    public async Task Should_not_match_two_header_values_when_one_different()
     {
         var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -143,21 +138,20 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => GivenIAddAHeader("other", "otherValue"))
-            .And(x => GivenIAddAHeader(headerName2, "anothervalue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName1, headerValue1);
+        GivenIAddAHeader("other", "otherValue");
+        GivenIAddAHeader(headerName2, "anothervalue");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_not_match_two_header_values_when_one_not_existing()
+    public async Task Should_not_match_two_header_values_when_one_not_existing()
     {
         var port = PortFinder.GetRandomPort();
         var headerName1 = "country_code";
@@ -170,20 +164,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName2] = headerValue2,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName1, headerValue1))
-            .And(x => GivenIAddAHeader("other", "otherValue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName1, headerValue1);
+        GivenIAddAHeader("other", "otherValue");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_not_match_one_header_value_when_header_duplicated()
+    public async Task Should_not_match_one_header_value_when_header_duplicated()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -193,20 +186,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, headerValue))
-            .And(x => GivenIAddAHeader(headerName, "othervalue"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, headerValue);
+        GivenIAddAHeader(headerName, "othervalue");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_aggregated_route_match_header_value()
+    public async Task Should_aggregated_route_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -220,20 +212,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         });
         var configuration = GivenConfiguration(routeA, routeB);
         configuration.Aggregates.Add(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
-            .And(x => GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura"));
+        GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, headerValue);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_aggregated_route_not_match_header_value()
+    public async Task Should_aggregated_route_not_match_header_value()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -247,19 +238,18 @@ public sealed class RoutingBasedOnHeadersTests : Steps
         });
         var configuration = GivenConfiguration(routeA, routeB);
         configuration.Aggregates.Add(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura")))
-            .And(x => x.GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port1, "/a", HttpStatusCode.OK, Hello("Laura"));
+        GivenThereIsAServiceRunningOn(port2, "/b", HttpStatusCode.OK, Hello("Tom"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_header_placeholder()
+    public async Task Should_match_header_placeholder()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "Region";
@@ -269,20 +259,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "{header:code}",
             });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/api.internal-uk/products", HttpStatusCode.OK, Hello("UK")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, "uk"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("UK")))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, "/api.internal-uk/products", HttpStatusCode.OK, Hello("UK"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, "uk");
+        await WhenIGetUrlOnTheApiGateway("/products");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello("UK"));
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_header_placeholder_not_in_downstream_path()
+    public async Task Should_match_header_placeholder_not_in_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "ProductName";
@@ -292,20 +281,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "product-{header:everything}",
             });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-info", HttpStatusCode.OK, Hello("products")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, "product-Camera"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("products")))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, "/products-info", HttpStatusCode.OK, Hello("products"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, "product-Camera");
+        await WhenIGetUrlOnTheApiGateway("/products");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello("products"));
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_distinguish_route_for_different_roles()
+    public async Task Should_distinguish_route_for_different_roles()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "Origin";
@@ -316,20 +304,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             });
         var route2 = GivenRouteWithUpstreamHeaderTemplates(port, "/products", "/products", null);
         var configuration = GivenConfiguration(route, route2);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/products-admin", HttpStatusCode.OK, Hello("products admin")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, "admin.xxx.com"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/products"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello("products admin")))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, "/products-admin", HttpStatusCode.OK, Hello("products admin"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, "admin.xxx.com");
+        await WhenIGetUrlOnTheApiGateway("/products");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello("products admin"));
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_header_and_url_placeholders()
+    public async Task Should_match_header_and_url_placeholders()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -339,20 +326,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "start_{header:country_code}_version_{header:version}_end",
             });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/pl/v1/bb", HttpStatusCode.OK, Hello()))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, "start_pl_version_v1_end"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/bb"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, "/pl/v1/bb", HttpStatusCode.OK, Hello());
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, "start_pl_version_v1_end");
+        await WhenIGetUrlOnTheApiGateway("/bb");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_header_with_braces()
+    public async Task Should_match_header_with_braces()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -362,20 +348,19 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = "my_{header}",
             });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/aa", HttpStatusCode.OK, Hello()))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, "my_{header}"))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, "/aa", HttpStatusCode.OK, Hello());
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, "my_{header}");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("PR", "1312")] // https://github.com/ThreeMammals/Ocelot/pull/1312
-    public void Should_match_two_headers_with_the_same_name()
+    public async Task Should_match_two_headers_with_the_same_name()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -388,22 +373,21 @@ public sealed class RoutingBasedOnHeadersTests : Steps
                 [headerName] = multipleValues.ToString(), // headerValue1 + ";{header:whatever}",
             });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader(headerName, headerValue1))
-            .And(x => GivenIAddAHeader(headerName, headerValue2))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader(headerName, headerValue1);
+        GivenIAddAHeader(headerName, headerValue2);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     [Fact]
     [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
     [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
-    public void Should_match_one_header_value_when_browser_sends_client_hints()
+    public async Task Should_match_one_header_value_when_browser_sends_client_hints()
     {
         var port = PortFinder.GetRandomPort();
         var headerName = "country_code";
@@ -415,17 +399,16 @@ public sealed class RoutingBasedOnHeadersTests : Steps
             [headerName] = headerValue,
         });
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .And(x => GivenIAddAHeader("sec-ch-ua", secChUa))
-            .And(x => GivenIAddAHeader("sec-ch-ua-mobile", secChUaMobile))
-            .And(x => GivenIAddAHeader(headerName, headerValue))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(Hello()))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        GivenIAddAHeader("sec-ch-ua", secChUa);
+        GivenIAddAHeader("sec-ch-ua-mobile", secChUaMobile);
+        GivenIAddAHeader(headerName, headerValue);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(Hello());
     }
 
     private static string Hello() => Hello("Jolanta");
