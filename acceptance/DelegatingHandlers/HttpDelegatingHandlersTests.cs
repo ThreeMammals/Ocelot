@@ -20,7 +20,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
         ThenTheOrderedHandlersAreCalledCorrectly();
     }
 
@@ -35,7 +35,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
         ThenTheHandlersAreCalledCorrectly();
     }
 
@@ -69,7 +69,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         await WhenIGetUrlOnTheApiGateway("/");
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class HttpDelegatingHandlersTests : Steps
         GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Laura");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
         ThenTheDependencyIsCalled(dependency);
     }
 
