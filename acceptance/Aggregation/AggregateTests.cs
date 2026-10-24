@@ -48,14 +48,13 @@ public sealed class AggregateTests : Steps
         });
         configuration.GlobalConfiguration.RequestIdKey = "CorrelationID";
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-        Scenario<AggregateTests>()
-            .Given(x => GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(expected);
     }
 
     [Fact]
@@ -80,16 +79,15 @@ public sealed class AggregateTests : Steps
         var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
 
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
-            .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent);
+        GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent);
+        GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(expected);
     }
 
     [Fact]
@@ -103,16 +101,15 @@ public sealed class AggregateTests : Steps
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
         configuration.Aggregates[0].Aggregator = nameof(FakeDefinedAggregator);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>();
+        WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
@@ -125,16 +122,15 @@ public sealed class AggregateTests : Steps
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
@@ -147,16 +143,15 @@ public sealed class AggregateTests : Steps
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 404, "");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
@@ -169,16 +164,15 @@ public sealed class AggregateTests : Steps
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 404, "");
+        GivenServiceIsRunning(1, port2, "/", 404, "");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
@@ -191,14 +185,13 @@ public sealed class AggregateTests : Steps
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIMakeLotsOfDifferentRequestsToTheApiGateway();
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
@@ -311,9 +304,8 @@ public sealed class AggregateTests : Steps
     //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
     //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
     //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
-    //            .BDDfy();
-    }
+    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"));
+    //    }
 
     //    // Assert
     //    for (var i = 0; i < actualContexts.Length; i++)
@@ -325,7 +317,7 @@ public sealed class AggregateTests : Steps
     //        user.Claims.Count().ShouldBeGreaterThan(1);
     //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
     //    }
-    //}
+    }
 
     #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
     [Fact]
@@ -341,15 +333,14 @@ public sealed class AggregateTests : Steps
         var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
         var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1"));
+        GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(expected);
     }
 
     [Fact]
@@ -369,15 +360,14 @@ public sealed class AggregateTests : Steps
         var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
         var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1"));
+        GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(expected);
     }
 
     private static string FormatFormCollection(IFormCollection reqForm)
@@ -419,14 +409,13 @@ public sealed class AggregateTests : Steps
         var expected =
             "{\"comments\":[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}],\"user\":[{\"id\":1,\"name\":\"User-1\"},{\"id\":2,\"name\":\"User-2\"}]}";
 
-        this.Given(x => GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent))
-            .Given(x => GivenThereIsAServiceRunningOn(usersPort, "/", MapJson))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGateway("/aggregatecommentuser"))
-            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+        GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent);
+        GivenThereIsAServiceRunningOn(usersPort, "/", MapJson);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        WhenIGetUrlOnTheApiGateway("/aggregatecommentuser");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe(expected);
     }
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
