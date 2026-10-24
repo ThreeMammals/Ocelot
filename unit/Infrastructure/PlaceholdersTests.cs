@@ -184,7 +184,7 @@ public class PlaceholdersTests
         // Arrange
         var upstreamHost = "UpstreamHostA";
         var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers.Append("Host", upstreamHost);
+        httpContext.Request.Headers.Host = upstreamHost;
         _accessor.Setup(x => x.HttpContext).Returns(httpContext);
 
         // Act

@@ -19,7 +19,7 @@ public sealed class DiscoveryWebSocketTests : WebSocketsSteps
     [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
     [Trait("Release", "5.3.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/5.3.0
     [Trait("Commit", "463a7bd")] // https://github.com/ThreeMammals/Ocelot/commit/463a7bdab4652762d14779e7e3f62a207c3d421c
-    public void Should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
+    public async Task Should_proxy_websocket_input_to_downstream_service_and_use_service_discovery_and_load_balancer()
     {
         var ports = PortFinder.GetPorts(2);
         const string serviceName = "websockets"; // steps.ServiceName();
@@ -34,14 +34,13 @@ public sealed class DiscoveryWebSocketTests : WebSocketsSteps
 
         var configuration = steps.GivenStaticRouting(null, route);
         int ocelotPort = PortFinder.GetRandomPort();
-        this.Given(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => StartOcelotWithWebSockets(ocelotPort, WithDiscovery))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/ws", EchoAsync)) // test -> test -> test -> ...
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(ports[1], "/ws", MessageAsync)) // chocolate -> chocolate -> chocolate -> ...
-            .When(_ => WhenIStartTheClients(ocelotPort)) // getting to Ocelot on "/" upstream. It is cumbersome, but runs in parallel
-            .Then(_ => ThenBothDownstreamServicesAreCalled())
-            .And(_ => ThenServicesShouldHaveBeenCalledTimes(1, 1)) // RoundRobin algorithm
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, WithDiscovery);
+        await GivenWebSocketsServiceIsRunningAsync(ports[0], "/ws", EchoAsync); // test -> test -> test -> ...
+        await GivenWebSocketsServiceIsRunningAsync(ports[1], "/ws", MessageAsync); // chocolate -> chocolate -> chocolate -> ...
+        await WhenIStartTheClients(ocelotPort); // getting to Ocelot on "/" upstream. It is cumbersome, but runs in parallel
+        ThenBothDownstreamServicesAreCalled();
+        ThenServicesShouldHaveBeenCalledTimes(1, 1); // RoundRobin algorithm
     }
 
     private void WithDiscovery(IServiceCollection services)

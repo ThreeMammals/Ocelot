@@ -15,6 +15,7 @@ using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.Acceptance.Aggregation;
@@ -30,7 +31,7 @@ public sealed class AggregateTests : Steps
 
     [Fact]
     [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
-    public void Should_fix_issue_597()
+    public async Task Should_fix_issue_597()
     {
         var port = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port, "key1", "/key1data/{userid}", "/api/values?MailId={userid}");
@@ -47,20 +48,19 @@ public sealed class AggregateTests : Steps
         });
         configuration.GlobalConfiguration.RequestIdKey = "CorrelationID";
         var expected = "{\"key1\":some_data,\"key2\":some_data}";
-        Scenario<AggregateTests>()
-            .Given(x => GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(port, HttpStatusCode.OK, "some_data");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/EmpDetail/US/1");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
     [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
-    public void Should_return_response_200_with_advanced_aggregate_configs()
+    public async Task Should_return_response_200_with_advanced_aggregate_configs()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -79,22 +79,21 @@ public sealed class AggregateTests : Steps
         var commentsResponseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
 
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + ",\"PostDetails\":" + postDetailsResponseContent + "}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent))
-            .Given(x => x.GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, commentsResponseContent);
+        GivenServiceIsRunning(1, port2, "/users/1", 200, userDetailsResponseContent);
+        GivenServiceIsRunning(2, port3, "/posts/2", 200, postDetailsResponseContent);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
     [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
-    public void Should_return_response_200_with_simple_url_user_defined_aggregate()
+    public async Task Should_return_response_200_with_simple_url_user_defined_aggregate()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -102,105 +101,100 @@ public sealed class AggregateTests : Steps
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
         configuration.Aggregates[0].Aggregator = nameof(FakeDefinedAggregator);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Bye from Laura, Bye from Tom"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificAggregatorsRegisteredInDi<FakeDefinedAggregator, FakeDep>();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Bye from Laura, Bye from Tom");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url()
+    public async Task Should_return_response_200_with_simple_url()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url_one_service_404()
+    public async Task Should_return_response_200_with_simple_url_one_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":{Hello from Tom}}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 404, "");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":,\"Tom\":{Hello from Tom}}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_return_response_200_with_simple_url_both_service_404()
+    public async Task Should_return_response_200_with_simple_url_both_service_404()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 404, ""))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 404, ""))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("{\"Laura\":,\"Tom\":}"))
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 404, "");
+        GivenServiceIsRunning(1, port2, "/", 404, "");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("{\"Laura\":,\"Tom\":}");
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
-    public void Should_be_thread_safe()
+    public async Task Should_be_thread_safe()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route1 = GivenAggRoute(port1, "Laura", "/laura");
         var route2 = GivenAggRoute(port2, "Tom", "/tom");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}"))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIMakeLotsOfDifferentRequestsToTheApiGateway())
-            .And(x => ThenTheDownstreamUrlPathShouldBe("/", "/"))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/", 200, "{Hello from Laura}");
+        GivenServiceIsRunning(1, port2, "/", 200, "{Hello from Tom}");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIMakeLotsOfDifferentRequestsToTheApiGateway();
+        ThenTheDownstreamUrlPathShouldBe("/", "/");
     }
 
-    private void WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
+    private async Task WhenIMakeLotsOfDifferentRequestsToTheApiGateway()
     {
         var numberOfRequests = 100;
         var aggregateUrl = "/";
@@ -245,7 +239,7 @@ public sealed class AggregateTests : Steps
     [Fact(Skip = "TODO Require redevelopment and cleaning up old Auth code")]
     [Trait("Bug", "1396")] // https://github.com/ThreeMammals/Ocelot/issues/1396
     [Trait("PR", "1462")] // https://github.com/ThreeMammals/Ocelot/pull/1462
-    public void Should_return_response_200_with_user_forwarding()
+    public async Task Should_return_response_200_with_user_forwarding()
     {
     //    var port1 = PortFinder.GetRandomPort();
     //    var port2 = PortFinder.GetRandomPort();
@@ -310,9 +304,8 @@ public sealed class AggregateTests : Steps
     //            .When(x => auth.WhenIGetUrlOnTheApiGatewayWithRequestId("/"))
     //            .Then(x => auth.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
     //            .And(x => auth.ThenTheResponseBodyShouldBe("{\"Laura\":{Hello from Laura},\"Tom\":{Hello from Tom}}"))
-    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"))
-    //            .BDDfy();
-    }
+    //            .And(x => x.ThenTheDownstreamUrlPathShouldBe("/", "/"));
+    //    }
 
     //    // Assert
     //    for (var i = 0; i < actualContexts.Length; i++)
@@ -324,12 +317,12 @@ public sealed class AggregateTests : Steps
     //        user.Claims.Count().ShouldBeGreaterThan(1);
     //        user.Claims.FirstOrDefault(c => c is { Type: "scope", Value: "api" }).ShouldNotBeNull();
     //    }
-    //}
+    }
 
     #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
-    public void Should_return_response_200_with_copied_body_sent_on_multiple_services()
+    public async Task Should_return_response_200_with_copied_body_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -340,20 +333,19 @@ public sealed class AggregateTests : Steps
         var sub1ResponseContent = @"{""id"":1,""response"":""fromBody-s1""}";
         var sub2ResponseContent = @"{""id"":1,""response"":""fromBody-s2""}";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1")))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/Sub1", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s1"));
+        GivenServiceIsRunning(1, port2, "/Sub2", 200, reqBody => reqBody.Replace("#REPLACESTRING#", "s2"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
-    public void Should_return_response_200_with_copied_form_sent_on_multiple_services()
+    public async Task Should_return_response_200_with_copied_form_sent_on_multiple_services()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -368,15 +360,14 @@ public sealed class AggregateTests : Steps
         var sub1ResponseContent = "\"[key:param1=value1&param2=from-form-s1]\"";
         var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
-        this
-            .Given(x => x.GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1")))
-            .Given(x => x.GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2")))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+
+        GivenServiceIsRunning(0, port1, "/Sub1", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s1"));
+        GivenServiceIsRunning(1, port2, "/Sub2", 200, reqForm => FormatFormCollection(reqForm).Replace("REPLACESTRING", "s2"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private static string FormatFormCollection(IFormCollection reqForm)
@@ -390,7 +381,7 @@ public sealed class AggregateTests : Steps
     [Fact]
     [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
-    public void Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
+    public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
     {
         const string id = "id"; // placeholder
         var commentsPort = PortFinder.GetRandomPort();
@@ -410,7 +401,7 @@ public sealed class AggregateTests : Steps
             var parts = ctx.Request.Path.Value?.Trim('/').Split('/');
             var ok = parts?.Length == 2 && parts[0] == "users" && int.TryParse(parts[1], out var id);
             ctx.Response.StatusCode = ok ? (int)HttpStatusCode.OK : (int)HttpStatusCode.BadRequest;
-            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentType = MediaTypeNames.Application.Json;
             return ctx.Response.WriteAsync(ok
                 ? $"{{\"id\":{parts![1]},\"name\":\"User-{parts[1]}\"}}"
                 : "{\"error\":\"bad id\"}");
@@ -418,14 +409,13 @@ public sealed class AggregateTests : Steps
         var expected =
             "{\"comments\":[{\"id\":1,\"userId\":1},{\"id\":2,\"userId\":2}],\"user\":[{\"id\":1,\"name\":\"User-1\"},{\"id\":2,\"name\":\"User-2\"}]}";
 
-        this.Given(x => GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent))
-            .Given(x => GivenThereIsAServiceRunningOn(usersPort, "/", MapJson))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGateway("/aggregatecommentuser"))
-            .Then(_ => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+        GivenServiceIsRunning(commentsPort, HttpStatusCode.OK, CommentsResponseContent);
+        GivenThereIsAServiceRunningOn(usersPort, "/", MapJson);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/aggregatecommentuser");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private void GivenServiceIsRunning(int port, HttpStatusCode statusCode, string responseBody)
@@ -433,7 +423,7 @@ public sealed class AggregateTests : Steps
         handler.GivenThereIsAServiceRunningOn(port, context =>
         {
             context.Response.StatusCode = (int)statusCode;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = MediaTypeNames.Application.Json;
             return context.Response.WriteAsync(responseBody);
         });
     }

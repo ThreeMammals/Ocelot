@@ -14,26 +14,24 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
 {
     [Fact]
     [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
-    public void ShouldProxyWebsocketInputToDownstreamService()
+    public async Task ShouldProxyWebsocketInputToDownstreamService()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port);
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
         var ocelotUrl = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
-        this
-            .Given(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync))
-            .When(_ => StartClient(ocelotUrl, CancelMe))
-            .Then(_ => ThenTheReceivedCountIs(10))
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, null);
+        await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync);
+        await StartClient(ocelotUrl, CancelMe);
+        ThenTheReceivedCountIs(10);
     }
     private void ThenTheReceivedCountIs(int count) => _firstRecieved.Count.ShouldBe(count);
 
     [Fact]
     [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
-    public void ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
+    public async Task ShouldProxyWebsocketInputToDownstreamServiceAndUseLoadBalancer()
     {
         int port1 = PortFinder.GetRandomPort();
         int port2 = PortFinder.GetRandomPort();
@@ -41,14 +39,12 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         route.LoadBalancerOptions = new(nameof(RoundRobin));
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
-        this
-            .Given(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => StartOcelotWithWebSockets(ocelotPort, null))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync))
-            .And(_ => GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync))
-            .When(_ => WhenIStartTheClients(ocelotPort))
-            .Then(_ => ThenBothDownstreamServicesAreCalled())
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, null);
+        await GivenWebSocketsServiceIsRunningAsync(port1, "/ws", EchoAsync);
+        await GivenWebSocketsServiceIsRunningAsync(port2, "/ws", MessageAsync);
+        await WhenIStartTheClients(ocelotPort);
+        ThenBothDownstreamServicesAreCalled();
     }
 
     [Theory]
@@ -77,14 +73,12 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
             WebSocketsMiddlewareType = injectViaType ? typeof(LargeBufferWebSocketsProxyMiddleware) : null,
             WebSocketsMiddleware = injectViaType ? null : CreateMiddleware,
         };
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig))
-            .And(x => GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync))
-            .When(x => StartClient(ocelotUrl, CancelMe))
-            .Then(x => ThenTheReceivedCountIs(10))
-            .And(x => customMiddlewareInvoked.ShouldBe(!injectViaType, null))
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, null, pipelineConfig);
+        await GivenWebSocketsServiceIsRunningAsync(port, "/ws", EchoAsync);
+        await StartClient(ocelotUrl, CancelMe);
+        ThenTheReceivedCountIs(10);
+        customMiddlewareInvoked.ShouldBe(!injectViaType);
     }
 
     private FileRoute GivenRoute(string downstream = null, params int[] ports) => new()
