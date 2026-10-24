@@ -7,55 +7,38 @@ namespace Ocelot.Acceptance.Authentication;
 
 public sealed class AuthenticationTests : AuthSteps
 {
-    //public IFluentStepBuilder<AuthenticationTests> GivenScenario(Expression<Func<AuthenticationTests, Task>> step)
-    //{
-    //    return FluentStepScannerExtensions.Given(this, step);
-    //    //return new FluentStepBuilder<AuthenticationTests>(this).Given(step);
-    //}
-    //public static IFluentStepBuilder<TScenario> GivenScenario2<TScenario>(TScenario testObject, Expression<Func<TScenario, Task>> step)
-    //    where TScenario : class
-    //{
-    //    return new FluentStepBuilder<TScenario>(testObject).Given(step);
-    //}
-
     [Fact]
-    public void Should_return_401_using_identity_server_access_token()
+    public async Task Should_return_401_using_identity_server_access_token()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, method: HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        //GivenScenario(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
-        //    .BDDfy();
-        //GivenScenario2(this, x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
-        //    .BDDfy();
-        this
-            .Given(x => GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-        .BDDfy();
+
+        await GivenThereIsExternalJwtSigningService(Array.Empty<string>(), CancelMe);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await WhenIPostUrlOnTheApiGateway("/", "postContent");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public void Should_return_response_200_using_identity_server()
+    public async Task Should_return_response_200_using_identity_server()
     {
         var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
-            .And(x => GivenIHaveAToken(testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
+        await GivenIHaveAToken(testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseBodyShouldBe("Hello from Laura");
     }
 
     [Fact]
@@ -65,16 +48,15 @@ public sealed class AuthenticationTests : AuthSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithOtherApiBearerAuthentication))
-            .And(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
-            .And(x => GivenIHaveAToken("api2", null, null, null, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithOtherApiBearerAuthentication);
+        await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
+        await GivenIHaveAToken("api2", null, null, null, testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Unauthorized);
     }
     private static void WithOtherApiAudience(JwtBearerOptions o)
     {
@@ -96,16 +78,15 @@ public sealed class AuthenticationTests : AuthSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, method: HttpMethods.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
-            .And(x => GivenIHaveAToken(testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.Created, body);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
+        await GivenIHaveAToken(testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIPostUrlOnTheApiGateway("/", "postContent");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Created);
     }
 
     [Theory]
@@ -122,19 +103,19 @@ public sealed class AuthenticationTests : AuthSteps
         route.AuthenticationOptions.AuthenticationProviderKeys = []; // no route auth!
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration = GivenGlobalAuthConfiguration();
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body))
-            .And(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
-            .And(x => GivenIHaveAddedATokenToMyRequestIfRequired(hasToken))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(status))
-            .And(x => ThenTheResponseBodyShouldBe(hasToken ? body : string.Empty))
-        .BDDfy();
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body);
+        await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
+        await GivenIHaveAddedATokenToMyRequestIfRequired(hasToken);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(status);
+        ThenTheResponseBodyShouldBe(hasToken ? body : string.Empty);
     }
-    private Task GivenIHaveAddedATokenToMyRequestIfRequired(bool hasToken) => hasToken
-        ? GivenIHaveAToken().ContinueWith(t => GivenIHaveAddedATokenToMyRequest())
+
+    private async Task GivenIHaveAddedATokenToMyRequestIfRequired(bool hasToken) => hasToken
+        ? await GivenIHaveAToken().ContinueWith(t => GivenIHaveAddedATokenToMyRequest())
         : Task.CompletedTask;
 
     [Fact]
@@ -148,17 +129,14 @@ public sealed class AuthenticationTests : AuthSteps
         route.AuthenticationOptions.AuthenticationProviderKeys = [];
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration = GivenGlobalAuthConfiguration();
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body))
-            .And(x => GivenThereIsExternalJwtSigningService(NoScopes, CancelMe))
-            // await GivenIHaveAToken();
-            // GivenIHaveAddedATokenToMyRequest();
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBody(body))
-        .BDDfy();
+
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, body);
+        await GivenThereIsExternalJwtSigningService(NoScopes, CancelMe);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseBody(body);
     }
 
     [Fact]
@@ -188,31 +166,30 @@ public sealed class AuthenticationTests : AuthSteps
         withAuth += WithOAuthNotConfigured;
 
         var scopes = new string[] { "api", "apiGlobal", "Mr.Who" };
-        this
-            .Given(x => GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body))
-            .And(x => GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body))
-            .And(x => GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(withAuth))
-            .And(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
-            .And(x => GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/route1"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBody(body))
 
-            .Given(x => GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0], null, null, null, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/route2"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBody(body))
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body);
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body);
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(withAuth);
+        await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseBody(body);
 
-            .Given(x => GivenIHaveAToken("Mr.Who", null, null, null, testName)) // should be different scope of route #3 which is "invalid-scope"
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/noAuthorization"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .And(x => ThenTheResponseBodyShouldBeEmpty())
-        .BDDfy();
+        await GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0], null, null, null, testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseBody(body);
+
+        await GivenIHaveAToken("Mr.Who", null, null, null, testName); // should be different scope of route #3 which is "invalid-scope"
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/noAuthorization");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
@@ -244,30 +221,30 @@ public sealed class AuthenticationTests : AuthSteps
         var body = Body();
         var testName = TestName();
         var scopes = new string[] { "api", "apiGlobal", "Mr.Who" };
-        this
-            .Given(x => GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body))
-            .And(x => GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body))
-            .And(x => GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
-            .And(x => GivenIHaveAToken("Mr.Who", null, null, null, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/route1"))
-            .Then(x => ThenTheStatusCodeShouldBeOk()) // auth is switched off and the scope doesn't matter
-            .And(x => ThenTheResponseBody(body))
 
-            .Given(x => GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/route2"))
-            .Then(x => ThenTheStatusCodeShouldBeOk()) // global scope has been accepted
-            .And(x => ThenTheResponseBody(body))
+        GivenThereIsAServiceRunningOnPath(ports[0], "/route1", body);
+        GivenThereIsAServiceRunningOnPath(ports[1], "/route2", body);
+        GivenThereIsAServiceRunningOnPath(ports[2], "/noAuthorization", body);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
 
-            .Given(x => GivenIHaveAToken("Mr.Who", null, null, null, testName)) // should be different scope of route #3 which is "invalid-scope"
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/noAuthorization"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .And(x => ThenTheResponseBodyShouldBeEmpty())
-        .BDDfy();
+        await GivenIHaveAToken("Mr.Who", null, null, null, testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route1");
+        ThenTheStatusCodeShouldBeOk(); // auth is switched off and the scope doesn't matter
+        ThenTheResponseBody(body);
+
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, testName);
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/route2");
+        ThenTheStatusCodeShouldBeOk(); // global scope has been accepted
+        ThenTheResponseBody(body);
+
+        await GivenIHaveAToken("Mr.Who", null, null, null, testName); // should be different scope of route #3 which is "invalid-scope"
+        await GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/noAuthorization");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        ThenTheResponseBodyShouldBeEmpty();
     }
 }
