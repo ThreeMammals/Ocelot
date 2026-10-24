@@ -614,7 +614,8 @@ public class DynamicRoutingTests : DiscoverySteps
         GivenMultipleServiceInstancesAreRunning(serviceUrls);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithDiscoveryAndRequesterTesting);
-        WhenIGetUrlOnTheApiGatewayConcurrently(urls.Length, urls); // TODO As the first cold request, it sends 10 requests to a SD provider to return a service instance.
+        await Task.WhenAll(
+            WhenIGetUrlOnTheApiGatewayConcurrently(urls.Length, urls)); // TODO As the first cold request, it sends 10 requests to a SD provider to return a service instance.
         ThenAllStatusCodesShouldBe(HttpStatusCode.OK);
         ThenEachResponsePathShouldBe(paths);
         ThenOneHttpHandlerShouldBeCreated();
