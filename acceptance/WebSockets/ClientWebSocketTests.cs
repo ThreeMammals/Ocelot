@@ -166,7 +166,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         await _ws.SendAsync(upload, WebSocketMessageType.Text, true, CancelMe);
         await ThenIReceiveAsync(body);
         await WhenITryToReproduceBug930();
-        await Task.Delay(1_000);
+        GivenIWait(1_000);
         ThenEnsureTheBug930HasNotBeenReproducedViaLogger();
     }
     private async Task ThenIReceiveAsync(string expected)
