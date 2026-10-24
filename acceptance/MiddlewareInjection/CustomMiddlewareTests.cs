@@ -16,7 +16,7 @@ public class CustomMiddlewareTests : Steps
     }
 
     [Fact]
-    public void Should_call_pre_query_string_builder_middleware()
+    public async Task Should_call_pre_query_string_builder_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -29,18 +29,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_call_authorization_middleware()
+    public async Task Should_call_authorization_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -53,18 +52,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_call_authentication_middleware()
+    public async Task Should_call_authentication_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -77,18 +75,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/", "/41879/");
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_call_pre_error_middleware()
+    public async Task Should_call_pre_error_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -101,18 +98,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_call_pre_authorization_middleware()
+    public async Task Should_call_pre_authorization_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -125,18 +121,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_call_pre_http_authentication_middleware()
+    public async Task Should_call_pre_http_authentication_middleware()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -149,18 +144,17 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     [Fact]
-    public void Should_not_throw_when_pipeline_terminates_early()
+    public async Task Should_not_throw_when_pipeline_terminates_early()
     {
         var pipelineConfiguration = new OcelotPipelineConfiguration
         {
@@ -174,14 +168,13 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningAsync(pipelineConfiguration))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => x.ThenTheCounterIs(1))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningAsync(pipelineConfiguration);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheCounterIs(1);
     }
 
     /// <summary>
@@ -193,7 +186,7 @@ public class CustomMiddlewareTests : Steps
     [Trait("Feat", "237")] // https://github.com/ThreeMammals/Ocelot/issues/237
     [Trait("PR", "241")] // https://github.com/ThreeMammals/Ocelot/pull/241
     [Trait("Release", "3.1.6")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.6
-    public void Should_fix_issue_237()
+    public async Task Should_fix_issue_237()
     {
         Func<object, Task> callback = state =>
         {
@@ -208,13 +201,12 @@ public class CustomMiddlewareTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/", "/west");
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOnPath(port, "/test"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOnPath(port, "/test");
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningWithMiddlewareBeforePipeline<FakeMiddleware>(callback);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     private Task<int> GivenOcelotIsRunningWithMiddlewareBeforePipeline<T>(Func<object, Task> middleware)

@@ -13,7 +13,7 @@ namespace Ocelot.Acceptance.Transformations;
 public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
 {
     [Fact]
-    public void Should_return_200_OK_and_forward_claim_as_header()
+    public async Task Should_return_200_OK_and_forward_claim_as_header()
     {
         var port = PortFinder.GetRandomPort();
         string[] scopes = ["openid", "offline_access", "api"];
@@ -31,20 +31,17 @@ public sealed class ClaimsToHeadersForwardingTests : AuthorizationSteps
             { "CustomerId", "111" },
             { "LocationId", "222" },
         };
-        var testName = TestName();
-        this
-            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
-            .And(x => GivenIUpdateSubClaim())
-            .And(x => GivenIHaveATokenWithClaims(claims, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Tom"))
-            .And(x => ThenTheResponseHeaderIs("RequestHeaders", "CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_header UserId:1234567890"))
-        .BDDfy();
+        await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom");
+        GivenIUpdateSubClaim();
+        await GivenIHaveATokenWithClaims(claims);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOk();
+        await ThenTheResponseBodyShouldBeAsync("Hello from Tom");
+        ThenTheResponseHeaderIs("RequestHeaders", "CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_header UserId:1234567890");
     }
 
     private const string UserId = "1234567890";

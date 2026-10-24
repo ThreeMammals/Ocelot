@@ -11,38 +11,34 @@ namespace Ocelot.Acceptance.Configuration;
 public sealed class DownstreamHttpVersionTests : Steps
 {
     [Fact]
-    public void Should_return_response_200_when_using_http_one()
+    public async Task Should_return_response_200_when_using_http_one()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttp, HttpVersion.Version10);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_response_200_when_using_http_one_point_one()
+    public async Task Should_return_response_200_when_using_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttp, HttpVersion.Version11);
         route.DangerousAcceptAnyServerCertificateValidator = true;
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_response_200_when_using_http_two_point_zero()
+    public async Task Should_return_response_200_when_using_http_two_point_zero()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttps, HttpVersion.Version20);
@@ -51,18 +47,16 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-        this
-            .Given(x => x.GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+        GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
-    public void Should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
+    public async Task Should_return_response_502_when_using_http_one_to_talk_to_server_running_http_two()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttps, HttpVersion.Version11);
@@ -71,18 +65,16 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     //TODO: does this test make any sense?
     [Fact]
-    public void Should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
+    public async Task Should_return_response_200_when_using_http_two_to_talk_to_server_running_http_one_point_one()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, Uri.UriSchemeHttp, HttpVersion.Version11);
@@ -91,14 +83,12 @@ public sealed class DownstreamHttpVersionTests : Steps
 
         const string expected = "here is some content";
         var httpContent = new StringContent(expected);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/", httpContent))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheResponseBodyShouldBe(expected))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     private FileRoute GivenRoute(int port, string scheme, Version httpVersion) => new()
