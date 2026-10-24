@@ -18,6 +18,7 @@ public sealed class ReasonPhraseTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheResponseReasonPhraseIs("some reason");
+        await ThenTheResponseBodyShouldBeAsync("YOYO!");
     }
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, string reasonPhrase)
