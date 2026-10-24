@@ -107,7 +107,6 @@ public sealed class DownstreamMetadataTests : Steps
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
-    }
 
     [Theory]
     [InlineData(NumberStyles.Any, "de-CH", NumberConfig.Default)]
@@ -137,7 +136,6 @@ public sealed class DownstreamMetadataTests : Steps
         GivenOcelotIsRunningWithSpecificHandlerForType(typeof(IntDownStreamMetadataHandler));
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-    }
     }
 
     /// <summary>

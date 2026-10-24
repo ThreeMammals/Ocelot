@@ -149,12 +149,6 @@
           "Microsoft.IdentityModel.Tokens": "8.23.0"
         }
       },
-      "TestStack.BDDfy": {
-        "type": "Direct",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "Hl2DOBKcCT24fg2IGD3dQGQrE0c3JKPLpPGillowfUzWSLqP2iCBmD+Z3SJynga0tMdmkbdHr/Jbbe8t5NiT8w=="
-      },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
         "requested": "[4.0.2, )",
@@ -828,12 +822,6 @@
           "Microsoft.IdentityModel.JsonWebTokens": "8.23.0",
           "Microsoft.IdentityModel.Tokens": "8.23.0"
         }
-      },
-      "TestStack.BDDfy": {
-        "type": "Direct",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "Hl2DOBKcCT24fg2IGD3dQGQrE0c3JKPLpPGillowfUzWSLqP2iCBmD+Z3SJynga0tMdmkbdHr/Jbbe8t5NiT8w=="
       },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
@@ -1551,12 +1539,6 @@
           "Microsoft.IdentityModel.JsonWebTokens": "8.23.0",
           "Microsoft.IdentityModel.Tokens": "8.23.0"
         }
-      },
-      "TestStack.BDDfy": {
-        "type": "Direct",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "Hl2DOBKcCT24fg2IGD3dQGQrE0c3JKPLpPGillowfUzWSLqP2iCBmD+Z3SJynga0tMdmkbdHr/Jbbe8t5NiT8w=="
       },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
