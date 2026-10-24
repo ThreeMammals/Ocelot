@@ -78,7 +78,7 @@ public sealed class AuthorizationTests : AuthorizationSteps
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
-        await ThenTheResponseBodyShouldBeAsync(string.Empty);
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
@@ -223,8 +223,6 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
     public async Task Should_return_200_OK_with_global_allowed_scopes()
     {
-        var body = Body();
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port);
         route.AuthenticationOptions.AuthenticationProviderKeys = []; // no route auth!
@@ -234,13 +232,13 @@ public sealed class AuthorizationTests : AuthorizationSteps
 
         GivenThereIsAConfiguration(configuration);
         await GivenThereIsExternalJwtSigningService(globalScopes, CancelMe);
-        GivenThereIsAServiceRunningOn(port, body);
+        GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveAToken("apiGlobal", null, null, null, testName);
+        await GivenIHaveAToken("apiGlobal");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBeOk();
-        await ThenTheResponseBodyAsync(body);
+        await ThenTheResponseBodyAsync();
     }
 
     #region PR 1478
@@ -250,8 +248,6 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "24.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
     public async Task Should_return_200_OK_with_space_separated_scope_match()
     {
-        var body = Body();
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scopes: ["api", "api.read", "api.write"]);
         var configuration = GivenConfiguration(route);
@@ -259,13 +255,13 @@ public sealed class AuthorizationTests : AuthorizationSteps
 
         GivenThereIsAConfiguration(configuration);
         await GivenThereIsExternalJwtSigningService(extraScopes, CancelMe);
-        GivenThereIsAServiceRunningOn(port, body);
+        GivenThereIsAServiceRunningOn(port);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveATokenWithScope("api.read openid offline_access", testName);
+        await GivenIHaveATokenWithScope("api.read openid offline_access");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBeOk();
-        await ThenTheResponseBodyAsync(body);
+        await ThenTheResponseBodyAsync();
     }
 
     [Fact]
@@ -274,18 +270,16 @@ public sealed class AuthorizationTests : AuthorizationSteps
     [Trait("Release", "24.1.0")]
     public async Task Should_return_403_Forbidden_with_space_separated_scope_no_match()
     {
-        var body = Body();
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scopes: ["admin", "superuser"]);
         var configuration = GivenConfiguration(route);
         string[] extraScopes = ["api.read", "api.write", "openid"];
 
         await GivenThereIsExternalJwtSigningService(extraScopes, CancelMe);
-        GivenThereIsAServiceRunningOn(port, body);
+        GivenThereIsAServiceRunningOn(port);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
-        await GivenIHaveATokenWithScope("api.read api.write openid", testName);
+        await GivenIHaveATokenWithScope("api.read api.write openid");
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
