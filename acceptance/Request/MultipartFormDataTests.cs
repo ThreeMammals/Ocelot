@@ -15,8 +15,8 @@ public sealed class MultipartFormDataTests : Steps
     private string _downstreamFileContent;
 
     [Fact]
-    [Trait("Bug", "714")]
-    public void Should_reroute_multipart_form_data_with_file()
+    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    public async Task Should_reroute_multipart_form_data_with_file()
     {
         const string upstreamPath = "/upload";
         const string downstreamPath = "/api/files";
@@ -32,26 +32,18 @@ public sealed class MultipartFormDataTests : Steps
         var configuration = GivenConfiguration(route);
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, downstreamPath,
-                context => CaptureMultipartRequest(context, fieldName, fileFieldName)))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway(upstreamPath, content))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(_ => ThenTheDownstreamRequestShouldMatch(
-                downstreamPath,
-                fieldValue,
-                fileFieldName,
-                fileName,
-                fileContentType,
-                fileContent))
-            .BDDfy();
+        GivenThereIsAServiceRunningOn(port, downstreamPath,
+                context => CaptureMultipartRequest(context, fieldName, fileFieldName));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 
     [Fact]
-    [Trait("Bug", "714")]
-    public void Should_reroute_multipart_form_data_with_file_when_single_post_route_is_aggregated()
+    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    public async Task Should_reroute_multipart_form_data_with_file_when_single_post_route_is_aggregated()
     {
         const string upstreamPath = "/upload";
         const string routeUpstreamPath = "/upload-route";
@@ -71,35 +63,23 @@ public sealed class MultipartFormDataTests : Steps
         var configuration = GivenAggregatedConfiguration(route, upstreamPath);
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, downstreamPath,
-                context => CaptureMultipartRequest(context, fieldName, fileFieldName, downstreamResponse)))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway(upstreamPath, content))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(downstreamResponse))
-            .And(_ => ThenTheDownstreamRequestShouldMatch(
-                downstreamPath,
-                fieldValue,
-                fileFieldName,
-                fileName,
-                fileContentType,
-                fileContent))
-            .BDDfy();
+        GivenThereIsAServiceRunningOn(port, downstreamPath,
+                context => CaptureMultipartRequest(context, fieldName, fileFieldName, downstreamResponse));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(downstreamResponse);
+        ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 
     private static MultipartFormDataContent GivenMultipartContent(
-        string fieldName,
-        string fieldValue,
-        string fileFieldName,
-        string fileName,
-        string fileContentType,
-        string fileContent)
+        string fieldName, string fieldValue, string fileFieldName, string fileName, string fileContentType, string fileContent)
     {
-        var content = new MultipartFormDataContent();
-        content.Add(new StringContent(fieldValue), fieldName);
-
+        var content = new MultipartFormDataContent
+        {
+            { new StringContent(fieldValue), fieldName }
+        };
         var fileBytes = new ByteArrayContent(Encoding.UTF8.GetBytes(fileContent));
         fileBytes.Headers.ContentType = new(fileContentType);
         content.Add(fileBytes, fileFieldName, fileName);
@@ -144,12 +124,7 @@ public sealed class MultipartFormDataTests : Steps
     }
 
     private void ThenTheDownstreamRequestShouldMatch(
-        string downstreamPath,
-        string fieldValue,
-        string fileFieldName,
-        string fileName,
-        string fileContentType,
-        string fileContent)
+        string downstreamPath, string fieldValue, string fileFieldName, string fileName, string fileContentType, string fileContent)
     {
         _downstreamPath.ShouldBe(downstreamPath);
         _downstreamContentType.ShouldStartWith("multipart/form-data; boundary=");
