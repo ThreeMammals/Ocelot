@@ -212,7 +212,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 
         await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader("/ClientRateLimit", 1, "bla-bla-header", "spy");
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
-        await ThenTheResponseBodyShouldBeAsync("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s[...] ");
+        await ThenTheResponseBodyShouldBeAsync("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s'!");
         ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
         ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "-1");
     }

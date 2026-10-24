@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Testing.Platform.Extensions.Messages;
 using Ocelot.DependencyInjection;
 
 namespace Ocelot.Acceptance.Authentication;
@@ -165,19 +166,19 @@ public sealed class AuthenticationTests : AuthSteps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(withAuth);
         await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
-        await GivenIHaveAToken(globalOptions.AllowedScopes[0]);
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0], null, null, null, TestName());
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheStatusCodeShouldBeOk();
         await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0]);
+        await GivenIHaveAToken(route2.AuthenticationOptions.AllowedScopes[0], null, null, null, TestName());
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route2");
         ThenTheStatusCodeShouldBeOk();
         await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken("Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        await GivenIHaveAToken("Mr.Who", null, null, null, TestName()); // should be different scope of route #3 which is "invalid-scope"
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
@@ -218,19 +219,19 @@ public sealed class AuthenticationTests : AuthSteps
         GivenOcelotIsRunning(WithJwtBearerAuthentication);
         await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
 
-        await GivenIHaveAToken("Mr.Who");
+        await GivenIHaveAToken("Mr.Who", testName: TestName());
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route1");
         ThenTheStatusCodeShouldBeOk(); // auth is switched off and the scope doesn't matter
         await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken(globalOptions.AllowedScopes[0]);
+        await GivenIHaveAToken(globalOptions.AllowedScopes[0], testName: TestName());
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/route2");
         ThenTheStatusCodeShouldBeOk(); // global scope has been accepted
         await ThenTheResponseBodyAsync();
 
-        await GivenIHaveAToken("Mr.Who"); // should be different scope of route #3 which is "invalid-scope"
+        await GivenIHaveAToken("Mr.Who", testName: TestName()); // should be different scope of route #3 which is "invalid-scope"
         GivenIHaveAddedATokenToMyRequest();
         await WhenIGetUrlOnTheApiGateway("/noAuthorization");
         ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);

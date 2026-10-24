@@ -147,7 +147,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     {
         Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
 
-        Action<IServiceCollection> WithExtraLogging = (services) =>
+        static void WithExtraLogging(IServiceCollection services) =>
             services.AddOcelot()
             .Services.RemoveAll<IOcelotLoggerFactory>()
             .AddSingleton<IOcelotLoggerFactory, TestLoggerFactory<ClientWebSocketTests>>();
@@ -166,7 +166,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         await _ws.SendAsync(upload, WebSocketMessageType.Text, true, CancelMe);
         await ThenIReceiveAsync(body);
         await WhenITryToReproduceBug930();
-        await Task.Delay(1_000, CancelMe);
+        await Task.Delay(1_000);
         ThenEnsureTheBug930HasNotBeenReproducedViaLogger();
     }
     private async Task ThenIReceiveAsync(string expected)
