@@ -24,9 +24,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s, so, periods are equal
         var configuration = GivenConfiguration(route);
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -50,35 +49,34 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
             limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s
         var configuration = GivenConfiguration(route);
         _counter = 0;
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
         ThenTheStatusCodeShouldBeOk();
 
-        await GivenIWait(50);
+        await GivenIWaitAsync(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 2
         ThenTheStatusCodeShouldBeOk();
 
-        await GivenIWait(50);
+        await GivenIWaitAsync(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 3
         ThenTheStatusCodeShouldBeOk();
 
-        await GivenIWait(50);
+        await GivenIWaitAsync(50);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 4, exceeded with 150ms shift
         ThenTheStatusCodeShouldBe(TooManyRequests);
 
-        await GivenIWait(500); // half of wait window
+        await GivenIWaitAsync(500); // half of wait window
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 5
         ThenTheStatusCodeShouldBe(TooManyRequests);
 
-        await GivenIWait(500 + 5); // wait window has elapsed
+        await GivenIWaitAsync(500 + 5); // wait window has elapsed
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 6->1
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBodyShouldBe("4"); // total 4 OK Responses
+        await ThenTheResponseBodyShouldBeAsync("4"); // total 4 OK Responses
     }
 
     private int _count = 0;
@@ -104,9 +102,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var route = GivenRoute(port, whitelist: [ClientID],
             limit: Limit, period: "3s", periodTimespan: 2); // main period is greater than wait window one
         var configuration = GivenConfiguration(route);
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -115,7 +112,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
             ClientID);
         ThenTheStatusCodeShouldBeOk();
         ThenResponseStatusesAre(Limit + 1, HttpStatusCode.OK);
-        ThenResponseBodiesAre(10);
+        await ThenResponseBodiesAre(10);
     }
 
     private void ThenResponseStatusesAre(int length, HttpStatusCode status)
@@ -124,12 +121,13 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         Responses.ShouldAllBe(response => response.StatusCode == status);
     }
 
-    private void ThenResponseBodiesAre(int sum)
+    private async Task ThenResponseBodiesAre(int sum)
     {
-        var bodies = Responses.Select(r => r.Content.ReadAsStringAsync().Result).ToList();
+        var bodies = await Task.WhenAll(
+            Responses.Select(r => r.Content.ReadAsStringAsync(CancelMe)));
         bodies.Sum(int.Parse).ShouldBe(sum); // n * (n + 1) / 2 -> 4*5/2 -> 20/2
-        bodies.Sort();
-        bodies.ForEach(body => int.Parse(body).ShouldBe(bodies.IndexOf(body) + 1)); // 1, 2, 3, 4
+        Array.Sort(bodies);
+        bodies.ToList().ForEach(body => int.Parse(body).ShouldBe(Array.IndexOf(bodies, body) + 1)); // 1, 2, 3, 4
     }
 
     [Fact]
@@ -147,25 +145,24 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var route = GivenRoute(port, "/api/ClientRateLimit?count={count}", "/ClientRateLimit/?{count}", new(),
             limit, period, periodTimespan); // bug scenario, adapted
         var configuration = GivenConfiguration(route);
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
         // main scenario
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, limit); // 100 times to reach the limit
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBodyShouldBe(route.RateLimitOptions.Limit.ToString()); // total 100 OK Responses
+        await ThenTheResponseBodyShouldBeAsync(route.RateLimitOptions.Limit.ToString()); // total 100 OK Responses
 
         // extra scenario
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1); // 101st request should fail
         ThenTheStatusCodeShouldBe(TooManyRequests);
 
-        await GivenIWait((int)TimeSpan.FromSeconds(periodTimespan).TotalMilliseconds); // in 3 secs Wait will elapse
+        await GivenIWaitAsync((int)TimeSpan.FromSeconds(periodTimespan).TotalMilliseconds); // in 3 secs Wait will elapse
         await WhenIGetUrlOnTheApiGatewayMultipleTimes(Url, 1);
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseBodyShouldBe("101"); // total 101 OK Responses
+        await ThenTheResponseBodyShouldBeAsync("101"); // total 101 OK Responses
     }
 
     [Theory]
@@ -178,9 +175,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var route = GivenRoute(port, limit: 3, period: "100s", periodTimespan: 1000.0D); // 3/100s/w1000.00s
         route.RateLimitOptions.EnableHeaders = enableHeaders;
         var configuration = GivenConfiguration(route);
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -209,15 +205,14 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, limit: 3, period: "1s", periodTimespan: 1); // -> 3/1s/w1s
         var configuration = GivenConfiguration(route);
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
         await WhenIGetUrlOnTheApiGatewayMultipleTimesWithRateLimitingByAHeader("/ClientRateLimit", 1, "bla-bla-header", "spy");
         ThenTheStatusCodeShouldBe(HttpStatusCode.ServiceUnavailable);
-        ThenTheResponseBodyShouldBe("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s[...] ");
+        await ThenTheResponseBodyShouldBeAsync("Rate limiting client could not be identified for the route '/ClientRateLimit' due to a missing or unknown client ID header required by rule '3/1s/w1s[...] ");
         ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
         ThenTheResponseHeaderIs(HeaderNames.RetryAfter, "-1");
     }
@@ -236,9 +231,8 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         global.Period = "1s";
         global.Wait = "500ms";
         int halfOfWaitWindow = 250;
-        var body = Body();
 
-        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit", body);
+        GivenThereIsAServiceRunningOnPath(port, "/api/ClientRateLimit");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -248,13 +242,13 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 4, exceeding
         ThenTheStatusCodeShouldBe(TooManyRequests);
 
-        await GivenIWait(halfOfWaitWindow);
+        await GivenIWaitAsync(halfOfWaitWindow);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 5
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        ThenTheResponseBodyShouldBe("Exceeding!");
+        await ThenTheResponseBodyShouldBeAsync("Exceeding!");
         ThenTheRetryAfterHeaderHasLowValue("0.1", "0.2");
 
-        await GivenIWait(halfOfWaitWindow); // the end of wait period
+        await GivenIWaitAsync(halfOfWaitWindow); // the end of wait period
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1); // 1, new counting period has started
         ThenTheStatusCodeShouldBeOk();
     }
@@ -294,9 +288,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         global.Wait = "500ms";
         int halfOfWaitWindow = 250;
 
-        var body = Body();
-
-        GivenThereIsAServiceRunningOn(port, body);
+        GivenThereIsAServiceRunningOn(port);
         GivenThereIsAServiceRunningOn(port2, "/api/ClientRateLimit2", MapOK);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
@@ -305,7 +297,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateUnlimited", (int)global.Limit + 1);
         ThenTheStatusCodeShouldBeOk();
         ThenResponseStatusesAre((int)global.Limit + 1, HttpStatusCode.OK);
-        ThenResponseBodiesAre(body);
+        await ThenResponseBodiesAreAsync(Body());
 
         // Make requests to the 2nd rate-limited route
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 3); // 3
@@ -314,22 +306,23 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 4, exceeding
         ThenTheStatusCodeShouldBe(TooManyRequests);
 
-        await GivenIWait(halfOfWaitWindow);
+        await GivenIWaitAsync(halfOfWaitWindow);
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 5
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        ThenTheResponseBodyShouldBe("Exceeding!");
+        await ThenTheResponseBodyShouldBeAsync("Exceeding!");
         ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
         ThenTheRetryAfterHeaderHasLowValue("0.1", "0.2");
 
-        await GivenIWait(halfOfWaitWindow); // the end of wait period
+        await GivenIWaitAsync(halfOfWaitWindow); // the end of wait period
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/rateLimited/", 1); // 1, new counting period has started
         ThenTheStatusCodeShouldBeOk();
     }
 
-    private void ThenResponseBodiesAre(string body)
+    private async Task ThenResponseBodiesAreAsync(string body)
     {
-        var bodies = Responses.Select(r => r.Content.ReadAsStringAsync().Result).ToList();
-        bodies.ForEach(b => b.ShouldBe(body));
+        var bodies = await Task.WhenAll(
+            Responses.Select(r => r.Content.ReadAsStringAsync(CancelMe)));
+        bodies.ShouldAllBe(b => b == body);
     }
 
     [Fact]
@@ -357,7 +350,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
 
         await WhenIGetUrlOnTheApiGatewayMultipleTimes("/ClientRateLimit", 1);
         ThenTheStatusCodeShouldBe(TooManyRequests);
-        ThenTheResponseBodyShouldBe("Exceeding!");
+        await ThenTheResponseBodyShouldBeAsync("Exceeding!");
         ThenTheResponseHeaderExists(HeaderNames.RetryAfter);
         ThenRetryAfterShouldStartWith("0.9"); // 0.9xx
         ThenTheRestOfMillisecondsShouldBeGreaterThan(900);
