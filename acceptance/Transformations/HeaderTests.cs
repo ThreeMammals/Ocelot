@@ -30,7 +30,7 @@ public sealed class HeaderTests : Steps
         GivenIAddAHeader("Laz", "D");
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Laz: GP");
+        await ThenTheResponseBodyShouldBeAsync("Laz: GP");
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public sealed class HeaderTests : Steps
         GivenIAddAHeader("Accept", "text/html,application/xhtml+xml,application/xml;");
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Accept: text/html,application/xhtml+xml,application/xml;");
+        await ThenTheResponseBodyShouldBeAsync("Accept: text/html,application/xhtml+xml,application/xml;");
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public sealed class HeaderTests : Steps
         GivenIAddAHeader("Accept", "application/xml");
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Accept: text/html, application/xhtml+xml, application/xml");
+        await ThenTheResponseBodyShouldBeAsync("Accept: text/html, application/xhtml+xml, application/xml");
     }
 
     [Fact(DisplayName = "TODO Redevelop Placeholders as part of Header Transformation feat")]
@@ -215,7 +215,7 @@ public sealed class HeaderTests : Steps
         //GivenIAddAHeader(X_Forwarded_For, remoteIpAddress);
         await WhenIGetUrlOnTheApiGateway("/");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/ocelotIP);
+        await ThenTheResponseBodyShouldBeAsync("X-Forwarded-For: " + /*remoteIpAddress*/ocelotIP);
     }
 
     public const string X_Forwarded_For = "X-Forwarded-For";
@@ -261,13 +261,13 @@ public sealed class HeaderTests : Steps
         GivenThereIsAServiceEchoingAHeader(port2, HttpStatusCode.OK, allHeaders);
         GivenThereIsAServiceEchoingAHeader(port3, HttpStatusCode.OK, allHeaders);
         GivenThereIsAConfiguration(configuration);
-        await GivenOcelotIsRunningAsync(pipeline);
+        int ocelot = await GivenOcelotIsRunningAsync(pipeline);
         await WhenIGetUrlOnTheApiGateway("/route1");
-        ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Raman");
+        await ThenTheResponseBodyShouldBeAsync($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Raman");
         await WhenIGetUrlOnTheApiGateway("/route2");
-        ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Mark");
+        await ThenTheResponseBodyShouldBeAsync($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: Mark");
         await WhenIGetUrlOnTheApiGateway("/route3");
-        ThenTheResponseBodyShouldBe($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: ?");
+        await ThenTheResponseBodyShouldBeAsync($"X-Forwarded-For: {ocelotIP}{NL}X-Forwarded-Host: http://ocelot.net{NL}X-Forwarded-Proto: https{NL}Ot-Route: ?");
     }
 
     [Fact]
