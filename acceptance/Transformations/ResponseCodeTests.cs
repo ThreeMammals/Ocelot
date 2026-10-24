@@ -10,12 +10,11 @@ public sealed class ResponseCodeTests : Steps
         var port = PortFinder.GetRandomPort();
         var route = GivenCatchAllRoute(port);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        GivenThereIsAServiceRunningOn(port, HttpStatusCode.NotModified, body);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.NotModified);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/inline.132.bundle.js");
         ThenTheStatusCodeShouldBe(HttpStatusCode.NotModified);
-        ThenTheResponseBodyShouldBeEmpty();
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 }

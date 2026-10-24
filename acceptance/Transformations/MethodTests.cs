@@ -31,7 +31,7 @@ public sealed class MethodTests : Steps
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGateway("/", httpContent);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class MethodTests : Steps
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway("/", httpContent);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe(expected);
+        await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     public override FileRoute GivenRoute(int port, string up = null, string down = null)
