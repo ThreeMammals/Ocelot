@@ -22,6 +22,7 @@ public class FileGlobalConfiguration
         ServiceDiscoveryProvider = new();
         Timeout = null;
         UpstreamHeaderTransform = new Dictionary<string, string>();
+        WebSocket = default;
     }
 
     public FileGlobalAuthenticationOptions AuthenticationOptions { get; set; }
@@ -52,4 +53,5 @@ public class FileGlobalConfiguration
     /// <value>A <see cref="Nullable{T}"/> (T is <see cref="int"/>) value, in seconds.</value>
     public int? Timeout { get; set; }
     public IDictionary<string, string> UpstreamHeaderTransform { get; set; }
+    public FileGlobalWebSocketOptions WebSocket { get; set; }
 }
