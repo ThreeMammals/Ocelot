@@ -171,7 +171,7 @@ If the code coverage of a newly opened pull request drops below the 80% threshol
 Documentation
 -------------
 .. _docs: https://github.com/ThreeMammals/Ocelot/tree/main/docs
-.. _.readthedocs.yaml: https://github.com/ThreeMammals/Ocelot/blob/main/.readthedocs.yaml
+.. _.readthedocs.yaml: https://github.com/ThreeMammals/Ocelot/blob/main/docs/.readthedocs.yaml
 .. _Read the Docs: https://about.readthedocs.com
 .. _Ocelot app: https://app.readthedocs.org/projects/ocelot/
 .. _README: https://github.com/ThreeMammals/Ocelot/blob/main/docs/readme.md
@@ -202,12 +202,18 @@ More details on the documentation build process can be found in the `README`_.
 
 Testing
 -------
+.. _'build' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+build%3A+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+.. _Unit Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Unit+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+.. _Acceptance Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Acceptance+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+.. _'build-cake' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22-cake%3A%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+.. _Cake Build: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22cake-build%2F%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
 
 The tests should run and function correctly as part of the *building* process using the ``dotnet test`` command.
-You can also run them in Visual Studio IDE within the Test Explorer window.
+You can also run them in Visual Studio IDE within the Test Explorer window. :sup:`1`
+
 Depending on your build scenario, `Ocelot`_ *testing* can be performed as follows.
 
-:ref:`b-in-ide`: Simply run tests via the Test Explorer window of Visual Studio IDE.
+:ref:`b-in-ide`: Simply run tests via the Test Explorer window of Visual Studio IDE. :sup:`1`
 
 :ref:`b-in-terminal`: There are two main approaches:
 
@@ -240,11 +246,9 @@ Instead, perform automated testing :ref:`b-with-ci-cd` or opt for :ref:`b-in-ter
 * In the `'build' job`_: There are '`Unit Tests`_' and '`Acceptance Tests`_' steps.
 * In the `'build-cake' job`_: There is a '`Cake Build`_' step responsible for performing tests internally.
 
-.. _'build' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+build%3A+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
-.. _Unit Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Unit+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
-.. _Acceptance Tests: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22Acceptance+Tests%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
-.. _'build-cake' job: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22-cake%3A%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
-.. _Cake Build: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+%22cake-build%2F%22+path%3A%2F%5E%5C.github%5C%2Fworkflows%5C%2F%2F&type=code
+.. note::
+  :sup:`1` Running `acceptance <https://github.com/ThreeMammals/Ocelot/tree/develop/acceptance>`_ tests in a local IDE environment has :ref:`b-gotchas` on Windows because of possible active application-control or corporate policies.
+  Running the tests in a local terminal is free of those :ref:`b-gotchas` (see point 1).
 
 .. _b-code-coverage:
 
@@ -306,3 +310,39 @@ To create a certificate for :ref:`b-testing`, you can use `OpenSSL <https://www.
 
     openssl pkcs12 -export -in public.pem -inkey private.pem -out mycert.pfx
 
+.. _b-gotchas:
+
+Gotchas
+-------
+
+To be aware of the following gotchas when building `Ocelot`_:
+
+.. admonition:: Gotcha 1
+  :class: warning
+
+  An application-control (corporate) policy on Windows OS machine usually blocks `acceptance`_ test hosts.
+  Ocelot `acceptance`_ tests use custom development SSL certificate and custom DNS records.
+
+When an Ocelot developer runs a freshly cloned repo on Windows 10/11, the Visual Studio IDE testing session for `acceptance`_ tests opens a pop-up window to accept the "Three Mammals" certificate, which is part of the repository.
+Thus, the user must accept this development "Three Mammals" certificate (network) because it connects to a local domain alias in the local DNS file, a.k.a. the ``hosts`` file, which should have the following DNS record:
+
+.. code-block:: text
+
+  # localhost name resolution is handled within DNS itself.
+  127.0.0.1   threemammals.com
+  # ::1       localhost
+
+.. _break4: http://break.do
+
+  **Note**: This is the ``c:\Windows\System32\drivers\etc\hosts`` file on Windows.
+  It is better to comment out the ``::1 localhost`` record to avoid IPv6 issues with the `acceptance`_ tests.
+  That way, only the IPv4 record is used for the ``threemammals.com`` alias.
+  Afterwards, the developer may see the ``threemammals.com`` alias as a ghost network in some reporting tools,
+  but that is OK because you hacked the Windows DNS configuration yourself :)
+
+So, the development certificate must be signed for ``threemammals.com`` (it doesn't exist on the web), which some `acceptance`_ tests connect to.
+These tests must connect only locally, via the DNS alias, to validate the development certificates successfully.
+Our CI/CD scripts add a ``threemammals.com`` record to the local OS DNS system.
+A developer can update the local DNS system once and then forget about it.
+After cloning the Ocelot repository and building it, when running the `acceptance`_ tests, just accept this ghost "Three Mammals" network (Windows) and forget about it too.
+Unfortunately, the Visual Studio IDE respects local policies. The scripts only need a local DNS record, and nothing more.

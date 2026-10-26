@@ -3,8 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
-using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -51,7 +51,7 @@ public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
                 QueryString = new QueryString("?a=b"),
             },
         };
-        httpContext.Request.Headers.Append("Host", "most");
+        httpContext.Request.Headers.Host = "most";
         httpContext.Items.SetIInternalConfiguration(new InternalConfiguration());
         _httpContext = httpContext;
     }

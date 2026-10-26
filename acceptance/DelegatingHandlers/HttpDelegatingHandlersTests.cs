@@ -9,89 +9,83 @@ public sealed class HttpDelegatingHandlersTests : Steps
     private string _downstreamPath;
 
     [Fact]
-    public void Should_call_route_ordered_specific_handlers()
+    public async Task Should_call_route_ordered_specific_handlers()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         route.DelegatingHandlers = ["FakeHandlerTwo", "FakeHandler"];
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheOrderedHandlersAreCalledCorrectly())
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+        ThenTheOrderedHandlersAreCalledCorrectly();
     }
 
     [Fact]
-    public void Should_call_global_di_handlers()
+    public async Task Should_call_global_di_handlers()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>())
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheHandlersAreCalledCorrectly())
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandler, FakeHandlerTwo>();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+        ThenTheHandlersAreCalledCorrectly();
     }
 
     [Fact]
-    public void Should_call_global_di_handlers_multiple_times()
+    public async Task Should_call_global_di_handlers_multiple_times()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithDelegatingHandler<FakeHandlerAgain>(true))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithDelegatingHandler<FakeHandlerAgain>(true);
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
-    public void Should_call_global_di_handlers_with_dependency()
+    public async Task Should_call_global_di_handlers_with_dependency()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
         var dependency = new FakeDependency();
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency))
-            .And(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheDependencyIsCalled(dependency))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithGlobalHandlersRegisteredInDi<FakeHandlerWithDependency>(dependency);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+        ThenTheDependencyIsCalled(dependency);
     }
 
     private void GivenOcelotIsRunningWithSpecificHandlersRegisteredInDi<THandler1, THandler2>()

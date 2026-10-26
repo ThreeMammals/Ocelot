@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <AssemblyVersion>25.0.2</AssemblyVersion>
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
@@ -23,8 +23,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceFabric" Version="12.0.997-beta" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.6.235" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="11.8.121" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="8.8.121" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Ocelot.csproj" />

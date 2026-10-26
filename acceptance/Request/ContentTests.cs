@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
+using System.Net.Mime;
 
 namespace Ocelot.Acceptance.Request;
 
@@ -11,54 +13,48 @@ public sealed class ContentTests : Steps
     private bool _contentTypeHeaderExists;
 
     [Fact]
-    public void Should_Not_add_content_type_or_content_length_headers()
+    public async Task Should_Not_add_content_type_or_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Get);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-            .And(x => ThenTheContentTypeShouldBeEmpty())
-            .And(x => ThenTheContentLengthShouldBeZero())
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
+        ThenTheContentTypeShouldBeEmpty();
+        ThenTheContentLengthShouldBeZero();
     }
 
     [Fact]
-    public void Should_add_content_type_and_content_length_headers()
+    public async Task Should_add_content_type_and_content_length_headers()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        var contentType = "application/json";
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent", contentType))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-            .And(x => ThenTheContentTypeIsIs(contentType))
-        .BDDfy();
+        var contentType = MediaTypeNames.Application.Json;
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", "postContent", contentType);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Created);
+        ThenTheContentTypeIsIs(contentType);
     }
 
     [Fact]
-    public void Should_add_default_content_type_header()
+    public async Task Should_add_default_content_type_header()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", "postContent"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Created))
-            .And(x => ThenTheContentTypeIsIs("text/plain; charset=utf-8"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.Created, string.Empty);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", "postContent");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Created);
+        ThenTheContentTypeIsIs("text/plain; charset=utf-8");
     }
 
     [Fact]
@@ -66,20 +62,18 @@ public sealed class ContentTests : Steps
     [Trait("Feat", "356")] // https://github.com/ThreeMammals/Ocelot/issues/356
     [Trait("Feat", "695")] // https://github.com/ThreeMammals/Ocelot/issues/695
     [Trait("Bug", "1924")] // https://github.com/ThreeMammals/Ocelot/issues/1924
-    public void Should_Not_increase_memory_usage_When_downloading_large_file()
+    public async Task Should_Not_increase_memory_usage_When_downloading_large_file()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Get);
         var configuration = GivenConfiguration(route);
         var dummyDatFilePath = GenerateDummyDatFile(100); // large file
-        this
-            .Given(x => x.GivenThereIsAServiceWithPayloadRunningOn(port, "/", dummyDatFilePath))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => x.ThenMemoryUsageShouldNotIncrease())
-        .BDDfy();
+        GivenThereIsAServiceWithPayloadRunningOn(port, "/", dummyDatFilePath);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenMemoryUsageShouldNotIncrease();
     }
 
     private void ThenMemoryUsageShouldNotIncrease()
@@ -111,7 +105,7 @@ public sealed class ContentTests : Steps
         {
             _contentType = context.Request.ContentType;
             _contentLength = context.Request.ContentLength;
-            _contentTypeHeaderExists = context.Request.Headers.TryGetValue("Content-Type", out var value);
+            _contentTypeHeaderExists = context.Request.Headers.TryGetValue(HeaderNames.ContentType, out var value);
             context.Response.StatusCode = (int)statusCode;
             return context.Response.WriteAsync(responseBody);
         });

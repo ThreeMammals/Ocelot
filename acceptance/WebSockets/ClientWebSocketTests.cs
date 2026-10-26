@@ -39,26 +39,25 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("ws://corefx-net-http11.azurewebsites.net/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
     [InlineData("wss://echo.websocket.org", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
-    public void Http11ClientWhenDirectConnectionThenShouldConnect(string url, string expected)
+    public async Task Http11ClientWhenDirectConnectionThenShouldConnect(string url, string expected)
     {
         Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
 
-        var body = Body();
         var echoEndpoint = new Uri(url);
-        this
-            .Given(x => GivenOptions())
-            .And(x => _ws.ConnectAsync(echoEndpoint, CancelMe))
-            .When(x => WhenISendAndReceiveEchoMessage(body))
-            .ThenIf(string.IsNullOrEmpty(expected), x => ThenEchoShouldBe(Expected(body)))
-            .ThenIfNot(string.IsNullOrEmpty(expected), x => ThenEchoShouldStartWith(expected))
-        .BDDfy();
+        GivenOptions();
+        await _ws.ConnectAsync(echoEndpoint, CancelMe);
+        await WhenISendAndReceiveEchoMessage();
+        if (string.IsNullOrEmpty(expected))
+            ThenEchoShouldBe(Expected(Body()));
+        else
+            ThenEchoShouldStartWith(expected);
     }
 
     /// <summary>It tests the following stack: HTTP/2, SSL, WebSocket.</summary>
     /// <remarks>HTTP/2 always requires an SSL certificate.</remarks>
     /// <returns>A <see cref="Task"/> object.</returns>
     [Fact]
-    public void Http20ClientWhenDirectConnectionThenShouldConnect()
+    public async Task Http20ClientWhenDirectConnectionThenShouldConnect()
     {
         int port = PortFinder.GetRandomPort();
         var echoEndpoint = new UriBuilder(Uri.UriSchemeWss, /*"localhost"*/ "threemammals.com", port).Uri;
@@ -71,14 +70,11 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         if (IsCiCd() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) // MacOS
             handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // TODO Makes sense to log in console
         using var invoker = new HttpMessageInvoker(handler);
-        var body = Body();
-        this
-            .Given(x => GivenHttp2Options())
-            .And(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync))
-            .And(x => _ws.ConnectAsync(echoEndpoint, invoker, CancelMe))
-            .When(x => WhenISendAndReceiveEchoMessage(body))
-            .Then(x => ThenEchoShouldBe(Expected(body)))
-        .BDDfy();
+        GivenHttp2Options();
+        await GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync);
+        await _ws.ConnectAsync(echoEndpoint, invoker, CancelMe);
+        await WhenISendAndReceiveEchoMessage();
+        ThenEchoShouldBe(Expected(Body()));
     }
 
     ///// <summary>In the middle, Ocelot tests the following stack: HTTP 1.1, SSL, WebSocket.</summary>
@@ -87,7 +83,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx", null)] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
     [InlineData("wss","echo.websocket.org", 443, "/", "Request served by ")] // https://websocket.org/tools/websocket-echo-server/
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
-    public void Http11ClientWhenOcelotInTheMiddleThenShouldConnect(string scheme, string host, int port, string path, string expected)
+    public async Task Http11ClientWhenOcelotInTheMiddleThenShouldConnect(string scheme, string host, int port, string path, string expected)
     {
         Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
 
@@ -95,16 +91,13 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         var configuration = GivenConfiguration(route);
         int ocelotPort = PortFinder.GetRandomPort();
         var ocelot = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
-        var body = Body();
-        this
-            .Given(x => GivenOptions())
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => StartOcelotWithWebSockets(ocelotPort, WithAddOcelot))
-            .And(x => _ws.ConnectAsync(ocelot, CancelMe))
-            .When(x => WhenISendAndReceiveEchoMessage(body))
-            .ThenIf(string.IsNullOrEmpty(expected), x => ThenEchoShouldBe(Expected(body)))
-            .ThenIfNot(string.IsNullOrEmpty(expected), x => ThenEchoShouldStartWith(expected))
-        .BDDfy();
+        GivenOptions();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, WithAddOcelot);
+        await _ws.ConnectAsync(ocelot, CancelMe);
+        await WhenISendAndReceiveEchoMessage();
+        if (string.IsNullOrEmpty(expected)) ThenEchoShouldBe(Expected(Body()));
+        else ThenEchoShouldStartWith(expected);
     }
 
     /// <summary>In the middle, Ocelot tests the following stack: HTTP/2, SSL, WebSocket.</summary>
@@ -121,7 +114,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     //         See MS Learn | YARP Proxying WebSockets and SPDY -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/websockets
     [Fact(DisplayName = "TODO " + nameof(Http20ClientWhenOcelotInTheMiddleThenShouldConnect),
         Skip = "TODO: HTTP/2 (SSL) vs WebSocket is unsupported scenario by Ocelot Core currently, unfortunately...")]
-    public void Http20ClientWhenOcelotInTheMiddleThenShouldConnect()
+    public async Task Http20ClientWhenOcelotInTheMiddleThenShouldConnect()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenWsRoute(Uri.UriSchemeWss, /*"localhost"*/ "threemammals.com", port);
@@ -135,16 +128,13 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
             ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true,
         };
         using var invoker = new HttpMessageInvoker(handler);
-        var body = Body();
-        this
-            .Given(x => GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => StartHttp2OcelotWithWebSockets(ocelotPort))
-            .And(x => GivenHttp2Options())
-            .And(x => _ws.ConnectAsync(ocelot, invoker, CancelMe)) // TODO System.Net.WebSockets.WebSocketException : The server returned status code '500' when status code '200' was expected.
-            .When(x => WhenISendAndReceiveEchoMessage(body))
-            .Then(x =>  ThenEchoShouldBe(Expected(body)))
-        .BDDfy();
+        await GivenWebSocketsHttp2ServiceIsRunningAsync(port, EchoAsync);
+        GivenThereIsAConfiguration(configuration);
+        await StartHttp2OcelotWithWebSockets(ocelotPort);
+        GivenHttp2Options();
+        await _ws.ConnectAsync(ocelot, invoker, CancelMe); // TODO System.Net.WebSockets.WebSocketException : The server returned status code '500' when status code '200' was expected.
+        await WhenISendAndReceiveEchoMessage();
+        ThenEchoShouldBe(Expected(Body()));
     }
 
     [Theory]
@@ -153,11 +143,11 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("ws", "corefx-net-http11.azurewebsites.net", 80, "/WebSocket/EchoWebSocket.ashx")] // https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/websockets#differences-in-http11-and-http2-websockets
     /*[InlineData("wss", "echo.websocket.org", 443, "/")] // https://websocket.org/tools/websocket-echo-server/ */
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
-    public void Http11ClientWhenConnectionClosedPrematurelyThenShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
+    public async Task Http11ClientWhenConnectionClosedPrematurelyThenShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
     {
         Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
 
-        Action<IServiceCollection> WithExtraLogging = (services) =>
+        static void WithExtraLogging(IServiceCollection services) =>
             services.AddOcelot()
             .Services.RemoveAll<IOcelotLoggerFactory>()
             .AddSingleton<IOcelotLoggerFactory, TestLoggerFactory<ClientWebSocketTests>>();
@@ -168,18 +158,16 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
         var ocelot = new UriBuilder(Uri.UriSchemeWs, "localhost", ocelotPort).Uri;
         var body = Expected();
         var upload = Encoding.ASCII.GetBytes(body);
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => StartOcelotWithWebSockets(ocelotPort, WithExtraLogging))
-            .And(x => GivenOptions())
-            .And(x => _ws.ConnectAsync(ocelot, CancelMe))
-            //await WhenISendAndReceiveEchoMessage();
-            .When(x => _ws.SendAsync(upload, WebSocketMessageType.Text, true, CancelMe))
-            .Then(x => ThenIReceiveAsync(body))
-            .When(x => WhenITryToReproduceBug930())
-            .And(x => Task.Delay(1_000))
-            .Then(x => ThenEnsureTheBug930HasNotBeenReproducedViaLogger())
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        await StartOcelotWithWebSockets(ocelotPort, WithExtraLogging);
+        GivenOptions();
+        await _ws.ConnectAsync(ocelot, CancelMe);
+        //await WhenISendAndReceiveEchoMessage();
+        await _ws.SendAsync(upload, WebSocketMessageType.Text, true, CancelMe);
+        await ThenIReceiveAsync(body);
+        await WhenITryToReproduceBug930();
+        GivenIWait(1_000);
+        ThenEnsureTheBug930HasNotBeenReproducedViaLogger();
     }
     private async Task ThenIReceiveAsync(string expected)
     {

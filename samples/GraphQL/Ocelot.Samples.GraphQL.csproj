@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <AssemblyVersion>25.0.2</AssemblyVersion>
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
@@ -21,8 +21,8 @@
     <None Update="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="8.8.4" />
-    <PackageReference Include="GraphQL.NewtonsoftJson" Version="8.8.4" />
+    <PackageReference Include="GraphQL" Version="8.8.5" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" Version="8.8.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ocelot.csproj" />

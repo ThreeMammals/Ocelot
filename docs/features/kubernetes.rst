@@ -7,6 +7,10 @@
   :height: 50
   :class: img-valign-bottom
   :target: https://kubernetes.io
+.. |K8s_label| image:: https://img.shields.io/badge/-Kubernetes-D4C5F9.svg
+  :target: https://github.com/ThreeMammals/Ocelot/labels/Kubernetes
+  :alt: label Kubernetes
+  :class: img-valign-textbottom
 
 .. _KubeClient: https://www.nuget.org/packages/KubeClient
 .. _Ocelot.Provider.Kubernetes: https://www.nuget.org/packages/Ocelot.Provider.Kubernetes
@@ -20,6 +24,7 @@
    :local:
 .. _break: http://break.do
 
+  | Label: |K8s_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/Kubernetes}{Kubernetes}`
   | Feature of: :doc:`../features/servicediscovery`
   | Quick Links: `K8s Website <https://kubernetes.io/>`_ | `K8s Documentation <https://kubernetes.io/docs/>`_ | `K8s GitHub <https://github.com/kubernetes/kubernetes>`_
 
@@ -40,6 +45,9 @@ Install
   :height: 14
   :class: img-valign-middle
   :target: https://kubernetes.io
+.. _break2: http://break.do
+
+  Repository: `Ocelot.Discovery.KubeClient <https://github.com/ThreeMammals/Ocelot.Discovery.KubeClient>`__
 
 .. only:: html
 

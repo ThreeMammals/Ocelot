@@ -1,3 +1,8 @@
+.. role:: htm(raw)
+  :format: html
+.. role:: pdf(raw)
+  :format: latex pdflatex
+
 Service Discovery
 =================
 .. contents:: Table of Contents
@@ -374,15 +379,19 @@ Refer to the repository's `acceptance test`_ for further examples.
 
 Eureka [#f4]_
 -------------
-
+.. |EU_label| image:: https://img.shields.io/badge/-Eureka-E92CDE.svg
+  :target: https://github.com/ThreeMammals/Ocelot/labels/Eureka
+  :alt: label Eureka
+  :class: img-valign-textbottom
 .. _Steeltoe: https://steeltoe.io
 .. _Pivotal: https://pivotal.io/platform
 .. _Eureka: https://www.nuget.org/packages/Steeltoe.Discovery.Eureka
 .. _Ocelot.Provider.Eureka: https://www.nuget.org/packages/Ocelot.Provider.Eureka
 .. _Ocelot.Discovery.Eureka: https://www.nuget.org/packages/Ocelot.Discovery.Eureka
 
+  | Label: |EU_label|:pdf:`\href{https://github.com/ThreeMammals/Ocelot/labels/Eureka}{Eureka}`
   | Package: `Ocelot.Discovery.Eureka`_
-  | Namespace: ``Ocelot.Discovery.Eureka``
+  | Repository: `Ocelot.Discovery.Eureka <https://github.com/ThreeMammals/Ocelot.Discovery.Eureka>`__
 
 This feature supports the Netflix `Eureka`_ *service discovery* provider.
 The primary reason for this is that it is a key product of `Steeltoe`_, which is associated with `Pivotal`_.
@@ -433,7 +442,7 @@ When Ocelot requests a given service, it retrieves the data from memory, minimiz
 
 If not explicitly specified in `ocelot.json <https://github.com/ThreeMammals/Ocelot/blob/main/samples/Eureka/ApiGateway/ocelot.json>`__, Ocelot will use the scheme (``http``, ``https``) set in *Eureka*.
 
-.. note::
+.. warning::
 
   Prior to version `25.0`_, the package was named `Ocelot.Provider.Eureka`_.
   If you are using version `24.1`_ or earlier, install the `Ocelot.Provider.Eureka`_ package.

@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <VersionPrefix>0.0.0-dev</VersionPrefix>
-    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <AssemblyVersion>25.0.2</AssemblyVersion>
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
     <Authors>Tom Pallister, Raman Maksimchuk</Authors>
@@ -21,8 +21,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ocelot.Discovery.Eureka" Version="25.0.0-beta.3" />
-    <PackageReference Include="Ocelot.QualityOfService.Polly" Version="25.0.0-beta.2" />
+    <PackageReference Include="Ocelot.Discovery.Eureka" Version="25.0.1" />
+    <PackageReference Include="Ocelot.QualityOfService.Polly" Version="25.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />

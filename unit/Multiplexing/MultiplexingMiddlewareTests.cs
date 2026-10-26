@@ -7,6 +7,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Mime;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Ocelot.UnitTests.Multiplexing;
 public class MultiplexingMiddlewareTests : UnitTest
 {
     private MultiplexingMiddleware _middleware;
-    private Ocelot.DownstreamRouteFinder.DownstreamRouteHolder _downstreamRoute;
+    private Route _route;
     private int _count;
     private readonly DefaultHttpContext _httpContext;
     private readonly Mock<IResponseAggregatorFactory> factory;
@@ -70,11 +71,35 @@ public class MultiplexingMiddlewareTests : UnitTest
         GivenUser("test", "Copy", TestName());
 
         // Act
-        var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-        var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext, route });
+        var actual = await CreateThreadContextAsync(_httpContext, route);
 
         // Assert
         AssertUsers(actual);
+    }
+
+    private MethodInfo CreateThreadContextAsync()
+        => _middleware.GetType().GetMethod(nameof(CreateThreadContextAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+
+    private Task<HttpContext> CreateThreadContextAsync(HttpContext source, DownstreamRoute route)
+        => (Task<HttpContext>)CreateThreadContextAsync().Invoke(_middleware, [source, route]);
+
+    [Fact]
+    [Trait("PR", "1826")]
+    public async Task CreateThreadContextAsync_CopyHeaders_ToTarget()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        _httpContext.Request.Headers.Append(TestName() + 1, "value1");
+        _httpContext.Request.Headers.Append(TestName() + 2, "value2");
+
+        // Act
+        var target = await CreateThreadContextAsync(_httpContext, route);
+
+        // Assert
+        target.Request.Headers.TryGetValue(TestName() + 1, out var h1).ShouldBeTrue();
+        Assert.Equal("value1", h1);
+        target.Request.Headers.TryGetValue(TestName() + 2, out var h2).ShouldBeTrue();
+        Assert.Equal("value2", h2);
     }
 
     [Fact]
@@ -324,7 +349,7 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         var json = @"[{""userId"":1},{""userId"":2}]";
         context.Items.Add("DownstreamResponse",
-            new DownstreamResponse(new StringContent(json, Encoding.UTF8, "application/json"),
+            new DownstreamResponse(new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json),
                 HttpStatusCode.OK, new List<Header>(), "test"));
         if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
             context.Items.Add("TemplatePlaceholderNameAndValues", new List<PlaceholderNameAndValue>());
@@ -440,7 +465,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         return context =>
         {
             var responseContent = @"[{""id"":1,""writerId"":1,""postId"":2,""text"":""text1""},{""id"":2,""writerId"":1,""postId"":2,""text"":""text2""}]";
-            context.Items.Add("DownstreamResponse", new DownstreamResponse(new StringContent(responseContent, Encoding.UTF8, "application/json"), HttpStatusCode.OK, new List<Header>(), "test"));
+            context.Items.Add("DownstreamResponse", new DownstreamResponse(new StringContent(responseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<Header>(), "test"));
 
             if (!context.Items.ContainsKey("TemplatePlaceholderNameAndValues"))
             {
@@ -514,7 +539,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
     private void GivenTheFollowing(Route route)
     {
-        _downstreamRoute = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(new List<PlaceholderNameAndValue>(), route);
-        _httpContext.Items.UpsertDownstreamRoute(_downstreamRoute);
+        _route = route;
+        _httpContext.Items.UpsertRoute(_route);
     }
 }

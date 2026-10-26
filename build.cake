@@ -1,5 +1,5 @@
 ﻿#tool dotnet:?package=GitVersion.Tool&version=6.8.2
-#tool nuget:?package=ReportGenerator&version=5.5.10
+#tool nuget:?package=ReportGenerator&version=5.5.11
 
 // Switch from Newtonsoft to System.Text.Json lib!
 #addin nuget:?package=Newtonsoft.Json
@@ -101,9 +101,9 @@ Task("Tests")
 Task("Release")
 	.IsDependentOn("Build")
 	.IsDependentOn("CreateReleaseNotes")
-	.IsDependentOn("CreateArtifacts");
-	//.IsDependentOn("PublishGitHubRelease")
-	//.IsDependentOn("PublishToNuget");
+	.IsDependentOn("CreateArtifacts")
+	.IsDependentOn("PublishGitHubRelease")
+	.IsDependentOn("PublishToNuget");
 
 Task("Restore")
     .Does(() =>
@@ -210,9 +210,9 @@ Task("CreateReleaseNotes")
 	{
         Information($"Generating release notes at {releaseNotesFile}");
         var lastReleaseTags = GitHelper("describe --tags --abbrev=0 --exclude *beta* --exclude *alpha*");
-        var lastRelease = "24.1.0"; // lastReleaseTags.First();
+        var lastRelease = /*"24.1.0";*/ lastReleaseTags.First();
         var releaseVersion = versioning.NuGetVersion;
-        var HEAD = "25.0.0"; // "HEAD";
+        var HEAD = /*"25.0.0";*/ "HEAD";
 
         // Read main header from Git file, substitute version in header, and add content further...
         Information("{0}  New release tag is " + releaseVersion);
@@ -437,15 +437,15 @@ Task("CreateReleaseNotes")
             }
             return log;
         } // END of IterateCommits
-        releaseNotes.Add("### Honoring :medal_sports: Top 5 Contributors :clap:");
-        releaseNotes.AddRange(topContributors.Take(5)); // Top 3 only, disabled 'breaker' logic
+        // releaseNotes.Add("### Honoring :medal_sports: Top 5 Contributors :clap:");
+        // releaseNotes.AddRange(topContributors.Take(5)); // Top 3 only, disabled 'breaker' logic
+        // releaseNotes.Add("");
+        // releaseNotes.Add("### Starring :star: Release Influencers :bowtie:");
+        // releaseNotes.AddRange(starring);
+        // releaseNotes.Add("");
+        releaseNotes.Add($"### Features of version {releaseVersion}");
         releaseNotes.Add("");
-        releaseNotes.Add("### Starring :star: Release Influencers :bowtie:");
-        releaseNotes.AddRange(starring);
-        releaseNotes.Add("");
-        releaseNotes.Add($"### Features in Release {releaseVersion}");
-        releaseNotes.Add("");
-        releaseNotes.Add("<details><summary>Logbook</summary>");
+        releaseNotes.Add("<details><summary><b>Logbook</b></summary>");
         releaseNotes.Add("");
         var commitsHistory = GitHelper($"log --no-merges --date=format:\"%A, %B %d at %H:%M\" --pretty=format:\"- <sub>%h by **%aN** on %ad &rarr;</sub>%n  %s\" {lastRelease}..{HEAD}");
         releaseNotes.AddRange(commitsHistory);
@@ -540,15 +540,15 @@ Task("UnitTests")
 			var settings = new DotNetTestSettings
 			{
 				Configuration = compileConfig,
-				ResultsDirectory = artifactsForUnitTestsDir,
+				ResultsDirectory = artifactsForUnitTestsDir, // ./artifacts/UnitTests
 				/*
-          dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
-            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
+                dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
+                  --results-directory ./artifacts/UnitTests --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*" | tee test_output.txt
 				*/
 				ArgumentCustomization = args => args
 					.Append("--no-restore")
 					.Append("--no-build")
-					.Append("--verbosity:" + verbosity)
+					.Append("--verbosity " + verbosity)
 					.Append("--coverlet")
 					.Append("--coverlet-include \"[Ocelot*]*\"")
 					.Append("--coverlet-exclude \"[Ocelot.Testing]*\""),

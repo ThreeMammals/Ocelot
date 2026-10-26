@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -246,24 +247,27 @@ public class AcceptanceSteps : IDisposable
     }
 
     protected async Task<int> GivenOcelotHostIsRunning(
-        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
-        Action<IServiceCollection>? configureServices,
-        Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? сonfigureWebHost, Action<IWebHostBuilder>? postConfigureHost,
-        // Action<TestServer>? configureServer,
-        Action<HttpClient>? configureClient)
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate = null,
+        Action<IServiceCollection>? configureServices = null,
+        Action<IApplicationBuilder>? configureApp = null,
+        Action<IWebHostBuilder>? сonfigureWebHost = null,
+        Action<IWebHostBuilder>? postConfigureHost = null,
+        // Action<TestServer>? configureServer = null,
+        Action<HttpClient>? configureClient = null,
+        int? port = null, bool useKestrel = true)
     {
-        int port = PortFinder.GetRandomPort();
-        var baseUrl = DownstreamUrl(port);
+        port ??= PortFinder.GetRandomPort();
+        var baseUrl = DownstreamUrl(port.Value);
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder
-                .UseKestrel()
                 .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
                 .ConfigureServices(configureServices ?? WithAddOcelot)
                 .Configure(configureApp ?? WithUseOcelot)
                 .UseUrls(baseUrl);
-                //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            if (useKestrel)
+                builder.UseKestrel();
             postConfigureHost?.Invoke(builder);
         }
         var host = TestHostBuilder
@@ -277,7 +281,7 @@ public class AcceptanceSteps : IDisposable
         ocelotClient = ocelotServer?.CreateClient();
         ocelotClient ??= new() { BaseAddress = new(baseUrl), };
         configureClient?.Invoke(ocelotClient);
-        return port;
+        return port.Value;
     }
 
     protected IServiceProvider OcelotServices { get => ocelotServer?.Services ?? ocelotHost!.Services; }
@@ -334,7 +338,7 @@ public class AcceptanceSteps : IDisposable
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-        requestMessage.Headers.Add("Cookie", cookie.ToString());
+        requestMessage.Headers.Add(HeaderNames.Cookie, cookie.ToString());
         return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage, CancelMe);
     }
     #endregion
@@ -407,7 +411,7 @@ public class AcceptanceSteps : IDisposable
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
         content.Add(dataContent, name);
-        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+        content.Headers.ContentDisposition = new("form-data");
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = content,

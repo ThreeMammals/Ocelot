@@ -154,7 +154,7 @@ jobs:
   #           exit 1
   #         fi
   #-----------------------------------------------------------------------------------------------------------------
-  # # Matrix build job having 2 dimensions (os, ver)
+  # Matrix build job having 2 dimensions (os, ver)
   # build:
   #   strategy:
   #     max-parallel: 3
@@ -195,7 +195,6 @@ jobs:
   #         src/packages.lock.json
   #         testing/packages.lock.json
   #         unit/packages.lock.json
-  #       # samples/**/packages.lock.json
   #   - name: .NET Info
   #     run: dotnet --info
   #   - name: Add DNS-records
@@ -211,8 +210,7 @@ jobs:
   #   - name: Acceptance Tests
   #     run: dotnet test --no-restore --no-build --verbosity minimal --framework ${{ matrix.framework }}.0 --project ./acceptance/Ocelot.Acceptance.csproj
 
-  build: # coverage
-    # needs: build-windows
+  build: # coverage:
     # needs: [build-linux, build-macos, build-windows]
     # needs: build
     runs-on: ubuntu-latest
@@ -259,7 +257,7 @@ jobs:
       - name: Unit Tests
         run: |
           dotnet test --no-restore --no-build --verbosity normal --framework net10.0 --project ./unit/Ocelot.UnitTests.csproj \
-            --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
+            --results-directory ./artifacts/TestResults --coverlet --coverlet-include "[Ocelot*]*" --coverlet-exclude "[Ocelot.Testing]*"
       - name: Acceptance Tests
         run: dotnet test --no-restore --no-build --verbosity minimal --framework net10.0 --project ./acceptance/Ocelot.Acceptance.csproj
       - name: Coverage files

@@ -2,6 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Middleware;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace Ocelot.Multiplexer;
 
@@ -74,7 +75,7 @@ public class SimpleJsonResponseAggregator : IResponseAggregator
 
         var stringContent = new StringContent(contentBuilder.ToString())
         {
-            Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
+            Headers = { ContentType = new MediaTypeHeaderValue(MediaTypeNames.Application.Json) },
         };
 
         originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));
