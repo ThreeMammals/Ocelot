@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.Acceptance.Request;
 
+[Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
 public sealed class MultipartFormDataTests : Steps
 {
     private string _downstreamPath;
@@ -15,7 +17,7 @@ public sealed class MultipartFormDataTests : Steps
     private string _downstreamFileContent;
 
     [Fact]
-    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    [Trait("PR", "2421")] // https://github.com/ThreeMammals/Ocelot/pull/2421
     public async Task Should_reroute_multipart_form_data_with_file()
     {
         const string upstreamPath = "/upload";
@@ -37,12 +39,12 @@ public sealed class MultipartFormDataTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheStatusCodeShouldBeOk();
         ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 
     [Fact]
-    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    [Trait("PR", "2421")] // https://github.com/ThreeMammals/Ocelot/pull/2421
     public async Task Should_reroute_multipart_form_data_with_file_when_single_post_route_is_aggregated()
     {
         const string upstreamPath = "/upload";
@@ -68,7 +70,7 @@ public sealed class MultipartFormDataTests : Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheStatusCodeShouldBeOk();
         await ThenTheResponseBodyShouldBeAsync(downstreamResponse);
         ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
@@ -118,7 +120,7 @@ public sealed class MultipartFormDataTests : Steps
         context.Response.StatusCode = StatusCodes.Status200OK;
         if (responseBody is not null)
         {
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = MediaTypeNames.Application.Json;
             await context.Response.WriteAsync(responseBody, context.RequestAborted);
         }
     }

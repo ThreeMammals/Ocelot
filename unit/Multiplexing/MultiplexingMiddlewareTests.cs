@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -7,10 +8,12 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using _ContentDispositionHeaderValue_ = System.Net.Http.Headers.ContentDispositionHeaderValue;
 
 namespace Ocelot.UnitTests.Multiplexing;
 
@@ -103,8 +106,8 @@ public class MultiplexingMiddlewareTests : UnitTest
     }
 
     [Fact]
-    [Trait("Bug", "714")]
-    public async Task CreateThreadContextAsync_Should_allow_multipart_form_to_be_read_from_cloned_body()
+    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    public async Task CreateThreadContextAsync_ShouldAllowMultipartFormToBeReadFromClonedBody()
     {
         // Arrange
         var route = new DownstreamRouteBuilder().Build();
@@ -114,33 +117,49 @@ public class MultiplexingMiddlewareTests : UnitTest
         const string fileFieldName = "file";
         const string fileName = "test.txt";
         const string fileContent = "multipart-file-content";
-        var body =
-            $"--{boundary}\r\n" +
-            $"Content-Disposition: form-data; name=\"{fieldName}\"\r\n\r\n" +
-            $"{fieldValue}\r\n" +
-            $"--{boundary}\r\n" +
-            $"Content-Disposition: form-data; name=\"{fileFieldName}\"; filename=\"{fileName}\"\r\n" +
-            "Content-Type: text/plain\r\n\r\n" +
-            $"{fileContent}\r\n" +
-            $"--{boundary}--\r\n";
-        var bytes = Encoding.UTF8.GetBytes(body);
-        _httpContext.Request.Body = new MemoryStream(bytes);
+        var fieldFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
+        {
+            Name = $"\"{fieldName}\"",
+        };
+        var fileFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
+        {
+            Name = $"\"{fileFieldName}\"",
+            FileName = $"\"{fileName}\""
+        };
+        var body = new StringBuilder()
+            .AppendLine($"--{boundary}")
+            .AppendLine($"{HeaderNames.ContentDisposition}: {fieldFormData}")
+            .AppendLine()
+            .AppendLine($"{fieldValue}")
+            .AppendLine($"--{boundary}")
+            .AppendLine($"{HeaderNames.ContentDisposition}: {fileFormData}")
+            .AppendLine($"{HeaderNames.ContentType}: {MediaTypeNames.Text.Plain}")
+            .AppendLine()
+            .AppendLine($"{fileContent}")
+            .AppendLine($"--{boundary}--");
+        var bytes = Encoding.UTF8.GetBytes(body.ToString());
+        var contentType = new ContentType(MediaTypeNames.Multipart.FormData)
+        {
+            Boundary = boundary,
+        };
+        using var ms = new MemoryStream(bytes);
+        _httpContext.Request.Body = ms;
         _httpContext.Request.ContentLength = bytes.Length;
-        _httpContext.Request.ContentType = $"multipart/form-data; boundary={boundary}";
-        _httpContext.Request.Method = "POST";
+        _httpContext.Request.ContentType = contentType.ToString();
+        _httpContext.Request.Method = HttpMethods.Post;
 
         // Act
-        var method = _middleware.GetType().GetMethod("CreateThreadContextAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-        var actual = await (Task<HttpContext>)method.Invoke(_middleware, new object[] { _httpContext, route });
+        var actual = await CreateThreadContextAsync(_httpContext, route);
         var form = await actual.Request.ReadFormAsync(CancelMe);
-        var file = form.Files.GetFile(fileFieldName).ShouldNotBeNull();
+        var file = form.Files.GetFile(fileFieldName);
+        Assert.NotNull(file);
 
         // Assert
-        form[fieldName].ToString().ShouldBe(fieldValue);
-        file.Name.ShouldBe(fileFieldName);
-        file.FileName.ShouldBe(fileName);
+        Assert.Equal(fieldValue, form[fieldName]);
+        Assert.Equal(fileFieldName, file.Name);
+        Assert.Equal(fileName, file.FileName);
         using var reader = new StreamReader(file.OpenReadStream());
-        (await reader.ReadToEndAsync(CancelMe)).ShouldBe(fileContent);
+        Assert.Equal(fileContent, await reader.ReadToEndAsync(CancelMe));
     }
 
     [Fact]
