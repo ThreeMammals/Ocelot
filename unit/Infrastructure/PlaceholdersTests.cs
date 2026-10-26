@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
@@ -233,5 +232,23 @@ public class PlaceholdersTests
 
         // Assert
         result.Data.ShouldBe(httpContext.Connection.RemoteIpAddress.ToString());
+    }
+
+    [Fact]
+    public void Should_return_upstream_scheme()
+    {
+        var scheme = "http1000.1";
+        var httpContext = new DefaultHttpContext { Request = { Scheme = scheme } };
+        _accessor.Setup(x => x.HttpContext).Returns(httpContext);
+        var result = _placeholders.Get("{UpstreamScheme}");
+        result.Data.ShouldBe(scheme);
+    }
+
+    [Fact]
+    public void Should_return_error_finding_upstream_scheme_because_exception_thrown()
+    {
+        _accessor.Setup(x => x.HttpContext).Throws(new Exception());
+        var result = _placeholders.Get("{UpstreamScheme}");
+        result.IsError.ShouldBeTrue();
     }
 }
