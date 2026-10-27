@@ -18,12 +18,11 @@ public class MultiplexingMiddleware : OcelotMiddleware
     private const string RequestIdString = "RequestId";
 
     public MultiplexingMiddleware(RequestDelegate next,
-        IOcelotLoggerFactory loggerFactory,
-        IResponseAggregatorFactory factory)
+        IOcelotLoggerFactory loggerFactory, IResponseAggregatorFactory factory)
         : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
     {
-        _factory = factory;
         _next = next;
+        _factory = factory;
     }
 
     public async Task Invoke(HttpContext context)
