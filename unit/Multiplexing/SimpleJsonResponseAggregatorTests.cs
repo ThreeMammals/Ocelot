@@ -137,6 +137,129 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         ThenTheErrorIsMapped(upstreamContext, downstreamContexts);
     }
 
+    [Fact]
+    public async Task Should_aggregate_two_contexts_with_same_key()
+    {
+        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
+        var route = new Route() { DownstreamRoute = downstreamRoutes };
+
+        // First downstream context with content
+        var productsContext1 = new DefaultHttpContext();
+        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1,\"name\":\"Product1\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+
+        // Second downstream context with content
+        var productsContext2 = new DefaultHttpContext();
+        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":2,\"name\":\"Product2\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+
+        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
+        var expected = "{\"Products\":[{\"id\":1,\"name\":\"Product1\"},{\"id\":2,\"name\":\"Product2\"}]}";
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
+    }
+
+    [Fact]
+    public async Task Should_aggregate_multiple_responses_in_array_with_trailing_comma_handling()
+    {
+        var ordersDownstreamRoute = new DownstreamRouteBuilder().WithKey("Orders").Build();
+        var downstreamRoutes = new List<DownstreamRoute> { ordersDownstreamRoute };
+        var route = new Route() { DownstreamRoute = downstreamRoutes };
+
+        // First downstream context
+        var ordersContext1 = new DefaultHttpContext();
+        ordersContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":101}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        ordersContext1.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
+
+        // Second downstream context
+        var ordersContext2 = new DefaultHttpContext();
+        ordersContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":102}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        ordersContext2.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
+
+        // Third downstream context
+        var ordersContext3 = new DefaultHttpContext();
+        ordersContext3.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":103}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        ordersContext3.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
+
+        var downstreamContexts = new List<HttpContext> { ordersContext1, ordersContext2, ordersContext3 };
+        var expected = "{\"Orders\":[{\"orderId\":101},{\"orderId\":102},{\"orderId\":103}]}";
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
+    }
+
+    [Fact]
+    public async Task Should_return_error_if_error_occurs_in_first_of_multiple_contexts()
+    {
+        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
+        var route = new Route() { DownstreamRoute = downstreamRoutes };
+
+        // First downstream context with error
+        var productsContext1 = new DefaultHttpContext();
+        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error occurred"), HttpStatusCode.InternalServerError, new List<KeyValuePair<string, IEnumerable<string>>>(), "error reason"));
+        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+        productsContext1.Items.SetError(new AnyError());
+
+        // Second downstream context with content
+        var productsContext2 = new DefaultHttpContext();
+        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":2}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+
+        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
+        var expected = "Error occurred";
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheErrorIsMapped(upstreamContext, productsContext1);
+    }
+
+    [Fact]
+    public async Task Should_return_error_if_error_occurs_in_last_of_multiple_contexts()
+    {
+        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
+        var route = new Route() { DownstreamRoute = downstreamRoutes };
+
+        // First downstream context with content
+        var productsContext1 = new DefaultHttpContext();
+        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+
+        // Second downstream context with error
+        var productsContext2 = new DefaultHttpContext();
+        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error occurred"), HttpStatusCode.InternalServerError, new List<KeyValuePair<string, IEnumerable<string>>>(), "error reason"));
+        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+        productsContext2.Items.SetError(new AnyError());
+
+        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
+        var expected = "Error occurred";
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheErrorIsMapped(upstreamContext, productsContext2);
+    }
+
     private static void ThenTheReasonPhraseIs(DefaultHttpContext upstreamContext, string expected)
     {
         upstreamContext.Items.DownstreamResponse().ReasonPhrase.ShouldBe(expected);
@@ -146,6 +269,12 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     {
         upstreamContext.Items.Errors().ShouldBe(downstreamContexts[1].Items.Errors());
         upstreamContext.Items.DownstreamResponse().ShouldBe(downstreamContexts[1].Items.DownstreamResponse());
+    }
+
+    private static void ThenTheErrorIsMapped(DefaultHttpContext upstreamContext, HttpContext downstreamContext)
+    {
+        upstreamContext.Items.Errors().ShouldBe(downstreamContext.Items.Errors());
+        upstreamContext.Items.DownstreamResponse().ShouldBe(downstreamContext.Items.DownstreamResponse());
     }
 
     private static async Task ThenTheContentIs(DefaultHttpContext upstreamContext, string expected)
