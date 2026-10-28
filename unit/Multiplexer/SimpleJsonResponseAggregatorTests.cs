@@ -8,6 +8,7 @@ using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
 using System.Net.Mime;
 using System.Text;
+using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexer;
 
@@ -258,6 +259,43 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         // Assert
         await ThenTheContentIs(upstreamContext, expected);
         ThenTheErrorIsMapped(upstreamContext, productsContext2);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Should_skip_empty_or_whitespace_content_in_multiple_context_array_aggregation(string emptyContent)
+    {
+        var dataDownstreamRoute = new DownstreamRouteBuilder().WithKey("Data").Build();
+        var downstreamRoutes = new List<DownstreamRoute> { dataDownstreamRoute };
+        var route = new Route() { DownstreamRoute = downstreamRoutes };
+
+        // First downstream context with valid content
+        var dataContext1 = new DefaultHttpContext();
+        dataContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1,\"value\":\"first\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        dataContext1.Items.UpsertDownstreamRoute(dataDownstreamRoute);
+
+        // Second downstream context with empty/whitespace content - should be skipped
+        var dataContext2 = new DefaultHttpContext();
+        dataContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(emptyContent ?? string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        dataContext2.Items.UpsertDownstreamRoute(dataDownstreamRoute);
+
+        // Third downstream context with valid content
+        var dataContext3 = new DefaultHttpContext();
+        dataContext3.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":3,\"value\":\"third\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
+        dataContext3.Items.UpsertDownstreamRoute(dataDownstreamRoute);
+
+        var downstreamContexts = new List<HttpContext> { dataContext1, dataContext2, dataContext3 };
+        var expected = "{\"Data\":[{\"id\":1,\"value\":\"first\"},{\"id\":3,\"value\":\"third\"}]}";
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, expected);
+        ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
     }
 
     private static void ThenTheReasonPhraseIs(DefaultHttpContext upstreamContext, string expected)
