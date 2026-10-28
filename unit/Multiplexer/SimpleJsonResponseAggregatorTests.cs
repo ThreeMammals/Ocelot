@@ -9,7 +9,7 @@ using Ocelot.Values;
 using System.Net.Mime;
 using System.Text;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class SimpleJsonResponseAggregatorTests : UnitTest
 {

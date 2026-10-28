@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
-using Ocelot.Configuration.Builder;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class UserDefinedResponseAggregatorTests : UnitTest
 {
@@ -80,17 +79,5 @@ public class UserDefinedResponseAggregatorTests : UnitTest
         _provider.Verify(x => x.Get(route), Times.Once);
         context.Items.Errors().Count.ShouldBeGreaterThan(0);
         context.Items.Errors().Count.ShouldBe(1);
-    }
-
-    public class TestDefinedAggregator : IDefinedAggregator
-    {
-        public async Task<DownstreamResponse> Aggregate(List<HttpContext> responses)
-        {
-            var tom = await responses[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
-            var laura = await responses[1].Items.DownstreamResponse().Content.ReadAsStringAsync();
-            var content = $"{tom}, {laura}";
-            var headers = responses.SelectMany(x => x.Items.DownstreamResponse().Headers).ToList();
-            return new DownstreamResponse(new StringContent(content), HttpStatusCode.OK, headers, "some reason");
-        }
     }
 }

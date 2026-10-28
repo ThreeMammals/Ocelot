@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class MultiplexingMiddlewareTests : UnitTest
 {
