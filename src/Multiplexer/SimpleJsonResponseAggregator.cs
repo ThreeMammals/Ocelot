@@ -8,12 +8,12 @@ namespace Ocelot.Multiplexer;
 
 public class SimpleJsonResponseAggregator : IResponseAggregator
 {
-    public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamContexts)
+    public async Task Aggregate(Route route, HttpContext context, List<HttpContext> downstreamContexts)
     {
-        await MapAggregateContent(originalContext, downstreamContexts);
+        await MapAggregateContent(context, downstreamContexts);
     }
 
-    private static async Task MapAggregateContent(HttpContext originalContext, List<HttpContext> downstreamContexts)
+    private static async Task MapAggregateContent(HttpContext context, List<HttpContext> downstreamContexts)
     {
         var json = new StringBuilder("{");
         var responseKeys = downstreamContexts
@@ -28,12 +28,12 @@ public class SimpleJsonResponseAggregator : IResponseAggregator
                 var ctx = contexts[0];
                 if (ctx.Items.Errors().Count > 0)
                 {
-                    MapAggregateError(originalContext, ctx);
+                    MapAggregateError(context, ctx);
                     return;
                 }
 
                 var drsp = ctx.Items.DownstreamResponse();
-                var content = await drsp.Content.ReadAsStringAsync();
+                var content = await drsp.Content.ReadAsStringAsync(context.RequestAborted); // WTF? Can't read from ctx?
                 json.Append($"\"{key}\":{content}"); // TODO Chain of Append instead of interpolated obj
             }
             else
@@ -44,11 +44,12 @@ public class SimpleJsonResponseAggregator : IResponseAggregator
                 {
                     if (ctxt.Items.Errors().Count > 0)
                     {
-                        MapAggregateError(originalContext, ctxt);
+                        MapAggregateError(context, ctxt);
                         return;
                     }
 
-                    var content = await ctxt.Items.DownstreamResponse().Content.ReadAsStringAsync();
+                    var drsp = ctxt.Items.DownstreamResponse();
+                    var content = await drsp.Content.ReadAsStringAsync(context.RequestAborted);
                     if (string.IsNullOrWhiteSpace(content))
                         continue;
 
@@ -65,15 +66,15 @@ public class SimpleJsonResponseAggregator : IResponseAggregator
 
         var jsonContent = new StringContent(json.ToString(), new MediaTypeHeaderValue(MediaTypeNames.Application.Json));
         var dr = new DownstreamResponse(jsonContent, HttpStatusCode.OK, EmptyHeaders, "cannot return from aggregate..which reason phrase would you use?");
-        originalContext.Items.UpsertDownstreamResponse(dr);
+        context.Items.UpsertDownstreamResponse(dr);
     }
 
     private static readonly List<Header> EmptyHeaders = [];
 
     // TODO Make it virtual.
-    private static void MapAggregateError(HttpContext originalContext, HttpContext downstreamContext)
+    private static void MapAggregateError(HttpContext context, HttpContext downstreamContext)
     {
-        originalContext.Items.UpsertErrors(downstreamContext.Items.Errors());
-        originalContext.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
+        context.Items.UpsertErrors(downstreamContext.Items.Errors());
+        context.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
     }
 }

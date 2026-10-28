@@ -288,8 +288,13 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         global.Wait = "500ms";
         int halfOfWaitWindow = 250;
 
-        GivenThereIsAServiceRunningOn(port);
-        GivenThereIsAServiceRunningOn(port2, "/api/ClientRateLimit2", MapOK);
+        Task MapOk(HttpContext ctx)
+        {
+            MapStatus_ResponseBody = (c) => Body();
+            return base.MapStatus(ctx);
+        }
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, MapOk);
+        GivenThereIsAServiceRunningOnPath(port2, "/api/ClientRateLimit2");
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
 
@@ -391,7 +396,7 @@ public sealed class ClientHeaderRateLimitingTests : RateLimitingSteps
         response.Headers.Contains(RateLimitingHeaders.X_RateLimit_Reset).ShouldBe(headersExist);
     }
 
-    protected override Task MapOK(HttpContext context)
+    protected override Task MapStatus(HttpContext context)
     {
         int count = Interlocked.Increment(ref _counter); // thread-safe analog of _counter++
         context.Response.StatusCode = (int)HttpStatusCode.OK;
