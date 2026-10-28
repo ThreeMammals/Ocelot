@@ -25,11 +25,10 @@ public sealed class MethodTests : Steps
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
         const string expected = "here is some content";
-        var httpContent = new StringContent(expected);
         GivenThereIsAServiceRunningOn(port, "/", HttpMethods.Post);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        await WhenIGetUrlOnTheApiGateway("/", expected);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync(expected);
     }

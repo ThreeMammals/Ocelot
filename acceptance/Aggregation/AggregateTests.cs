@@ -20,6 +20,8 @@ public sealed class AggregateTests : AuthSteps // Steps
 {
     [Fact]
     [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
+    [Trait("PR", "600")] // https://github.com/ThreeMammals/Ocelot/pull/600
+    [Trait("Release", "11.0.3")] // https://github.com/ThreeMammals/Ocelot/releases/tag/11.0.3
     public async Task Should_fix_issue_597()
     {
         var port = GivenPorts(1)[0];
@@ -49,6 +51,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
     [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
+    [Trait("Release", "13.2.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.2.0
     public async Task Should_return_response_200_with_advanced_aggregate_configs()
     {
         var ports = GivenPorts(3);
@@ -80,6 +83,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "298")] // https://github.com/ThreeMammals/Ocelot/issues/298
     [Trait("PR", "310")] // https://github.com/ThreeMammals/Ocelot/pull/310
+    [Trait("Release", "5.5.2")] // https://github.com/ThreeMammals/Ocelot/releases/tag/5.5.2
     public async Task Should_return_response_200_with_simple_url_user_defined_aggregate()
     {
         var ports = GivenPorts(2);
@@ -101,6 +105,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_return_response_200_with_simple_url()
     {
         var ports = GivenPorts(2);
@@ -121,6 +126,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_return_response_200_with_simple_url_one_service_404()
     {
         var ports = GivenPorts(2);
@@ -141,6 +147,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_return_response_200_with_simple_url_both_service_404()
     {
         var ports = GivenPorts(2);
@@ -161,6 +168,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
     [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_be_thread_safe()
     {
         var ports = GivenPorts(2);
@@ -286,6 +294,8 @@ public sealed class AggregateTests : AuthSteps // Steps
     #region PR 2050 // https://github.com/ThreeMammals/Ocelot/pull/2050
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
+    [Trait("PR", "2050")] // https://github.com/ThreeMammals/Ocelot/pull/2050
+    [Trait("Release", "23.3.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
     public async Task Should_return_response_200_with_copied_body_sent_on_multiple_services()
     {
         var ports = GivenPorts(2);
@@ -301,13 +311,15 @@ public sealed class AggregateTests : AuthSteps // Steps
         GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => MapFromBody(ctx, body => body.Replace("#REPLACESTRING#", "s2")));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGatewayWithBody("/", requestBody);
+        await WhenIGetUrlOnTheApiGateway("/", requestBody);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
     [Fact]
     [Trait("Bug", "2039")] // https://github.com/ThreeMammals/Ocelot/issues/2039
+    [Trait("PR", "2050")] // https://github.com/ThreeMammals/Ocelot/pull/2050
+    [Trait("Release", "23.3.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
     public async Task Should_return_response_200_with_copied_form_sent_on_multiple_services()
     {
         var ports = GivenPorts(2);
@@ -323,8 +335,8 @@ public sealed class AggregateTests : AuthSteps // Steps
         var sub2ResponseContent = "\"[key:param1=value1&param2=from-form-s2]\"";
         var expected = $"{{\"Service1\":{sub1ResponseContent},\"Service2\":{sub2ResponseContent}}}";
 
-        GivenThereIsAServiceRunningOn(ports[0], "/Sub1", ctx => AggregateTests.MapFromForm(ctx, body => body.Replace("REPLACESTRING", "s1")));
-        GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => AggregateTests.MapFromForm(ctx, body => body.Replace("REPLACESTRING", "s2")));
+        GivenThereIsAServiceRunningOn(ports[0], "/Sub1", ctx => MapFromForm(ctx, body => body.Replace("REPLACESTRING", "s1")));
+        GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => MapFromForm(ctx, body => body.Replace("REPLACESTRING", "s2")));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIGetUrlOnTheApiGatewayWithForm("/", "key", formValues);
@@ -343,6 +355,7 @@ public sealed class AggregateTests : AuthSteps // Steps
     [Fact]
     [Trait("Bug", "2248")] // // https://github.com/ThreeMammals/Ocelot/issues/2248
     [Trait("PR", "2328")] // https://github.com/ThreeMammals/Ocelot/pull/2328
+    [Trait("Release", "25.0.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
     public async Task Should_expand_jsonpath_array_into_multiple_parameterized_calls_for_complex_aggregation()
     {
         const string id = "id"; // placeholder
@@ -381,16 +394,24 @@ public sealed class AggregateTests : AuthSteps // Steps
         await ThenTheResponseBodyShouldBeAsync(expected);
     }
 
-    [Fact]
-    [Trait("Feat", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Theory]
+    [InlineData(nameof(HttpMethods.Delete))]
+    [InlineData(nameof(HttpMethods.Head))] // no aggregation -> empty body
+    [InlineData(nameof(HttpMethods.Options))]
+    [InlineData(nameof(HttpMethods.Patch))]
+    [InlineData(nameof(HttpMethods.Post))]
+    [InlineData(nameof(HttpMethods.Put))]
+    [InlineData(nameof(HttpMethods.Trace))]
+    [Trait("Feat", "1741")] // https://github.com/ThreeMammals/Ocelot/discussions/1741
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
     [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
-    public async Task Should_return_response_200_with_post_body_sent_on_multiple_services()
+    public async Task Should_return_response_200_with_any_verb_body_sent_not_following_the_REST(string httpVerb)
     {
         var ports = GivenPorts(2);
         var route1 = GivenAggRoute(ports[0], "Service1", "/Service1", "/Sub1");
         var route2 = GivenAggRoute(ports[1], "Service2", "/Service2", "/Sub2");
         var configuration = GivenConfiguration(route1, route2);
-        configuration.Aggregates[0].UpstreamHttpMethod = [HttpMethods.Post]; // !!
+        configuration.Aggregates[0].UpstreamHttpMethod = [httpVerb]; // !!! Yahooo!
         var requestBody = "{\"id\":1,\"response\":\"fromBody-REPLACE_ME\"}";
         var downstreamBody1 = "{\"id\":1,\"response\":\"fromBody-s1\"}";
         var downstreamBody2 = "{\"id\":1,\"response\":\"fromBody-s2\"}";
@@ -401,9 +422,21 @@ public sealed class AggregateTests : AuthSteps // Steps
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         HttpContent content = new StringContent(requestBody, Encoding.UTF8, MediaTypeNames.Application.Json);
-        await WhenIPostUrlOnTheApiGateway("/", content);
+
+        // Let's ignore REST guidelines :LoL
+        await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", httpVerb, content);
+
         ThenTheStatusCodeShouldBeOk();
-        await ThenTheResponseBodyShouldBeAsync(expected);
+        if (httpVerb.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+            await ThenTheResponseBodyShouldBeEmpty();
+        else
+            await ThenTheResponseBodyShouldBeAsync(expected);
+    }
+    private async Task WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation(string url, string httpMethod, HttpContent content)
+    {
+        HttpMethod method = new(httpMethod);
+        var request = new HttpRequestMessage(method, url) { Content = content };
+        response = await ocelotClient.SendAsync(request, CancelMe);
     }
 
     private static async Task MapFromBody(HttpContext context, Func<string, string> responseFromBody)

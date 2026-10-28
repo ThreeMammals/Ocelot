@@ -1,5 +1,4 @@
-﻿using Castle.Components.DictionaryAdapter;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Middleware;
@@ -7,50 +6,36 @@ using Ocelot.Multiplexer;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
 using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Text;
-using Xunit;
 
 namespace Ocelot.UnitTests.Multiplexer;
 
+[Trait("Feat", "79")] // https://github.com/ThreeMammals/Ocelot/issues/79
 public class SimpleJsonResponseAggregatorTests : UnitTest
 {
-    private readonly SimpleJsonResponseAggregator _aggregator;
-
-    public SimpleJsonResponseAggregatorTests()
-    {
-        _aggregator = new SimpleJsonResponseAggregator();
-    }
+    private readonly SimpleJsonResponseAggregator _aggregator = new();
 
     [Fact]
+    [Trait("Feat", "661")] // https://github.com/ThreeMammals/Ocelot/issues/661
+    [Trait("PR", "704")] // https://github.com/ThreeMammals/Ocelot/pull/704
+    [Trait("Release", "13.2.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/13.2.0
     public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context_withConfig()
     {
         var commentsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Comments").Build();
         var userDetailsDownstreamRoute = new DownstreamRouteBuilder().WithKey("UserDetails")
             .WithUpstreamPathTemplate(new UpstreamPathTemplate(string.Empty, 0, false, "/v1/users/{userId}"))
             .Build();
-        var downstreamRoutes = new List<DownstreamRoute>
-        {
-            commentsDownstreamRoute,
-            userDetailsDownstreamRoute,
-        };
         var route = new Route()
         {
-            DownstreamRoute = downstreamRoutes,
-            DownstreamRouteConfig = [
-                new("UserDetails", "$[*].writerId", "userId")
-            ],
+            DownstreamRoute = [commentsDownstreamRoute, userDetailsDownstreamRoute],
+            DownstreamRouteConfig = [ new("UserDetails", "$[*].writerId", "userId") ],
         };
 
         var commentsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptywriterIdstring.Empty:1,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext1string.Empty},{string.Emptyidstring.Empty:2,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:2,string.Emptytextstring.Empty:string.Emptytext2string.Empty},{string.Emptyidstring.Empty:3,string.EmptywriterIdstring.Empty:2,string.EmptypostIdstring.Empty:1,string.Emptytextstring.Empty:string.Emptytext21string.Empty}]";
-
-        var commentsDownstreamContext = new DefaultHttpContext();
-        commentsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(commentsResponseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        commentsDownstreamContext.Items.UpsertDownstreamRoute(commentsDownstreamRoute);
-
+        var commentsDownstreamContext = GivenContext(commentsDownstreamRoute, GivenJsonContent(commentsResponseContent));
         var userDetailsResponseContent = @"[{string.Emptyidstring.Empty:1,string.EmptyfirstNamestring.Empty:string.Emptyabolfazlstring.Empty,string.EmptylastNamestring.Empty:string.Emptyrajabpourstring.Empty},{string.Emptyidstring.Empty:2,string.EmptyfirstNamestring.Empty:string.Emptyrezastring.Empty,string.EmptylastNamestring.Empty:string.Emptyrezaeistring.Empty}]";
-        var userDetailsDownstreamContext = new DefaultHttpContext();
-        userDetailsDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(userDetailsResponseContent, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        userDetailsDownstreamContext.Items.UpsertDownstreamRoute(userDetailsDownstreamRoute);
+        var userDetailsDownstreamContext = GivenContext(userDetailsDownstreamRoute, GivenJsonContent(userDetailsResponseContent));
 
         var downstreamContexts = new List<HttpContext> { commentsDownstreamContext, userDetailsDownstreamContext };
         var expected = "{\"Comments\":" + commentsResponseContent + ",\"UserDetails\":" + userDetailsResponseContent + "}";
@@ -66,27 +51,19 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_aggregate_n_responses_and_set_response_content_on_upstream_context()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
         var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
-        var downstreamRoutes = new List<DownstreamRoute>
-        {
-            billDownstreamRoute,
-            georgeDownstreamRoute,
-        };
         var route = new Route()
         {
-            DownstreamRoute = downstreamRoutes,
+            DownstreamRoute = [billDownstreamRoute, georgeDownstreamRoute]
         };
 
-        var billDownstreamContext = new DefaultHttpContext();
-        billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new EditableList<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
-
-        var georgeDownstreamContext = new DefaultHttpContext();
-        georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("George says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
+        var billDownstreamContext = GivenContext(billDownstreamRoute, GivenJsonContent("Bill says hi"));
+        var georgeDownstreamContext = GivenContext(georgeDownstreamRoute, GivenJsonContent("George says hi"));
 
         var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
         var expected = "{\"Bill\":Bill says hi,\"George\":George says hi}";
@@ -102,60 +79,44 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "248")] // https://github.com/ThreeMammals/Ocelot/pull/248
+    [Trait("Release", "3.1.7")] // https://github.com/ThreeMammals/Ocelot/releases/tag/3.1.7
     public async Task Should_return_error_if_any_downstreams_have_errored()
     {
         var billDownstreamRoute = new DownstreamRouteBuilder().WithKey("Bill").Build();
         var georgeDownstreamRoute = new DownstreamRouteBuilder().WithKey("George").Build();
-        var downstreamRoutes = new List<DownstreamRoute>
-        {
-            billDownstreamRoute,
-            georgeDownstreamRoute,
-        };
         var route = new Route()
         {
-            DownstreamRoute = downstreamRoutes,
+            DownstreamRoute = [billDownstreamRoute, georgeDownstreamRoute]
         };
 
-        var billDownstreamContext = new DefaultHttpContext();
-        billDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Bill says hi"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        billDownstreamContext.Items.UpsertDownstreamRoute(billDownstreamRoute);
-
-        var georgeDownstreamContext = new DefaultHttpContext();
-        georgeDownstreamContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error"), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        georgeDownstreamContext.Items.UpsertDownstreamRoute(georgeDownstreamRoute);
-
+        var billDownstreamContext = GivenContext(billDownstreamRoute, GivenJsonContent("Bill says hi"));
+        var georgeDownstreamContext = GivenContext(billDownstreamRoute, GivenJsonContent("Error"), HttpStatusCode.InternalServerError);
         georgeDownstreamContext.Items.SetError(new AnyError());
 
         var downstreamContexts = new List<HttpContext> { billDownstreamContext, georgeDownstreamContext };
-        var expected = "Error";
         var upstreamContext = new DefaultHttpContext();
 
         // Act
         await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
         // Assert
-        await ThenTheContentIs(upstreamContext, expected);
+        await ThenTheContentIs(upstreamContext, "Error");
         ThenTheErrorIsMapped(upstreamContext, downstreamContexts);
     }
 
     [Fact]
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public async Task Should_aggregate_two_contexts_with_same_key()
     {
-        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
-        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
-        var route = new Route() { DownstreamRoute = downstreamRoutes };
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var route = new Route(downstreamRoute);
 
-        // First downstream context with content
-        var productsContext1 = new DefaultHttpContext();
-        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1,\"name\":\"Product1\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+        var context1 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":1,\"name\":\"Product1\"}"));
+        var context2 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":2,\"name\":\"Product2\"}"));
 
-        // Second downstream context with content
-        var productsContext2 = new DefaultHttpContext();
-        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":2,\"name\":\"Product2\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
-
-        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
+        var downstreamContexts = new List<HttpContext> { context1, context2 };
         var expected = "{\"Products\":[{\"id\":1,\"name\":\"Product1\"},{\"id\":2,\"name\":\"Product2\"}]}";
         var upstreamContext = new DefaultHttpContext();
 
@@ -168,28 +129,18 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public async Task Should_aggregate_multiple_responses_in_array_with_trailing_comma_handling()
     {
-        var ordersDownstreamRoute = new DownstreamRouteBuilder().WithKey("Orders").Build();
-        var downstreamRoutes = new List<DownstreamRoute> { ordersDownstreamRoute };
-        var route = new Route() { DownstreamRoute = downstreamRoutes };
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Orders").Build();
+        var route = new Route(downstreamRoute);
 
-        // First downstream context
-        var ordersContext1 = new DefaultHttpContext();
-        ordersContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":101}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        ordersContext1.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
+        var context1 = GivenContext(downstreamRoute, GivenJsonContent("{\"orderId\":101}"));
+        var context2 = GivenContext(downstreamRoute, GivenJsonContent("{\"orderId\":102}"));
+        var context3 = GivenContext(downstreamRoute, GivenJsonContent("{\"orderId\":103}"));
 
-        // Second downstream context
-        var ordersContext2 = new DefaultHttpContext();
-        ordersContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":102}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        ordersContext2.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
-
-        // Third downstream context
-        var ordersContext3 = new DefaultHttpContext();
-        ordersContext3.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"orderId\":103}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        ordersContext3.Items.UpsertDownstreamRoute(ordersDownstreamRoute);
-
-        var downstreamContexts = new List<HttpContext> { ordersContext1, ordersContext2, ordersContext3 };
+        var downstreamContexts = new List<HttpContext> { context1, context2, context3 };
         var expected = "{\"Orders\":[{\"orderId\":101},{\"orderId\":102},{\"orderId\":103}]}";
         var upstreamContext = new DefaultHttpContext();
 
@@ -202,91 +153,67 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public async Task Should_return_error_if_error_occurs_in_first_of_multiple_contexts()
     {
-        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
-        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
-        var route = new Route() { DownstreamRoute = downstreamRoutes };
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var route = new Route(downstreamRoute);
 
-        // First downstream context with error
-        var productsContext1 = new DefaultHttpContext();
-        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error occurred"), HttpStatusCode.InternalServerError, new List<KeyValuePair<string, IEnumerable<string>>>(), "error reason"));
-        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
-        productsContext1.Items.SetError(new AnyError());
+        var context1 = GivenContext(downstreamRoute, GivenJsonContent("Error occurred"), HttpStatusCode.InternalServerError, "error reason");
+        context1.Items.SetError(new AnyError());
+        var context2 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":2}"));
 
-        // Second downstream context with content
-        var productsContext2 = new DefaultHttpContext();
-        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":2}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
-
-        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
-        var expected = "Error occurred";
+        var downstreamContexts = new List<HttpContext> { context1, context2 };
         var upstreamContext = new DefaultHttpContext();
 
         // Act
         await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
         // Assert
-        await ThenTheContentIs(upstreamContext, expected);
-        ThenTheErrorIsMapped(upstreamContext, productsContext1);
+        await ThenTheContentIs(upstreamContext, "Error occurred");
+        ThenTheErrorIsMapped(upstreamContext, context1);
     }
 
     [Fact]
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
     public async Task Should_return_error_if_error_occurs_in_last_of_multiple_contexts()
     {
-        var productsDownstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
-        var downstreamRoutes = new List<DownstreamRoute> { productsDownstreamRoute };
-        var route = new Route() { DownstreamRoute = downstreamRoutes };
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Products").Build();
+        var route = new Route(downstreamRoute);
 
-        // First downstream context with content
-        var productsContext1 = new DefaultHttpContext();
-        productsContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        productsContext1.Items.UpsertDownstreamRoute(productsDownstreamRoute);
+        var context1 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":1}"));
+        var context2 = GivenContext(downstreamRoute, GivenJsonContent("Error occurred"), HttpStatusCode.InternalServerError, "error reason");
+        context2.Items.SetError(new AnyError());
 
-        // Second downstream context with error
-        var productsContext2 = new DefaultHttpContext();
-        productsContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("Error occurred"), HttpStatusCode.InternalServerError, new List<KeyValuePair<string, IEnumerable<string>>>(), "error reason"));
-        productsContext2.Items.UpsertDownstreamRoute(productsDownstreamRoute);
-        productsContext2.Items.SetError(new AnyError());
-
-        var downstreamContexts = new List<HttpContext> { productsContext1, productsContext2 };
-        var expected = "Error occurred";
+        var downstreamContexts = new List<HttpContext> { context1, context2 };
         var upstreamContext = new DefaultHttpContext();
 
         // Act
         await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
 
         // Assert
-        await ThenTheContentIs(upstreamContext, expected);
-        ThenTheErrorIsMapped(upstreamContext, productsContext2);
+        await ThenTheContentIs(upstreamContext, "Error occurred");
+        ThenTheErrorIsMapped(upstreamContext, context2);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task Should_skip_empty_or_whitespace_content_in_multiple_context_array_aggregation(string emptyContent)
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+    public async Task Should_skip_empty_content_in_multiple_context_array_aggregation(string emptyContent)
     {
-        var dataDownstreamRoute = new DownstreamRouteBuilder().WithKey("Data").Build();
-        var downstreamRoutes = new List<DownstreamRoute> { dataDownstreamRoute };
-        var route = new Route() { DownstreamRoute = downstreamRoutes };
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Data").Build();
+        var route = new Route(downstreamRoute);
 
-        // First downstream context with valid content
-        var dataContext1 = new DefaultHttpContext();
-        dataContext1.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":1,\"value\":\"first\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        dataContext1.Items.UpsertDownstreamRoute(dataDownstreamRoute);
+        var context1 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":1,\"value\":\"first\"}"));
+        var context2 = GivenContext(downstreamRoute, GivenJsonContent(emptyContent ?? string.Empty)); // !!!
+        var context3 = GivenContext(downstreamRoute, GivenJsonContent("{\"id\":3,\"value\":\"third\"}"));
 
-        // Second downstream context with empty/whitespace content - should be skipped
-        var dataContext2 = new DefaultHttpContext();
-        dataContext2.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent(emptyContent ?? string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        dataContext2.Items.UpsertDownstreamRoute(dataDownstreamRoute);
-
-        // Third downstream context with valid content
-        var dataContext3 = new DefaultHttpContext();
-        dataContext3.Items.UpsertDownstreamResponse(new DownstreamResponse(new StringContent("{\"id\":3,\"value\":\"third\"}", Encoding.UTF8, MediaTypeNames.Application.Json), HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "some reason"));
-        dataContext3.Items.UpsertDownstreamRoute(dataDownstreamRoute);
-
-        var downstreamContexts = new List<HttpContext> { dataContext1, dataContext2, dataContext3 };
+        var downstreamContexts = new List<HttpContext> { context1, context2, context3 };
         var expected = "{\"Data\":[{\"id\":1,\"value\":\"first\"},{\"id\":3,\"value\":\"third\"}]}";
         var upstreamContext = new DefaultHttpContext();
 
@@ -296,6 +223,23 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         // Assert
         await ThenTheContentIs(upstreamContext, expected);
         ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
+    }
+
+    private static StringContent GivenJsonContent(string json) => new(json, Encoding.UTF8, MediaTypeNames.Application.Json);
+
+    private static HttpContext GivenContext(DownstreamRoute route, HttpContent content,
+        HttpStatusCode status = HttpStatusCode.OK, [CallerMemberName] string testNameAsReason = null)
+    {
+        var dr = new DownstreamResponse(content, status, new List<Header>(), testNameAsReason ?? "some reason");
+        return GivenContext(route, dr);
+    }
+
+    private static HttpContext GivenContext(DownstreamRoute route, DownstreamResponse response)
+    {
+        var context = new DefaultHttpContext();
+        context.Items.UpsertDownstreamResponse(response);
+        context.Items.UpsertDownstreamRoute(route);
+        return context;
     }
 
     private static void ThenTheReasonPhraseIs(DefaultHttpContext upstreamContext, string expected)

@@ -399,13 +399,10 @@ public class AcceptanceSteps : IDisposable
         ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
-    public async Task WhenIGetUrlOnTheApiGateway(string url)
-        => response = await ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
-
     public Task<HttpResponseMessage> WhenImGettingUrlOnTheApiGateway(string url)
         => ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
 
-    public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
+    public async Task WhenIGetUrlOnTheApiGateway(string url, string body)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
@@ -424,34 +421,27 @@ public class AcceptanceSteps : IDisposable
         {
             Content = content,
         };
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        response = await ocelotClient.SendAsync(request, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().SendAsync(request, CancelMe);
     }
 
-    public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+    public async Task WhenIGetUrlOnTheApiGateway(string url)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        response = await ocelotClient.SendAsync(httpRequestMessage, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
     }
 
     public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        response = await ocelotClient.SendAsync(request, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, content, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content);
-        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content, string contentType)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
-        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIDeleteUrlOnTheApiGateway(string url)
         => response = await ocelotClient.ShouldNotBeNull().DeleteAsync(url, CancelMe);
