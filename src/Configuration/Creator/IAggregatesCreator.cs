@@ -4,5 +4,5 @@ namespace Ocelot.Configuration.Creator;
 
 public interface IAggregatesCreator
 {
-    List<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes);
+    IEnumerable<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes);
 }

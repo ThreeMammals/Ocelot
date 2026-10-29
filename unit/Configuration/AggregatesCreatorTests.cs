@@ -40,14 +40,14 @@ public class AggregatesCreatorTests : UnitTest
                 },
             },
         };
-        _routes = new List<Route>();
+        _routes = [];
 
         // Act
-        _result = _creator.Create(_fileConfiguration, _routes);
+        _result = _creator.Create(_fileConfiguration, _routes).ToList();
 
         // Assert
         _utpCreator.Verify(x => x.Create(It.IsAny<FileAggregateRoute>()), Times.Never);
-        _result.ShouldNotBeNull().Count.ShouldBe(0); // empty result
+        _result.ShouldNotBeNull().Count().ShouldBe(0); // empty result
     }
 
     [Fact]
@@ -77,24 +77,24 @@ public class AggregatesCreatorTests : UnitTest
                 },
             },
         };
-        _routes = new List<Route>
-        {
+        _routes =
+        [
             new(new DownstreamRouteBuilder().WithKey("key1").Build()),
             new(new DownstreamRouteBuilder().WithKey("key2").Build()),
             new(new DownstreamRouteBuilder().WithKey("key3").Build()),
             new(new DownstreamRouteBuilder().WithKey("key4").Build()),
-        };
+        ];
         GivenTheUtpCreatorReturns();
         GivenTheUhtpCreatorReturns();
 
         // Act
-        _result = _creator.Create(_fileConfiguration, _routes);
+        _result = _creator.Create(_fileConfiguration, _routes).ToList();
 
         // Assert
         ThenTheUtpCreatorIsCalledCorrectly();
 
         // Assert: then the aggregates are created
-        _result.ShouldNotBeNull().Count.ShouldBe(2);
+        _result.ShouldNotBeNull().Count().ShouldBe(2);
         AssertResultByIndex(0);
         AssertResultByIndex(1);
     }
@@ -108,8 +108,8 @@ public class AggregatesCreatorTests : UnitTest
         // Arrange
         _fileConfiguration = new FileConfiguration
         {
-            Aggregates = new List<FileAggregateRoute>
-            {
+            Aggregates =
+            [
                 new()
                 {
                     RouteKeys = new(["key1", "key2"]),
@@ -117,27 +117,27 @@ public class AggregatesCreatorTests : UnitTest
                 new()
                 {
                     RouteKeys = new(["key3", "key4"]),
-                    UpstreamHttpMethod = new() { httpVerb }, // wanted verb
+                    UpstreamHttpMethod = [httpVerb], // wanted verb
                 },
-            },
+            ],
         };
-        _routes = new List<Route>
-        {
+        _routes =
+        [
             new(new DownstreamRouteBuilder().WithKey("key1").Build()),
             new(new DownstreamRouteBuilder().WithKey("key2").Build()),
             new(new DownstreamRouteBuilder().WithKey("key3").Build()),
             new(new DownstreamRouteBuilder().WithKey("key4").Build()),
-        };
+        ];
         GivenTheUtpCreatorReturns();
         GivenTheUhtpCreatorReturns();
 
         // Act
-        _result = _creator.Create(_fileConfiguration, _routes);
+        _result = _creator.Create(_fileConfiguration, _routes).ToList();
 
         // Assert
         ThenTheUtpCreatorIsCalledCorrectly();
         _result.ShouldNotBeNull().Count.ShouldBe(2);
-        AssertRoute(0, FileAggregateRoute.DefaultHttpMethod); // default verb scenario
+        AssertRoute(0, HttpMethod.Get); // default verb scenario
         AssertRoute(1, new HttpMethod(httpVerb)); // // wanted verb scenario
     }
 
@@ -149,7 +149,7 @@ public class AggregatesCreatorTests : UnitTest
 
     private void AssertResultByIndex(int i, HttpMethod method = null)
     {
-        method ??= FileAggregateRoute.DefaultHttpMethod;
+        method ??= HttpMethod.Get; // DefaultHttpMethod
         _result[i].UpstreamHttpMethod.ShouldContain(x => x == method);
         _result[i].UpstreamHost.ShouldBe(_fileConfiguration.Aggregates[i].UpstreamHost);
         _result[i].UpstreamTemplatePattern.ShouldBe(_aggregateUtp[i]);
@@ -179,11 +179,11 @@ public class AggregatesCreatorTests : UnitTest
 
     private void GivenTheUhtpCreatorReturns()
     {
-        _headerTemplates = new[]
-        {
-            new Dictionary<string, UpstreamHeaderTemplate>(),
-            new Dictionary<string, UpstreamHeaderTemplate>(),
-        };
+        _headerTemplates =
+        [
+            [],
+            [],
+        ];
         _uhtpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_headerTemplates[0])
             .Returns(_headerTemplates[1]);
