@@ -7,6 +7,7 @@ using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Reflection;
 using System.Security.Claims;
@@ -100,6 +101,45 @@ public class MultiplexingMiddlewareTests : UnitTest
         Assert.Equal("value1", h1);
         target.Request.Headers.TryGetValue(TestName() + 2, out var h2).ShouldBeTrue();
         Assert.Equal("value2", h2);
+    }
+
+    [Fact]
+    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    public async Task CreateThreadContextAsync_ShouldAllowMultipartFormToBeReadFromClonedBody()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        const string boundary = "----OcelotBoundary714";
+        const string fieldName = "description";
+        const string fieldValue = "issue-714";
+        const string fileFieldName = "file";
+        const string fileName = "test.txt";
+        const string fileContent = "multipart-file-content";
+        using var content = new MultipartFormDataContent(boundary);
+        content.Add(new StringContent(fieldValue), fieldName);
+        var fileBytes = Encoding.UTF8.GetBytes(fileContent);
+        var filePart = new ByteArrayContent(fileBytes);
+        filePart.Headers.ContentType = new MediaTypeHeaderValue(MediaTypeNames.Text.Plain);
+        content.Add(filePart, fileFieldName, fileName);
+        var bytes = await content.ReadAsByteArrayAsync(CancelMe);
+        using var ms = new MemoryStream(bytes);
+        _httpContext.Request.Body = ms;
+        _httpContext.Request.ContentLength = bytes.Length;
+        _httpContext.Request.ContentType = content.Headers.ContentType.ToString();
+        _httpContext.Request.Method = HttpMethods.Post;
+
+        // Act
+        var actual = await CreateThreadContextAsync(_httpContext, route);
+        var form = await actual.Request.ReadFormAsync(CancelMe);
+        var file = form.Files.GetFile(fileFieldName);
+        Assert.NotNull(file);
+
+        // Assert
+        Assert.Equal(fieldValue, form[fieldName]);
+        Assert.Equal(fileFieldName, file.Name);
+        Assert.Equal(fileName, file.FileName);
+        using var reader = new StreamReader(file.OpenReadStream());
+        Assert.Equal(fileContent, await reader.ReadToEndAsync(CancelMe));
     }
 
     [Fact]
@@ -387,7 +427,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         mock.Protected().Verify<Task>(nameof(MapAsync), Times.Once(),
             ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.Is<List<HttpContext>>(list => list.Count == 3));
     }
-    
+
     [Fact]
     [Trait("Bug", "2248")]
     [Trait("PR", "2328")]
