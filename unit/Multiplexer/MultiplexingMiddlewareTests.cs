@@ -427,10 +427,10 @@ public class MultiplexingMiddlewareTests : UnitTest
 
     [Fact]
     [Trait("PR", "1389")]
-    public async Task Invoke_When_ProcessRoutesWithRouteKeysAsync_Returns_Empty_Array_Should_Return_Early_Without_MapAsync()
+    public async Task Invoke_When_WebSocket_Request_With_Multiple_Routes_Should_Process_Single_Route_Only()
     {
         // Arrange
-        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
+        var mock = MockMiddlewareFactory(null, null);
         var route = new Route
         {
             DownstreamRoute = [
@@ -438,26 +438,28 @@ public class MultiplexingMiddlewareTests : UnitTest
                 new DownstreamRouteBuilder().WithKey("user").Build()
             ],
             DownstreamRouteConfig = [
-                new("user", "$[*].userId", "userId") // This will try to extract from jObject
+                new("user", "$[*].userId", "userId")
             ],
             Aggregator = "TestAggregator",
         };
-        GivenTheFollowing(route);
-
-        HttpContext[] emptyArray = [];
-        mock.Protected()
-            .Setup<Task<HttpContext[]>>("ProcessRoutesWithRouteKeysAsync",
-                ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<IEnumerable<DownstreamRoute>>(), ItExpr.IsAny<IReadOnlyCollection<AggregateRouteConfig>>(), ItExpr.IsAny<HttpContext>())
-            .ReturnsAsync(emptyArray);
+        var webSocketManager = new Mock<WebSocketManager>();
+        webSocketManager.Setup(x => x.IsWebSocketRequest).Returns(true);
+        var items = new Dictionary<object, object>();
+        items.UpsertRoute(route);
+        var httpContext = new Mock<HttpContext>();
+        httpContext.Setup(x => x.WebSockets).Returns(webSocketManager.Object);
+        httpContext.Setup(x => x.Items).Returns(items);
 
         // Act
-        await _middleware.Invoke(_httpContext);
+        await _middleware.Invoke(httpContext.Object);
 
-        // Assert - MapResponsesAsync should not be called (covered by MapAsync not being invoked)
+        // Assert - only the first downstream route is processed, route keys are not used
+        mock.Protected().Verify("ProcessSingleRouteAsync", Times.Once(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.Is<DownstreamRoute>(r => r == route.DownstreamRoute[0]));
+        mock.Protected().Verify<Task<HttpContext[]>>("ProcessRoutesWithRouteKeysAsync", Times.Never(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<IEnumerable<DownstreamRoute>>(), ItExpr.IsAny<IReadOnlyCollection<AggregateRouteConfig>>(), ItExpr.IsAny<HttpContext>());
         mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(),
             ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
-        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
-        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }
 
     [Theory]
