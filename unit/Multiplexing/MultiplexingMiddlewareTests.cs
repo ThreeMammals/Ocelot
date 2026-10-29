@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 using Moq.Protected;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
@@ -13,7 +12,6 @@ using System.Net.Mime;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-using _ContentDispositionHeaderValue_ = System.Net.Http.Headers.ContentDispositionHeaderValue;
 
 namespace Ocelot.UnitTests.Multiplexing;
 
@@ -117,35 +115,17 @@ public class MultiplexingMiddlewareTests : UnitTest
         const string fileFieldName = "file";
         const string fileName = "test.txt";
         const string fileContent = "multipart-file-content";
-        var fieldFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
-        {
-            Name = $"\"{fieldName}\"",
-        };
-        var fileFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
-        {
-            Name = $"\"{fileFieldName}\"",
-            FileName = $"\"{fileName}\""
-        };
-        var body = new StringBuilder()
-            .AppendLine($"--{boundary}")
-            .AppendLine($"{HeaderNames.ContentDisposition}: {fieldFormData}")
-            .AppendLine()
-            .AppendLine($"{fieldValue}")
-            .AppendLine($"--{boundary}")
-            .AppendLine($"{HeaderNames.ContentDisposition}: {fileFormData}")
-            .AppendLine($"{HeaderNames.ContentType}: {MediaTypeNames.Text.Plain}")
-            .AppendLine()
-            .AppendLine($"{fileContent}")
-            .AppendLine($"--{boundary}--");
-        var bytes = Encoding.UTF8.GetBytes(body.ToString());
-        var contentType = new ContentType(MediaTypeNames.Multipart.FormData)
-        {
-            Boundary = boundary,
-        };
+        using var content = new MultipartFormDataContent(boundary);
+        content.Add(new StringContent(fieldValue), fieldName);
+        var fileBytes = Encoding.UTF8.GetBytes(fileContent);
+        var filePart = new ByteArrayContent(fileBytes);
+        filePart.Headers.ContentType = new MediaTypeHeaderValue(MediaTypeNames.Text.Plain);
+        content.Add(filePart, fileFieldName, fileName);
+        var bytes = await content.ReadAsByteArrayAsync(CancelMe);
         using var ms = new MemoryStream(bytes);
         _httpContext.Request.Body = ms;
         _httpContext.Request.ContentLength = bytes.Length;
-        _httpContext.Request.ContentType = contentType.ToString();
+        _httpContext.Request.ContentType = content.Headers.ContentType.ToString();
         _httpContext.Request.Method = HttpMethods.Post;
 
         // Act

@@ -7,19 +7,12 @@ The original issue is no longer reproducible for regular routing on the current 
 
 ## Instructions
 
-### 1. Run Downstream Service app
-```shell
-cd ./DownstreamService/
-dotnet run
-```
-Leave the service running.
-
-### 2. Run API Gateway app
+### 1. Run the sample
 ```shell
 cd ./ApiGateway/
 dotnet run
 ```
-Leave the gateway running.
+The app starts the downstream service on port 5568 before starting the gateway on port 5567.
 
-### 3. Upload a file
+### 2. Upload a file
 Open http://localhost:5567/ in a browser, choose a text file, and submit the form. The response should confirm the text field, file field name, original filename, content type, length, file contents, and the multipart request content type received by the downstream service.
