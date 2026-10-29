@@ -225,6 +225,28 @@ public class SimpleJsonResponseAggregatorTests : UnitTest
         ThenTheContentTypeIs(upstreamContext, MediaTypeNames.Application.Json);
     }
 
+    [Fact]
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+    public async Task Should_return_error_if_single_downstream_context_has_error()
+    {
+        var downstreamRoute = new DownstreamRouteBuilder().WithKey("Product").Build();
+        var route = new Route(downstreamRoute);
+
+        var errorContext = GivenContext(downstreamRoute, GivenJsonContent("Error occurred"), HttpStatusCode.InternalServerError, "single context error");
+        errorContext.Items.SetError(new AnyError());
+
+        var downstreamContexts = new List<HttpContext> { errorContext };
+        var upstreamContext = new DefaultHttpContext();
+
+        // Act
+        await _aggregator.Aggregate(route, upstreamContext, downstreamContexts);
+
+        // Assert
+        await ThenTheContentIs(upstreamContext, "Error occurred");
+        ThenTheErrorIsMapped(upstreamContext, errorContext);
+    }
+
     private static StringContent GivenJsonContent(string json) => new(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 
     private static HttpContext GivenContext(DownstreamRoute route, HttpContent content,
