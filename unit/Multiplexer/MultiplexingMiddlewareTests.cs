@@ -408,8 +408,6 @@ public class MultiplexingMiddlewareTests : UnitTest
             Times.Once());
     }
 
-    private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
-
     [Fact]
     [Trait("PR", "1826")]
     [Trait("PR", "2328")]
@@ -427,7 +425,41 @@ public class MultiplexingMiddlewareTests : UnitTest
         Assert.Same(Task.CompletedTask, actual);
     }
 
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task Invoke_When_ProcessRoutesWithRouteKeysAsync_Returns_Empty_Array_Should_Return_Early_Without_MapAsync()
+    {
+        // Arrange
+        var mock = MockMiddlewareFactory(null, AggregateRequestDelegateFactory());
+        var route = new Route
+        {
+            DownstreamRoute = [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+                new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig = [
+                new("user", "$[*].userId", "userId") // This will try to extract from jObject
+            ],
+            Aggregator = "TestAggregator",
+        };
+        GivenTheFollowing(route);
+
+        HttpContext[] emptyArray = [];
+        mock.Protected()
+            .Setup<Task<HttpContext[]>>("ProcessRoutesWithRouteKeysAsync",
+                ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<IEnumerable<DownstreamRoute>>(), ItExpr.IsAny<IReadOnlyCollection<AggregateRouteConfig>>(), ItExpr.IsAny<HttpContext>())
+            .ReturnsAsync(emptyArray);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert - MapResponsesAsync should not be called (covered by MapAsync not being invoked)
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+    }
+
     [Theory]
+    [Trait("PR", "1826")]
     [Trait("PR", "2328")]
     [InlineData(0, 2)]   // contexts.Count == 0 → no loop iterations
     [InlineData(2, 0)]   // DownstreamRouteConfig.Count == 0 → skip if
@@ -459,6 +491,99 @@ public class MultiplexingMiddlewareTests : UnitTest
             contexts[i].Items[MultiplexingMiddleware.CurrentAggregateRouteKeyItem].ShouldBe($"key{i}");
         }
     }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_Stream_Position_Not_Zero_Should_Return_Original_Body()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var httpContext = new DefaultHttpContext();
+        
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
+        originalStream.Position = 5; // Position is not 0
+        
+        httpContext.Request.Body = originalStream;
+        httpContext.Request.ContentLength = bodyContent.Length;
+        
+        var cloneMethod = typeof(MultiplexingMiddleware)
+            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
+        var resultStream = await result;
+
+        // Assert
+        Assert.Same(originalStream, resultStream); // Should return the same stream
+    }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_ContentLength_Is_Not_Null_Should_Copy_Body()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var httpContext = new DefaultHttpContext();
+        
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
+        originalStream.Position = 0;
+        
+        httpContext.Request.Body = originalStream;
+        httpContext.Request.ContentLength = bodyContent.Length;
+        
+        var cloneMethod = typeof(MultiplexingMiddleware)
+            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
+        var resultStream = await result;
+
+        // Assert
+        Assert.NotNull(resultStream);
+        Assert.IsType<MemoryStream>(resultStream);
+        Assert.Equal(0, resultStream.Position); // Position should be reset to 0
+        Assert.Equal(0, originalStream.Position); // Original stream position should also be 0
+        
+        // Verify content was copied
+        resultStream.Seek(0, SeekOrigin.Begin);
+        using (var reader = new StreamReader(resultStream))
+        {
+            var content = await reader.ReadToEndAsync();
+            Assert.Equal(bodyContent, content);
+        }
+    }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_ContentLength_Is_Null_Should_Return_Empty_Memory_Stream()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var httpContext = new DefaultHttpContext();
+        
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
+        originalStream.Position = 0;
+        
+        httpContext.Request.Body = originalStream;
+        httpContext.Request.ContentLength = null; // ContentLength is null
+        
+        var cloneMethod = typeof(MultiplexingMiddleware)
+            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
+        var resultStream = await result;
+
+        // Assert
+        Assert.NotNull(resultStream);
+        Assert.IsType<MemoryStream>(resultStream);
+        Assert.Equal(0, resultStream.Length); // Should be empty (not copied)
+    }
+
+    private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
 
     private RequestDelegate AggregateRequestDelegateFactory()
     {
