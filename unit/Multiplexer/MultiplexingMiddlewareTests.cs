@@ -251,7 +251,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
+        mock.Protected().Verify<Task<Stream>>(nameof(CloneRequestBodyAsync),
             numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
             ItExpr.IsAny<HttpRequest>(), ItExpr.IsAny<DownstreamRoute>(), ItExpr.IsAny<CancellationToken>());
     }
@@ -418,7 +418,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         var contexts = new List<HttpContext> { new DefaultHttpContext() };
 
         // Act
-        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+        var actual = MapAsync(_httpContext, route, contexts);
 
         // Assert
         Assert.True(actual.IsCompleted);
@@ -486,7 +486,7 @@ public class MultiplexingMiddlewareTests : UnitTest
             .ToList();
 
         // Act
-        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+        var actual = MapAsync(_httpContext, route, contexts);
 
         // Assert - verify keys were set where expected
         Assert.NotNull(actual);
@@ -502,24 +502,21 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         // Arrange
         var route = new DownstreamRouteBuilder().Build();
-        var httpContext = new DefaultHttpContext();
+        var context = new DefaultHttpContext();
         
         var bodyContent = "test content";
-        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
-        originalStream.Position = 5; // Position is not 0
-        
-        httpContext.Request.Body = originalStream;
-        httpContext.Request.ContentLength = bodyContent.Length;
-        
-        var cloneMethod = typeof(MultiplexingMiddleware)
-            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 5 // Position is not 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = bodyContent.Length;
 
         // Act
-        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
-        var resultStream = await result;
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
 
         // Assert
-        Assert.Same(originalStream, resultStream); // Should return the same stream
+        Assert.Same(originalStream, actual); // Should return the same stream
         var expectedMessage = $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.";
         logger.Verify(x => x.LogWarning(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
         logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
@@ -531,35 +528,30 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         // Arrange
         var route = new DownstreamRouteBuilder().Build();
-        var httpContext = new DefaultHttpContext();
-        
+        var context = new DefaultHttpContext();
+
         var bodyContent = "test content";
-        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
-        originalStream.Position = 0;
-        
-        httpContext.Request.Body = originalStream;
-        httpContext.Request.ContentLength = bodyContent.Length;
-        
-        var cloneMethod = typeof(MultiplexingMiddleware)
-            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = bodyContent.Length;
 
         // Act
-        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
-        var resultStream = await result;
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
 
         // Assert
-        Assert.NotNull(resultStream);
-        Assert.IsType<MemoryStream>(resultStream);
-        Assert.Equal(0, resultStream.Position); // Position should be reset to 0
+        Assert.NotNull(actual);
+        Assert.IsType<MemoryStream>(actual);
+        Assert.Equal(0, actual.Position); // Position should be reset to 0
         Assert.Equal(0, originalStream.Position); // Original stream position should also be 0
-        
+
         // Verify content was copied
-        resultStream.Seek(0, SeekOrigin.Begin);
-        using (var reader = new StreamReader(resultStream))
-        {
-            var content = await reader.ReadToEndAsync();
-            Assert.Equal(bodyContent, content);
-        }
+        actual.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(actual);
+        var content = await reader.ReadToEndAsync(CancelMe);
+        Assert.Equal(bodyContent, content);
         logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
         logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }
@@ -570,32 +562,35 @@ public class MultiplexingMiddlewareTests : UnitTest
     {
         // Arrange
         var route = new DownstreamRouteBuilder().Build();
-        var httpContext = new DefaultHttpContext();
+        var context = new DefaultHttpContext();
         
         var bodyContent = "test content";
-        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent));
-        originalStream.Position = 0;
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = null; // ContentLength is null
         
-        httpContext.Request.Body = originalStream;
-        httpContext.Request.ContentLength = null; // ContentLength is null
-        
-        var cloneMethod = typeof(MultiplexingMiddleware)
-            .GetMethod("CloneRequestBodyAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
         // Act
-        var result = (Task<Stream>)cloneMethod.Invoke(_middleware, [httpContext.Request, route, CancellationToken.None]);
-        var resultStream = await result;
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
 
         // Assert
-        Assert.NotNull(resultStream);
-        Assert.IsType<MemoryStream>(resultStream);
-        Assert.Equal(0, resultStream.Length); // Should be empty (not copied)
+        Assert.NotNull(actual);
+        Assert.IsType<MemoryStream>(actual);
+        Assert.Equal(0, actual.Length); // Should be empty (not copied)
         var expectedMessage = $"Aggregation does not support body copy without Content-Length header, skipping body copy for the route {route.Name()}.";
         logger.Verify(x => x.LogInformation(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
         logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
     }
 
     private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+    private Task MapAsync(HttpContext context, Route route, List<HttpContext> contexts)
+        => (Task)MapAsync().Invoke(_middleware, [context, route, contexts]);
+
+    private MethodInfo CloneRequestBodyAsync() => _middleware.GetType().GetMethod(nameof(CloneRequestBodyAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+    private Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)
+        => (Task<Stream>)CloneRequestBodyAsync().Invoke(_middleware, [request, route, aborted]);
 
     private RequestDelegate AggregateRequestDelegateFactory()
     {
