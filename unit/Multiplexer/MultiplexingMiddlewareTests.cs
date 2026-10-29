@@ -456,6 +456,8 @@ public class MultiplexingMiddlewareTests : UnitTest
         // Assert - MapResponsesAsync should not be called (covered by MapAsync not being invoked)
         mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(),
             ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
+        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }
 
     [Theory]
@@ -516,6 +518,9 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         // Assert
         Assert.Same(originalStream, resultStream); // Should return the same stream
+        var expectedMessage = $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.";
+        logger.Verify(x => x.LogWarning(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
+        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }
 
     [Fact]
@@ -553,6 +558,8 @@ public class MultiplexingMiddlewareTests : UnitTest
             var content = await reader.ReadToEndAsync();
             Assert.Equal(bodyContent, content);
         }
+        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
+        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }
 
     [Fact]
@@ -581,6 +588,9 @@ public class MultiplexingMiddlewareTests : UnitTest
         Assert.NotNull(resultStream);
         Assert.IsType<MemoryStream>(resultStream);
         Assert.Equal(0, resultStream.Length); // Should be empty (not copied)
+        var expectedMessage = $"Aggregation does not support body copy without Content-Length header, skipping body copy for the route {route.Name()}.";
+        logger.Verify(x => x.LogInformation(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
+        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
     }
 
     private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
