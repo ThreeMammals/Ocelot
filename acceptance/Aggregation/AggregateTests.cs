@@ -432,6 +432,44 @@ public sealed class AggregateTests : AuthSteps // Steps
         else
             await ThenTheResponseBodyShouldBeAsync(expected);
     }
+
+    [Theory]
+    [InlineData(new string[] { }, new string[] { },
+        nameof(HttpMethods.Get), HttpStatusCode.OK)] // default GET
+    [InlineData(new string[] { }, new string[] { },
+        nameof(HttpMethods.Post), HttpStatusCode.NotFound)] // POST not allowed by default
+    [InlineData(new string[] { }, new[] { nameof(HttpMethods.Post) },
+        nameof(HttpMethods.Post), HttpStatusCode.OK)] // global option only
+    [InlineData(new string[] { }, new[] { nameof(HttpMethods.Post) },
+        nameof(HttpMethods.Get), HttpStatusCode.NotFound)] // global replaces default GET
+    [InlineData(new[] { nameof(HttpMethods.Put) }, new[] { nameof(HttpMethods.Post) },
+        nameof(HttpMethods.Put), HttpStatusCode.OK)] // merged: route option
+    [InlineData(new[] { nameof(HttpMethods.Put) }, new[] { nameof(HttpMethods.Post) },
+        nameof(HttpMethods.Post), HttpStatusCode.OK)] // merged: global option
+    [Trait("Feat", "1741")] // https://github.com/ThreeMammals/Ocelot/discussions/1741
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+    public async Task Should_return_expected_status_for_aggregate_upstream_http_methods(string[] routeMethods, string[] globalMethods, string requestMethod, HttpStatusCode expectedStatus)
+    {
+        var ports = GivenPorts(2);
+        var route1 = GivenAggRoute(ports[0], "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(ports[1], "Service2", "/Service2", "/Sub2");
+        var configuration = GivenConfiguration(route1, route2);
+        configuration.Aggregates[0].UpstreamHttpMethod = [.. routeMethods];
+        configuration.GlobalConfiguration.UpstreamHttpMethod = [.. globalMethods];
+
+        GivenThereIsAServiceRunningOn(ports[0], "/Sub1", ctx => MapFromBody(ctx, _ => "{\"id\":1}"));
+        GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => MapFromBody(ctx, _ => "{\"id\":2}"));
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        // Act
+        await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", requestMethod, null);
+
+        // Assert
+        ThenTheStatusCodeShouldBe(expectedStatus);
+    }
+
     private async Task WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation(string url, string httpMethod, HttpContent content)
     {
         HttpMethod method = new(httpMethod);

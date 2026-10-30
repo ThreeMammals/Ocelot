@@ -67,7 +67,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="routes">The downstream routes.</param>
     /// <returns>True if only the first downstream route should be processed.</returns>
     private static bool ShouldProcessSingleRoute(HttpContext context, ICollection routes)
-        => context.WebSockets.IsWebSocketRequest || routes.Count == 1;
+        => context.WebSockets.IsWebSocketRequest || routes.Count == 1; // TODO This is some edge case for web sockets and this is a problem.
 
     /// <summary>
     /// Processing a single downstream route (no route keys).

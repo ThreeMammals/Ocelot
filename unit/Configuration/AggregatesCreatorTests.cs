@@ -3,6 +3,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Values;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.Configuration;
 
@@ -141,6 +142,25 @@ public class AggregatesCreatorTests : UnitTest
         AssertRoute(1, new HttpMethod(httpVerb)); // // wanted verb scenario
     }
 
+    [Theory]
+    [Trait("Feat", "1389")]
+    [InlineData(new string[] { }, new string[] { }, new[] { "GET" })] // no route and no global options -> default GET
+    [InlineData(new string[] { }, new[] { "POST" }, new[] { "POST" })] // no route option, global option used
+    [InlineData(new[] { "PUT" }, new[] { "POST" }, new[] { "POST", "PUT" })] // both route and global options merged
+    public void CreateUpstreamHttpMethod_ShouldUseDefaultGlobalOrMergedMethods(string[] routeMethods, string[] globalMethods, string[] expected)
+    {
+        // Arrange
+        var route = new FileAggregateRoute { UpstreamHttpMethod = [.. routeMethods] };
+        var global = new FileGlobalConfiguration { UpstreamHttpMethod = [.. globalMethods] };
+
+        // Act
+        var actual = CreateUpstreamHttpMethod(route, global);
+
+        // Assert
+        actual.Select(x => x.Method).OrderBy(x => x, StringComparer.Ordinal).ToArray()
+            .ShouldBe(expected.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+    }
+
     private void AssertRoute(int i, HttpMethod expected)
     {
         _result[i].UpstreamHttpMethod.ShouldContain(x => x == expected);
@@ -167,11 +187,11 @@ public class AggregatesCreatorTests : UnitTest
 
     private void GivenTheUtpCreatorReturns()
     {
-        _aggregateUtp = new[]
-        {
+        _aggregateUtp =
+        [
             new UpstreamPathTemplateBuilder().Build(),
             new UpstreamPathTemplateBuilder().Build(),
-        };
+        ];
         _utpCreator.SetupSequence(x => x.Create(It.IsAny<IRouteUpstream>()))
             .Returns(_aggregateUtp[0])
             .Returns(_aggregateUtp[1]);
@@ -188,4 +208,8 @@ public class AggregatesCreatorTests : UnitTest
             .Returns(_headerTemplates[0])
             .Returns(_headerTemplates[1]);
     }
+
+    private MethodInfo CreateUpstreamHttpMethod() => _creator.GetType().GetMethod(nameof(CreateUpstreamHttpMethod), BindingFlags.NonPublic | BindingFlags.Instance);
+    private HashSet<HttpMethod> CreateUpstreamHttpMethod(FileAggregateRoute route, FileGlobalConfiguration global)
+        => (HashSet<HttpMethod>)CreateUpstreamHttpMethod().Invoke(_creator, [route, global]);
 }
