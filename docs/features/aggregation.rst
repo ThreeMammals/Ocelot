@@ -13,7 +13,37 @@ Aggregation
 
 Ocelot allows you to specify *Aggregate Routes* [#f1]_ that combine multiple normal routes and map their responses into a single object.
 This is particularly useful when a client is making multiple requests to a server that could be consolidated into one.
+Ocelot allows you to specify *Aggregate Routes* [#f1]_ that combine multiple normal routes and map their responses into a single object.
+This is particularly useful when a client is making multiple requests to a server that could be consolidated into one.
 This feature supports the implementation of a Backend for Frontend (BFF) architecture using Ocelot.
+
+.. _agg-route-schema:
+
+Aggregate Route Schema
+----------------------
+
+.. _FileAggregateRoute: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Configuration/File/FileAggregateRoute.cs
+
+    Class: `FileAggregateRoute`_
+
+Here is the complete aggregated route configuration, also known as the *"aggregate route schema,"* of top-level properties.
+
+.. code-block:: json
+
+    {
+      "Aggregator": "",
+      "Priority": 1, // integer
+      "RouteIsCaseSensitive": false,
+      "RouteKeys": [], // array of strings
+      "RouteKeysConfig": [], // array of AggregateRouteConfig
+      "UpstreamHeaderTemplates": {}, // dictionary
+      "UpstreamHost": "",
+      "UpstreamHttpMethod": [], // array of strings
+      "UpstreamPathTemplate": ""
+    }
+
+The actual aggregated route schema with all the properties can be found in the C# `FileAggregateRoute`_ class.
+See also the :ref:`config-aggregate-route-schema` section of the :doc:`../features/configuration` feature.
 
 .. _agg-simple:
 
@@ -82,36 +112,6 @@ The resulting object is plain JSON without any formatting or additional spaces.
 
   **Note 3**: If your downstream services return a ``404`` `Not Found <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404>`_, the aggregate will simply return nothing for that downstream service.
   It will not change the aggregate response to a ``404``, even if all the downstream services return a ``404``.
-
-.. _agg-upstream-http-methods:
-
-Upstream HTTP Methods
----------------------
-
-By default, an *aggregate route* accepts only the ``GET`` HTTP verb.
-You can change this with the ``UpstreamHttpMethod`` option, either per aggregate route or globally for all aggregates in the ``GlobalConfiguration`` section (see :ref:`config-global-configuration-schema`):
-
-* **No route and no global option**: the default ``GET`` method is used.
-* **No route option, but a global option**: the global methods are used.
-* **Both route and global options**: the two lists are merged, and both sets of methods are accepted.
-
-.. code-block:: json
-  :emphasize-lines: 3, 9
-
-  {
-    "GlobalConfiguration": {
-      "UpstreamHttpMethod": [ "Post" ]
-    },
-    "Aggregates": [
-      {
-        "UpstreamPathTemplate": "/",
-        "RouteKeys": [ "Tom", "Laura" ],
-        "UpstreamHttpMethod": [ "Put" ]
-      }
-    ]
-  }
-
-In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
 
 .. _agg-complex:
 
@@ -431,6 +431,36 @@ Gotchas
   Form data and attached files should also be forwarded.
   It is essential to specify the ``Content-Length`` header in requests to the upstream; otherwise, Ocelot will log warnings such as: *"Aggregation does not support body copy without a Content-Length header!"*
 
+.. _agg-upstream-http-methods:
+
+Upstream HTTP Methods [#f4]_
+----------------------------
+
+By default, an *aggregate route* accepts only the ``GET`` HTTP verb.
+You can change this with the ``UpstreamHttpMethod`` option, either per aggregate route or globally for all aggregates in the ``GlobalConfiguration`` section (see :ref:`config-global-configuration-schema`):
+
+* **No route and no global option**: the default ``GET`` method is used.
+* **No route option, but a global option**: the global methods are used.
+* **Both route and global options**: the two lists are merged, and both sets of methods are accepted.
+
+.. code-block:: json
+  :emphasize-lines: 3, 9
+
+  {
+    "GlobalConfiguration": {
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    "Aggregates": [
+      {
+        "UpstreamPathTemplate": "/",
+        "RouteKeys": [ "Tom", "Laura" ],
+        "UpstreamHttpMethod": [ "Put" ]
+      }
+    ]
+  }
+
+In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
+
 """"
 
 .. [#f1] This feature was requested as part of issue `79`_, and further improvements were made as part of issue `298`_.
@@ -442,13 +472,17 @@ Gotchas
 .. [#f3] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container.
   You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`.
   See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
+.. [#f4] The ":ref:`Upstream HTTP Methods <agg-upstream-http-methods>`" feature was introduced as part of discussion `1741`_ (the ``Feat`` trait),
+   implemented in pull request `1389`_ (the ``PR`` trait), and released in version `25.1.0`_ (the ``Release`` trait).
 
 .. _79: https://github.com/ThreeMammals/Ocelot/issues/79
 .. _298: https://github.com/ThreeMammals/Ocelot/issues/298
 .. _661: https://github.com/ThreeMammals/Ocelot/issues/661
 .. _2248: https://github.com/ThreeMammals/Ocelot/issues/2248
+.. _1741: https://github.com/ThreeMammals/Ocelot/discussions/1741
 
 .. _704: https://github.com/ThreeMammals/Ocelot/pull/704
+.. _1389: https://github.com/ThreeMammals/Ocelot/pull/1389
 .. _1462: https://github.com/ThreeMammals/Ocelot/pull/1462
 .. _1826: https://github.com/ThreeMammals/Ocelot/pull/1826
 .. _2328: https://github.com/ThreeMammals/Ocelot/pull/2328
@@ -456,3 +490,4 @@ Gotchas
 .. _13.4: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
 .. _23.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
