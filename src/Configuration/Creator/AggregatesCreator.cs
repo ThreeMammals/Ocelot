@@ -35,16 +35,10 @@ public class AggregatesCreator : IAggregatesCreator
         }
     }
 
-    protected virtual bool TryCreateRoute(FileAggregateRoute aggregateRoute, FileGlobalConfiguration global,
+    protected virtual bool TryCreateRoute(FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration,
         IReadOnlyDictionary<string, DownstreamRoute> routeByKey, out Route route)
     {
         route = null;
-
-        // Avoid mutating the input configuration object
-        ICollection<string> httpMethods = aggregateRoute.UpstreamHttpMethod.Count == 0
-            ? [DefaultHttpMethod.ToString()]
-            : aggregateRoute.UpstreamHttpMethod;
-
         var applicableRoutes = new List<DownstreamRoute>(aggregateRoute.RouteKeys.Count);
         foreach (var key in aggregateRoute.RouteKeys)
         {
@@ -54,12 +48,9 @@ public class AggregatesCreator : IAggregatesCreator
             applicableRoutes.Add(downstreamRoute);
         }
 
-        // Call injected services first so you can extend/modify the results before route creation
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
         var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
-        var upstreamHttpMethod = httpMethods.ToHttpMethods();
-
-        // TODO: extend upstreamTemplatePattern / upstreamHeaderTemplates here as needed
+        var mergedMethods = CreateUpstreamHttpMethod(aggregateRoute, globalConfiguration);
 
         route = new Route
         {
@@ -68,9 +59,14 @@ public class AggregatesCreator : IAggregatesCreator
             DownstreamRouteConfig = aggregateRoute.RouteKeysConfig,
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
             UpstreamHost = aggregateRoute.UpstreamHost,
-            UpstreamHttpMethod = upstreamHttpMethod,
+            UpstreamHttpMethod = mergedMethods,
             UpstreamTemplatePattern = upstreamTemplatePattern,
         };
         return true;
     }
+
+    protected virtual HashSet<HttpMethod> CreateUpstreamHttpMethod(FileAggregateRoute route, FileGlobalConfiguration global)
+        => route.UpstreamHttpMethod.Count == 0 && global.UpstreamHttpMethod.Count == 0
+            ? [DefaultHttpMethod] // both route and global configs are empty -> use default GET method
+            : route.UpstreamHttpMethod.Union(global.UpstreamHttpMethod, StringComparer.OrdinalIgnoreCase).ToHttpMethods();
 }
