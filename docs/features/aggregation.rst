@@ -425,10 +425,10 @@ Below is an example of an *aggregator* that can be implemented for your solution
 Upstream HTTP Methods [#f4]_
 ----------------------------
 
-By default, an *aggregate route* accepts only the ``GET`` HTTP verb.
+By default, an *aggregate route* accepts only the ``GET`` HTTP verb, unless the default is customized in C# as described below.
 You can change this with the ``UpstreamHttpMethod`` option, either per aggregate route or globally for all aggregates in the ``GlobalConfiguration`` section (see :ref:`config-global-configuration-schema`):
 
-* **No route and no global option**: the default ``GET`` method is used.
+* **No route and no global option**: the default ``GET`` method is used, or the value customized in C# (see below).
 * **No route option, but a global option**: the global methods are used.
 * **Both route and global options**: the two lists are merged, and both sets of methods are accepted.
 
@@ -450,9 +450,11 @@ You can change this with the ``UpstreamHttpMethod`` option, either per aggregate
 
 In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
 
-The default ``GET`` method is also customizable in C#.
-The ``DefaultHttpMethod`` property of the ``AggregatesCreator`` class is protected and has a setter, so a descendant class can override it in its constructor.
-Register your class in DI before calling ``AddOcelot()``:
+The default ``GET`` method can also be customized in C# by overriding the ``DefaultHttpMethod`` property of the ``AggregatesCreator`` class.
+This property is ``protected virtual`` with a setter, so a class inheriting ``AggregatesCreator`` can set a different default in its constructor.
+The custom default is used only when neither the route nor the global ``UpstreamHttpMethod`` option is set.
+
+Create the descendant class:
 
 .. code-block:: csharp
 
@@ -468,11 +470,16 @@ Register your class in DI before calling ``AddOcelot()``:
       }
   }
 
-  // Program.cs
-  builder.Services.AddSingleton<IAggregatesCreator, MyAggregatesCreator>();
+Then register it in ``Program.cs`` with the ``AddOcelotAggregation<TAggregatesCreator>()`` extension method from the ``Ocelot.Multiplexer`` namespace, before calling ``AddOcelot()``:
+
+.. code-block:: csharp
+
+  using Ocelot.Multiplexer;
+
+  builder.Services.AddOcelotAggregation<MyAggregatesCreator>();
   builder.Services.AddOcelot();
 
-Note that ``DefaultHttpMethod`` is a static property, so the overridden value applies to all aggregate routes in the application.
+With this registration, an aggregate route with no ``UpstreamHttpMethod`` option accepts ``POST`` requests instead of ``GET``.
 
 .. _agg-gotchas:
 
