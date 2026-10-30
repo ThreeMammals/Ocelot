@@ -83,6 +83,36 @@ The resulting object is plain JSON without any formatting or additional spaces.
   **Note 3**: If your downstream services return a ``404`` `Not Found <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404>`_, the aggregate will simply return nothing for that downstream service.
   It will not change the aggregate response to a ``404``, even if all the downstream services return a ``404``.
 
+.. _agg-upstream-http-methods:
+
+Upstream HTTP Methods
+---------------------
+
+By default, an *aggregate route* accepts only the ``GET`` HTTP verb.
+You can change this with the ``UpstreamHttpMethod`` option, either per aggregate route or globally for all aggregates in the ``GlobalConfiguration`` section (see :ref:`config-global-configuration-schema`):
+
+* **No route and no global option**: the default ``GET`` method is used.
+* **No route option, but a global option**: the global methods are used.
+* **Both route and global options**: the two lists are merged, and both sets of methods are accepted.
+
+.. code-block:: json
+  :emphasize-lines: 3, 9
+
+  {
+    "GlobalConfiguration": {
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    "Aggregates": [
+      {
+        "UpstreamPathTemplate": "/",
+        "RouteKeys": [ "Tom", "Laura" ],
+        "UpstreamHttpMethod": [ "Put" ]
+      }
+    ]
+  }
+
+In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
+
 .. _agg-complex:
 
 Complex Aggregation [#f2]_
@@ -396,7 +426,7 @@ Gotchas
 -------
 
 * You cannot use routes with specific ``RequestIdKeys``, as this would be overly complicated to track.
-* *Aggregation* supports the ``GET`` HTTP verb for pure REST, and also supports other verbs for APIs that do not strictly follow REST.
+* *Aggregation* supports the ``GET`` HTTP verb by default for pure REST, and also supports other verbs for APIs that do not strictly follow REST. See the :ref:`agg-upstream-http-methods` section.
 * *Aggregation* allows the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
   Form data and attached files should also be forwarded.
   It is essential to specify the ``Content-Length`` header in requests to the upstream; otherwise, Ocelot will log warnings such as: *"Aggregation does not support body copy without a Content-Length header!"*
