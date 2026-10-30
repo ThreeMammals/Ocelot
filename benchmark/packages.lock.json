@@ -227,11 +227,6 @@
         "resolved": "10.0.0",
         "contentHash": "RFYJR7APio/BiqdQunRq6DB+nDB6nc2qhHr77mlvZ0q0BT8PubMXN7XicmfzCbrDE/dzhBnUKBRXLTcqUiZDGg=="
       },
-      "Microsoft.Extensions.DiagnosticAdapter": {
-        "type": "Transitive",
-        "resolved": "3.1.32",
-        "contentHash": "oDv3wt+Q5cmaSfOQ3Cdu6dF6sn/x5gzWdNpOq4ajBwCMWYBr6CchncDvB9pF83ORlbDuX32MsVLOPGPxW4Lx4g=="
-      },
       "Microsoft.Extensions.Diagnostics.Abstractions": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -490,8 +485,7 @@
           "FluentValidation": "[12.2.0, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[10.0.13, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.13, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[10.0.13, )"
         }
       },
       "ocelot.testing": {
@@ -736,11 +730,6 @@
           "System.Text.Encodings.Web": "10.0.0",
           "System.Text.Json": "10.0.0"
         }
-      },
-      "Microsoft.Extensions.DiagnosticAdapter": {
-        "type": "Transitive",
-        "resolved": "3.1.32",
-        "contentHash": "oDv3wt+Q5cmaSfOQ3Cdu6dF6sn/x5gzWdNpOq4ajBwCMWYBr6CchncDvB9pF83ORlbDuX32MsVLOPGPxW4Lx4g=="
       },
       "Microsoft.Extensions.Diagnostics.Abstractions": {
         "type": "Transitive",
@@ -1032,8 +1021,7 @@
           "FluentValidation": "[12.2.0, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[8.0.32, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.32, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[8.0.32, )"
         }
       },
       "ocelot.testing": {
@@ -1277,11 +1265,6 @@
           "System.Text.Encodings.Web": "10.0.0",
           "System.Text.Json": "10.0.0"
         }
-      },
-      "Microsoft.Extensions.DiagnosticAdapter": {
-        "type": "Transitive",
-        "resolved": "3.1.32",
-        "contentHash": "oDv3wt+Q5cmaSfOQ3Cdu6dF6sn/x5gzWdNpOq4ajBwCMWYBr6CchncDvB9pF83ORlbDuX32MsVLOPGPxW4Lx4g=="
       },
       "Microsoft.Extensions.Diagnostics.Abstractions": {
         "type": "Transitive",
@@ -1562,8 +1545,7 @@
           "FluentValidation": "[12.2.0, )",
           "IPAddressRange": "[6.3.0, )",
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.21, )",
-          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.21, )",
-          "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+          "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.21, )"
         }
       },
       "ocelot.testing": {

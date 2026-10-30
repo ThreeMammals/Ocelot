@@ -126,8 +126,10 @@ public static class OcelotMiddlewareExtensions
     private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
     {
         _ = builder.ApplicationServices.GetService<IWebHostEnvironment>();
-        var listener = builder.ApplicationServices.GetService<OcelotDiagnosticListener>();
-        var diagnosticListener = builder.ApplicationServices.GetService<DiagnosticListener>();
-        diagnosticListener.SubscribeWithAdapter(listener);
+        var listener = builder.ApplicationServices.GetRequiredService<OcelotDiagnosticListener>();
+        var diagnosticListener = builder.ApplicationServices.GetRequiredService<DiagnosticListener>();
+        diagnosticListener.Subscribe(
+            new OcelotDiagnosticListenerObserver(listener),
+            OcelotDiagnosticListenerObserver.IsMiddlewareAnalysisEvent);
     }
 }
