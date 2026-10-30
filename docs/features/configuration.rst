@@ -215,15 +215,16 @@ Here is the complete global configuration, also known as the *"global configurat
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
 
-  **Note 3**: The ``UpstreamHttpMethod`` global option applies only to :ref:`config-aggregate-route-schema` (aggregates), and it is merged with the aggregate route's own ``UpstreamHttpMethod`` values.
-  If both are empty, the ``GET`` method is used by default. See the :ref:`agg-upstream-http-methods` section of the :doc:`../features/aggregation` feature for details.
-
   **Note 1**: The following global options were not supported in versions prior to `24.1`_ for overriding in the :ref:`config-dynamic-route-schema`: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, and ``Timeout``.
   Moreover, these global options were not available in versions prior to `24.1`_ for static routes, as stated in issue `585`_.
   Starting with version `24.1`_, both static and dynamic route *global* options are fully supported.
   For a clearer understanding of the changes, refer to the :ref:`config-dynamic-route-schema` and related notes.
 
   **Note 2**: The ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` global options were introduced in version `24.1`_, but they are available only for static routes.
+
+  **Note 3**: The ``UpstreamHttpMethod`` global option applies only to :ref:`config-aggregate-route-schema` (aggregates), and it is merged with the aggregate route's own ``UpstreamHttpMethod`` values.
+  If both are empty, the ``GET`` method is used by default. See the ":ref:`Upstream HTTP Methods<agg-upstream-http-methods>`" section of the :doc:`../features/aggregation` feature for details.
+  The ``UpstreamHttpMethod`` global option was introduced in version `25.1`_, but as mentioned, it applies only to aggregate routes.
 
 .. _config-overview:
 

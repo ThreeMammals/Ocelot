@@ -591,6 +591,11 @@ public class MyAggregatesCreator : AggregatesCreator
         DefaultHttpMethod = HttpMethod.Post;
     }
 
+    /*protected override HttpMethod DefaultHttpMethod
+    {
+        get => HttpMethod.Post; // read from anywhere
+    }*/
+
     public void ResetDefaultHttpMethod() => DefaultHttpMethod = HttpMethod.Get;
 }
 

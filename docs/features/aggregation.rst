@@ -4,17 +4,15 @@ Aggregation
    :depth: 2
    :local:
 
-*Aggregation*, also known as HTTP response data aggregation, is a well-known Backend for Frontend pattern of Microservices architecture.
+*Aggregation* [#f1]_, also known as HTTP response data aggregation, is a well-known Backend for Frontend pattern of Microservices architecture.
 
   * `Backend for Frontend (BFF) Pattern: Microservices for UX | Teleport Academy <https://goteleport.com/learn/backend-for-frontend-bff-pattern/>`_
   * `Gateway Aggregation pattern | Azure Architecture Center | Microsoft Learn <https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation>`_
   * `Backends for Frontends pattern | Azure Architecture Center | Microsoft Learn <https://learn.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends>`_
   * `Implement API Gateways with Ocelot | .NET microservices - Architecture e-book | Microsoft Learn <https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/implement-api-gateways-with-ocelot>`_
 
-Ocelot allows you to specify *Aggregate Routes* [#f1]_ that combine multiple normal routes and map their responses into a single object.
-This is particularly useful when a client is making multiple requests to a server that could be consolidated into one.
-Ocelot allows you to specify *Aggregate Routes* [#f1]_ that combine multiple normal routes and map their responses into a single object.
-This is particularly useful when a client is making multiple requests to a server that could be consolidated into one.
+Ocelot allows you to specify *Aggregate Routes* that combine multiple standard (static) routes and map their responses into a single JSON object.
+This is particularly useful when a client makes multiple requests to a server that could be consolidated into one.
 This feature supports the implementation of a Backend for Frontend (BFF) architecture using Ocelot.
 
 .. _agg-route-schema:
@@ -24,9 +22,9 @@ Aggregate Route Schema
 
 .. _FileAggregateRoute: https://github.com/ThreeMammals/Ocelot/blob/develop/src/Configuration/File/FileAggregateRoute.cs
 
-    Class: `FileAggregateRoute`_
+  Class: :class:`FileAggregateRoute`
 
-Here is the complete aggregated route configuration, also known as the *"aggregate route schema,"* of top-level properties.
+Here is the complete aggregated route configuration, as you may already know from the ":ref:`config-aggregate-route-schema`" section of the :doc:`../features/configuration` feature.
 
 .. code-block:: json
 
@@ -38,12 +36,16 @@ Here is the complete aggregated route configuration, also known as the *"aggrega
       "RouteKeysConfig": [], // array of AggregateRouteConfig
       "UpstreamHeaderTemplates": {}, // dictionary
       "UpstreamHost": "",
-      "UpstreamHttpMethod": [], // array of strings
+      "UpstreamHttpMethod": [], // array of strings, ^1
       "UpstreamPathTemplate": ""
     }
 
 The actual aggregated route schema with all the properties can be found in the C# `FileAggregateRoute`_ class.
-See also the :ref:`config-aggregate-route-schema` section of the :doc:`../features/configuration` feature.
+
+.. note::
+  1. The ``UpstreamHttpMethod`` global option is merged with the aggregate route's own ``UpstreamHttpMethod`` values.
+  If both are empty, the ``GET`` method is used by default. Refer to the ":ref:`Upstream HTTP Methods<agg-upstream-http-methods>`" feature for details.
+  The ``UpstreamHttpMethod`` global option was introduced in version `25.1`_.
 
 .. _agg-simple:
 
@@ -425,7 +427,7 @@ Below is an example of an *aggregator* that can be implemented for your solution
 Upstream HTTP Methods [#f4]_
 ----------------------------
 
-By default, an *aggregate route* accepts only the ``GET`` HTTP verb, unless the default is customized in C# as described below.
+By default, an *aggregate route* accepts only the ``GET`` HTTP method, unless the default is customized in C# as described below.
 You can change this with the ``UpstreamHttpMethod`` option, either per aggregate route or globally for all aggregates in the ``GlobalConfiguration`` section (see :ref:`config-global-configuration-schema`):
 
 * **No route and no global option**: the default ``GET`` method is used, or the value customized in C# (see below).
@@ -436,27 +438,35 @@ You can change this with the ``UpstreamHttpMethod`` option, either per aggregate
   :emphasize-lines: 3, 9
 
   {
-    "GlobalConfiguration": {
-      "UpstreamHttpMethod": [ "Post" ]
-    },
     "Aggregates": [
       {
         "UpstreamPathTemplate": "/",
         "RouteKeys": [ "Tom", "Laura" ],
         "UpstreamHttpMethod": [ "Put" ]
       }
-    ]
+    ],
+    "GlobalConfiguration": {
+      "UpstreamHttpMethod": [ "Post" ]
+    }
   }
 
 In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
 
-The default ``GET`` method can also be customized in C# by overriding the ``DefaultHttpMethod`` property of the ``AggregatesCreator`` class.
-This property is ``protected virtual`` with a setter, so a class inheriting ``AggregatesCreator`` can set a different default in its constructor.
+.. note::
+  1. Ocelot is able to proxy/forward bodies for configured HTTP methods even if those methods are not supposed to have bodies by design, such as ``GET`` or ``DELETE``.
+     Not following traditional REST may be a de facto feature of downstream service endpoints.
+
+  2. If the actual request HTTP method does not match the configured methods, Ocelot responds with a ``404`` (Not Found) status code.
+
+The default ``GET`` method can also be customized in C# by overriding the ``DefaultHttpMethod`` property of the :class:`AggregatesCreator` class.
+This property is ``protected virtual`` with a setter, so a class inheriting :class:`AggregatesCreator` can set a different default in any of its methods, including the constructor.
+For advanced scenarios, a developer should override this virtual property, focusing on the getter so the value can be read from anywhere.
 The custom default is used only when neither the route nor the global ``UpstreamHttpMethod`` option is set.
 
 Create the descendant class:
 
 .. code-block:: csharp
+  :emphasize-lines: 9,14
 
   using Ocelot.Configuration.Creator;
   using System.Net.Http;
@@ -468,16 +478,24 @@ Create the descendant class:
       {
           DefaultHttpMethod = HttpMethod.Post; // overrides the default GET
       }
+
+      protected override HttpMethod DefaultHttpMethod
+      {
+          get => HttpMethod.Post; // read from anywhere
+      }
   }
 
-Then register it in ``Program.cs`` with the ``AddOcelotAggregation<TAggregatesCreator>()`` extension method from the ``Ocelot.Multiplexer`` namespace, before calling ``AddOcelot()``:
+Then register it in DI container, before calling ``AddOcelot()``:
 
 .. code-block:: csharp
+  :emphasize-lines: 5
 
+  using Ocelot.DependencyInjection;
   using Ocelot.Multiplexer;
 
-  builder.Services.AddOcelotAggregation<MyAggregatesCreator>();
-  builder.Services.AddOcelot();
+  builder.Services
+      .AddOcelotAggregation<MyAggregatesCreator>()
+      .AddOcelot(builder.Configuration);
 
 With this registration, an aggregate route with no ``UpstreamHttpMethod`` option accepts ``POST`` requests instead of ``GET``.
 
@@ -502,8 +520,7 @@ Gotchas
 .. [#f3] The :ref:`di-services-addocelot-method` adds default ASP.NET services to the DI container.
   You can call another extended :ref:`di-addocelotusingbuilder-method` while configuring services to develop your own :ref:`di-custom-builder`.
   See more instructions in the ":ref:`di-addocelotusingbuilder-method`" section of the :doc:`../features/dependencyinjection` feature.
-.. [#f4] The ":ref:`Upstream HTTP Methods <agg-upstream-http-methods>`" feature was introduced as part of discussion `1741`_ (the ``Feat`` trait),
-   implemented in pull request `1389`_ (the ``PR`` trait), and released in version `25.1.0`_ (the ``Release`` trait).
+.. [#f4] The ":ref:`Upstream HTTP Methods <agg-upstream-http-methods>`" feature was introduced as part of discussion `1741`_, implemented in pull request `1389`_, and released in version `25.1`_.
 
 .. _79: https://github.com/ThreeMammals/Ocelot/issues/79
 .. _298: https://github.com/ThreeMammals/Ocelot/issues/298
@@ -520,4 +537,4 @@ Gotchas
 .. _13.4: https://github.com/ThreeMammals/Ocelot/releases/tag/13.4.1
 .. _23.1: https://github.com/ThreeMammals/Ocelot/releases/tag/23.1.0
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-.. _25.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+.. _25.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
