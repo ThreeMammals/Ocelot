@@ -17,8 +17,7 @@ using System.Text;
 
 namespace Ocelot.Acceptance.Aggregation;
 
-[Collection(nameof(SequentialTests))] // Custom aggregates creator overrides static DefaultHttpMethod, so run sequentially
-public sealed class AggregateTests : AuthSteps // Steps
+public sealed class AggregateTests : AuthSteps
 {
     [Fact]
     [Trait("Bug", "597")] // https://github.com/ThreeMammals/Ocelot/issues/597
@@ -487,23 +486,18 @@ public sealed class AggregateTests : AuthSteps // Steps
         GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => MapFromBody(ctx, _ => "{\"id\":2}"));
         GivenThereIsAConfiguration(configuration);
         static void WithCustomAggregatesCreator(IServiceCollection services) => services
-            .AddSingleton<IAggregatesCreator, MyAggregatesCreator>()
+            //.AddOcelot()
+            //.Services.AddOcelotAggregation<MyAggregatesCreator>();
+            .AddOcelotAggregation<MyAggregatesCreator>()
             .AddOcelot();
         GivenOcelotIsRunning(WithCustomAggregatesCreator);
 
-        try
-        {
-            // Act & Assert
-            await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Post), null);
-            ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // overridden default POST is accepted
+        // Act & Assert
+        await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Post), null);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // overridden default POST is accepted
 
-            await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Get), null);
-            ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // standard default GET is replaced
-        }
-        finally
-        {
-            MyAggregatesCreator.ResetDefaultHttpMethod();
-        }
+        await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Get), null);
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // standard default GET is replaced
     }
 
     private async Task WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation(string url, string httpMethod, HttpContent content)
@@ -597,7 +591,7 @@ public class MyAggregatesCreator : AggregatesCreator
         DefaultHttpMethod = HttpMethod.Post;
     }
 
-    public static void ResetDefaultHttpMethod() => DefaultHttpMethod = HttpMethod.Get;
+    public void ResetDefaultHttpMethod() => DefaultHttpMethod = HttpMethod.Get;
 }
 
 public class FakeDefinedAggregator(FakeDep dep) : IDefinedAggregator

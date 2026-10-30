@@ -517,7 +517,7 @@ public class MultiplexingMiddlewareTests : UnitTest
 
         // Assert
         Assert.Same(originalStream, actual); // Should return the same stream
-        var expectedMessage = $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.";
+        var expectedMessage = $"Aggregation does not support body copy without stream in initial position 0 for the route {route.Name()}.";
         logger.Verify(x => x.LogWarning(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
         logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
     }

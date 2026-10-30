@@ -265,7 +265,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         request.EnableBuffering();
         if (request.Body.Position != 0)
         {
-            Logger.LogWarning(() => $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.");
+            Logger.LogWarning(() => $"Aggregation does not support body copy without stream in initial position 0 for the route {route.Name()}.");
             return request.Body;
         }
 

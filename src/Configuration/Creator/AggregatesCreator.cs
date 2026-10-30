@@ -17,7 +17,7 @@ public class AggregatesCreator : IAggregatesCreator
     /// <summary>This allows to override global default HTTP verb value.</summary>
     /// <remarks>Defaults: The <see cref="HttpMethod.Get"/> value.</remarks>
     /// <value>A <see cref="HttpMethod"/> value.</value>
-    protected static HttpMethod DefaultHttpMethod { get; set; } = HttpMethod.Get;
+    protected virtual HttpMethod DefaultHttpMethod { get; set; } = HttpMethod.Get;
 
     public IEnumerable<Route> Create(FileConfiguration configuration, IReadOnlyList<Route> routes)
     {
