@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Acceptance.Authentication;
 using Ocelot.Authorization;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -16,6 +17,7 @@ using System.Text;
 
 namespace Ocelot.Acceptance.Aggregation;
 
+[Collection(nameof(SequentialTests))] // Custom aggregates creator overrides static DefaultHttpMethod, so run sequentially
 public sealed class AggregateTests : AuthSteps // Steps
 {
     [Fact]
@@ -470,6 +472,40 @@ public sealed class AggregateTests : AuthSteps // Steps
         ThenTheStatusCodeShouldBe(expectedStatus);
     }
 
+    [Fact]
+    [Trait("Feat", "1741")] // https://github.com/ThreeMammals/Ocelot/discussions/1741
+    [Trait("PR", "1389")] // https://github.com/ThreeMammals/Ocelot/pull/1389
+    [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+    public async Task Should_use_default_http_method_overridden_in_custom_aggregates_creator()
+    {
+        var ports = GivenPorts(2);
+        var route1 = GivenAggRoute(ports[0], "Service1", "/Service1", "/Sub1");
+        var route2 = GivenAggRoute(ports[1], "Service2", "/Service2", "/Sub2");
+        var configuration = GivenConfiguration(route1, route2);
+
+        GivenThereIsAServiceRunningOn(ports[0], "/Sub1", ctx => MapFromBody(ctx, _ => "{\"id\":1}"));
+        GivenThereIsAServiceRunningOn(ports[1], "/Sub2", ctx => MapFromBody(ctx, _ => "{\"id\":2}"));
+        GivenThereIsAConfiguration(configuration);
+        static void WithCustomAggregatesCreator(IServiceCollection services) => services
+            .AddSingleton<IAggregatesCreator, MyAggregatesCreator>()
+            .AddOcelot();
+        GivenOcelotIsRunning(WithCustomAggregatesCreator);
+
+        try
+        {
+            // Act & Assert
+            await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Post), null);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.OK); // overridden default POST is accepted
+
+            await WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation("/", nameof(HttpMethods.Get), null);
+            ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound); // standard default GET is replaced
+        }
+        finally
+        {
+            MyAggregatesCreator.ResetDefaultHttpMethod();
+        }
+    }
+
     private async Task WhenIWannaIgnoreAnyRestGuidelinesForCrazyAggregation(string url, string httpMethod, HttpContent content)
     {
         HttpMethod method = new(httpMethod);
@@ -552,6 +588,17 @@ public sealed class AggregateTests : AuthSteps // Steps
 }
 
 public class FakeDep { }
+
+public class MyAggregatesCreator : AggregatesCreator
+{
+    public MyAggregatesCreator(IUpstreamTemplatePatternCreator creator, IUpstreamHeaderTemplatePatternCreator headerCreator)
+        : base(creator, headerCreator)
+    {
+        DefaultHttpMethod = HttpMethod.Post;
+    }
+
+    public static void ResetDefaultHttpMethod() => DefaultHttpMethod = HttpMethod.Get;
+}
 
 public class FakeDefinedAggregator(FakeDep dep) : IDefinedAggregator
 {

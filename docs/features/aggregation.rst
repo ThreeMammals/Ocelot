@@ -420,17 +420,6 @@ Below is an example of an *aggregator* that can be implemented for your solution
       }
   }
 
-.. _agg-gotchas:
-
-Gotchas
--------
-
-* You cannot use routes with specific ``RequestIdKeys``, as this would be overly complicated to track.
-* *Aggregation* supports the ``GET`` HTTP verb by default for pure REST, and also supports other verbs for APIs that do not strictly follow REST. See the :ref:`agg-upstream-http-methods` section.
-* *Aggregation* allows the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
-  Form data and attached files should also be forwarded.
-  It is essential to specify the ``Content-Length`` header in requests to the upstream; otherwise, Ocelot will log warnings such as: *"Aggregation does not support body copy without a Content-Length header!"*
-
 .. _agg-upstream-http-methods:
 
 Upstream HTTP Methods [#f4]_
@@ -460,6 +449,40 @@ You can change this with the ``UpstreamHttpMethod`` option, either per aggregate
   }
 
 In the example above, the aggregate accepts both ``POST`` and ``PUT`` requests.
+
+The default ``GET`` method is also customizable in C#.
+The ``DefaultHttpMethod`` property of the ``AggregatesCreator`` class is protected and has a setter, so a descendant class can override it in its constructor.
+Register your class in DI before calling ``AddOcelot()``:
+
+.. code-block:: csharp
+
+  using Ocelot.Configuration.Creator;
+  using System.Net.Http;
+
+  public class MyAggregatesCreator : AggregatesCreator
+  {
+      public MyAggregatesCreator(IUpstreamTemplatePatternCreator creator, IUpstreamHeaderTemplatePatternCreator headerCreator)
+          : base(creator, headerCreator)
+      {
+          DefaultHttpMethod = HttpMethod.Post; // overrides the default GET
+      }
+  }
+
+  // Program.cs
+  builder.Services.AddSingleton<IAggregatesCreator, MyAggregatesCreator>();
+  builder.Services.AddOcelot();
+
+Note that ``DefaultHttpMethod`` is a static property, so the overridden value applies to all aggregate routes in the application.
+
+.. _agg-gotchas:
+
+Gotchas
+-------
+
+* You cannot use routes with specific ``RequestIdKeys``, as this would be overly complicated to track.
+* *Aggregation* allows the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
+  Form data and attached files should also be forwarded.
+  It is essential to specify the ``Content-Length`` header in requests to the upstream; otherwise, Ocelot will log warnings such as: *"Aggregation does not support body copy without a Content-Length header!"*
 
 """"
 
