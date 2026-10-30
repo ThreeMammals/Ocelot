@@ -136,6 +136,7 @@ public class OutputCacheMiddlewareTests : UnitTest
         // Arrange
         CachedResponse cached = null;
         GivenThereIsACachedResponse(cached);
+        GivenResponseIsNotCached(new HttpResponseMessage(HttpStatusCode.OK));
         GivenTheDownstreamRouteIs();
 
         // Act
