@@ -64,7 +64,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IInternalConfigurationCreator, FileInternalConfigurationCreator>();
         Services.TryAddSingleton<IRoutesCreator, StaticRoutesCreator>();
         Services.TryAddSingleton<IDynamicsCreator, DynamicRoutesCreator>();
-        Services.TryAddSingleton<IAggregatesCreator, AggregatesCreator>();
         Services.TryAddSingleton<IRouteKeyCreator, RouteKeyCreator>();
         Services.TryAddSingleton<IConfigurationCreator, ConfigurationCreator>();
         Services.TryAddSingleton<ILoadBalancerOptionsCreator, LoadBalancerOptionsCreator>();
@@ -109,12 +108,9 @@ public class OcelotBuilder : IOcelotBuilder
         // Chinese developers should read StackOverflow ignoring Microsoft Learn docs -> http://stackoverflow.com/questions/37371264/invalidoperationexception-unable-to-resolve-service-for-type-microsoft-aspnetc
         Services.AddHttpContextAccessor();
         Services.TryAddSingleton<IRequestScopedDataRepository, HttpDataRepository>();
-        Services.TryAddSingleton<IResponseAggregator, SimpleJsonResponseAggregator>(); // TODO Move to features as AddOcelotAggregation
         Services.TryAddSingleton<ITracingHandlerFactory, TracingHandlerFactory>();
         Services.TryAddSingleton<IAddHeadersToResponse, AddHeadersToResponse>();
         Services.TryAddSingleton<IPlaceholders, Placeholders>();
-        Services.TryAddSingleton<IResponseAggregatorFactory, InMemoryResponseAggregatorFactory>();
-        Services.TryAddSingleton<IDefinedAggregatorProvider, ServiceLocatorDefinedAggregatorProvider>();
         Services.TryAddSingleton<IDownstreamRequestCreator, DownstreamRequestCreator>();
         Services.TryAddSingleton<IFrameworkDescription, FrameworkDescription>();
         Services.TryAddSingleton<IExceptionToErrorMapper, HttpExceptionToErrorMapper>();
@@ -127,6 +123,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<ISecurityPolicy, IPSecurityPolicy>();
 
         // Features
+        Services.AddOcelotAggregation();
         Services.AddOcelotAuthorization(MvcCoreBuilder, configurationRoot);
         Services.AddOcelotCache();
         Services.AddOcelotConfigurationRepository();

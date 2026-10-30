@@ -72,6 +72,16 @@ To be added...
     Authorization rules remain claim-based and route-scoped, while ``UseCredentials`` controls how the downstream HTTP client authenticates to the target service.
     This allows Windows-authenticated routes to coexist with existing route policy checks and claim requirements without altering the authorization model itself.
 
+.. _1389: https://github.com/ThreeMammals/Ocelot/pull/1389
+.. _1741: https://github.com/ThreeMammals/Ocelot/discussions/1741
+.. _@crb02005: https://github.com/crb02005
+
+* :doc:`../features/aggregation`: The ":ref:`Upstream HTTP Methods <agg-upstream-http-methods>`" feature was added by `@crb02005`_ in pull request `1389`_.
+
+  Aggregate routes can now accept HTTP methods other than ``GET`` and proxy/forward request bodies to downstream services.
+  The ``UpstreamHttpMethod`` option is available per aggregate route and globally in ``GlobalConfiguration``, and the two lists are merged.
+  The default method, used as a fallback when JSON configuration is absent, can also be customized in C# by overriding the ``DefaultHttpMethod`` property of :class:`AggregatesCreator`.
+
 { features in development } 
 
 🆙 What's Updated?

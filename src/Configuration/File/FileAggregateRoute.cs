@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace Ocelot.Configuration.File;
 
 public class FileAggregateRoute : IRouteUpstream, IRouteGroup
@@ -23,7 +21,7 @@ public class FileAggregateRoute : IRouteUpstream, IRouteGroup
         RouteKeysConfig = new();
         UpstreamHeaderTemplates = new Dictionary<string, string>();
         UpstreamHost = default;
-        UpstreamHttpMethod = [ HttpMethods.Get ]; // Only supports GET..are you crazy!! POST, PUT WOULD BE CRAZY!! :)
+        UpstreamHttpMethod = [];
         UpstreamPathTemplate = default;
     }
 }

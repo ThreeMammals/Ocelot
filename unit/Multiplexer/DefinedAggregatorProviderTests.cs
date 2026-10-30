@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Multiplexer;
-using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class DefinedAggregatorProviderTests : UnitTest
 {
@@ -15,7 +14,7 @@ public class DefinedAggregatorProviderTests : UnitTest
         // Arrange
         var route = new Route()
         {
-            Aggregator = "TestDefinedAggregator",
+            Aggregator = nameof(TestDefinedAggregator),
         };
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IDefinedAggregator, TestDefinedAggregator>();
@@ -37,7 +36,7 @@ public class DefinedAggregatorProviderTests : UnitTest
         // Arrange
         var route = new Route()
         {
-            Aggregator = "TestDefinedAggregator",
+            Aggregator = nameof(TestDefinedAggregator),
         };
 
         // Arrange: Given No Defined Aggregator

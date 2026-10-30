@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class MultiplexingMiddlewareTests : UnitTest
 {
@@ -251,7 +251,7 @@ public class MultiplexingMiddlewareTests : UnitTest
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        mock.Protected().Verify<Task<Stream>>("CloneRequestBodyAsync",
+        mock.Protected().Verify<Task<Stream>>(nameof(CloneRequestBodyAsync),
             numberOfRoutes > 1 ? Times.Exactly(numberOfRoutes) : Times.Never(),
             ItExpr.IsAny<HttpRequest>(), ItExpr.IsAny<DownstreamRoute>(), ItExpr.IsAny<CancellationToken>());
     }
@@ -408,8 +408,6 @@ public class MultiplexingMiddlewareTests : UnitTest
             Times.Once());
     }
 
-    private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
-
     [Fact]
     [Trait("PR", "1826")]
     [Trait("PR", "2328")]
@@ -420,14 +418,52 @@ public class MultiplexingMiddlewareTests : UnitTest
         var contexts = new List<HttpContext> { new DefaultHttpContext() };
 
         // Act
-        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+        var actual = MapAsync(_httpContext, route, contexts);
 
         // Assert
         Assert.True(actual.IsCompleted);
         Assert.Same(Task.CompletedTask, actual);
     }
 
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task Invoke_When_WebSocket_Request_With_Multiple_Routes_Should_Process_Single_Route_Only()
+    {
+        // Arrange
+        var mock = MockMiddlewareFactory(null, null);
+        var route = new Route
+        {
+            DownstreamRoute = [
+                new DownstreamRouteBuilder().WithKey("comments").Build(),
+                new DownstreamRouteBuilder().WithKey("user").Build()
+            ],
+            DownstreamRouteConfig = [
+                new("user", "$[*].userId", "userId")
+            ],
+            Aggregator = "TestAggregator",
+        };
+        var webSocketManager = new Mock<WebSocketManager>();
+        webSocketManager.Setup(x => x.IsWebSocketRequest).Returns(true);
+        var items = new Dictionary<object, object>();
+        items.UpsertRoute(route);
+        var httpContext = new Mock<HttpContext>();
+        httpContext.Setup(x => x.WebSockets).Returns(webSocketManager.Object);
+        httpContext.Setup(x => x.Items).Returns(items);
+
+        // Act
+        await _middleware.Invoke(httpContext.Object);
+
+        // Assert - only the first downstream route is processed, route keys are not used
+        mock.Protected().Verify("ProcessSingleRouteAsync", Times.Once(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.Is<DownstreamRoute>(r => r == route.DownstreamRoute[0]));
+        mock.Protected().Verify<Task<HttpContext[]>>("ProcessRoutesWithRouteKeysAsync", Times.Never(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<IEnumerable<DownstreamRoute>>(), ItExpr.IsAny<IReadOnlyCollection<AggregateRouteConfig>>(), ItExpr.IsAny<HttpContext>());
+        mock.Protected().Verify<Task>(nameof(MapAsync), Times.Never(),
+            ItExpr.IsAny<HttpContext>(), ItExpr.IsAny<Route>(), ItExpr.IsAny<List<HttpContext>>());
+    }
+
     [Theory]
+    [Trait("PR", "1826")]
     [Trait("PR", "2328")]
     [InlineData(0, 2)]   // contexts.Count == 0 → no loop iterations
     [InlineData(2, 0)]   // DownstreamRouteConfig.Count == 0 → skip if
@@ -450,7 +486,7 @@ public class MultiplexingMiddlewareTests : UnitTest
             .ToList();
 
         // Act
-        var actual = (Task)MapAsync().Invoke(_middleware, [_httpContext, route, contexts]);
+        var actual = MapAsync(_httpContext, route, contexts);
 
         // Assert - verify keys were set where expected
         Assert.NotNull(actual);
@@ -459,6 +495,102 @@ public class MultiplexingMiddlewareTests : UnitTest
             contexts[i].Items[MultiplexingMiddleware.CurrentAggregateRouteKeyItem].ShouldBe($"key{i}");
         }
     }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_Stream_Position_Not_Zero_Should_Return_Original_Body()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var context = new DefaultHttpContext();
+        
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 5 // Position is not 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = bodyContent.Length;
+
+        // Act
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
+
+        // Assert
+        Assert.Same(originalStream, actual); // Should return the same stream
+        var expectedMessage = $"Aggregation does not support body copy without stream in initial position 0 for the route {route.Name()}.";
+        logger.Verify(x => x.LogWarning(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
+        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
+    }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_ContentLength_Is_Not_Null_Should_Copy_Body()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var context = new DefaultHttpContext();
+
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = bodyContent.Length;
+
+        // Act
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.IsType<MemoryStream>(actual);
+        Assert.Equal(0, actual.Position); // Position should be reset to 0
+        Assert.Equal(0, originalStream.Position); // Original stream position should also be 0
+
+        // Verify content was copied
+        actual.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(actual);
+        var content = await reader.ReadToEndAsync(CancelMe);
+        Assert.Equal(bodyContent, content);
+        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
+        logger.Verify(x => x.LogInformation(It.IsAny<Func<string>>()), Times.Never);
+    }
+
+    [Fact]
+    [Trait("PR", "1389")]
+    public async Task CloneRequestBodyAsync_When_ContentLength_Is_Null_Should_Return_Empty_Memory_Stream()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder().Build();
+        var context = new DefaultHttpContext();
+        
+        var bodyContent = "test content";
+        var originalStream = new MemoryStream(Encoding.UTF8.GetBytes(bodyContent))
+        {
+            Position = 0
+        };
+        context.Request.Body = originalStream;
+        context.Request.ContentLength = null; // ContentLength is null
+        
+        // Act
+        var actual = await CloneRequestBodyAsync(context.Request, route, CancelMe);
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.IsType<MemoryStream>(actual);
+        Assert.Equal(0, actual.Length); // Should be empty (not copied)
+        var expectedMessage = $"Aggregation does not support body copy without Content-Length header, skipping body copy for the route {route.Name()}.";
+        logger.Verify(x => x.LogInformation(It.Is<Func<string>>(f => f() == expectedMessage)), Times.Once);
+        logger.Verify(x => x.LogWarning(It.IsAny<Func<string>>()), Times.Never);
+    }
+
+    private MethodInfo MapAsync() => _middleware.GetType().GetMethod(nameof(MapAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+    private Task MapAsync(HttpContext context, Route route, List<HttpContext> contexts)
+        => (Task)MapAsync().Invoke(_middleware, [context, route, contexts]);
+
+    private MethodInfo CloneRequestBodyAsync() => _middleware.GetType().GetMethod(nameof(CloneRequestBodyAsync), BindingFlags.NonPublic | BindingFlags.Instance);
+    private Task<Stream> CloneRequestBodyAsync(HttpRequest request, DownstreamRoute route, CancellationToken aborted)
+        => (Task<Stream>)CloneRequestBodyAsync().Invoke(_middleware, [request, route, aborted]);
 
     private RequestDelegate AggregateRequestDelegateFactory()
     {
