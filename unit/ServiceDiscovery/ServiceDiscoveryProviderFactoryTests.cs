@@ -128,6 +128,29 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
     }
 
     [Fact]
+    public void Should_ignore_null_provider_from_finder()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        ServiceDiscoveryFinderDelegate nullFinder = (_, _, _) => null;
+        _collection.AddSingleton(nullFinder);
+        _provider = _collection.BuildServiceProvider(true);
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
+        _result.Errors.Single().ShouldBeOfType<UnableToFindServiceDiscoveryProviderError>();
+    }
+
+    [Fact]
     public void Should_return_service_fabric_provider()
     {
         // Arrange
