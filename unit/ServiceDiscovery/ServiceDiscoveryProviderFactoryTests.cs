@@ -85,7 +85,7 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
             .WithServiceName("product")
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
-            .WithType("FakeProvider")
+            .WithType("fakeprovider")
             .Build();
         GivenAFakeDelegate();
 

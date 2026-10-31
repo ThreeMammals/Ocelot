@@ -18,7 +18,9 @@ public class ServiceFabricServiceDiscoveryProviderTests : UnitTest
         var services = await provider.GetAsync();
 
         // Assert: Then The ServiceFabric Naming Service Is Retured
+        provider.Name.ShouldBe(ServiceFabricServiceDiscoveryProvider.Type);
         services.Count.ShouldBe(1);
+        services[0].Name.ShouldBe(serviceName);
         services[0].HostAndPort.DownstreamHost.ShouldBe(host);
         services[0].HostAndPort.DownstreamPort.ShouldBe(port);
     }

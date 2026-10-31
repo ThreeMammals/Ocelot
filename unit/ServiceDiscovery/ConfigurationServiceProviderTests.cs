@@ -22,6 +22,7 @@ public class ConfigurationServiceProviderTests : UnitTest
         var result = await _serviceProvider.GetAsync();
 
         // Assert
+        _serviceProvider.Name.ShouldBe(nameof(ConfigurationServiceProvider));
         result[0].HostAndPort.DownstreamHost.ShouldBe(services[0].HostAndPort.DownstreamHost);
         result[0].HostAndPort.DownstreamPort.ShouldBe(services[0].HostAndPort.DownstreamPort);
         result[0].Name.ShouldBe(services[0].Name);
