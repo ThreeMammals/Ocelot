@@ -151,6 +151,29 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
     }
 
     [Fact]
+    public void Should_ignore_provider_with_null_name()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        ServiceDiscoveryFinderDelegate nullNameFinder = (_, _, _) => new Fake(null);
+        _collection.AddSingleton(nullNameFinder);
+        _provider = _collection.BuildServiceProvider(true);
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
+        _result.Errors.Single().ShouldBeOfType<UnableToFindServiceDiscoveryProviderError>();
+    }
+
+    [Fact]
     public void Should_return_service_fabric_provider()
     {
         // Arrange
@@ -244,7 +267,9 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
     private class Fake : IServiceDiscoveryProvider
     {
-        public string Name => "FakeProvider";
+        public Fake(string name = "FakeProvider") => Name = name;
+
+        public string Name { get; }
 
         public Task<List<Service>> GetAsync() => null;
     }
