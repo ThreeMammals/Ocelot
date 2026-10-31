@@ -6,6 +6,7 @@ using Ocelot.DownstreamUrlCreator;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
+using Ocelot.ServiceFabric;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
@@ -33,7 +34,11 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _replacer = new Mock<IDownstreamPathPlaceholderReplacer>();
         _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
         _next = context => Task.CompletedTask;
-        _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _replacer.Object);
+        _middleware = new DownstreamUrlCreatorMiddleware(
+            _next,
+            _loggerFactory.Object,
+            _replacer.Object,
+            new ServiceFabricDownstreamPathFormatter(_replacer.Object));
     }
 
     [Fact]
@@ -836,7 +841,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 internal class DownstreamUrlCreatorMiddlewareTestWrapper : DownstreamUrlCreatorMiddleware
 {
     public DownstreamUrlCreatorMiddlewareTestWrapper(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IDownstreamPathPlaceholderReplacer replacer)
-        : base(next, loggerFactory, replacer) { }
+        : base(next, loggerFactory, replacer, new DefaultDownstreamPathFormatter()) { }
 
     public static new ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
         => DownstreamUrlCreatorMiddleware.GetPath(downstreamPath);

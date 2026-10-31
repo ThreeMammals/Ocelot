@@ -362,6 +362,7 @@ public class OcelotPipelineExtensionsTests : UnitTest
         services.AddSingleton(Mock.Of<IDownstreamRequestCreator>()); // for DownstreamRequestInitialiserMiddleware
         services.AddSingleton(Mock.Of<ILoadBalancerHouse>()); // for LoadBalancingMiddleware
         services.AddSingleton(Mock.Of<IDownstreamPathPlaceholderReplacer>()); // for DownstreamUrlCreatorMiddleware
+        services.AddSingleton<IDownstreamPathFormatter, DefaultDownstreamPathFormatter>();
         services.AddSingleton(Mock.Of<IWebSocketsFactory>()); // for WebSocketsProxyMiddleware
         services.AddSingleton<IOptions<WebSocketOptions>>(Options.Create(new WebSocketOptions())); // for WebSocketMiddleware
 
