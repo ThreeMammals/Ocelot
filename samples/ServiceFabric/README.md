@@ -6,8 +6,9 @@ author: raunakpandya edited by Tom Pallister for Ocelot
 
 # Ocelot Service Fabric example
 
-This shows a service fabric cluster with Ocelot exposed over HTTP accessing services in the cluster via the naming service. If you want to try and use Ocelot with
-Service Fabric I reccomend using this as a starting point.
+This sample exposes Ocelot over HTTP and accesses cluster services through the Service Fabric Reverse Proxy. The feature is provided by the non-publishable project at `src/ServiceFabric/Ocelot.Discovery.ServiceFabric.csproj`; the gateway registers it with `AddServiceFabric()`.
+
+Enable the Reverse Proxy in the cluster configuration and make its endpoint reachable from the Ocelot host.
 
 If you want to use statefull / actors you must send the PartitionKind and PartitionKey to Ocelot as query string parameters.
 

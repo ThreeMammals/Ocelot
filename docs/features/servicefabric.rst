@@ -7,17 +7,30 @@ Service Fabric
 
   [#f1]_ Feature of: :doc:`../features/servicediscovery`
 
-If you have services deployed in Azure `Service Fabric`_ you will normally use the naming service to access them.
+If you have services deployed in Azure `Service Fabric`_, Ocelot sends requests through the Service Fabric Reverse Proxy.
 
-This feature allows to set up a route that will work in `Service Fabric`_.
+The Reverse Proxy resolves the service, partition, and replica. Ocelot does not query the Service Fabric Naming Service or discover replicas directly.
 
 Configuration
 -------------
 
-The most important thing is the ``ServiceName``, which is composed of the `Service Fabric`_ application name followed by the specific service name.
-Additionally, the ``ServiceDiscoveryProvider`` needs to be configured in ``GlobalConfiguration``.
+The Service Fabric feature is in the non-publishable ``src/ServiceFabric/Ocelot.Discovery.ServiceFabric.csproj`` project.
+Add a project reference to it and register the feature with ``AddServiceFabric()``:
+
+.. code-block:: csharp
+
+  using Ocelot.ServiceFabric;
+
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddServiceFabric();
+
+If ``"Type": "ServiceFabric"`` is configured without registering the feature, Ocelot reports a missing service discovery provider during startup.
+
+The most important route setting is ``ServiceName``, composed of the Service Fabric application name followed by the specific service name.
+The ``ServiceDiscoveryProvider`` in ``GlobalConfiguration`` must point to a reachable Service Fabric Reverse Proxy endpoint.
 The example below demonstrates a typical configuration.
-It assumes that *Service Fabric* is running on ``localhost`` and that the naming service is using port ``19081``.
+It assumes that *Service Fabric* is running on ``localhost`` and the Reverse Proxy is enabled in the cluster configuration (``HttpApplicationGateway``) and reachable from Ocelot on its default port, ``19081``.
 
   The example below is taken from the :ref:`sf-sample`, so please check it if this doesn't make sense!
 
@@ -45,12 +58,14 @@ It assumes that *Service Fabric* is running on ``localhost`` and that the naming
     }
   }
 
-If you are using stateless or guest exe services, Ocelot can proxy through the naming service without requiring additional configuration.
+If you are using stateless or guest exe services, the Reverse Proxy resolves the destination without additional request parameters.
 However, if you are using stateful or actor services, you must include the ``PartitionKind`` and ``PartitionKey`` query string values in the client request, e.g.,
 
   GET ``http://ocelot.com/EquipmentInterfaces?PartitionKind=xxx&PartitionKey=xxx``
 
 There is no way for Ocelot to determine these values automatically.
+
+The Service Fabric provider returns the configured Reverse Proxy host and port as a single destination. Ocelot does not discover replicas or perform replica health checks.
 
 .. _sf-placeholders:
 
@@ -116,9 +131,9 @@ This solution includes the following projects:
 Complete instructions for running this solution can be found in the `README.md <https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceFabric/README.md>`_ file.
 
 .. note::
-  Please consider this solution as a demonstration of integration; it is outdated as of 2025.
-  Therefore, this solution is a draft and requires further development for practical usage and deployment in the Azure cloud.
-  Additionally, refer to the team's notes in the :ref:`sd-service-fabric` section!
+  This solution is a demonstration of integration and remains a draft for practical use and Azure deployment.
+  The Service Fabric feature project is not currently published as a NuGet package.
+  Ensure the cluster Reverse Proxy is enabled and reachable from the Ocelot host.
 
 """"
 
