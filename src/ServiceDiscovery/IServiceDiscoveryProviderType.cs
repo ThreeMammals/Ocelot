@@ -1,4 +1,4 @@
-namespace Ocelot.ServiceDiscovery.Providers;
+namespace Ocelot.ServiceDiscovery;
 
 public interface IServiceDiscoveryProviderType
 {

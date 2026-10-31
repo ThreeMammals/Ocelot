@@ -1,5 +1,4 @@
-﻿using Ocelot.ServiceDiscovery.Configuration;
-using Ocelot.ServiceDiscovery.Providers;
+﻿using Ocelot.ServiceFabric;
 
 namespace Ocelot.UnitTests.ServiceFabric;
 

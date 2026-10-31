@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
-namespace Ocelot.ServiceDiscovery.Providers;
+namespace Ocelot.ServiceFabric;
 
 public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider, IServiceDiscoveryProviderType
 {

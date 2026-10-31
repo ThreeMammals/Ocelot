@@ -29,7 +29,7 @@ Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solut
 
 The [IDownstreamRouteProvider.Get](https://github.com/ThreeMammals/Ocelot/blob/{0}/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs) method now returns `Response<Route>` (previously `Response<DownstreamRouteHolder>`). The `DownstreamRouteHolder` class has been removed. Placeholders are now stored directly on `Route.TemplatePlaceholderNameAndValues`. Custom implementations of `IDownstreamRouteProvider` and any code that references `DownstreamRouteHolder` require updates and recompilation.
 
-**Service Fabric migration**: The Service Fabric discovery provider and path formatter have moved out of the Ocelot core assembly into the non-publishable `Ocelot.Discovery.ServiceFabric` project. Applications using `"Type": "ServiceFabric"` must reference that project and call `AddServiceFabric()` after `AddOcelot()`. The core package no longer enables Service Fabric discovery by itself.
+**Service Fabric migration**: The Service Fabric discovery provider and path formatter have moved to the `Ocelot.ServiceFabric` namespace (`src/ServiceFabric` folder) and are no longer enabled by default. Applications using `"Type": "ServiceFabric"` must call `AddServiceFabric()` after `AddOcelot()`.
 
 **Other changes affecting deployments**:
 

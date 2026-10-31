@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.ServiceDiscovery.Configuration;
+using Ocelot.ServiceFabric;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -184,13 +184,6 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         // Assert
         _result.IsError.ShouldBeTrue();
         _result.Errors.Single().ShouldBeOfType<UnableToFindServiceDiscoveryProviderError>();
-    }
-
-    [Fact]
-    public void Core_assembly_does_not_contain_service_fabric_provider()
-    {
-        typeof(ServiceDiscoveryProviderFactory).Assembly.GetTypes()
-            .ShouldNotContain(type => type.Name.Contains("ServiceFabric", StringComparison.Ordinal));
     }
 
     private void GivenServiceFabricDelegate()

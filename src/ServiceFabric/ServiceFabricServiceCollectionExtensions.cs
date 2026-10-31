@@ -4,8 +4,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Configuration;
-using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.ServiceFabric;
 

@@ -87,7 +87,7 @@ To be added...
 🆙 What's Updated?
 --------------------
 
-{ updates in development } 
+* :doc:`../features/servicefabric`: Service Fabric discovery was extracted into the ``Ocelot.ServiceFabric`` namespace (``src/ServiceFabric`` folder) and is no longer enabled by default. Call ``AddServiceFabric()`` after ``AddOcelot()`` when using ``"Type": "ServiceFabric"``.
 
 📦 Patches Included
 ---------------------
