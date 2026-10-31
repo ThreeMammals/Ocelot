@@ -70,4 +70,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Ocelot.UnitTests" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ServiceFabric/**/*.cs" />
+  </ItemGroup>
 </Project>

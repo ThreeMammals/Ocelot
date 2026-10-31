@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -136,13 +137,31 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .Build();
-        GivenAFakeDelegate();
+        GivenServiceFabricDelegate();
 
         // Act
         WhenIGetTheServiceProvider(serviceConfig, route);
 
         // Assert
         _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
+    }
+
+    private void GivenServiceFabricDelegate()
+    {
+        static IServiceDiscoveryProvider serviceFabric(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
+        {
+            if (!ServiceFabricServiceDiscoveryProvider.Type.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var serviceFabricConfiguration = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
+            return new ServiceFabricServiceDiscoveryProvider(serviceFabricConfiguration);
+        }
+
+        _collection.AddSingleton((ServiceDiscoveryFinderDelegate)serviceFabric);
+        _provider = _collection.BuildServiceProvider(true);
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
     }
 
     private void GivenAFakeDelegate()

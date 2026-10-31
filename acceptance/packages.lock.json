@@ -660,6 +660,12 @@
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       },
+      "ocelot.discovery.servicefabric": {
+        "type": "Project",
+        "dependencies": {
+          "Ocelot": "[0.0.0-dev, )"
+        }
+      },
       "ocelot.testing": {
         "type": "Project",
         "dependencies": {
@@ -1375,6 +1381,12 @@
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
         }
       },
+      "ocelot.discovery.servicefabric": {
+        "type": "Project",
+        "dependencies": {
+          "Ocelot": "[0.0.0-dev, )"
+        }
+      },
       "ocelot.testing": {
         "type": "Project",
         "dependencies": {
@@ -2077,6 +2089,12 @@
           "Microsoft.AspNetCore.MiddlewareAnalysis": "[9.0.21, )",
           "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[9.0.21, )",
           "Microsoft.Extensions.DiagnosticAdapter": "[3.1.32, )"
+        }
+      },
+      "ocelot.discovery.servicefabric": {
+        "type": "Project",
+        "dependencies": {
+          "Ocelot": "[0.0.0-dev, )"
         }
       },
       "ocelot.testing": {
