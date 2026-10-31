@@ -1,7 +1,7 @@
 ﻿using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.ServiceDiscovery.Providers;
 
-namespace Ocelot.UnitTests.ServiceDiscovery;
+namespace Ocelot.UnitTests.ServiceFabric;
 
 public class ServiceFabricServiceDiscoveryProviderTests : UnitTest
 {

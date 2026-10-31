@@ -33,7 +33,6 @@ using Ocelot.Responder;
 using Ocelot.Security;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
-using Ocelot.ServiceFabric;
 using Ocelot.WebSockets;
 using System.Reflection;
 
@@ -94,7 +93,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
         Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamPathPlaceholderReplacer>();
         Services.TryAddSingleton<IDownstreamPathFormatter, DefaultDownstreamPathFormatter>();
-        Services.Replace(ServiceDescriptor.Singleton<IDownstreamPathFormatter, ServiceFabricDownstreamPathFormatter>());
         Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
         Services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();
