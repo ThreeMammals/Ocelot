@@ -146,6 +146,53 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
     }
 
+    [Fact]
+    public void Should_return_service_fabric_provider_when_multiple_finders_are_registered()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        GivenAFakeDelegate();
+        GivenServiceFabricDelegate();
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
+    }
+
+    [Fact]
+    public void Should_not_return_service_fabric_provider_when_not_registered()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
+        _result.Errors.Single().ShouldBeOfType<UnableToFindServiceDiscoveryProviderError>();
+    }
+
+    [Fact]
+    public void Core_assembly_does_not_contain_service_fabric_provider()
+    {
+        typeof(ServiceDiscoveryProviderFactory).Assembly.GetTypes()
+            .ShouldNotContain(type => type.Name.Contains("ServiceFabric", StringComparison.Ordinal));
+    }
+
     private void GivenServiceFabricDelegate()
     {
         static IServiceDiscoveryProvider serviceFabric(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
