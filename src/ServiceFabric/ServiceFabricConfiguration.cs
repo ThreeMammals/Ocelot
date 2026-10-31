@@ -1,4 +1,4 @@
-﻿namespace Ocelot.ServiceDiscovery.Configuration;
+namespace Ocelot.ServiceFabric;
 
 public class ServiceFabricConfiguration
 {

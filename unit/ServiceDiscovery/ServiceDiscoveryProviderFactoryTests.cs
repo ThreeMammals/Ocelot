@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.ServiceFabric;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
@@ -136,13 +137,71 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
         var serviceConfig = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .Build();
-        GivenAFakeDelegate();
+        GivenServiceFabricDelegate();
 
         // Act
         WhenIGetTheServiceProvider(serviceConfig, route);
 
         // Assert
         _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
+    }
+
+    [Fact]
+    public void Should_return_service_fabric_provider_when_multiple_finders_are_registered()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        GivenAFakeDelegate();
+        GivenServiceFabricDelegate();
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.Data.ShouldBeOfType<ServiceFabricServiceDiscoveryProvider>();
+    }
+
+    [Fact]
+    public void Should_not_return_service_fabric_provider_when_not_registered()
+    {
+        // Arrange
+        var route = new DownstreamRouteBuilder()
+            .WithServiceName("product")
+            .Build();
+        var serviceConfig = new ServiceProviderConfigurationBuilder()
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
+            .Build();
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
+
+        // Act
+        WhenIGetTheServiceProvider(serviceConfig, route);
+
+        // Assert
+        _result.IsError.ShouldBeTrue();
+        _result.Errors.Single().ShouldBeOfType<UnableToFindServiceDiscoveryProviderError>();
+    }
+
+    private void GivenServiceFabricDelegate()
+    {
+        static IServiceDiscoveryProvider serviceFabric(IServiceProvider provider, ServiceProviderConfiguration config, DownstreamRoute route)
+        {
+            if (!ServiceFabricServiceDiscoveryProvider.Type.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var serviceFabricConfiguration = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
+            return new ServiceFabricServiceDiscoveryProvider(serviceFabricConfiguration);
+        }
+
+        _collection.AddSingleton((ServiceDiscoveryFinderDelegate)serviceFabric);
+        _provider = _collection.BuildServiceProvider(true);
+        _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, _provider);
     }
 
     private void GivenAFakeDelegate()

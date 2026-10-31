@@ -8,7 +8,7 @@ namespace Ocelot.DownstreamUrlCreator;
 /// </summary>
 public class DownstreamPathPlaceholderReplacer : IDownstreamPathPlaceholderReplacer
 {
-    public DownstreamPath Replace(string downstreamPathTemplate, List<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
+    public DownstreamPath Replace(string downstreamPathTemplate, IReadOnlyList<PlaceholderNameAndValue> urlPathPlaceholderNameAndValues)
     {
         var downstreamPath = new StringBuilder(downstreamPathTemplate);
         foreach (var placeholderVariableAndValue in urlPathPlaceholderNameAndValues)

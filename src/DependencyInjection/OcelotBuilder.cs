@@ -92,6 +92,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IUrlPathToUrlTemplateMatcher, RegExUrlMatcher>();
         Services.TryAddSingleton<IPlaceholderNameAndValueFinder, UrlPathPlaceholderNameAndValueFinder>();
         Services.TryAddSingleton<IDownstreamPathPlaceholderReplacer, DownstreamPathPlaceholderReplacer>();
+        Services.TryAddSingleton<IDownstreamPathFormatter, DefaultDownstreamPathFormatter>();
         Services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder.Finder.DownstreamRouteFinder>();
         Services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
         Services.TryAddSingleton<IDownstreamRouteProviderFactory, DownstreamRouteProviderFactory>();

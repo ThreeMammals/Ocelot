@@ -454,16 +454,14 @@ Service Fabric
 --------------
 
 .. _Service Fabric: https://azure.microsoft.com/en-us/products/service-fabric/
-.. _Microsoft.ServiceFabric: https://www.nuget.org/packages/Microsoft.ServiceFabric
-
-If you have services deployed in Azure `Service Fabric`_, you typically use the naming service to access them.
+The Service Fabric integration forwards requests to the cluster's Reverse Proxy, which resolves service names, partitions, and replicas.
 
 Please refer to the :doc:`../features/servicefabric` chapter for the complete *essential* documentation.
 
-  **Note**: Currently, the ``ServiceFabric`` *service discovery* provider is tightly coupled with Ocelot core interfaces, making it a part of Ocelot Core and implemented as the ``ServiceFabricServiceDiscoveryProvider`` class.
-  At present, there is no Ocelot extension package that integrates with the `Microsoft.ServiceFabric`_ package or any other relevant package.
-  However, the Ocelot team plans to address this in future development, as we believe `Service Fabric`_ is an essential and popular product in the .NET and Azure development world.
-  If anyone in the Ocelot community is a professional Azure developer with extensive `Service Fabric`_ experience, please contact our development team directly via GitHub or email.
+  **Note**: The Service Fabric provider and path formatter are in the ``src/ServiceFabric`` folder of the Ocelot core project (``Ocelot.ServiceFabric`` namespace).
+  Add a project reference and call ``AddServiceFabric()`` after ``AddOcelot()`` to enable it.
+  This project does not use the Service Fabric client SDK and does not discover replicas or perform health checks.
+  A NuGet package may be published in a future release.
 
 .. _sd-dynamic-routing:
 

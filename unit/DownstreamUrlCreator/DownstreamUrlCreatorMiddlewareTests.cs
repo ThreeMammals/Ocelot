@@ -6,6 +6,7 @@ using Ocelot.DownstreamUrlCreator;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
+using Ocelot.ServiceFabric;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
@@ -33,7 +34,11 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _replacer = new Mock<IDownstreamPathPlaceholderReplacer>();
         _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
         _next = context => Task.CompletedTask;
-        _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _replacer.Object);
+        _middleware = new DownstreamUrlCreatorMiddleware(
+            _next,
+            _loggerFactory.Object,
+            _replacer.Object,
+            new ServiceFabricDownstreamPathFormatter(_replacer.Object));
     }
 
     [Fact]
@@ -77,7 +82,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
         _downstreamPath = new DownstreamPath(string.Empty);
         _replacer
-            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
             .Returns(_downstreamPath);
 
         // Act, Assert
@@ -769,8 +774,8 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _httpContext.Request.Path = upstreamPath;
         GivenTheDownstreamRequestUriIs("http://localhost:5000" + upstreamPath + query);
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
-            .Returns((string template, List<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
+        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
+            .Returns((string template, IReadOnlyList<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
 
         // Act
         await _middleware.Invoke(_httpContext);
@@ -807,7 +812,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private void GivenTheUrlReplacerWillReturnSequence(params string[] paths)
     {
         var setup = _replacer
-            .SetupSequence(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()));
+            .SetupSequence(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()));
         foreach (var path in paths)
         {
             setup.Returns(new DownstreamPath(path));
@@ -818,7 +823,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         _downstreamPath = new DownstreamPath(path);
         _replacer
-            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
             .Returns(_downstreamPath);
     }
 
@@ -836,7 +841,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 internal class DownstreamUrlCreatorMiddlewareTestWrapper : DownstreamUrlCreatorMiddleware
 {
     public DownstreamUrlCreatorMiddlewareTestWrapper(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IDownstreamPathPlaceholderReplacer replacer)
-        : base(next, loggerFactory, replacer) { }
+        : base(next, loggerFactory, replacer, new DefaultDownstreamPathFormatter()) { }
 
     public static new ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
         => DownstreamUrlCreatorMiddleware.GetPath(downstreamPath);

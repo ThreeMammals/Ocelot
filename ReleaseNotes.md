@@ -29,6 +29,8 @@ Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solut
 
 The [IDownstreamRouteProvider.Get](https://github.com/ThreeMammals/Ocelot/blob/{0}/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs) method now returns `Response<Route>` (previously `Response<DownstreamRouteHolder>`). The `DownstreamRouteHolder` class has been removed. Placeholders are now stored directly on `Route.TemplatePlaceholderNameAndValues`. Custom implementations of `IDownstreamRouteProvider` and any code that references `DownstreamRouteHolder` require updates and recompilation.
 
+**Service Fabric migration**: The Service Fabric discovery provider and path formatter have moved to the `Ocelot.ServiceFabric` namespace (`src/ServiceFabric` folder) and are no longer enabled by default. Applications using `"Type": "ServiceFabric"` must call `AddServiceFabric()` after `AddOcelot()`.
+
 **Other changes affecting deployments**:
 
 1. [Dynamic Routing](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/servicediscovery.rst#dynamic-routing) no longer attempts to build [upstream header templates](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#upstream-headers) from incoming request headers (fixes `RegexParseException` on certain browser headers such as `sec-ch-ua`). An empty collection is returned instead. Static routing is unchanged.
