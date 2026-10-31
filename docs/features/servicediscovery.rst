@@ -458,10 +458,10 @@ The Service Fabric integration forwards requests to the cluster's Reverse Proxy,
 
 Please refer to the :doc:`../features/servicefabric` chapter for the complete *essential* documentation.
 
-  **Note**: The Service Fabric provider and path formatter are in the non-publishable ``src/ServiceFabric/Ocelot.Discovery.ServiceFabric.csproj`` feature project.
-  Add a project reference and call ``AddServiceFabric()`` after ``AddOcelot()`` to enable it.
+  **Note**: The Service Fabric provider and path formatter are maintained under ``src/ServiceFabric/`` as part of Ocelot core.
+  Call ``AddServiceFabric()`` after ``AddOcelot()`` to enable the feature.
   This project does not use the Service Fabric client SDK and does not discover replicas or perform health checks.
-  A NuGet package may be published in a future release.
+  A separate NuGet package may be considered in a future release.
 
 .. _sd-dynamic-routing:
 

@@ -14,8 +14,8 @@ The Reverse Proxy resolves the service, partition, and replica. Ocelot does not 
 Configuration
 -------------
 
-The Service Fabric feature is in the non-publishable ``src/ServiceFabric/Ocelot.Discovery.ServiceFabric.csproj`` project.
-Add a project reference to it and register the feature with ``AddServiceFabric()``:
+The Service Fabric integration is included in Ocelot core under ``src/ServiceFabric/``.
+Register the feature with ``AddServiceFabric()``:
 
 .. code-block:: csharp
 

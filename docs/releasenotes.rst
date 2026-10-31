@@ -89,6 +89,10 @@ To be added...
 
 { updates in development } 
 
+* :doc:`../features/servicediscovery`: Service Fabric integration was moved into ``src/ServiceFabric/`` and now requires ``AddServiceFabric()`` after ``AddOcelot()``.
+
+  The provider and path formatter remain part of Ocelot core, but service discovery configuration with ``"Type": "ServiceFabric"`` no longer enables the integration implicitly.
+
 📦 Patches Included
 ---------------------
 .. _1687: https://github.com/ThreeMammals/Ocelot/issues/1687

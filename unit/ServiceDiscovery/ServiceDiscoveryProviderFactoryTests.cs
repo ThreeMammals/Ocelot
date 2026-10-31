@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.ServiceDiscovery.Configuration;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceFabric;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;
@@ -187,10 +187,10 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
     }
 
     [Fact]
-    public void Core_assembly_does_not_contain_service_fabric_provider()
+    public void Core_assembly_contains_service_fabric_provider()
     {
         typeof(ServiceDiscoveryProviderFactory).Assembly.GetTypes()
-            .ShouldNotContain(type => type.Name.Contains("ServiceFabric", StringComparison.Ordinal));
+            .ShouldContain(type => type.Name.Contains("ServiceFabric", StringComparison.Ordinal));
     }
 
     private void GivenServiceFabricDelegate()

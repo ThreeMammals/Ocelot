@@ -4,7 +4,6 @@ using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.Request.Middleware;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceFabric;
@@ -22,7 +21,7 @@ public sealed class ServiceFabricDownstreamPathFormatter : IDownstreamPathFormat
         DownstreamRequest downstreamRequest,
         DownstreamRoute downstreamRoute,
         IInternalConfiguration configuration,
-        List<PlaceholderNameAndValue> placeholders,
+        IReadOnlyList<PlaceholderNameAndValue> placeholders,
         DownstreamPath downstreamPath)
     {
         if (!ServiceFabricServiceDiscoveryProvider.Type.Equals(configuration.ServiceProviderConfiguration.Type, StringComparison.OrdinalIgnoreCase)

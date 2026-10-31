@@ -6,7 +6,7 @@ author: raunakpandya edited by Tom Pallister for Ocelot
 
 # Ocelot Service Fabric example
 
-This sample exposes Ocelot over HTTP and accesses cluster services through the Service Fabric Reverse Proxy. The feature is provided by the non-publishable project at `src/ServiceFabric/Ocelot.Discovery.ServiceFabric.csproj`; the gateway registers it with `AddServiceFabric()`.
+This sample exposes Ocelot over HTTP and accesses cluster services through the Service Fabric Reverse Proxy. The feature is included in Ocelot core under `src/ServiceFabric/` and is enabled with `AddServiceFabric()`.
 
 Enable the Reverse Proxy in the cluster configuration and make its endpoint reachable from the Ocelot host.
 

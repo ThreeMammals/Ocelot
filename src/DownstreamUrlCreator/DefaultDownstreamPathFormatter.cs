@@ -11,6 +11,6 @@ public sealed class DefaultDownstreamPathFormatter : IDownstreamPathFormatter
         DownstreamRequest downstreamRequest,
         DownstreamRoute downstreamRoute,
         IInternalConfiguration configuration,
-        List<PlaceholderNameAndValue> placeholders,
+        IReadOnlyList<PlaceholderNameAndValue> placeholders,
         DownstreamPath downstreamPath) => false;
 }

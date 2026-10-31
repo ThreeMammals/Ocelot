@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Ocelot.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceFabric\Ocelot.Discovery.ServiceFabric.csproj" />
     <ProjectReference Include="..\..\Web\Ocelot.Samples.Web.csproj" />
   </ItemGroup>
 </Project>
