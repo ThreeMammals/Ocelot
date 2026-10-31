@@ -8,6 +8,7 @@ using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.ServiceFabric;
 using Ocelot.Values;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
 
@@ -118,6 +119,28 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates");
         ThenTheQueryStringIs(string.Empty);
+    }
+
+    [Fact]
+    public async Task Should_use_downstream_query_when_request_has_no_query()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/api/products")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        GivenTheDownStreamRouteIs(new(downstreamRoute));
+        GivenTheDownstreamRequestUriIs("http://localhost:5000/products");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/api/products?source=route");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheDownstreamRequestUriIs("http://localhost:5000/api/products?source=route");
+        ThenTheQueryStringIs("?source=route");
     }
 
     [Fact]
@@ -783,6 +806,44 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Assert
         _httpContext.Items.DownstreamRequest().ToHttpRequestMessage().RequestUri.OriginalString
             .ShouldBe(expected, "Should create downstream path from upstream path of dynamic route");
+    }
+
+    [Fact]
+    public void Should_preserve_query_when_no_template_placeholders_match()
+    {
+        // Arrange
+        var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/products?source=client"));
+        var placeholders = new List<PlaceholderNameAndValue> { new("{unused}", "value") };
+        var method = typeof(DownstreamUrlCreatorMiddleware).GetMethod(
+            "RemoveQueryStringParametersThatHaveBeenUsedInTemplate",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        // Act
+        var result = method.Invoke(null, [request, placeholders]);
+
+        // Assert
+        result.ShouldBe("?source=client");
+    }
+
+    [Fact]
+    public void Should_remove_query_when_template_placeholder_matches()
+    {
+        // Arrange
+        var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/products?source=client"));
+        var placeholders = new List<PlaceholderNameAndValue>
+        {
+            new("{source}", "client"),
+            new("{unused}", "value"),
+        };
+        var method = typeof(DownstreamUrlCreatorMiddleware).GetMethod(
+            "RemoveQueryStringParametersThatHaveBeenUsedInTemplate",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        // Act
+        var result = method.Invoke(null, [request, placeholders]);
+
+        // Assert
+        result.ShouldBe(string.Empty);
     }
 
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
