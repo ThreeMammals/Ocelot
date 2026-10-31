@@ -10,7 +10,6 @@ using Ocelot.Logging;
 using Ocelot.QualityOfService;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Security.Claims;
@@ -1185,6 +1184,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
     private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
+        public string Name => nameof(FakeServiceDiscoveryProvider);
+
         public Task<List<Service>> GetAsync() => Task.FromResult<List<Service>>(new());
     }
 

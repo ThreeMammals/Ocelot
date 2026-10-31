@@ -32,7 +32,6 @@ using Ocelot.Requester;
 using Ocelot.Responder;
 using Ocelot.Security;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.WebSockets;
 using System.Reflection;
 

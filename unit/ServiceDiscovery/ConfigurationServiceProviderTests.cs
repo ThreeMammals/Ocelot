@@ -1,4 +1,4 @@
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;

@@ -4,7 +4,6 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.ServiceFabric;
 using Ocelot.Values;
 
@@ -79,14 +78,14 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
     }
 
     [Fact]
-    public void Should_return_provider_because_type_matches_reflected_type_from_delegate()
+    public void Should_return_provider_when_name_matches()
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithServiceName("product")
             .Build();
         var serviceConfig = new ServiceProviderConfigurationBuilder()
-            .WithType(nameof(Fake))
+            .WithType("FakeProvider")
             .Build();
         GivenAFakeDelegate();
 
@@ -95,10 +94,11 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
         // Assert
         _result.Data.GetType().Name.ShouldBe("Fake");
+        _result.Data.Name.ShouldBe("FakeProvider");
     }
 
     [Fact]
-    public void Should_not_return_provider_because_type_doesnt_match_reflected_type_from_delegate()
+    public void Should_not_return_provider_when_name_does_not_match()
     {
         // Arrange
         var route = new DownstreamRouteBuilder()
@@ -221,6 +221,8 @@ public class ServiceDiscoveryProviderFactoryTests : UnitTest
 
     private class Fake : IServiceDiscoveryProvider
     {
+        public string Name => "FakeProvider";
+
         public Task<List<Service>> GetAsync() => null;
     }
 

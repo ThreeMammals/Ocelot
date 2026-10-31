@@ -632,6 +632,8 @@ Ocelot also enables you to create a custom *Service Discovery* implementation by
 
   public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
   {
+      public string Name => nameof(MyServiceDiscoveryProvider);
+
       private readonly IServiceProvider _serviceProvider;
       private readonly ServiceProviderConfiguration _config;
       private readonly DownstreamRoute _downstreamRoute;
@@ -652,7 +654,7 @@ Ocelot also enables you to create a custom *Service Discovery* implementation by
       }
   }
 
-And set its class name as the provider type in `ocelot.json`_:
+Set ``Name`` as the provider type in `ocelot.json`_:
 
 .. code-block:: json
 

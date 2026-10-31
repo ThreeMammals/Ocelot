@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery;
@@ -10,13 +9,13 @@ namespace Ocelot.ServiceDiscovery;
 public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
 {
     private readonly IServiceProvider _provider;
-    private readonly IEnumerable<ServiceDiscoveryFinderDelegate> _delegates;
+    private readonly IEnumerable<ServiceDiscoveryFinderDelegate> _finderDelegates;
     private readonly IOcelotLogger _logger;
 
     public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
     {
         _provider = provider;
-        _delegates = provider.GetServices<ServiceDiscoveryFinderDelegate>();
+        _finderDelegates = provider.GetServices<ServiceDiscoveryFinderDelegate>();
         _logger = factory.CreateLogger<ServiceDiscoveryProviderFactory>();
     }
 
@@ -44,13 +43,10 @@ public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         _logger.LogInformation(() => $"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
 
-        foreach (var finder in _delegates)
+        foreach (var finder in _finderDelegates)
         {
             var discoveryProvider = finder.Invoke(_provider, config, route);
-            var providerType = discoveryProvider is IServiceDiscoveryProviderType typedProvider
-                ? typedProvider.ServiceDiscoveryType
-                : discoveryProvider?.GetType().Name;
-            if (providerType?.Equals(config.Type, StringComparison.OrdinalIgnoreCase) == true)
+            if (discoveryProvider?.Name?.Equals(config.Type, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return new OkResponse<IServiceDiscoveryProvider>(discoveryProvider);
             }

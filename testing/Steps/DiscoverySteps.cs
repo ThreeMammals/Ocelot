@@ -6,7 +6,6 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Metadata;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Runtime.CompilerServices;
 
@@ -75,6 +74,8 @@ public class DiscoverySteps : ConcurrentSteps
 
 public class DynamicRoutingDiscoveryProvider : IServiceDiscoveryProvider
 {
+    public string Name => nameof(DynamicRoutingDiscoveryProvider);
+
     private readonly IServiceProvider _serviceProvider;
     private readonly ServiceProviderConfiguration _config;
     private readonly DownstreamRoute _downstreamRoute;

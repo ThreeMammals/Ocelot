@@ -1,16 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceFabric;
 
-public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider, IServiceDiscoveryProviderType
+public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     public const string Type = "ServiceFabric";
 
-    public string ServiceDiscoveryType => Type;
+    public string Name => Type;
 
     private readonly ServiceFabricConfiguration _configuration;
 
