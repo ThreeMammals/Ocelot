@@ -7,8 +7,9 @@ using System.Security.Claims;
 namespace Ocelot.Authorization;
 
 /// <summary>
-/// Default authorizer by claims.
+/// Default authorizer by claims which is implemented using Claims-based authorization.
 /// </summary>
+/// <remarks>Microsoft Learn: <see href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/claims">Claims-based authorization in ASP.NET Core</see>.</remarks>
 public partial class ClaimsAuthorizer : IClaimsAuthorizer
 {
     private readonly IClaimsParser _claimsParser;
@@ -29,8 +30,12 @@ public partial class ClaimsAuthorizer : IClaimsAuthorizer
     {
         foreach (var required in routeClaimsRequirement)
         {
-            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
+            if (string.IsNullOrEmpty(required.Value) || string.IsNullOrWhiteSpace(required.Value))
+            {
+                continue; // if required value is not specified
+            }
 
+            var values = _claimsParser.GetValuesByClaimType(claimsPrincipal.Claims, required.Key);
             if (values.IsError)
             {
                 return new ErrorResponse<bool>(values.Errors);
