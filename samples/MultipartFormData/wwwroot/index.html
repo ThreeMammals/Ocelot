@@ -295,6 +295,7 @@
         .field input[name="description"],
         .field input[type="file"] {
             width: 100%;
+            height: 48px;
             padding: 12px 14px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
@@ -306,6 +307,7 @@
         .field input[type="file"] {
             padding: 8px 12px;
             max-width: 100%;
+            height: 48px;
         }
 
         .field input[type="file"]::file-selector-button {
@@ -391,6 +393,7 @@
         .log-entry {
             padding: 4px 0;
             border-bottom: 1px solid #e0e0e0;
+            white-space: pre-line;
         }
 
         .log-entry:last-child {
@@ -581,6 +584,32 @@
             loggingWindow.scrollTop = loggingWindow.scrollHeight;
         }
 
+        function formatHeaderList(headers) {
+            return Array.from(headers.entries())
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n');
+        }
+
+        function formatResponsePayload(payloadText) {
+            try {
+                const parsed = JSON.parse(payloadText);
+                const sanitized = JSON.stringify(parsed, null, 2);
+                if (!sanitized || sanitized.length < 200) {
+                    return sanitized;
+                }
+
+                const shallowClone = JSON.parse(sanitized);
+                if (shallowClone && typeof shallowClone === 'object' && 'file' in shallowClone && shallowClone.file && typeof shallowClone.file === 'object' && 'contents' in shallowClone.file) {
+                    shallowClone.file.contents = '<details><summary>File contents</summary>' + shallowClone.file.contents + '</details>';
+                    return JSON.stringify(shallowClone, null, 2);
+                }
+
+                return sanitized;
+            } catch (error) {
+                return payloadText;
+            }
+        }
+
         function clearLog() {
             loggingWindow.innerHTML = '<div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>';
         }
@@ -661,19 +690,12 @@
                     }
                 });
 
-                const headersText = Array.from(response.headers.entries())
-                    .map(([key, value]) => `${key}: ${value}`)
-                    .join('\n');
-
+                const headersText = formatHeaderList(response.headers);
                 const responseText = await response.text();
-                let payload = responseText;
-                try {
-                    payload = JSON.stringify(JSON.parse(responseText), null, 2);
-                } catch (error) {
-                    // keep original text when not JSON
-                }
+                const payload = formatResponsePayload(responseText);
+                const jsonLength = responseText.length;
 
-                addLogEntry(`Response status: ${response.status} ${response.statusText}`);
+                addLogEntry(`Response status: ${response.status} ${response.statusText} | JSON length: ${jsonLength}`);
                 addLogEntry(`Response headers:\n${headersText}`);
                 addLogEntry(`Response payload:\n${payload}`);
 
