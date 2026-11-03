@@ -576,12 +576,21 @@
 
             const content = document.createElement('span');
             content.className = type === 'error' ? 'log-error' : type === 'success' ? 'log-success' : 'log-info';
-            content.textContent = ' ' + message;
+            content.innerHTML = ' ' + message;
 
             entry.appendChild(stamp);
             entry.appendChild(content);
             loggingWindow.appendChild(entry);
             loggingWindow.scrollTop = loggingWindow.scrollHeight;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function formatHeaderList(headers) {
@@ -593,18 +602,17 @@
         function formatResponsePayload(payloadText) {
             try {
                 const parsed = JSON.parse(payloadText);
-                const sanitized = JSON.stringify(parsed, null, 2);
-                if (!sanitized || sanitized.length < 200) {
-                    return sanitized;
+                const clone = JSON.parse(JSON.stringify(parsed));
+
+                if (clone && typeof clone === 'object' && clone.file && typeof clone.file === 'object' && typeof clone.file.contents === 'string') {
+                    const content = clone.file.contents;
+                    const summary = `File contents (${content.length} chars)`;
+                    const detailsValue = escapeHtml(content);
+                    clone.file.contents = `<details><summary>${summary}</summary>${detailsValue}</details>`;
+                    return JSON.stringify(clone, null, 2);
                 }
 
-                const shallowClone = JSON.parse(sanitized);
-                if (shallowClone && typeof shallowClone === 'object' && 'file' in shallowClone && shallowClone.file && typeof shallowClone.file === 'object' && 'contents' in shallowClone.file) {
-                    shallowClone.file.contents = '<details><summary>File contents</summary>' + shallowClone.file.contents + '</details>';
-                    return JSON.stringify(shallowClone, null, 2);
-                }
-
-                return sanitized;
+                return JSON.stringify(parsed, null, 2);
             } catch (error) {
                 return payloadText;
             }
