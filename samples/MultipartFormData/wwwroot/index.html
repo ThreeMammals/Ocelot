@@ -1,29 +1,279 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ocelot Multipart Upload</title>
-  <link rel="icon" type="image/png" href="/ocelot_icon.png">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ocelot Multipart Upload</title>
+    <link rel="icon" type="image/png" href="/ocelot_icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .welcome-text {
+            color: #555;
+            font-size: 1em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .feature {
+            flex: 1;
+            min-width: 150px;
+            margin: 10px;
+            padding: 18px 16px;
+            border-left: 4px solid #667eea;
+            background: #f7f7fb;
+            border-radius: 8px;
+        }
+
+        .feature-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .feature-desc {
+            color: #777;
+            font-size: 0.9em;
+        }
+
+        .cta {
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        .cta-title {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 18px;
+            font-size: 1.1em;
+        }
+
+        .upload-panel {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 22px;
+            border: 1px solid #e5e7eb;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .field input[type="text"],
+        .field input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            color: #111827;
+        }
+
+        .field input[type="file"] {
+            padding: 10px 12px;
+        }
+
+        button {
+            align-self: flex-start;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .note {
+            margin-top: 14px;
+            color: #6b7280;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer-text {
+            color: #6b7280;
+            font-size: 0.85em;
+        }
+
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 18px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .features {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <main>
-    <h1>Ocelot Multipart Upload</h1>
-    <p>Send a text field and file through the gateway to the downstream service.</p>
+    <div class="container">
+        <div class="header">
+            <img src="/ocelot_logo.png" alt="Ocelot Logo" class="logo">
+            <h1>Ocelot Multipart Upload</h1>
+            <p class="subtitle">Forward a text field and file through the gateway to a downstream service.</p>
 
-    <form method="post" action="/upload" enctype="multipart/form-data">
-      <label>
-        Description
-        <input name="description" value="issue-714" required>
-      </label>
+            <div class="welcome-text">
+                <p>Welcome to the <strong>Ocelot Multipart Form Data</strong> sample.</p>
+                <p>This gateway preserves the multipart payload as it forwards the request to the downstream API.</p>
+            </div>
 
-      <label>
-        File
-        <input name="file" type="file" required>
-      </label>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-title">🚀 Fast</div>
+                    <div class="feature-desc">Low-friction upload testing</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-title">🔒 Safe</div>
+                    <div class="feature-desc">Multipart payload preserved</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-title">⚙️ Verified</div>
+                    <div class="feature-desc">Regression scenario for issue #714</div>
+                </div>
+            </div>
+        </div>
 
-      <button type="submit">Upload</button>
-    </form>
-  </main>
+        <div class="cta">
+            <p class="cta-title">📤 Upload a file</p>
+
+            <div class="upload-panel">
+                <form method="post" action="/upload" enctype="multipart/form-data">
+                    <label class="field">
+                        Description
+                        <input name="description" value="issue-714" required>
+                    </label>
+
+                    <label class="field">
+                        File
+                        <input name="file" type="file" required>
+                    </label>
+
+                    <button type="submit">Upload</button>
+                </form>
+            </div>
+
+            <p class="note">This sample posts a multipart/form-data request to /upload, then forwards it to the downstream service so the payload can be inspected in the browser response.</p>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">
+                📖 Learn more at <a href="https://github.com/ThreeMammals/Ocelot">github.com/ThreeMammals/Ocelot</a>
+            </p>
+        </div>
+    </div>
 </body>
 </html>
