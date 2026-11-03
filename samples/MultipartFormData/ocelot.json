@@ -8,12 +8,12 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5568
+          "Port": 5556
         }
       ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:5567"
+    "BaseUrl": "http://localhost:5555"
   }
 }

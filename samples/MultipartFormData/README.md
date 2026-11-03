@@ -9,10 +9,9 @@ The original issue is no longer reproducible for regular routing on the current 
 
 ### 1. Run the sample
 ```shell
-cd ./ApiGateway/
 dotnet run
 ```
-The app starts the downstream service on port 5568 before starting the gateway on port 5567.
+The app starts the downstream service on port 5556 before starting the gateway on port 5555.
 
 ### 2. Upload a file
-Open http://localhost:5567/ in a browser, choose a text file, and submit the form. The response should confirm the text field, file field name, original filename, content type, length, file contents, and the multipart request content type received by the downstream service.
+Open http://localhost:5555/ in a browser, choose a text file, and submit the form. The response should confirm the text field, file field name, original filename, content type, length, file contents, and the multipart request content type received by the downstream service.

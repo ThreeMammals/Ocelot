@@ -8,7 +8,7 @@
     <AssemblyVersion>25.0.0</AssemblyVersion>
     <Copyright>© 2026 Three Mammals. MIT licensed OSS</Copyright>
     <ProductName>Ocelot Gateway</ProductName>
-    <Authors>Tom Pallister, Raman Maksimchuk</Authors>
+    <Authors>Raman Maksimchuk, Rodrigo de Oliveira</Authors>
     <Company>Three Mammals</Company>
     <Product>Ocelot Gateway</Product>
     <PackageProjectUrl>https://github.com/ThreeMammals/Ocelot/tree/main/samples/MultipartFormData</PackageProjectUrl>
@@ -17,10 +17,10 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\..\..\LICENSE.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="\" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Ocelot.csproj" />
+    <ProjectReference Include="..\..\src\Ocelot.csproj" />
   </ItemGroup>
 </Project>
