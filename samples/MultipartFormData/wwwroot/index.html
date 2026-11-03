@@ -267,6 +267,14 @@
             display: block;
         }
 
+        .field-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            width: 100%;
+            margin-bottom: 18px;
+        }
+
         form {
             display: flex;
             flex-direction: column;
@@ -279,11 +287,12 @@
             gap: 8px;
             color: #333;
             font-weight: 600;
-            width: 100%;
+            flex: 1 1 0;
+            min-width: 220px;
             max-width: 50%;
         }
 
-        .field input[type="text"],
+        .field input[name="description"],
         .field input[type="file"] {
             width: 100%;
             padding: 12px 14px;
@@ -326,6 +335,82 @@
         }
 
         .upload-status.error {
+            color: #f44336;
+        }
+
+        .logging-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .logging-title {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #667eea;
+            color: white;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #764ba2;
+        }
+
+        .action-button:active {
+            transform: scale(0.98);
+        }
+
+        .logging-window {
+            background: #f5f5f5;
+            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            line-height: 1.4;
+            border: 1px solid #e0e0e0;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #4caf50;
+            margin-right: 8px;
+        }
+
+        .log-info {
+            color: #667eea;
+        }
+
+        .log-success {
+            color: #4caf50;
+        }
+
+        .log-error {
             color: #f44336;
         }
 
@@ -419,16 +504,18 @@
             <div id="upload-panel" class="upload-panel" aria-live="polite">
                 <p class="cta-title" style="margin-bottom: 12px;">📤 Upload a file</p>
 
-                <form method="post" action="/upload" enctype="multipart/form-data" id="upload-form">
-                    <label class="field">
-                        Description
-                        <input name="description" value="issue-714" required>
-                    </label>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="field-row">
+                        <label class="field">
+                            Description
+                            <input name="description" value="issue-714" required>
+                        </label>
 
-                    <label class="field">
-                        File
-                        <input name="file" type="file" required>
-                    </label>
+                        <label class="field">
+                            File
+                            <input name="file" type="file" required>
+                        </label>
+                    </div>
 
                     <div class="upload-action">
                         <button class="submit-button" type="submit">Upload</button>
@@ -438,6 +525,19 @@
             </div>
 
             <p class="note">This sample posts a multipart/form-data request to /upload, then forwards it to the downstream service so the payload can be inspected in the browser response.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <div class="logging-header">
+                <p class="logging-title">📋 Test Log</p>
+                <div class="action-buttons">
+                    <button class="action-button" id="clear-log-btn" type="button">Clear log</button>
+                    <button class="action-button" id="clear-status-btn" type="button">Clear status</button>
+                </div>
+            </div>
+            <div class="logging-window" id="logging-window" aria-live="polite">
+                <div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>
+            </div>
         </div>
 
         <div class="footer">
@@ -461,6 +561,45 @@
         const routesSection = document.getElementById('routes-section');
         const uploadPanel = document.getElementById('upload-panel');
         const uploadStatus = document.getElementById('upload-status');
+        const loggingWindow = document.getElementById('logging-window');
+
+        function addLogEntry(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const stamp = document.createElement('span');
+            stamp.className = 'log-time';
+            const time = new Date().toLocaleTimeString();
+            stamp.textContent = `[${time}]`;
+
+            const content = document.createElement('span');
+            content.className = type === 'error' ? 'log-error' : type === 'success' ? 'log-success' : 'log-info';
+            content.textContent = ' ' + message;
+
+            entry.appendChild(stamp);
+            entry.appendChild(content);
+            loggingWindow.appendChild(entry);
+            loggingWindow.scrollTop = loggingWindow.scrollHeight;
+        }
+
+        function clearLog() {
+            loggingWindow.innerHTML = '<div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>';
+        }
+
+        function clearStatus() {
+            routes.forEach((route) => {
+                const indicator = document.getElementById(route.statusId);
+                const status = document.getElementById(route.statusTextId);
+                if (indicator) {
+                    indicator.className = 'status-indicator not-tested';
+                }
+                if (status) {
+                    status.className = 'route-status';
+                    status.textContent = 'Not tested';
+                }
+            });
+            uploadStatus.className = 'upload-status';
+            uploadStatus.textContent = 'Ready';
+        }
 
         routes.forEach((route) => {
             const item = document.createElement('div');
@@ -483,9 +622,9 @@
             const status = document.getElementById(route.statusTextId);
 
             button.addEventListener('click', () => {
+                addLogEntry(`Route test started for ${route.method} ${route.path}.`);
                 const isVisible = uploadPanel.classList.contains('visible');
                 uploadPanel.classList.toggle('visible', !isVisible);
-
                 indicator.className = 'status-indicator testing';
                 status.className = 'route-status testing';
                 status.textContent = 'Testing';
@@ -494,16 +633,71 @@
             });
         });
 
-        document.getElementById('upload-form').addEventListener('submit', function () {
+        document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+        document.getElementById('clear-status-btn').addEventListener('click', clearStatus);
+
+        document.getElementById('upload-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
             const route = routes[0];
             const indicator = document.getElementById(route.statusId);
             const status = document.getElementById(route.statusTextId);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
 
-            indicator.className = 'status-indicator success';
-            status.className = 'route-status success';
-            status.textContent = 'Success';
-            uploadStatus.className = 'upload-status success';
-            uploadStatus.textContent = 'Upload sent';
+            indicator.className = 'status-indicator testing';
+            status.className = 'route-status testing';
+            status.textContent = 'Testing';
+            uploadStatus.className = 'upload-status testing';
+            uploadStatus.textContent = 'Uploading...';
+            addLogEntry(`Submitting multipart upload to ${route.path}.`);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Request-Source': 'browser-ui'
+                    }
+                });
+
+                const headersText = Array.from(response.headers.entries())
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join('\n');
+
+                const responseText = await response.text();
+                let payload = responseText;
+                try {
+                    payload = JSON.stringify(JSON.parse(responseText), null, 2);
+                } catch (error) {
+                    // keep original text when not JSON
+                }
+
+                addLogEntry(`Response status: ${response.status} ${response.statusText}`);
+                addLogEntry(`Response headers:\n${headersText}`);
+                addLogEntry(`Response payload:\n${payload}`);
+
+                if (response.ok) {
+                    indicator.className = 'status-indicator success';
+                    status.className = 'route-status success';
+                    status.textContent = 'Success';
+                    uploadStatus.className = 'upload-status success';
+                    uploadStatus.textContent = `200 OK`;
+                } else {
+                    indicator.className = 'status-indicator error';
+                    status.className = 'route-status error';
+                    status.textContent = 'Error';
+                    uploadStatus.className = 'upload-status error';
+                    uploadStatus.textContent = `${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                addLogEntry(`Upload failed: ${error.message}`, 'error');
+                indicator.className = 'status-indicator error';
+                status.className = 'route-status error';
+                status.textContent = 'Error';
+                uploadStatus.className = 'upload-status error';
+                uploadStatus.textContent = 'Request failed';
+            }
         });
     </script>
 </body>
