@@ -126,11 +126,145 @@
             font-size: 1.1em;
         }
 
+        .routes-section {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .route-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .route-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status-indicator.not-tested {
+            background-color: #999;
+        }
+
+        .status-indicator.testing {
+            background-color: #667eea;
+            animation: pulse 1s infinite;
+        }
+
+        .status-indicator.success {
+            background-color: #4caf50;
+        }
+
+        .status-indicator.error {
+            background-color: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .route-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .route-method {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+
+        .route-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .route-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 15px;
+        }
+
+        .route-status {
+            font-size: 0.85em;
+            color: #999;
+            min-width: 86px;
+            text-align: right;
+        }
+
+        .route-status.success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .route-status.error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .route-status.testing {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .test-button,
+        .submit-button,
+        .field input[type="file"]::file-selector-button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+        }
+
+        .test-button:hover,
+        .submit-button:hover,
+        .field input[type="file"]::file-selector-button:hover {
+            transform: translateY(-1px);
+        }
+
         .upload-panel {
+            display: none;
             background: #f5f5f5;
             border-radius: 8px;
             padding: 22px;
             border: 1px solid #e5e7eb;
+            margin-top: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .upload-panel.visible {
+            display: block;
         }
 
         form {
@@ -145,6 +279,8 @@
             gap: 8px;
             color: #333;
             font-weight: 600;
+            width: 100%;
+            max-width: 50%;
         }
 
         .field input[type="text"],
@@ -159,25 +295,38 @@
         }
 
         .field input[type="file"] {
-            padding: 10px 12px;
+            padding: 8px 12px;
+            max-width: 100%;
         }
 
-        button {
-            align-self: flex-start;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+        .field input[type="file"]::file-selector-button {
+            margin-right: 12px;
         }
 
-        button:hover {
-            transform: translateY(-1px);
+        .upload-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .upload-status {
+            color: #6b7280;
+            font-size: 0.9em;
+            font-weight: 600;
+            min-height: 1.2em;
+        }
+
+        .upload-status.testing {
+            color: #667eea;
+        }
+
+        .upload-status.success {
+            color: #4caf50;
+        }
+
+        .upload-status.error {
+            color: #f44336;
         }
 
         .note {
@@ -216,6 +365,21 @@
             .features {
                 flex-direction: column;
             }
+
+            .field {
+                max-width: 100%;
+            }
+
+            .route-item {
+                flex-wrap: wrap;
+            }
+
+            .route-controls {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-between;
+            }
         }
     </style>
 </head>
@@ -248,10 +412,14 @@
         </div>
 
         <div class="cta">
-            <p class="cta-title">📤 Upload a file</p>
+            <p class="cta-title">Routes</p>
 
-            <div class="upload-panel">
-                <form method="post" action="/upload" enctype="multipart/form-data">
+            <div class="routes-section" id="routes-section" aria-live="polite"></div>
+
+            <div id="upload-panel" class="upload-panel" aria-live="polite">
+                <p class="cta-title" style="margin-bottom: 12px;">📤 Upload a file</p>
+
+                <form method="post" action="/upload" enctype="multipart/form-data" id="upload-form">
                     <label class="field">
                         Description
                         <input name="description" value="issue-714" required>
@@ -262,7 +430,10 @@
                         <input name="file" type="file" required>
                     </label>
 
-                    <button type="submit">Upload</button>
+                    <div class="upload-action">
+                        <button class="submit-button" type="submit">Upload</button>
+                        <span class="upload-status" id="upload-status">Ready</span>
+                    </div>
                 </form>
             </div>
 
@@ -275,5 +446,65 @@
             </p>
         </div>
     </div>
+
+    <script>
+        const routes = [
+            {
+                method: 'POST',
+                path: '/upload',
+                statusId: 'status-upload',
+                statusTextId: 'status-text-upload',
+                buttonId: 'btn-upload'
+            }
+        ];
+
+        const routesSection = document.getElementById('routes-section');
+        const uploadPanel = document.getElementById('upload-panel');
+        const uploadStatus = document.getElementById('upload-status');
+
+        routes.forEach((route) => {
+            const item = document.createElement('div');
+            item.className = 'route-item';
+            item.innerHTML = `
+                <div class="status-indicator not-tested" id="${route.statusId}"></div>
+                <div class="route-info">
+                    <div class="route-method">${route.method}</div>
+                    <div class="route-path">${route.path}</div>
+                </div>
+                <div class="route-controls">
+                    <button type="button" class="test-button" id="${route.buttonId}">Test</button>
+                    <div class="route-status" id="${route.statusTextId}">Not tested</div>
+                </div>
+            `;
+            routesSection.appendChild(item);
+
+            const button = document.getElementById(route.buttonId);
+            const indicator = document.getElementById(route.statusId);
+            const status = document.getElementById(route.statusTextId);
+
+            button.addEventListener('click', () => {
+                const isVisible = uploadPanel.classList.contains('visible');
+                uploadPanel.classList.toggle('visible', !isVisible);
+
+                indicator.className = 'status-indicator testing';
+                status.className = 'route-status testing';
+                status.textContent = 'Testing';
+                uploadStatus.className = 'upload-status testing';
+                uploadStatus.textContent = 'Uploading...';
+            });
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', function () {
+            const route = routes[0];
+            const indicator = document.getElementById(route.statusId);
+            const status = document.getElementById(route.statusTextId);
+
+            indicator.className = 'status-indicator success';
+            status.className = 'route-status success';
+            status.textContent = 'Success';
+            uploadStatus.className = 'upload-status success';
+            uploadStatus.textContent = 'Upload sent';
+        });
+    </script>
 </body>
 </html>
