@@ -44,7 +44,7 @@ public sealed class DownstreamMetadataTests : Steps
         route.Metadata = sourceDictionary;
         route.DelegatingHandlers = [currentType.Name];
         var configuration = GivenConfiguration(route);
-        handler.GivenThereIsAServiceRunningOn(port, MapOK);
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithSpecificHandlerForType(currentType);
         await WhenIGetUrlOnTheApiGateway("/");
@@ -101,7 +101,7 @@ public sealed class DownstreamMetadataTests : Steps
             TrimChars = trimChars,
             StringSplitOption = stringSplitOption,
         };
-        handler.GivenThereIsAServiceRunningOn(port, MapOK);
+        handler.GivenThereIsAServiceRunningOn(port, MapStatus);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunningWithSpecificHandlerForType(typeof(StringArrayDownStreamMetadataHandler));
         await WhenIGetUrlOnTheApiGateway("/");

@@ -3,117 +3,93 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.UnitTests.DependencyInjection;
 
 namespace Ocelot.UnitTests.Requester;
 
-public class ServiceCollectionExtensionsTests
+public class ServiceCollectionExtensionsTests : DepInjectionUnitTest
 {
     [Fact]
     public void AddOcelotRequester_Default_RegistersDefaultImplementations()
     {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddOcelotRequester();
+        // Arrange, Act
+        Services.AddOcelotRequester();
 
         // Assert
-        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>(services);
-        AssertSingleton<IMessageInvokerPool, MessageInvokerPool>(services);
+        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>();
+        AssertSingleton<IMessageInvokerPool, MessageInvokerPool>();
     }
 
     [Fact]
     public void AddOcelotRequester_GenericPool_RegistersCustomPoolAndDefaultRequester()
     {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddOcelotRequester<FakeMessageInvokerPool>();
+        // Arrange, Act
+        Services.AddOcelotRequester<FakeMessageInvokerPool>();
 
         // Assert
-        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>(services);
-        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool>(services);
+        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>();
+        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
     }
 
     [Fact]
     public void AddOcelotRequester_GenericBoth_RegistersCustomTypes()
     {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.AddOcelotRequester<FakeHttpRequester, FakeMessageInvokerPool>();
+        // Arrange, Act
+        Services.AddOcelotRequester<FakeHttpRequester, FakeMessageInvokerPool>();
 
         // Assert
-        AssertSingleton<IHttpRequester, FakeHttpRequester>(services);
-        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool>(services);
+        AssertSingleton<IHttpRequester, FakeHttpRequester>();
+        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
     }
 
     [Fact]
     public void AddOcelotRequester_GenericPool_RemovesExistingRegistrations()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<IHttpRequester, FakeHttpRequester>();
-        services.AddSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
+        Services.AddSingleton<IHttpRequester, FakeHttpRequester>();
+        Services.AddSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
 
         // Act
-        services.AddOcelotRequester<FakeMessageInvokerPool2>();
+        Services.AddOcelotRequester<FakeMessageInvokerPool2>();
 
         // Assert
-        Assert.Single(services.Where(d => d.ServiceType == typeof(IHttpRequester)));
-        Assert.Single(services.Where(d => d.ServiceType == typeof(IMessageInvokerPool)));
+        Assert.Single(Services.Where(d => d.ServiceType == typeof(IHttpRequester)));
+        Assert.Single(Services.Where(d => d.ServiceType == typeof(IMessageInvokerPool)));
 
-        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>(services);
-        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool2>(services);
+        AssertSingleton<IHttpRequester, MessageInvokerHttpRequester>();
+        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool2>();
     }
 
     [Fact]
     public void AddOcelotRequester_GenericBoth_RemovesExistingRegistrations()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<IHttpRequester, FakeHttpRequester>();
-        services.AddSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
+        Services.AddSingleton<IHttpRequester, FakeHttpRequester>();
+        Services.AddSingleton<IMessageInvokerPool, FakeMessageInvokerPool>();
 
         // Act
-        services.AddOcelotRequester<FakeHttpRequester2, FakeMessageInvokerPool2>();
+        Services.AddOcelotRequester<FakeHttpRequester2, FakeMessageInvokerPool2>();
 
         // Assert
-        Assert.Single(services.Where(d => d.ServiceType == typeof(IHttpRequester)));
-        Assert.Single(services.Where(d => d.ServiceType == typeof(IMessageInvokerPool)));
+        Assert.Single(Services.Where(d => d.ServiceType == typeof(IHttpRequester)));
+        Assert.Single(Services.Where(d => d.ServiceType == typeof(IMessageInvokerPool)));
 
-        AssertSingleton<IHttpRequester, FakeHttpRequester2>(services);
-        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool2>(services);
+        AssertSingleton<IHttpRequester, FakeHttpRequester2>();
+        AssertSingleton<IMessageInvokerPool, FakeMessageInvokerPool2>();
     }
 
     [Fact]
     public void AddOcelotRequester_ReturnsSameServiceCollection()
     {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        var result1 = services.AddOcelotRequester();
-        var result2 = services.AddOcelotRequester<FakeMessageInvokerPool>();
-        var result3 = services.AddOcelotRequester<FakeHttpRequester, FakeMessageInvokerPool>();
+        // Arrange, Act
+        var result1 = Services.AddOcelotRequester();
+        var result2 = Services.AddOcelotRequester<FakeMessageInvokerPool>();
+        var result3 = Services.AddOcelotRequester<FakeHttpRequester, FakeMessageInvokerPool>();
 
         // Assert
-        Assert.Same(services, result1);
-        Assert.Same(services, result2);
-        Assert.Same(services, result3);
-    }
-
-    private static void AssertSingleton<TService, TImplementation>(IServiceCollection services)
-        where TImplementation : class, TService
-    {
-        var descriptor = services.SingleOrDefault(d =>
-            d.ServiceType == typeof(TService) &&
-            d.ImplementationType == typeof(TImplementation));
-
-        Assert.NotNull(descriptor);
-        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        Assert.Same(Services, result1);
+        Assert.Same(Services, result2);
+        Assert.Same(Services, result3);
     }
 
     // Minimal stub implementations (only used for registration checks)

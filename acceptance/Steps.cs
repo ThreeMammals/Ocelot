@@ -22,9 +22,10 @@ public class Steps : AcceptanceSteps
         where THandler : DelegatingHandler
         => GivenOcelotIsRunning(s => s.AddOcelot().AddDelegatingHandler<THandler>(global));
 
-    public Task<int> GivenOcelotIsRunningAsync(OcelotPipelineConfiguration pipelineConfig)
-        => GivenOcelotIsRunningAsync(WithBasicConfiguration, WithAddOcelot,
-            async a => await a.UseOcelot(pipelineConfig));
+    public Task<int> GivenOcelotIsRunningAsync(OcelotPipelineConfiguration pipelineConfig, Action<IServiceCollection> configureServices = null)
+        => GivenOcelotIsRunningAsync(WithBasicConfiguration,
+            configureServices ?? WithAddOcelot,
+            configureApp: async a => await a.UseOcelot(pipelineConfig));
 
     #region TODO: Move to Ocelot.Testing package
     public static void NoConfiguration(WebHostBuilderContext _, IConfigurationBuilder __) { }

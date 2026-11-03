@@ -57,7 +57,6 @@ public sealed class MultipartFormDataTests : Steps
         const string fileName = "test.txt";
         const string fileContentType = "text/plain";
         const string fileContent = "multipart-file-content";
-        const string downstreamResponse = "\"upload-ok\"";
 
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post, routeUpstreamPath, downstreamPath);
@@ -66,12 +65,12 @@ public sealed class MultipartFormDataTests : Steps
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
         GivenThereIsAServiceRunningOn(port, downstreamPath,
-                context => CaptureMultipartRequest(context, fieldName, fileFieldName, downstreamResponse));
+                context => CaptureMultipartRequest(context, fieldName, fileFieldName, "UPLOAD-OK"));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
         ThenTheStatusCodeShouldBeOk();
-        await ThenTheResponseBodyShouldBeAsync(downstreamResponse);
+        await ThenTheResponseBodyShouldBeAsync("UPLOAD-OK");
         ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 

@@ -14,39 +14,59 @@ public class AggregatesCreator : IAggregatesCreator
         _headerCreator = headerCreator;
     }
 
-    public List<Route> Create(FileConfiguration fileConfiguration, IReadOnlyList<Route> routes)
+    /// <summary>This allows to override global default HTTP verb value.</summary>
+    /// <remarks>Defaults: The <see cref="HttpMethod.Get"/> value.</remarks>
+    /// <value>A <see cref="HttpMethod"/> value.</value>
+    protected virtual HttpMethod DefaultHttpMethod { get; set; } = HttpMethod.Get;
+
+    public IEnumerable<Route> Create(FileConfiguration configuration, IReadOnlyList<Route> routes)
     {
-        return fileConfiguration.Aggregates
-            .Select(aggregate => SetUpAggregateRoute(routes, aggregate, fileConfiguration.GlobalConfiguration))
-            .Where(aggregate => aggregate != null)
-            .ToList();
+        // Build lookup once -> O(R) instead of repeated scans
+        var routeByKey = routes
+            .SelectMany(r => r.DownstreamRoute)
+            .Where(dr => dr.Key.IsNotEmpty())
+            .GroupBy(dr => dr.Key)
+            .ToDictionary(g => g.Key, g => g.First()); // or throw on duplicates if you prefer strictness
+
+        foreach (var aggregate in configuration.Aggregates)
+        {
+            if (TryCreateRoute(aggregate, configuration.GlobalConfiguration, routeByKey, out var route))
+                yield return route;
+        }
     }
 
-    private Route SetUpAggregateRoute(IEnumerable<Route> routes, FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration)
+    protected virtual bool TryCreateRoute(FileAggregateRoute aggregateRoute, FileGlobalConfiguration globalConfiguration,
+        IReadOnlyDictionary<string, DownstreamRoute> routeByKey, out Route route)
     {
-        var applicableRoutes = new List<DownstreamRoute>();
-        var allRoutes = routes.SelectMany(x => x.DownstreamRoute);
+        route = null;
+        var applicableRoutes = new List<DownstreamRoute>(aggregateRoute.RouteKeys.Count);
         foreach (var key in aggregateRoute.RouteKeys)
         {
-            var route = allRoutes.FirstOrDefault(r => r.Key == key);
-            if (route is null)
-                return null;
+            if (!routeByKey.TryGetValue(key, out var downstreamRoute))
+                return false; // missing route -> skip aggregate
 
-            applicableRoutes.Add(route);
+            applicableRoutes.Add(downstreamRoute);
         }
 
         var upstreamTemplatePattern = _creator.Create(aggregateRoute);
         var upstreamHeaderTemplates = _headerCreator.Create(aggregateRoute);
-        var upstreamHttpMethod = aggregateRoute.UpstreamHttpMethod.ToHttpMethods();
-        return new Route()
+        var mergedMethods = CreateUpstreamHttpMethod(aggregateRoute, globalConfiguration);
+
+        route = new Route
         {
             Aggregator = aggregateRoute.Aggregator,
             DownstreamRoute = applicableRoutes,
             DownstreamRouteConfig = aggregateRoute.RouteKeysConfig,
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
             UpstreamHost = aggregateRoute.UpstreamHost,
-            UpstreamHttpMethod = upstreamHttpMethod,
+            UpstreamHttpMethod = mergedMethods,
             UpstreamTemplatePattern = upstreamTemplatePattern,
         };
+        return true;
     }
+
+    protected virtual HashSet<HttpMethod> CreateUpstreamHttpMethod(FileAggregateRoute route, FileGlobalConfiguration global)
+        => route.UpstreamHttpMethod.Count == 0 && global.UpstreamHttpMethod.Count == 0
+            ? [DefaultHttpMethod] // both route and global configs are empty -> use default GET method
+            : route.UpstreamHttpMethod.Union(global.UpstreamHttpMethod, StringComparer.OrdinalIgnoreCase).ToHttpMethods();
 }

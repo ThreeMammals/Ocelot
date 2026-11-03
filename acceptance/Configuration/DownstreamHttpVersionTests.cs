@@ -46,11 +46,10 @@ public sealed class DownstreamHttpVersionTests : Steps
         var configuration = GivenConfiguration(route);
 
         const string expected = "here is some content";
-        var httpContent = new StringContent(expected);
         GivenThereIsAServiceUsingHttpsRunningOn(port, "/", HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        await WhenIGetUrlOnTheApiGateway("/", expected);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync(expected);
     }
@@ -64,11 +63,10 @@ public sealed class DownstreamHttpVersionTests : Steps
         var configuration = GivenConfiguration(route);
 
         const string expected = "here is some content";
-        var httpContent = new StringContent(expected);
         GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http2);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        await WhenIGetUrlOnTheApiGateway("/", expected);
         ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
@@ -82,11 +80,10 @@ public sealed class DownstreamHttpVersionTests : Steps
         var configuration = GivenConfiguration(route);
 
         const string expected = "here is some content";
-        var httpContent = new StringContent(expected);
         GivenThereIsAServiceRunningOn(port, "/", HttpProtocols.Http1);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
-        await WhenIGetUrlOnTheApiGateway("/", httpContent);
+        await WhenIGetUrlOnTheApiGateway("/", expected);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync(expected);
     }
