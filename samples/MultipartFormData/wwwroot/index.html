@@ -417,6 +417,85 @@
             color: #f44336;
         }
 
+        .file-content-toggle {
+            display: inline-block;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin: 6px 0;
+        }
+
+        .file-content-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .file-content-overlay.visible {
+            display: flex;
+        }
+
+        .file-content-modal {
+            width: min(900px, 90vw);
+            max-height: 80vh;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-content-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-content-title {
+            color: #333;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .file-content-close {
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .file-content-body {
+            background: #f5f5f5;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            overflow: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 60vh;
+        }
+
         .note {
             margin-top: 14px;
             color: #6b7280;
@@ -472,6 +551,16 @@
     </style>
 </head>
 <body>
+    <div class="file-content-overlay" id="file-content-overlay" aria-live="polite">
+        <div class="file-content-modal" role="dialog" aria-modal="true" aria-labelledby="file-content-title">
+            <div class="file-content-modal-header">
+                <div class="file-content-title" id="file-content-title">File contents</div>
+                <button type="button" class="file-content-close" id="file-content-close">Close</button>
+            </div>
+            <div class="file-content-body" id="file-content-body"></div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <img src="/ocelot_logo.png" alt="Ocelot Logo" class="logo">
@@ -565,6 +654,10 @@
         const uploadPanel = document.getElementById('upload-panel');
         const uploadStatus = document.getElementById('upload-status');
         const loggingWindow = document.getElementById('logging-window');
+        const fileContentOverlay = document.getElementById('file-content-overlay');
+        const fileContentBody = document.getElementById('file-content-body');
+        const fileContentClose = document.getElementById('file-content-close');
+        const fileContentMap = new Map();
 
         function addLogEntry(message, type = 'info') {
             const entry = document.createElement('div');
@@ -593,6 +686,24 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function openFileContentOverlay(content, title) {
+            fileContentBody.textContent = content;
+            fileContentOverlay.classList.add('visible');
+            fileContentBody.setAttribute('data-source', title);
+        }
+
+        fileContentClose.addEventListener('click', () => {
+            fileContentOverlay.classList.remove('visible');
+            fileContentBody.textContent = '';
+        });
+
+        fileContentOverlay.addEventListener('click', (event) => {
+            if (event.target === fileContentOverlay) {
+                fileContentOverlay.classList.remove('visible');
+                fileContentBody.textContent = '';
+            }
+        });
+
         function formatHeaderList(headers) {
             return Array.from(headers.entries())
                 .map(([key, value]) => `${key}: ${value}`)
@@ -606,9 +717,10 @@
 
                 if (clone && typeof clone === 'object' && clone.file && typeof clone.file === 'object' && typeof clone.file.contents === 'string') {
                     const content = clone.file.contents;
-                    const summary = `File contents (${content.length} chars)`;
-                    const detailsValue = escapeHtml(content);
-                    clone.file.contents = `<details><summary>${summary}</summary>${detailsValue}</details>`;
+                    const key = `file-content-${fileContentMap.size + 1}`;
+                    fileContentMap.set(key, content);
+                    const buttonHtml = `<button type="button" class="file-content-toggle" data-content-key="${key}">File contents (${content.length} chars)</button>`;
+                    clone.file.contents = buttonHtml;
                     return JSON.stringify(clone, null, 2);
                 }
 
@@ -617,6 +729,19 @@
                 return payloadText;
             }
         }
+
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('.file-content-toggle');
+            if (!button) {
+                return;
+            }
+
+            const key = button.dataset.contentKey;
+            const content = fileContentMap.get(key);
+            if (content !== undefined) {
+                openFileContentOverlay(content, 'File contents');
+            }
+        });
 
         function clearLog() {
             loggingWindow.innerHTML = '<div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>';
