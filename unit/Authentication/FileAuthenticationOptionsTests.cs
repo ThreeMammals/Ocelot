@@ -14,6 +14,10 @@ public class FileAuthenticationOptionsTests
             AllowedScopes = ["2"],
             AuthenticationProviderKey = "3",
             AuthenticationProviderKeys = ["4", "5"],
+            RequiredRole = ["6"],
+            ScopeKey = "7",
+            RoleKey = "8",
+            PolicyName = "9",
         };
 
         // Act
@@ -21,6 +25,6 @@ public class FileAuthenticationOptionsTests
 
         // Assert
         Assert.False(string.IsNullOrWhiteSpace(actual));
-        Assert.Equal("AllowAnonymous:True,AllowedScopes:['2'],AuthenticationProviderKey:'3',AuthenticationProviderKeys:['4','5']", actual);
+        Assert.Equal("AllowAnonymous:True,AllowedScopes:['2'],AuthenticationProviderKey:'3',AuthenticationProviderKeys:['4','5'],RequiredRole:[6],ScopeKey:[7],RoleKey:[8],PolicyName:[9]", actual);
     }
 }
