@@ -715,8 +715,9 @@
 
         function indentJson(value) {
             return JSON.stringify(value, null, 2)
-                .replace(/\n/g, '<br>')
-                .replace(/ /g, '&nbsp;');
+                .split('\n')
+                .map((line) => line.replace(/^\s+/, (spaces) => spaces.replace(/ /g, '&nbsp;')))
+                .join('<br>');
         }
 
         function formatResponsePayload(payloadText) {
