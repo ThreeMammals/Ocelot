@@ -498,6 +498,31 @@
             max-height: 60vh;
         }
 
+        .file-content-loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.7em;
+            font-weight: 700;
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            animation: file-content-pulse 1s infinite;
+            margin: 0 auto;
+            text-indent: 28px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        @keyframes file-content-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(102, 126, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+        }
+
         .note {
             margin-top: 14px;
             color: #6b7280;
@@ -693,10 +718,16 @@
             fileContentOverlay.classList.add('visible');
             fileContentBody.setAttribute('data-source', title);
 
-            requestAnimationFrame(() => {
+            const loader = document.createElement('div');
+            loader.className = 'file-content-loading';
+            loader.textContent = 'loading...';
+            fileContentBody.appendChild(loader);
+
+            setTimeout(() => {
+                fileContentBody.textContent = '';
                 const textNode = document.createTextNode(content);
                 fileContentBody.appendChild(textNode);
-            });
+            }, 500);
         }
 
         function closeFileContentOverlay() {
