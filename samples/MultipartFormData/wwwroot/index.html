@@ -689,9 +689,14 @@
         }
 
         function openFileContentOverlay(content, title) {
-            fileContentBody.textContent = content;
+            fileContentBody.textContent = '';
             fileContentOverlay.classList.add('visible');
             fileContentBody.setAttribute('data-source', title);
+
+            requestAnimationFrame(() => {
+                const textNode = document.createTextNode(content);
+                fileContentBody.appendChild(textNode);
+            });
         }
 
         function closeFileContentOverlay() {
@@ -749,9 +754,7 @@
             const key = button.dataset.contentKey;
             const content = fileContentMap.get(key);
             if (content !== undefined) {
-                fileContentBody.textContent = content;
-                fileContentOverlay.classList.add('visible');
-                fileContentBody.setAttribute('data-source', 'File contents');
+                openFileContentOverlay(content, 'File contents');
             }
         });
 
