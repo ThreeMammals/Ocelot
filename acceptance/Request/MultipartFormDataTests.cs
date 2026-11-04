@@ -6,6 +6,7 @@ using System.Text;
 namespace Ocelot.Acceptance.Request;
 
 [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+[Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
 public sealed class MultipartFormDataTests : Steps
 {
     private string _downstreamPath;
@@ -18,7 +19,7 @@ public sealed class MultipartFormDataTests : Steps
 
     [Fact]
     [Trait("PR", "2421")] // https://github.com/ThreeMammals/Ocelot/pull/2421
-    public async Task Should_reroute_multipart_form_data_with_file()
+    public async Task Should_route_multipart_form_data_with_file()
     {
         const string upstreamPath = "/upload";
         const string downstreamPath = "/api/files";
@@ -45,7 +46,7 @@ public sealed class MultipartFormDataTests : Steps
 
     [Fact]
     [Trait("PR", "2421")] // https://github.com/ThreeMammals/Ocelot/pull/2421
-    public async Task Should_reroute_multipart_form_data_with_file_when_single_post_route_is_aggregated()
+    public async Task Should_route_multipart_form_data_with_file_when_single_post_route_is_aggregated()
     {
         const string upstreamPath = "/upload";
         const string routeUpstreamPath = "/upload-route";
