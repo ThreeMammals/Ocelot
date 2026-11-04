@@ -719,7 +719,7 @@
                     const content = clone.file.contents;
                     const key = `file-content-${fileContentMap.size + 1}`;
                     fileContentMap.set(key, content);
-                    const buttonHtml = `<button type="button" class="file-content-toggle" data-content-key="${key}">File contents (${content.length} chars)</button>`;
+                    const buttonHtml = `<button type='button' class='file-content-toggle' data-content-key='${key}'>File contents (${content.length} chars)</button>`;
                     clone.file.contents = buttonHtml;
                     return JSON.stringify(clone, null, 2);
                 }
