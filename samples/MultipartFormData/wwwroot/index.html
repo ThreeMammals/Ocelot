@@ -427,7 +427,9 @@
             cursor: pointer;
             font-size: 0.8em;
             font-weight: 700;
-            margin: 6px 0;
+            margin: 0;
+            line-height: normal;
+            vertical-align: baseline;
         }
 
         .file-content-overlay {
@@ -692,15 +694,16 @@
             fileContentBody.setAttribute('data-source', title);
         }
 
-        fileContentClose.addEventListener('click', () => {
+        function closeFileContentOverlay() {
             fileContentOverlay.classList.remove('visible');
             fileContentBody.textContent = '';
-        });
+        }
+
+        fileContentClose.addEventListener('click', closeFileContentOverlay);
 
         fileContentOverlay.addEventListener('click', (event) => {
             if (event.target === fileContentOverlay) {
-                fileContentOverlay.classList.remove('visible');
-                fileContentBody.textContent = '';
+                closeFileContentOverlay();
             }
         });
 
@@ -708,6 +711,12 @@
             return Array.from(headers.entries())
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n');
+        }
+
+        function indentJson(value) {
+            return JSON.stringify(value, null, 2)
+                .replace(/\n/g, '<br>')
+                .replace(/ /g, '&nbsp;');
         }
 
         function formatResponsePayload(payloadText) {
@@ -721,12 +730,12 @@
                     fileContentMap.set(key, content);
                     const buttonHtml = `<button type='button' class='file-content-toggle' data-content-key='${key}'>File contents (${content.length} chars)</button>`;
                     clone.file.contents = buttonHtml;
-                    return JSON.stringify(clone, null, 2);
+                    return indentJson(clone);
                 }
 
-                return JSON.stringify(parsed, null, 2);
+                return indentJson(parsed);
             } catch (error) {
-                return payloadText;
+                return escapeHtml(payloadText);
             }
         }
 
@@ -739,7 +748,9 @@
             const key = button.dataset.contentKey;
             const content = fileContentMap.get(key);
             if (content !== undefined) {
-                openFileContentOverlay(content, 'File contents');
+                fileContentBody.textContent = content;
+                fileContentOverlay.classList.add('visible');
+                fileContentBody.setAttribute('data-source', 'File contents');
             }
         });
 
