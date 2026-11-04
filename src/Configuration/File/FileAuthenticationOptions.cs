@@ -53,7 +53,7 @@ public class FileAuthenticationOptions
         .Append($"{nameof(AllowedScopes)}:[{AllowedScopes.NotNull().Select(x => $"'{x}'").Csv()}],")
         .Append($"{nameof(AuthenticationProviderKey)}:'{AuthenticationProviderKey}',")
         .Append($"{nameof(AuthenticationProviderKeys)}:[{AuthenticationProviderKeys.NotNull().Select(x => $"'{x}'").Csv()}]")
-        .Append($",{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole).Append("]")
+        .Append($",{nameof(RequiredRole)}:[").AppendJoin(',', RequiredRole.NotNull()).Append("]")
         .Append($",{nameof(ScopeKey)}:[").AppendJoin(',', ScopeKey).Append("]")
         .Append($",{nameof(RoleKey)}:[").AppendJoin(',', RoleKey).Append("]")
         .Append($",{nameof(PolicyName)}:[").AppendJoin(',', PolicyName).Append(']')
