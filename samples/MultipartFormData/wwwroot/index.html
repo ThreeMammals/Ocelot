@@ -516,16 +516,16 @@
       white-space: nowrap;
     }
 
-    .file-content-loading::before {
-      content: '';
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background-color: #667eea;
-      animation: pulse 1s infinite;
-      display: inline-block;
-      flex-shrink: 0;
-    }
+      .file-content-loading::before {
+        content: '';
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #667eea;
+        animation: pulse 1s infinite;
+        display: inline-block;
+        flex-shrink: 0;
+      }
 
     .note {
       margin-top: 14px;
@@ -686,9 +686,19 @@
     const uploadStatus = document.getElementById('upload-status');
     const loggingWindow = document.getElementById('logging-window');
     const fileContentOverlay = document.getElementById('file-content-overlay');
+    const fileContentTitle = document.getElementById('file-content-title');
     const fileContentBody = document.getElementById('file-content-body');
     const fileContentClose = document.getElementById('file-content-close');
     const fileContentMap = new Map();
+
+    function getFileDisplayName(fileName) {
+      if (!fileName) {
+        return 'File contents';
+      }
+
+      const sanitized = String(fileName).trim();
+      return sanitized || 'File contents';
+    }
 
     function addLogEntry(message, type = 'info') {
       const entry = document.createElement('div');
@@ -718,9 +728,10 @@
     }
 
     function openFileContentOverlay(content, title) {
+      fileContentTitle.textContent = title || 'File contents';
       fileContentBody.textContent = '';
       fileContentOverlay.classList.add('visible');
-      fileContentBody.setAttribute('data-source', title);
+      fileContentBody.setAttribute('data-source', title || 'File contents');
 
       const loader = document.createElement('div');
       loader.className = 'file-content-loading';
@@ -767,9 +778,13 @@
 
         if (clone && typeof clone === 'object' && clone.file && typeof clone.file === 'object' && typeof clone.file.contents === 'string') {
           const content = clone.file.contents;
+          const fileName = getFileDisplayName(clone.file.fileName || clone.file.name || clone.file.filename);
           const key = `file-content-${fileContentMap.size + 1}`;
-          fileContentMap.set(key, content);
-          const buttonHtml = `<button type='button' class='file-content-toggle' data-content-key='${key}'>File contents (${content.length} chars)</button>`;
+          fileContentMap.set(key, {
+            fileName,
+            content
+          });
+          const buttonHtml = `<button type='button' class='file-content-toggle' data-content-key='${key}'>${escapeHtml(fileName)} contents (${content.length} chars)</button>`;
           clone.file.contents = buttonHtml;
           return indentJson(clone);
         }
@@ -787,9 +802,9 @@
       }
 
       const key = button.dataset.contentKey;
-      const content = fileContentMap.get(key);
-      if (content !== undefined) {
-        openFileContentOverlay(content, 'File contents');
+      const item = fileContentMap.get(key);
+      if (item && typeof item === 'object') {
+        openFileContentOverlay(item.content, item.fileName);
       }
     });
 
