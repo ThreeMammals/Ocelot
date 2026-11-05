@@ -4,6 +4,12 @@ Aggregation
    :depth: 2
    :local:
 
+.. note::
+
+  Aggregation also works with multipart/form-data requests. When aggregating multipart requests, each downstream
+  service receives the complete file upload with all form fields preserved. For details, see :doc:`../features/requestproxying`.
+
+
 *Aggregation* [#f1]_, also known as HTTP response data aggregation, is a well-known Backend for Frontend pattern of Microservices architecture.
 
   * `Backend for Frontend (BFF) Pattern: Microservices for UX | Teleport Academy <https://goteleport.com/learn/backend-for-frontend-bff-pattern/>`_

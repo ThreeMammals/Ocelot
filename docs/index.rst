@@ -52,6 +52,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/delegatinghandlers
     features/dependencyinjection
     features/errorcodes
+    features/requestproxying
     features/graphql
     features/headerstransformation
     features/kubernetes
@@ -70,10 +71,11 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
 
   .. toctree::
     :maxdepth: 3
-    :caption: Building Ocelot
+    :caption: Testing and Guides
 
     building/building
     building/devprocess
     building/releaseprocess
+    building/acceptance-testing-guide
 
 :htm:`</section>`
