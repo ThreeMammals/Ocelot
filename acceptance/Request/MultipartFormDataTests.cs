@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.Infrastructure.Extensions;
 using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Ocelot.Acceptance.Request;
@@ -9,13 +11,17 @@ namespace Ocelot.Acceptance.Request;
 [Trait("Release", "25.1.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
 public sealed class MultipartFormDataTests : Steps
 {
-    private string _downstreamPath;
-    private string _downstreamContentType;
-    private string _downstreamFieldValue;
-    private string _downstreamFileFieldName;
-    private string _downstreamFileName;
-    private string _downstreamFileContentType;
-    private string _downstreamFileContent;
+    private DownstreamData[] _downstream;
+    public struct DownstreamData(string path, string contentType, string fieldValue, string fileFieldName, string fileName, string fileContentType, string fileContent)
+    {
+        public string Path = path;
+        public string ContentType = contentType;
+        public string FieldValue = fieldValue;
+        public string FileFieldName = fileFieldName;
+        public string FileName = fileName;
+        public string FileContentType = fileContentType;
+        public string FileContent = fileContent;
+    }
 
     [Fact]
     [Trait("PR", "2421")] // https://github.com/ThreeMammals/Ocelot/pull/2421
@@ -31,17 +37,18 @@ public sealed class MultipartFormDataTests : Steps
         const string fileContent = "multipart-file-content";
 
         var port = PortFinder.GetRandomPort();
+        _downstream = new DownstreamData[1];
         var route = GivenRoute(port, HttpMethod.Post, upstreamPath, downstreamPath);
         var configuration = GivenConfiguration(route);
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
         GivenThereIsAServiceRunningOn(port, downstreamPath,
-                context => CaptureMultipartRequest(context, fieldName, fileFieldName));
+                context => CaptureMultipartRequest(context, fieldName, fileFieldName, null));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
         ThenTheStatusCodeShouldBeOk();
-        ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
+        ThenTheDownstreamRequestShouldMatch(0, downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 
     [Fact]
@@ -60,9 +67,10 @@ public sealed class MultipartFormDataTests : Steps
         const string fileContent = "multipart-file-content";
 
         var port = PortFinder.GetRandomPort();
+        _downstream = new DownstreamData[1];
         var route = GivenRoute(port, HttpMethod.Post, routeUpstreamPath, downstreamPath);
         route.Key = routeKey;
-        var configuration = GivenAggregatedConfiguration(route, upstreamPath);
+        var configuration = GivenAggregatedConfiguration(HttpMethods.Post, upstreamPath, route);
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
         GivenThereIsAServiceRunningOn(port, downstreamPath,
@@ -72,7 +80,7 @@ public sealed class MultipartFormDataTests : Steps
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
         ThenTheStatusCodeShouldBeOk();
         await ThenTheResponseBodyShouldBeAsync("UPLOAD-OK");
-        ThenTheDownstreamRequestShouldMatch(downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
+        ThenTheDownstreamRequestShouldMatch(0, downstreamPath, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
     }
 
     private static MultipartFormDataContent GivenMultipartContent(
@@ -89,33 +97,36 @@ public sealed class MultipartFormDataTests : Steps
         return content;
     }
 
-    private FileConfiguration GivenAggregatedConfiguration(FileRoute route, string upstreamPath)
+    private FileConfiguration GivenAggregatedConfiguration(string method, string upstreamPath, params FileRoute[] routes)
     {
-        var configuration = GivenConfiguration(route);
+        var configuration = GivenConfiguration(routes);
         configuration.Aggregates.Add(new()
         {
-            RouteKeys = [route.Key],
-            UpstreamHttpMethod = [HttpMethods.Post],
+            RouteKeys = [.. routes.Select(r => r.Key)], // [ "Laura", "Tom" ]
+            UpstreamHttpMethod = [ method.IfEmpty(HttpMethods.Post) ],
             UpstreamPathTemplate = upstreamPath,
         });
         return configuration;
     }
 
-    private async Task CaptureMultipartRequest(HttpContext context, string fieldName, string fileFieldName, string responseBody = null)
+    private async Task CaptureMultipartRequest(HttpContext context, string fieldName, string fileFieldName, [CallerMemberName] string responseBody = null)
     {
         var request = context.Request;
         var form = await request.ReadFormAsync(context.RequestAborted);
         var file = form.Files.GetFile(fileFieldName).ShouldNotBeNull();
-
-        _downstreamPath = request.PathBase.Add(request.Path).Value;
-        _downstreamContentType = request.ContentType;
-        _downstreamFieldValue = form[fieldName].ToString();
-        _downstreamFileFieldName = file.Name;
-        _downstreamFileName = file.FileName;
-        _downstreamFileContentType = file.ContentType;
+        DownstreamData data = new()
+        {
+            Path = request.PathBase.Add(request.Path).Value,
+            ContentType = request.ContentType,
+            FieldValue = form[fieldName].ToString(),
+            FileFieldName = file.Name,
+            FileName = file.FileName,
+            FileContentType = file.ContentType,
+        };
 
         using var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8);
-        _downstreamFileContent = await reader.ReadToEndAsync(context.RequestAborted);
+        data.FileContent = await reader.ReadToEndAsync(context.RequestAborted);
+        _downstream[0] = data;
 
         context.Response.StatusCode = StatusCodes.Status200OK;
         if (responseBody is not null)
@@ -141,46 +152,32 @@ public sealed class MultipartFormDataTests : Steps
 
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
-        var route1 = GivenRoute(port1, HttpMethod.Post, upstreamPath, downstreamPath1);
-        var route2 = GivenRoute(port2, HttpMethod.Post, upstreamPath, downstreamPath2);
-        var configuration = GivenConfiguration(route1, route2);
+        _downstream = new DownstreamData[2];
+        var route1 = GivenRoute(port1, HttpMethod.Post, upstreamPath + 1, downstreamPath1);
+        route1.Key = nameof(route1);
+        var route2 = GivenRoute(port2, HttpMethod.Post, upstreamPath + 2, downstreamPath2);
+        route2.Key = nameof(route2);
+
+        var configuration = GivenAggregatedConfiguration(HttpMethods.Post, upstreamPath, route1, route2);
         using var content = GivenMultipartContent(fieldName, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
 
-        var capturedRequests = new List<(string Path, string FieldValue, string FileFieldName, string FileName, string FileContentType, string FileContent)>();
-
         GivenThereIsAServiceRunningOn(port1, downstreamPath1,
-                context => CaptureMultipartRequestMultiplex(context, fieldName, fileFieldName, capturedRequests, 0));
+                context => CaptureMultipartRequestMultiplex(0, context, fieldName, fileFieldName));
         GivenThereIsAServiceRunningOn(port2, downstreamPath2,
-                context => CaptureMultipartRequestMultiplex(context, fieldName, fileFieldName, capturedRequests, 1));
+                context => CaptureMultipartRequestMultiplex(1, context, fieldName, fileFieldName));
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning();
         await WhenIPostUrlOnTheApiGateway(upstreamPath, content);
         ThenTheStatusCodeShouldBeOk();
 
-        // Verify that both downstream services received the multipart request with identical data
-        capturedRequests.Count.ShouldBe(2);
-
-        // Verify request 1
-        capturedRequests[0].Path.ShouldBe(downstreamPath1);
-        capturedRequests[0].FieldValue.ShouldBe(fieldValue);
-        capturedRequests[0].FileFieldName.ShouldBe(fileFieldName);
-        capturedRequests[0].FileName.ShouldBe(fileName);
-        capturedRequests[0].FileContentType.ShouldBe(fileContentType);
-        capturedRequests[0].FileContent.ShouldBe(fileContent);
-
-        // Verify request 2
-        capturedRequests[1].Path.ShouldBe(downstreamPath2);
-        capturedRequests[1].FieldValue.ShouldBe(fieldValue);
-        capturedRequests[1].FileFieldName.ShouldBe(fileFieldName);
-        capturedRequests[1].FileName.ShouldBe(fileName);
-        capturedRequests[1].FileContentType.ShouldBe(fileContentType);
-        capturedRequests[1].FileContent.ShouldBe(fileContent);
+        _downstream.Length.ShouldBe(2);
+        ThenTheDownstreamRequestShouldMatch(0, downstreamPath1, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
+        ThenTheDownstreamRequestShouldMatch(1, downstreamPath2, fieldValue, fileFieldName, fileName, fileContentType, fileContent);
+        await ThenTheResponseBodyShouldBeAsync($"{{\"route1\":\"{TestName()}-1\",\"route2\":\"{TestName()}-2\"}}");
     }
 
-    private static async Task CaptureMultipartRequestMultiplex(
-        HttpContext context, string fieldName, string fileFieldName,
-        List<(string Path, string FieldValue, string FileFieldName, string FileName, string FileContentType, string FileContent)> capturedRequests,
-        int index)
+    private async Task CaptureMultipartRequestMultiplex(int index,
+        HttpContext context, string fieldName, string fileFieldName, [CallerMemberName] string responseBody = null)
     {
         var request = context.Request;
         var form = await request.ReadFormAsync(context.RequestAborted);
@@ -191,20 +188,26 @@ public sealed class MultipartFormDataTests : Steps
         using var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8);
         var fileContent = await reader.ReadToEndAsync(context.RequestAborted);
 
-        capturedRequests.Insert(index, (path, fieldValue, file.Name, file.FileName, file.ContentType, fileContent));
-
+        _downstream[index] = new(path, request.ContentType, fieldValue, file.Name, file.FileName, file.ContentType, fileContent);
         context.Response.StatusCode = StatusCodes.Status200OK;
+        if (responseBody is not null)
+        {
+            context.Response.ContentType = MediaTypeNames.Application.Json;
+            var json = $"\"{responseBody}-{++index}\"";
+            await context.Response.WriteAsync(json, context.RequestAborted);
+        }
     }
 
-    private void ThenTheDownstreamRequestShouldMatch(
+    private void ThenTheDownstreamRequestShouldMatch(int i,
         string downstreamPath, string fieldValue, string fileFieldName, string fileName, string fileContentType, string fileContent)
     {
-        _downstreamPath.ShouldBe(downstreamPath);
-        _downstreamContentType.ShouldStartWith("multipart/form-data; boundary=");
-        _downstreamFieldValue.ShouldBe(fieldValue);
-        _downstreamFileFieldName.ShouldBe(fileFieldName);
-        _downstreamFileName.ShouldBe(fileName);
-        _downstreamFileContentType.ShouldBe(fileContentType);
-        _downstreamFileContent.ShouldBe(fileContent);
+        var data = _downstream[i];
+        data.Path.ShouldBe(downstreamPath);
+        data.ContentType.ShouldStartWith("multipart/form-data; boundary=");
+        data.FieldValue.ShouldBe(fieldValue);
+        data.FileFieldName.ShouldBe(fileFieldName);
+        data.FileName.ShouldBe(fileName);
+        data.FileContentType.ShouldBe(fileContentType);
+        data.FileContent.ShouldBe(fileContent);
     }
 }
