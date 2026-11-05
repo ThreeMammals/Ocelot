@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 
 namespace Ocelot.Acceptance.Request;
 
@@ -209,5 +211,34 @@ public sealed class MultipartFormDataTests : Steps
         data.FileName.ShouldBe(fileName);
         data.FileContentType.ShouldBe(fileContentType);
         data.FileContent.ShouldBe(fileContent);
+    }
+
+    [Fact]
+    public async Task Should_route_request_to_downstream_service()
+    {
+        // Arrange: Set up test services and routes
+        var downstreamPort = PortFinder.GetRandomPort();
+        GivenThereIsAServiceRunningOn(downstreamPort, "/api/endpoint",
+            async context =>
+            {
+                // var json = "{ \"message\": \"success\" }";
+                await context.Response.WriteAsJsonAsync(new { message = "success" }, context.RequestAborted);
+                // await context.Response.WriteAsync(json, context.RequestAborted);
+            });
+        var route = GivenRoute(downstreamPort, "/gateway/endpoint", "/api/endpoint");
+        var configuration = GivenConfiguration(route);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+
+        // Act: Send request through the gateway
+        await WhenIGetUrlOnTheApiGateway("/gateway/endpoint");
+
+        // Assert: Verify the response
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("{\"message\":\"success\"}");
+
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>(CancelMe);
+        content.ValueKind.ShouldBe(JsonValueKind.Object); // sanity check
+        content.GetProperty("message").GetString().ShouldBe("success");
     }
 }

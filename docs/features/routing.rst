@@ -4,11 +4,6 @@ Routing
    :depth: 2
    :local:
 
-.. note::
-
-  **For multipart/form-data requests**, see :doc:`../features/requestproxying`.
-  Ocelot fully supports routing and multiplexing multipart file uploads with preserved request boundaries and content.
-
 Ocelot's primary function is to handle incoming HTTP requests and forward them to a downstream service.
 Currently, Ocelot supports this only through HTTP requests. In the future, it might support other transport mechanisms.
 
@@ -20,10 +15,6 @@ To make Ocelot functional, you must set up a *route* in its configuration.
   {
     "Routes": []
   }
-
-For handling file uploads and form submissions with binary data, Ocelot automatically preserves the multipart structure,
-allowing downstream services to receive the complete request with all form fields and file boundaries intact.
-See the :doc:`../features/requestproxying` feature for detailed configuration and examples.
 
 To configure a *route*, you need to add one to the ``Routes`` JSON array.
 
@@ -488,6 +479,11 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. _break: http://break.do
 
   **Note**: For comprehensive documentation regarding errors and status codes in Ocelot, please refer to the :doc:`../features/errorcodes` chapter.
+
+* **The** ``multipart/form-data`` **content type**.
+  For handling file uploads and form submissions with binary data, Ocelot automatically preserves the multipart structure,
+  allowing downstream services to receive the complete request with all form fields and file boundaries intact.
+  See the ":ref:`rproxy-multipart-form-data`" feature for detailed configuration and examples.
 
 """"
 

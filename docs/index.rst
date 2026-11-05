@@ -52,7 +52,6 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/delegatinghandlers
     features/dependencyinjection
     features/errorcodes
-    features/requestproxying
     features/graphql
     features/headerstransformation
     features/kubernetes
@@ -63,6 +62,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/middlewareinjection
     features/qualityofservice
     features/ratelimiting
+    features/request-proxying
     features/routing
     features/servicediscovery
     features/servicefabric
@@ -76,6 +76,6 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     building/building
     building/devprocess
     building/releaseprocess
-    building/acceptance-testing-guide
+    building/acceptance-testing
 
 :htm:`</section>`
