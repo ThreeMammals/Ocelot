@@ -66,6 +66,10 @@ For successful contributions, maintainers will announce an identity-verification
 
 ### :new: What's New?
 
+- **[Request Proxying](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/requestproxying.rst)**: The multipart/form-data acceptance testing feature was added by @rodri-oliveira-dev in pull request #2421.
+
+  Ocelot now preserves multipart boundaries and file payloads when routing and multiplexing upload requests across downstream services, and the new docs explain the supported scenarios and validation coverage for file uploads.
+
 - :star: **[Quality of Service](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/qualityofservice.rst)**: A "[Built-in Circuit Breaker](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/qualityofservice.rst#built-in-qos)" feature [implementation](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/qualityofservice.rst#implementations-overview) was added by @ocelot-ot in pull request #2385 — no [Polly](https://www.nuget.org/packages/Polly/) required. :star:
 
   Ocelot's QoS schema no longer strictly depends on the external [Ocelot.QualityOfService.Polly](https://www.nuget.org/packages/Ocelot.QualityOfService.Polly/) package to provide circuit breaking and timeout enforcement.

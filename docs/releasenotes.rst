@@ -49,6 +49,11 @@ To be added...
 .. _1521: https://github.com/ThreeMammals/Ocelot/pull/1521
 .. _WebClient.UseDefaultCredentials: https://learn.microsoft.com/en-us/dotnet/api/system.net.webclient.usedefaultcredentials
 .. _SocketsHttpHandler.Credentials: https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler.credentials
+.. _2421: https://github.com/ThreeMammals/Ocelot/pull/2421
+
+* :doc:`../features/requestproxying`: The multipart/form-data acceptance testing feature was added by `@rodri-oliveira-dev`_ in pull request `2421`_.
+
+  Ocelot now preserves multipart boundaries and file payloads when routing and multiplexing upload requests across downstream services, and the new documentation explains the supported scenarios and validation coverage for file uploads.
 
 * :ref:`HTTP Handler <config-http-handler-options>`: The *"Pass-through Credentials"* feature was added by `@Sacrilege`_ in pull request `1521`_.
 
