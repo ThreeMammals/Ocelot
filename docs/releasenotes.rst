@@ -49,11 +49,6 @@ To be added...
 .. _1521: https://github.com/ThreeMammals/Ocelot/pull/1521
 .. _WebClient.UseDefaultCredentials: https://learn.microsoft.com/en-us/dotnet/api/system.net.webclient.usedefaultcredentials
 .. _SocketsHttpHandler.Credentials: https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler.credentials
-.. _2421: https://github.com/ThreeMammals/Ocelot/pull/2421
-
-* :doc:`../features/requestproxying`: The multipart/form-data acceptance testing feature was added by `@rodri-oliveira-dev`_ in pull request `2421`_.
-
-  Ocelot now preserves multipart boundaries and file payloads when routing and multiplexing upload requests across downstream services, and the new documentation explains the supported scenarios and validation coverage for file uploads.
 
 * :ref:`HTTP Handler <config-http-handler-options>`: The *"Pass-through Credentials"* feature was added by `@Sacrilege`_ in pull request `1521`_.
 
@@ -86,6 +81,17 @@ To be added...
   Aggregate routes can now accept HTTP methods other than ``GET`` and proxy/forward request bodies to downstream services.
   The ``UpstreamHttpMethod`` option is available per aggregate route and globally in ``GlobalConfiguration``, and the two lists are merged.
   The default method, used as a fallback when JSON configuration is absent, can also be customized in C# by overriding the ``DefaultHttpMethod`` property of :class:`AggregatesCreator`.
+
+.. _2421: https://github.com/ThreeMammals/Ocelot/pull/2421
+.. _RFC 7578: https://www.rfc-editor.org/info/rfc7578/
+.. _Content-Type: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type
+
+* :doc:`../features/request-proxying`: The ``multipart/form-data`` `Content-Type`_ header handling was improved by `@rodri-oliveira-dev`_ in pull request `2421`_.
+
+  Ocelot now preserves multipart boundaries and file payloads when routing and multiplexing (aggregation) upload requests across downstream services,
+  and the new documentation explains the supported scenarios and validation coverage for file uploads.
+  This feature is especially useful for BFF scenarios where a single upstream request may need to be routed to multiple downstream services, each of which may require access to the same uploaded files or form data.
+  Thorough testing was performed to ensure that Ocelot correctly handles multipart requests following `RFC 7578`_ specification.
 
 { features in development } 
 

@@ -45,7 +45,7 @@ You can configure :doc:`../features/headerstransformation` rules to add, remove,
 Multipart Form Data
 -------------------
 .. _Content-Type: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type
-.. _RFC 7578: https://tools.ietf.org/html/rfc7578
+.. _RFC 7578: https://www.rfc-editor.org/info/rfc7578/
 
   Features: :doc:`../features/routing`, :doc:`../features/aggregation`
 
