@@ -4,7 +4,7 @@ Aggregation
    :depth: 2
    :local:
 
-*Aggregation* [#f1]_, also known as HTTP response data aggregation, is a well-known Backend for Frontend pattern of Microservices architecture.
+*Aggregation* [#f1]_, also known as HTTP response data aggregation, is a well-known "Backend for Frontend" pattern in microservices architecture, hereafter "BFF".
 
   * `Backend for Frontend (BFF) Pattern: Microservices for UX | Teleport Academy <https://goteleport.com/learn/backend-for-frontend-bff-pattern/>`_
   * `Gateway Aggregation pattern | Azure Architecture Center | Microsoft Learn <https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation>`_
@@ -508,6 +508,10 @@ Gotchas
 * *Aggregation* allows the forwarding of ``HttpRequest.Body`` to downstream services by duplicating the body data.
   Form data and attached files should also be forwarded.
   It is essential to specify the ``Content-Length`` header in requests to the upstream; otherwise, Ocelot will log warnings such as: *"Aggregation does not support body copy without a Content-Length header!"*
+* *Aggregation* also works with ``multipart/form-data`` requests.
+  When aggregating multipart requests, each downstream service receives the complete file upload with all form fields preserved.
+  For details, refer to the ":ref:`rproxy-multipart-form-data`" section in the :doc:`../features/request-proxying` chapter.
+  Please note that ``POST``-like methods required for BFF form and file submission can be specified starting with version `25.1`_.
 
 """"
 
