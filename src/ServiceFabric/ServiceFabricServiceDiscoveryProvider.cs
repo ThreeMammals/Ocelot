@@ -1,11 +1,15 @@
-﻿using Ocelot.ServiceDiscovery.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 
-namespace Ocelot.ServiceDiscovery.Providers;
+namespace Ocelot.ServiceFabric;
 
 public class ServiceFabricServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
-    public const string Type = "ServiceFabric"; // TODO This property should be defined in the IServiceDiscoveryProvider interface
+    public const string Type = "ServiceFabric";
+
+    public string Name => Type;
 
     private readonly ServiceFabricConfiguration _configuration;
 

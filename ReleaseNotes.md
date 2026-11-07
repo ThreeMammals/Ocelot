@@ -56,6 +56,11 @@ https://www.nuget.org/packages/Ocelot/{0}
 
 ### :up: What's Updated?
 
+* [Service Discovery](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/servicediscovery.rst): **Service Fabric migration** by @raman-m with @Copilot in pull request #2435.
+
+  [Service Fabric](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/features/servicefabric.rst) discovery and path-formatting code is organized under `src/ServiceFabric/` in Ocelot core.
+  Applications using `"Type": "ServiceFabric"` must call `AddServiceFabric()` after `AddOcelot()`; core-only configuration no longer enables this feature implicitly.
+
 *To be added...*
 
 ### :package: Patches

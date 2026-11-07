@@ -8,7 +8,6 @@ using Ocelot.LoadBalancer.Errors;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.LoadBalancer;

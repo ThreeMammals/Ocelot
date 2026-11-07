@@ -10,7 +10,6 @@ using Ocelot.Logging;
 using Ocelot.QualityOfService;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Security.Claims;
@@ -43,7 +42,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     }
 
     [Fact]
-    public async Task Configuration_is_valid_if_service_discovery_options_specified_and_has_service_fabric_as_option()
+    public async Task Configuration_is_invalid_if_service_fabric_is_used_without_a_registered_feature()
     {
         // Arrange
         var route = GivenServiceDiscoveryRoute();
@@ -55,7 +54,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         await WhenIValidateTheConfiguration();
 
         // Assert
-        ThenTheResultIsValid();
+        ThenTheResultIsNotValid();
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Assert
         ThenTheResultIsNotValid();
         ThenTheErrorIs<FileValidationFailedError>();
-        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
+        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul(), Ocelot.Discovery.Eureka and services.AddEureka(), or the Service Fabric feature and services.AddServiceFabric()?");
     }
 
     [Fact]
@@ -127,7 +126,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Assert
         ThenTheResultIsNotValid();
         ThenTheErrorIs<FileValidationFailedError>();
-        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
+        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul(), Ocelot.Discovery.Eureka and services.AddEureka(), or the Service Fabric feature and services.AddServiceFabric()?");
     }
 
     [Fact]
@@ -147,7 +146,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
         // Assert
         ThenTheResultIsNotValid();
         ThenTheErrorIs<FileValidationFailedError>();
-        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
+        ThenTheErrorMessageAtPositionIs(0, "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul(), Ocelot.Discovery.Eureka and services.AddEureka(), or the Service Fabric feature and services.AddServiceFabric()?");
     }
 
     [Fact]
@@ -671,19 +670,19 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     }
 
     [Fact]
-    public async Task Configuration_is_valid_with_using_service_discovery_and_service_name()
+    public async Task Configuration_is_invalid_with_using_service_discovery_without_a_registered_provider()
     {
         // Arrange
         var route = GivenServiceDiscoveryRoute();
         var config = GivenAConfiguration(route);
-        config.GlobalConfiguration.ServiceDiscoveryProvider = GivenDefaultServiceDiscoveryProvider();
+        config.GlobalConfiguration.ServiceDiscoveryProvider = null;
         GivenAConfiguration(config);
 
         // Act
         await WhenIValidateTheConfiguration();
 
         // Assert
-        ThenTheResultIsValid();
+        ThenTheResultIsNotValid();
     }
 
     private const string Empty = "";
@@ -730,7 +729,7 @@ public class FileConfigurationFluentValidatorTests : UnitTest
     [InlineData(false, null, false)]
     [InlineData(true, null, false)]
     [InlineData(true, "type", false)]
-    [InlineData(true, "servicefabric", true)]
+    [InlineData(true, "servicefabric", false)]
     public async Task HaveServiceDiscoveryProviderRegistered_ServiceDiscoveryProvider_Validated(bool create, string type, bool valid)
     {
         // Arrange
@@ -1185,6 +1184,8 @@ public class FileConfigurationFluentValidatorTests : UnitTest
 
     private class FakeServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
+        public string Name => nameof(FakeServiceDiscoveryProvider);
+
         public Task<List<Service>> GetAsync() => Task.FromResult<List<Service>>(new());
     }
 
