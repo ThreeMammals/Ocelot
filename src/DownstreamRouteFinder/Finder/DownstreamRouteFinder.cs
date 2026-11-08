@@ -6,6 +6,9 @@ using Ocelot.Responses;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
 
+/// <summary>
+/// Static route finder.
+/// </summary>
 public class DownstreamRouteFinder : IDownstreamRouteProvider
 {
     private readonly IUrlPathToUrlTemplateMatcher _urlMatcher;

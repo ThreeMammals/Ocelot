@@ -38,7 +38,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();
-        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object, new DownstreamServiceFinder());
+        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
         _upstreamQuery = string.Empty;
     }
 
@@ -266,7 +266,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     [InlineData("/name.space5.service5/ha-ha", "space5.service5", "name")]
     public void GetServiceName(string urlPath, string expected, string expectedNamespace)
     {
-        var method = _finder.GetType().GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic);
+        var method = _finder.GetType().GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic,
+            [typeof(string), typeof(string).MakeByRefType()]);
         object[] parameters = [urlPath, null];
 
         // Act
@@ -366,11 +367,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"" },
             { "sec-ch-ua-mobile", "?0" },
         };
-        var serviceFinder = new Mock<IDownstreamServiceFinder>();
-        serviceFinder.Setup(x =>
-            x.GetServiceName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), out It.Ref<string>.IsAny))
-            .Returns(TestName());
-        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator(), serviceFinder.Object);
+        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator());
 
         // Act
         _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);

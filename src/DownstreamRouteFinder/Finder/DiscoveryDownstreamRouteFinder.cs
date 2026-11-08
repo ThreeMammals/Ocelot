@@ -2,13 +2,15 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Responses;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
 
+/// <summary>
+/// Dynamic route finder when service discovery is enabled.
+/// </summary>
 public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 {
     public const char Dot = '.';
@@ -18,23 +20,20 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     private readonly ConcurrentDictionary<string, Route> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
     private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
-    private readonly IDownstreamServiceFinder _serviceFinder;
 
     public DiscoveryDownstreamRouteFinder(
         IRouteKeyCreator routeKeyCreator,
-        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator,
-        IDownstreamServiceFinder serviceFinder)
+        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
     {
         _cache = new();
         _routeKeyCreator = routeKeyCreator;
         _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
-        _serviceFinder = serviceFinder;
     }
 
     public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var serviceName = _serviceFinder.GetServiceName(upstreamUrlPath, upstreamQueryString, upstreamHttpMethod, upstreamHost, configuration,
+        var serviceName = GetServiceName(configuration, upstreamHeaders, upstreamHost, upstreamHttpMethod, upstreamUrlPath, upstreamQueryString,
             out var serviceNamespace);
 
         var downstreamPath = GetDownstreamPath(upstreamUrlPath);
@@ -139,4 +138,12 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var serviceName = index == -1 ? name : name[++index..];
         return serviceName.ToString();
     }
+
+    protected virtual string GetServiceName(IInternalConfiguration configuration, IHeaderDictionary upstreamHeaders,
+        string upstreamHost, string upstreamMethod, string upstreamUrlPath, string upstreamQueryString, out string serviceNamespace)
+    {
+        return GetServiceName(upstreamUrlPath, out serviceNamespace);
+    }
+
+    // protected string GetServiceName(HttpRequest request, out string serviceNamespace) => string.Empty;
 }
