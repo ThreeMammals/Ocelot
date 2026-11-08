@@ -39,7 +39,8 @@ public class DownstreamRoute
         HttpVersionPolicy downstreamHttpVersionPolicy,
         Dictionary<string, UpstreamHeaderTemplate> upstreamHeaders,
         MetadataOptions metadataOptions,
-        int? timeout)
+        int? timeout,
+        bool connectionClose)
     {
         DangerousAcceptAnyServerCertificateValidator = dangerousAcceptAnyServerCertificateValidator;
         AddHeadersToDownstream = addHeadersToDownstream;
@@ -74,6 +75,7 @@ public class DownstreamRoute
         UpstreamHeaders = upstreamHeaders ?? new();
         MetadataOptions = metadataOptions;
         Timeout = timeout;
+        ConnectionClose = connectionClose;
     }
 
     public string Key { get; }
@@ -84,6 +86,7 @@ public class DownstreamRoute
     public string ServiceName { get; }
     public string ServiceNamespace { get; }
     public HttpHandlerOptions HttpHandlerOptions { get; }
+    public bool ConnectionClose { get; }
     public QoSOptions QosOptions { get; }
     public string DownstreamScheme { get; }
     public string RequestIdKey { get; }
