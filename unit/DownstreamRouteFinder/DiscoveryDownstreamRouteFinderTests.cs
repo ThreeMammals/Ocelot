@@ -264,15 +264,33 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     [InlineData("/namespace3.service3/bla-bla", "service3", "namespace3")]
     [InlineData("/namespace4.service.4/ha-a", "service.4", "namespace4")]
     [InlineData("/name.space5.service5/ha-ha", "space5.service5", "name")]
-    public void GetServiceName(string urlPath, string expected, string expectedNamespace)
+    public void GetServiceName_ReturnsNamespace(string urlPath, string expected, string expectedNamespace)
     {
-        var method = _finder.GetType().GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic,
-            [typeof(string), typeof(string).MakeByRefType()]);
-        object[] parameters = [urlPath, null];
-
         // Act
-        string actual = (string)method.Invoke(_finder, parameters);
-        string actualNamespace = (string)parameters[1];
+        string actual = GetServiceName(urlPath, out string actualNamespace);
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(expectedNamespace, actualNamespace);
+    }
+    private MethodInfo GetServiceName() => _finder.GetType()
+        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), typeof(string).MakeByRefType()]);
+    protected string GetServiceName(string upstreamUrlPath, out string serviceNamespace)
+    {
+        object[] parameters = [upstreamUrlPath, null];
+        var sn = GetServiceName().Invoke(_finder, parameters);
+        serviceNamespace = (string)parameters[1];
+        return sn as string;
+    }
+
+    [Theory]
+    [Trait("PR", "1198")]
+    [InlineData(null, "", "")]
+    [InlineData("", "", "")]
+    [InlineData("/", "", "")]
+    public void GetServiceName_EmptyUrl_ReturnsEmpty(string urlPath, string expected, string expectedNamespace)
+    {
+        // Act
+        string actual = GetServiceName(urlPath, out string actualNamespace);
 
         Assert.Equal(expected, actual);
         Assert.Equal(expectedNamespace, actualNamespace);

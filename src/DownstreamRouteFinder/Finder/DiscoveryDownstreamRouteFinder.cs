@@ -125,18 +125,21 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     /// <returns>A <see cref="string"/> object.</returns>
     protected virtual string GetServiceName(string upstreamUrlPath, out string serviceNamespace)
     {
-        var path = upstreamUrlPath.AsSpan();
+        ReadOnlySpan<char> path = upstreamUrlPath.IsNotEmpty()
+            ? upstreamUrlPath.AsSpan()
+            : [Slash];
         int index = path[1..].IndexOf(Slash);
-        var name = index == -1
+        ReadOnlySpan<char> name = index == -1
             ? path[1..]
             : path.Slice(1, index).TrimEnd(Slash);
 
         index = name.IndexOf(Dot);
-        serviceNamespace = index == -1
-            ? string.Empty
-            : name[..index].ToString();
-        var serviceName = index == -1 ? name : name[++index..];
-        return serviceName.ToString();
+        serviceNamespace = string.Empty;
+        if (index == -1)
+            return name.ToString();
+
+        serviceNamespace = name[..index].ToString();
+        return name[++index..].ToString();
     }
 
     protected virtual string GetServiceName(IInternalConfiguration configuration, IHeaderDictionary upstreamHeaders,
