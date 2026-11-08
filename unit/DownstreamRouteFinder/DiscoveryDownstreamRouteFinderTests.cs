@@ -366,7 +366,11 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"" },
             { "sec-ch-ua-mobile", "?0" },
         };
-        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator());
+        var serviceFinder = new Mock<IDownstreamServiceFinder>();
+        serviceFinder.Setup(x =>
+            x.GetServiceName(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), out It.Ref<string>.IsAny))
+            .Returns(TestName());
+        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator(), serviceFinder.Object);
 
         // Act
         _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
