@@ -21,26 +21,24 @@ public sealed class CookieStickySessionsTests : Steps
     }
 
     [Fact]
-    public void ShouldUseSameDownstreamHost_ForSingleRouteWithHighLoad()
+    public async Task ShouldUseSameDownstreamHost_ForSingleRouteWithHighLoad()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route = GivenStickySessionsRoute([port1, port2]);
         var cookieName = route.LoadBalancerOptions.Key;
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenProductServiceIsRunning(0, port1))
-            .Given(x => x.GivenProductServiceIsRunning(1, port2))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunning())
-            .When(x => x.WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10, cookieName, Guid.NewGuid().ToString()))
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(0, 10)) // RoundRobin should return first service with port1
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 0))
-        .BDDfy();
+        GivenProductServiceIsRunning(0, port1);
+        GivenProductServiceIsRunning(1, port2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/", 10, cookieName, Guid.NewGuid().ToString());
+        ThenServiceShouldHaveBeenCalledTimes(0, 10); // RoundRobin should return first service with port1
+        ThenServiceShouldHaveBeenCalledTimes(1, 0);
     }
 
     [Fact]
-    public void ShouldUseDifferentDownstreamHost_ForDoubleRoutesWithDifferentCookies()
+    public async Task ShouldUseDifferentDownstreamHost_ForDoubleRoutesWithDifferentCookies()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -48,20 +46,18 @@ public sealed class CookieStickySessionsTests : Steps
         var cookieName = route1.LoadBalancerOptions.Key;
         var route2 = GivenStickySessionsRoute([port2, port1], "/test", cookieName + "bestid");
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenProductServiceIsRunning(0, port1))
-            .Given(x => x.GivenProductServiceIsRunning(1, port2))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123")) // both cookies should have different values
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName + "bestid", "123")) // stick by cookie value
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(0, 1))
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 1))
-        .BDDfy();
+        GivenProductServiceIsRunning(0, port1);
+        GivenProductServiceIsRunning(1, port2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123"); // both cookies should have different values
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName + "bestid", "123"); // stick by cookie value
+        ThenServiceShouldHaveBeenCalledTimes(0, 1);
+        ThenServiceShouldHaveBeenCalledTimes(1, 1);
     }
 
     [Fact]
-    public void ShouldUseSameDownstreamHost_ForDifferentRoutesWithSameCookie()
+    public async Task ShouldUseSameDownstreamHost_ForDifferentRoutesWithSameCookie()
     {
         var port1 = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
@@ -69,23 +65,21 @@ public sealed class CookieStickySessionsTests : Steps
         var cookieName = route1.LoadBalancerOptions.Key;
         var route2 = GivenStickySessionsRoute([port2, port1], "/test", cookieName);
         var configuration = GivenConfiguration(route1, route2);
-        this
-            .Given(x => x.GivenProductServiceIsRunning(0, port1))
-            .Given(x => x.GivenProductServiceIsRunning(1, port2))
-            .And(_ => GivenThereIsAConfiguration(configuration))
-            .And(_ => GivenOcelotIsRunning())
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123"))
-            .When(_ => WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName, "123"))
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(0, 2))
-            .Then(x => x.ThenServiceShouldHaveBeenCalledTimes(1, 0))
-        .BDDfy();
+        GivenProductServiceIsRunning(0, port1);
+        GivenProductServiceIsRunning(1, port2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/", cookieName, "123");
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/test", cookieName, "123");
+        ThenServiceShouldHaveBeenCalledTimes(0, 2);
+        ThenServiceShouldHaveBeenCalledTimes(1, 0);
     }
 
     [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "2319")]
     [Trait("PR", "2324")] // https://github.com/ThreeMammals/Ocelot/pull/2324
-    public void ShouldUseGlobalOptions_ForStaticRoutes()
+    public async Task ShouldUseGlobalOptions_ForStaticRoutes()
     {
         _counters = new int[5];
         var ports = PortFinder.GetPorts(2);
@@ -106,24 +100,22 @@ public sealed class CookieStickySessionsTests : Steps
             Type = nameof(CookieStickySessions),
             Key = CookieName(), // !!!
         };
-        this
-            .Given(x => GivenProductServiceIsRunning(0, ports[0]))
-            .Given(x => GivenProductServiceIsRunning(1, ports[1]))
-            .Given(x => GivenProductServiceIsRunning(2, ports2[0]))
-            .Given(x => GivenProductServiceIsRunning(3, ports2[1]))
-            .Given(x => GivenProductServiceIsRunning(4, port5))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithCookie("/", CookieName(testName), "123"))
-            .And(x => WhenIGetUrlOnTheApiGatewayWithCookie("/test", CookieName(testName), "123"))
-            .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/nextSticky", 5, CookieName(testName) + "-nextSticky", "333"))
-            .And(x => WhenIGetUrlOnTheApiGatewayMultipleTimes("/noLoadBalancing", 7, "bla-bla-cookie", "bla-bla-value"))
-            .Then(x => ThenServiceShouldHaveBeenCalledTimes(0, 2))
-            .And(x => ThenServiceShouldHaveBeenCalledTimes(1, 0))
-            .And(x => ThenServiceShouldHaveBeenCalledTimes(2, 5))
-            .And(x => ThenServiceShouldHaveBeenCalledTimes(3, 0))
-            .And(x => ThenServiceShouldHaveBeenCalledTimes(4, 7))
-        .BDDfy();
+        GivenProductServiceIsRunning(0, ports[0]);
+        GivenProductServiceIsRunning(1, ports[1]);
+        GivenProductServiceIsRunning(2, ports2[0]);
+        GivenProductServiceIsRunning(3, ports2[1]);
+        GivenProductServiceIsRunning(4, port5);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/", CookieName(testName), "123");
+        await WhenIGetUrlOnTheApiGatewayWithCookie("/test", CookieName(testName), "123");
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/nextSticky", 5, CookieName(testName) + "-nextSticky", "333");
+        await WhenIGetUrlOnTheApiGatewayMultipleTimes("/noLoadBalancing", 7, "bla-bla-cookie", "bla-bla-value");
+        ThenServiceShouldHaveBeenCalledTimes(0, 2);
+        ThenServiceShouldHaveBeenCalledTimes(1, 0);
+        ThenServiceShouldHaveBeenCalledTimes(2, 5);
+        ThenServiceShouldHaveBeenCalledTimes(3, 0);
+        ThenServiceShouldHaveBeenCalledTimes(4, 7);
     }
 
     private static string CookieName([CallerMemberName] string cookieName = nameof(CookieStickySessionsTests)) => cookieName;

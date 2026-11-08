@@ -6,6 +6,6 @@ namespace Ocelot.DownstreamRouteFinder.Finder;
 
 public interface IDownstreamRouteProvider
 {
-    Response<DownstreamRouteHolder> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+    Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders);
 }

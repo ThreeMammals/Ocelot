@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.Headers;
 using Ocelot.Headers.Middleware;
 using Ocelot.Logging;
@@ -42,7 +41,7 @@ public class ClaimsToHeadersMiddlewareTests : UnitTest
     public async Task Should_call_add_headers_to_request_correctly()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
+        var dr = new DownstreamRouteBuilder()
                     .WithDownstreamPathTemplate("any old string")
                     .WithClaimsToHeaders(new List<ClaimToThing>
                     {
@@ -50,13 +49,11 @@ public class ClaimsToHeadersMiddlewareTests : UnitTest
                     })
                     .WithUpstreamHttpMethod(["Get"])
                     .Build();
-        var downstreamRoute = new DownstreamRouteHolder(
-            new(),
-            new Route(route, HttpMethod.Get));
+        var route = new Route(dr, HttpMethod.Get);
 
         // Arrange: Given The Down Stream Route Is
-        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
 
         // Arrange: Given The AddHeaders To Downstream Request Returns Ok
         _addHeaders.Setup(x => x.SetHeadersOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), It.IsAny<DownstreamRequest>()))

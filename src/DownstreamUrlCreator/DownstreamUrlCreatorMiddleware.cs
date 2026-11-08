@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -35,7 +36,10 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
         var downstreamRoute = context.Items.DownstreamRoute();
         var placeholders = context.Items.TemplatePlaceholderNameAndValues();
-        var downstreamPath = _replacer.Replace(downstreamRoute.DownstreamPathTemplate.Value, placeholders);
+        var downstreamPathTemplate = context.Items.Route()?.IsDynamic == true
+            ? DiscoveryDownstreamRouteFinder.GetDownstreamPath(context.Request.Path.ToString()) // TODO Consider extending the IDownstreamRouteProvider interface and injecting it
+            : downstreamRoute.DownstreamPathTemplate.Value; // TODO Consider overriding the constructor with a second version that has a Func<T> callback. For a dynamic route, DownstreamPathTemplate should be empty, but with an initialized callback.
+        var downstreamPath = _replacer.Replace(downstreamPathTemplate, placeholders);
         if (downstreamPath.Value.IsEmpty())
         {
             throw new NotSupportedException($"{_replacer.GetType().Name} returned an empty {nameof(DownstreamPath)} for the route {downstreamRoute.Name()}.");

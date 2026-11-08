@@ -14,18 +14,16 @@ public sealed class ThreadSafeHeadersTests : Steps
 
     [Fact]
     [Trait("Feat", "61")] // https://github.com/ThreeMammals/Ocelot/pull/61
-    public void Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
+    public async Task Should_return_same_response_for_each_different_header_under_load_to_downsteam_service()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests)))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests)))
-            .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, nameof(ThreadSafeHeadersTests));
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300, nameof(ThreadSafeHeadersTests));
+        ThenTheSameHeaderValuesAreReturnedByTheDownstreamService();
     }
 
     public override void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
@@ -34,7 +32,7 @@ public sealed class ThreadSafeHeadersTests : Steps
         base.GivenThereIsAServiceRunningOn(port, statusCode, headerKey);
     }
 
-    private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
+    private Task WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times, [CallerMemberName] string headerKey = nameof(ThreadSafeHeadersTests))
     {
         var tasks = new Task[times];
         for (var i = 0; i < times; i++)
@@ -43,8 +41,7 @@ public sealed class ThreadSafeHeadersTests : Steps
             var rint = random.Next(0, 50);
             tasks[i] = GetForThreadSafeHeadersTest(urlCopy, rint, headerKey);
         }
-
-        Task.WaitAll(tasks);
+        return Task.WhenAll(tasks);
     }
 
     private async Task GetForThreadSafeHeadersTest(string url, int random, string headerKey)

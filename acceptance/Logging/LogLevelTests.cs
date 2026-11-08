@@ -41,24 +41,22 @@ public sealed class LogLevelTests : Steps
         logFileLinesWithAllowedLogLevel.Count.ShouldBe(2 * allowedMessageTypes.Length);
     }
 
-    private void TestFactory(string[] notAllowedMessageTypes, string[] allowedMessageTypes, LogLevel level)
+    private async Task TestFactory(string[] notAllowedMessageTypes, string[] allowedMessageTypes, LogLevel level)
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         route.RequestIdKey = "Oc-RequestId";
         var configuration = GivenConfiguration(route);
         using var logger = GetLogger(level);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .Then(x => logger.Dispose())
-            .Then(x => ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningWithMinimumLogLevel(logger, _appSettingsFileName);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        logger.Dispose();
+        ThenMessagesAreLogged(notAllowedMessageTypes, allowedMessageTypes);
     }
 
     private Task<int> GivenOcelotIsRunningWithMinimumLogLevel(Logger logger, string appsettingsFileName)
@@ -89,32 +87,32 @@ public sealed class LogLevelTests : Steps
             null, null);
 
     [Fact]
-    public void If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_critical_then_only_critical_messages_are_logged() => await TestFactory(
         [ "TRACE", "INFORMATION", "WARNING", "ERROR" ],
         [ "CRITICAL" ], LogLevel.Critical);
 
     [Fact]
-    public void If_minimum_log_level_is_error_then_critical_and_error_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_error_then_critical_and_error_are_logged() => await TestFactory(
         [ "TRACE", "INFORMATION", "WARNING", "DEBUG" ],
         [ "CRITICAL", "ERROR" ], LogLevel.Error);
 
     [Fact]
-    public void If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_warning_then_critical_error_and_warning_are_logged() => await TestFactory(
         [ "TRACE", "INFORMATION", "DEBUG" ],
         [ "CRITICAL", "ERROR", "WARNING" ], LogLevel.Warning);
     
     [Fact]
-    public void If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_information_then_critical_error_warning_and_information_are_logged() => await TestFactory(
         [ "TRACE", "DEBUG" ],
         [ "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Information);
 
     [Fact]
-    public void If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_debug_then_critical_error_warning_information_and_debug_are_logged() => await TestFactory(
         [ "TRACE" ],
         [ "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Debug);
 
     [Fact]  
-    public void If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => TestFactory(
+    public async Task If_minimum_log_level_is_trace_then_critical_error_warning_information_debug_and_trace_are_logged() => await TestFactory(
         [],
         [ "TRACE", "DEBUG", "CRITICAL", "ERROR", "WARNING", "INFORMATION" ], LogLevel.Trace);
 

@@ -18,18 +18,16 @@ public class MultiplexingMiddleware : OcelotMiddleware
     private const string RequestIdString = "RequestId";
 
     public MultiplexingMiddleware(RequestDelegate next,
-        IOcelotLoggerFactory loggerFactory,
-        IResponseAggregatorFactory factory)
+        IOcelotLoggerFactory loggerFactory, IResponseAggregatorFactory factory)
         : base(loggerFactory.CreateLogger<MultiplexingMiddleware>())
     {
-        _factory = factory;
         _next = next;
+        _factory = factory;
     }
 
     public async Task Invoke(HttpContext context)
     {
-        var downstreamRouteHolder = context.Items.DownstreamRouteHolder();
-        var route = downstreamRouteHolder.Route;
+        var route = context.Items.Route();
         var downstreamRoutes = route.DownstreamRoute;
 
         // Case 1: if websocket request or single downstream route
@@ -69,7 +67,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
     /// <param name="routes">The downstream routes.</param>
     /// <returns>True if only the first downstream route should be processed.</returns>
     private static bool ShouldProcessSingleRoute(HttpContext context, ICollection routes)
-        => context.WebSockets.IsWebSocketRequest || routes.Count == 1;
+        => context.WebSockets.IsWebSocketRequest || routes.Count == 1; // TODO This is some edge case for web sockets and this is a problem.
 
     /// <summary>
     /// Processing a single downstream route (no route keys).
@@ -267,7 +265,7 @@ public class MultiplexingMiddleware : OcelotMiddleware
         request.EnableBuffering();
         if (request.Body.Position != 0)
         {
-            Logger.LogWarning(() => $"Ocelot does not support body copy without stream in initial position 0 for the route {route.Name()}.");
+            Logger.LogWarning(() => $"Aggregation does not support body copy without stream in initial position 0 for the route {route.Name()}.");
             return request.Body;
         }
 

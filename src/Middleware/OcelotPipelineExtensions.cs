@@ -5,7 +5,7 @@ using Ocelot.Authorization;
 using Ocelot.Cache;
 using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamPathManipulation.Middleware;
-using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamUrlCreator;
 using Ocelot.Errors;
 using Ocelot.Headers.Middleware;

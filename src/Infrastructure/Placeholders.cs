@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -119,7 +120,7 @@ public class Placeholders : IPlaceholders
     {
         try
         {
-            return _contextAccessor.HttpContext.Request.Headers.TryGetValue("Host", out var upstreamHost)
+            return _contextAccessor.HttpContext.Request.Headers.TryGetValue(HeaderNames.Host, out var upstreamHost)
                 ? new OkResponse<string>(upstreamHost.First())
                 : new ErrorResponse<string>(new CouldNotFindPlaceholderError("{UpstreamHost}"));
         }

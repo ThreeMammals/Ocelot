@@ -10,22 +10,20 @@ public sealed class CancelRequestTests : Steps
     [Fact]
     [Trait("Bug", "893")] // https://github.com/ThreeMammals/Ocelot/issues/893
     [Trait("PR", "1367")] // https://github.com/ThreeMammals/Ocelot/pull/1367
-    public void ShouldAbortServiceWorkWhenCancellingTheRequest()
+    public async Task ShouldAbortServiceWorkWhenCancellingTheRequest()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         var started = new Notifier("service work started notifier");
         var stopped = new Notifier("service work finished notifier");
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(DownstreamUrl(port), started, stopped))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIAmGettingUrlAndWaitingForNotification(started))
-            .Then(x => _ex.ShouldNotBeNull(null).ShouldBeOfType<TaskCanceledException>(null))
-            .And(x => started.NotificationSent.ShouldBeTrue(null))
-            .And(x => stopped.NotificationSent.ShouldBeFalse(null))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(DownstreamUrl(port), started, stopped);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIAmGettingUrlAndWaitingForNotification(started);
+        _ex.ShouldNotBeNull(null).ShouldBeOfType<TaskCanceledException>(null);
+        started.NotificationSent.ShouldBeTrue(null);
+        stopped.NotificationSent.ShouldBeFalse(null);
     }
 
     private Exception _ex;

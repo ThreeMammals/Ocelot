@@ -1,12 +1,13 @@
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.1: https://github.com/ThreeMammals/Ocelot/milestone/12
 .. role::  htm(raw)
     :format: html
 .. role:: pdf(raw)
    :format: latex pdflatex
 
-##############
-Ocelot `25.0`_
-##############
+##################################
+Ocelot `25.1`_ (under development)
+##################################
 
 Thanks for taking a look at the Ocelot documentation!
 Please use the left hand **Navigation** sidebar to get around, or see the :htm:`<a class="reference internal" href="#toc"><span class="std std-ref">Table of Contents</span></a> below.` :pdf:`\textbf{Table of Contents} above.`
@@ -61,6 +62,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/middlewareinjection
     features/qualityofservice
     features/ratelimiting
+    features/request-proxying
     features/routing
     features/servicediscovery
     features/servicefabric
@@ -69,10 +71,11 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
 
   .. toctree::
     :maxdepth: 3
-    :caption: Building Ocelot
+    :caption: Testing and Guides
 
     building/building
     building/devprocess
     building/releaseprocess
+    building/acceptance-testing
 
 :htm:`</section>`

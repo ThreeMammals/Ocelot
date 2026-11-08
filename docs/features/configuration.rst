@@ -209,7 +209,8 @@ Here is the complete global configuration, also known as the *"global configurat
       "SecurityOptions": {},
       "ServiceDiscoveryProvider": {},
       "Timeout": 0, // nullable integer
-      "UpstreamHeaderTransform": {} // dictionary
+      "UpstreamHeaderTransform": {}, // dictionary
+      "UpstreamHttpMethod": [] // array of strings
     }
 
 The actual global configuration schema with all the properties can be found in the C# `FileGlobalConfiguration`_ class.
@@ -220,6 +221,10 @@ The actual global configuration schema with all the properties can be found in t
   For a clearer understanding of the changes, refer to the :ref:`config-dynamic-route-schema` and related notes.
 
   **Note 2**: The ``DownstreamHeaderTransform`` and ``UpstreamHeaderTransform`` global options were introduced in version `24.1`_, but they are available only for static routes.
+
+  **Note 3**: The ``UpstreamHttpMethod`` global option applies only to :ref:`config-aggregate-route-schema` (aggregates), and it is merged with the aggregate route's own ``UpstreamHttpMethod`` values.
+  If both are empty, the ``GET`` method is used by default. See the ":ref:`Upstream HTTP Methods<agg-upstream-http-methods>`" section of the :doc:`../features/aggregation` feature for details.
+  The ``UpstreamHttpMethod`` global option was introduced in version `25.1`_, but as mentioned, it applies only to aggregate routes.
 
 .. _config-overview:
 
@@ -612,11 +617,9 @@ As a final step, you could add shutdown logic to save the complete configuration
   | Class: `FileHttpHandlerOptions <https://github.com/ThreeMammals/Ocelot/blob/develop/src/Configuration/File/FileHttpHandlerOptions.cs>`_
   | MS Learn: `SocketsHttpHandler Class <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler>`_
 
-This route configuration section allows for following HTTP redirects, for instance, via the boolean ``AllowAutoRedirect`` option.
+Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+HttpMessageHandler+path%3A%2F%5Esrc%5C%2F%2F&type=code>`_ behavior
+based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler+path%3A%2F%5Esrc%5C%2F%2F&type=code>`_ instance:
 These options can be set at the route or global level for both static and :ref:`dynamic routing <routing-dynamic>`.
-
-Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot%20HttpMessageHandler&type=code>`_ behavior
-based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler&type=code>`_ instance:
 
 .. code-block:: json
 
@@ -625,6 +628,7 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
     "MaxConnectionsPerServer": 2147483647, // max integer
     "PooledConnectionLifetimeSeconds": 120,
     "UseCookieContainer": false,
+    "UseCredentials": false,
     "UseProxy": false,
     "UseTracing": false
   }
@@ -643,20 +647,22 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
         | default: ``2147483647``, maximum integer
       - This controls how many connections the internal ``HttpMessageInvoker`` will open to a single :ref:`hosting-gotchas-iis`/:ref:`hosting-gotchas-kestrel` server.
     * - | ``PooledConnectionLifetimeSeconds``
-        | default: ``120`` seconds
-      - This controls how long a connection can be in the pool to be considered reusable.
-        Also refer to the **1st note** below!
-    * - | ``UseCookieContainer``
+        | default: ``120`` seconds :sup:`1`
+      - This controls how long a connection can be in the pool to be considered reusable. :sup:`1`
+    * - | ``UseCookieContainer`` :sup:`2`
         | default: ``false``
-      - This indicates whether the handler uses the ``CookieContainer`` property to store server cookies and uses these cookies when sending requests.
-        Also refer to the **2nd note** below!
+      - This indicates whether the handler uses the ``CookieContainer`` property to store server cookies and uses these cookies when sending requests. :sup:`2`
+    * - | ``UseCredentials`` :sup:`3`
+        | default: ``false``
+      - When set to ``true``, Ocelot will configure the downstream ``SocketsHttpHandler`` to use the process's default credentials.
+        This enables pass-through of Windows/Integrated credentials to downstream services when supported by the downstream endpoint and the transport.
+        Use this option only for trusted/private networks. :sup:`3`
     * - | ``UseProxy``
         | default: ``false``
       - Refer to MS Learn: `UseProxy Property <https://learn.microsoft.com/en-us/dotnet/api/system.net.http.socketshttphandler.useproxy>`_
-    * - | ``UseTracing``
+    * - | ``UseTracing`` :sup:`4`
         | default: ``false``
-      - This enables :doc:`../features/tracing` feature in Ocelot.
-        Also refer to the **3rd note** below!
+      - This enables :doc:`../features/tracing` feature in Ocelot. :sup:`4`
 
 .. note::
 
@@ -674,10 +680,16 @@ based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%
   We would avoid setting ``UseCookieContainer`` to ``true`` unless you have a really really good reason.
   Just look at your response headers and forward the cookies back with your next request!
 
-  3. ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``,
+  3. The ``UseCredentials`` option affects authentication and authorization of downstream services,
+  please also review the ":ref:`Pass Through Authentication <authentication-pass-through>`" and ":ref:`Pass Through Authorization <authorization-pass-through>`" sections for details,
+  important warnings and examples on how to use or override credential behavior securely.
+  Note, the option is available as of version `25.1`_.
+  
+  4. ``UseTracing`` option adds a tracing ``DelegatingHandler`` (aka ``Ocelot.Requester.ITracingHandler``) after obtaining it from ``ITracingHandlerFactory``,
   encapsulating the ``Ocelot.Logging.IOcelotTracer`` service of DI-container.
 
-  4. Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
+.. note::
+  Prior to version `24.1`_, global ``HttpHandlerOptions`` were not accessible, as they were only available at the route level for static routes.
   Since version `24.1`_, global configuration is supported for both static and dynamic routes.
 
 .. _ssl-errors:
@@ -1225,3 +1237,4 @@ Refer to the :ref:`config-merging-recipes` and :ref:`Extend with Custom Properti
 .. _23.3: https://github.com/ThreeMammals/Ocelot/releases/tag/23.3.0
 .. _24.1: https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
+.. _25.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0

@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-      # - 'release/**' # for testing purposes
+      - 'release/**' # for testing purposes
 jobs:
   build:
     strategy:

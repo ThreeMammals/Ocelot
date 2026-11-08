@@ -19,8 +19,8 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthSteps
 
     public MultipleAuthSchemesFeatureTests() : base()
     {
-        _serverUrls = Array.Empty<string>();
-        _tokens = Array.Empty<BearerToken>();
+        _serverUrls = [];
+        _tokens = [];
     }
 
     private MultipleAuthSchemesFeatureTests Setup(int totalSchemes)
@@ -36,27 +36,23 @@ public sealed class MultipleAuthSchemesFeatureTests : AuthSteps
     [InlineData("Test", JwtBearerDefaults.AuthenticationScheme)] // with default scheme
     public async Task Should_authenticate_using_multiple_schemes(string scheme1, string scheme2)
     {
-        var body = Body();
-        var testName = TestName();
         var port = PortFinder.GetRandomPort();
         var route = GivenAuthRoute(port, scheme: "bla-bla"); //, validScope: "api2"); // TODO Need further dev
-        string[] authSchemes = new[] { scheme1, scheme2 };
+        string[] authSchemes = [scheme1, scheme2];
         route.AuthenticationOptions.AuthenticationProviderKeys = authSchemes;
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => Setup(authSchemes.Length))
-            .And(x => GivenThereIsExternalJwtSigningService(0, "invalid", "unknown"))
-            .And(x => GivenThereIsExternalJwtSigningService(1, "api1", "api2"))
-            .And(x => GivenOcelotIsRunningWithIdentityServerAuthSchemes("api2", authSchemes))
-            .And(x => GivenIHaveTokenWithScope(0, "invalid", testName)) // authentication should fail because of invalid scope
-            .And(x => GivenIHaveTokenWithScope(1, "api2", testName)) // authentication should succeed
-            .And(x => GivenIHaveAddedAllAuthHeaders(authSchemes))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBodyShouldBe(body))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        Setup(authSchemes.Length);
+        await GivenThereIsExternalJwtSigningService(0, "invalid", "unknown");
+        await GivenThereIsExternalJwtSigningService(1, "api1", "api2");
+        GivenOcelotIsRunningWithIdentityServerAuthSchemes("api2", authSchemes);
+        await GivenIHaveTokenWithScope(0, "invalid"); // authentication should fail because of invalid scope
+        await GivenIHaveTokenWithScope(1, "api2"); // authentication should succeed
+        GivenIHaveAddedAllAuthHeaders(authSchemes);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOk();
+        await ThenTheResponseBodyAsync();
     }
 
     private async Task GivenThereIsExternalJwtSigningService(int index, params string[] extraScopes)

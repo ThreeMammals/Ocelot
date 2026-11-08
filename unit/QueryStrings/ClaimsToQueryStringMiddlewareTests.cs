@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.QueryStrings;
@@ -41,19 +40,16 @@ public class ClaimsToQueryStringMiddlewareTests : UnitTest
     public async Task Should_call_add_queries_correctly()
     {
         // Arrange
-        var route = new DownstreamRouteBuilder()
+        var dr = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("any old string")
-            .WithClaimsToQueries(new List<ClaimToThing>
-            {
+            .WithClaimsToQueries([
                 new("UserId", "Subject", string.Empty, 0),
-            })
-            .WithUpstreamHttpMethod(new List<string> { "Get" })
+            ])
+            .WithUpstreamHttpMethod(["Get"])
             .Build();
-        var downstreamRoute = new DownstreamRouteHolder(
-            new(),
-            new Route(route, HttpMethod.Get));
-        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(downstreamRoute.TemplatePlaceholderNameAndValues);
-        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute.Route.DownstreamRoute[0]);
+        var route = new Route(dr, HttpMethod.Get);
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
         _addQueries.Setup(x => x.SetQueriesOnDownstreamRequest(It.IsAny<List<ClaimToThing>>(), It.IsAny<IEnumerable<Claim>>(), It.IsAny<DownstreamRequest>()))
             .Returns(new OkResponse());
 

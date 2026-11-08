@@ -10,131 +10,107 @@ namespace Ocelot.Acceptance.Configuration;
 public sealed class DefaultVersionPolicyTests : Steps
 {
     [Fact]
-    public void Should_return_bad_gateway_when_request_higher_receive_lower()
+    public async Task Should_return_bad_gateway_when_request_higher_receive_lower()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     [Fact]
-    public void Should_return_bad_gateway_when_request_lower_receive_higher()
+    public async Task Should_return_bad_gateway_when_request_lower_receive_higher()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     [Fact]
-    public void Should_return_bad_gateway_when_request_exact_receive_different()
+    public async Task Should_return_bad_gateway_when_request_exact_receive_different()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     [Fact]
-    public void Should_return_ok_when_request_version_exact_receive_exact()
+    public async Task Should_return_ok_when_request_version_exact_receive_exact()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionExact);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_ok_when_request_version_lower_receive_lower()
+    public async Task Should_return_ok_when_request_version_lower_receive_lower()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_ok_when_request_version_lower_receive_exact()
+    public async Task Should_return_ok_when_request_version_lower_receive_exact()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "2.0", VersionPolicies.RequestVersionOrLower);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_ok_when_request_version_higher_receive_higher()
+    public async Task Should_return_ok_when_request_version_higher_receive_higher()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http2);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
-    public void Should_return_ok_when_request_version_higher_receive_exact()
+    public async Task Should_return_ok_when_request_version_higher_receive_exact()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenHttpsRoute(port, "1.1", VersionPolicies.RequestVersionOrHigher);
         var configuration = GivenConfiguration(route);
-        var body = Body();
-        this
-            .Given(x => GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1, body))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsHttpsServiceRunningOn(port, HttpProtocols.Http1);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     private void GivenThereIsHttpsServiceRunningOn(int port, HttpProtocols protocols, [CallerMemberName] string body = "supercalifragilistic")

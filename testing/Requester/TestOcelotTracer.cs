@@ -2,9 +2,9 @@
 using Ocelot.Logging;
 using System.Collections.Concurrent;
 
-namespace Ocelot.Acceptance.Requester;
+namespace Ocelot.Testing.Requester;
 
-public class TestTracer : IOcelotTracer
+public class TestOcelotTracer : IOcelotTracer
 {
     public readonly ConcurrentBag<string> Events = new();
     public readonly ConcurrentDictionary<HttpRequestMessage, HttpResponseMessage> Requests = new();

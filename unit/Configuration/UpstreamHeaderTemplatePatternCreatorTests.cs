@@ -1,4 +1,5 @@
-﻿using Ocelot.Configuration.Creator;
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 
 namespace Ocelot.UnitTests.Configuration;
@@ -35,5 +36,30 @@ public class UpstreamHeaderTemplatePatternCreatorTests
         var message = nameof(Create_WithUpstreamHeaderTemplates_ShouldCreatePattern).Replace('_', ' ') + withMessage;
         actual[key].ShouldNotBeNull()
             .Template.ShouldBe(expected, message);
+    }
+
+    [Theory]
+    [InlineData("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"", false)]
+    [InlineData("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"", true)]
+    [InlineData("sec-ch-ua-mobile", "?0", false)]
+    [InlineData("sec-ch-ua-mobile", "?0", true)]
+    [InlineData("Accept", "*/*", false)]
+    [InlineData("Accept", "text/html", false)]
+    [InlineData("Accept", "text/html", true)]
+    [Trait("Bug", "2352")] // https://github.com/ThreeMammals/Ocelot/issues/2352
+    [Trait("PR", "2427")] // https://github.com/ThreeMammals/Ocelot/pull/2427
+    public void Create_WithRequestHeaders_ShouldReturnEmptyCollection(string key, string value, bool routeIsCaseSensitive)
+    {
+        // Arrange
+        var headers = new HeaderDictionary
+        {
+            [key] = value,
+        };
+
+        // Act
+        var actual = _creator.Create(headers, routeIsCaseSensitive);
+
+        // Assert
+        actual.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
     }
 }

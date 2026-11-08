@@ -14,19 +14,17 @@ public class StartupTests : Steps
     [Fact]
     [Trait("Bug", "463")] // https://github.com/ThreeMammals/Ocelot/issues/463
     [Trait("PR", "506")] // https://github.com/ThreeMammals/Ocelot/pull/506
-    public void Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
+    public async Task Should_not_try_and_write_to_disk_on_startup_when_not_using_admin_api()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         var fakeRepo = new FakeFileConfigurationRepository();
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo))
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunningWithBlowingUpDiskRepo(fakeRepo);
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
     }
 
     private void GivenOcelotIsRunningWithBlowingUpDiskRepo(IFileConfigurationRepository fake)

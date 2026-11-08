@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration.File;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Values;
 
 namespace Ocelot.Configuration.Creator;
@@ -16,5 +17,12 @@ public interface IUpstreamHeaderTemplatePatternCreator
     /// <returns>An <see cref="IDictionary{TKey, TValue}"/> object where TKey is <see langword="string"/>, TValue is <see cref="UpstreamHeaderTemplate"/>.</returns>
     IDictionary<string, UpstreamHeaderTemplate> Create(IRouteUpstream route);
 
+    /// <summary>
+    /// TODO: The purpose of the method is to create an instance for dynamic routing.
+    /// </summary>
+    /// <remarks>Warning!<br/>
+    /// Under development! The interface is not stable!
+    /// </remarks>
+    /// <returns>An instance to be used by the <see cref="DiscoveryDownstreamRouteFinder"/> class.</returns>
     IDictionary<string, UpstreamHeaderTemplate> Create(IHeaderDictionary upstreamHeaderTemplates, bool routeIsCaseSensitive);
 }

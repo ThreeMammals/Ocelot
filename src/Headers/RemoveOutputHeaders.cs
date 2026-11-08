@@ -1,3 +1,4 @@
+using Microsoft.Net.Http.Headers;
 using Ocelot.Middleware;
 using Ocelot.Responses;
 
@@ -12,7 +13,7 @@ public class RemoveOutputHeaders : IRemoveOutputHeaders
     /// </summary>
     private readonly string[] _unsupportedRequestHeaders =
     {
-        "Transfer-Encoding",
+        HeaderNames.TransferEncoding,
     };
 
     public Response Remove(List<Header> headers)

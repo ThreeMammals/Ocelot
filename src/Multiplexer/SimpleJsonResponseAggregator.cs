@@ -2,87 +2,79 @@
 using Ocelot.Configuration;
 using Ocelot.Middleware;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace Ocelot.Multiplexer;
 
 public class SimpleJsonResponseAggregator : IResponseAggregator
 {
-    public async Task Aggregate(Route route, HttpContext originalContext, List<HttpContext> downstreamContexts)
+    public async Task Aggregate(Route route, HttpContext context, List<HttpContext> downstreamContexts)
     {
-        await MapAggregateContent(originalContext, downstreamContexts);
+        await MapAggregateContent(context, downstreamContexts);
     }
 
-    private static async Task MapAggregateContent(HttpContext originalContext, List<HttpContext> downstreamContexts)
+    private static async Task MapAggregateContent(HttpContext context, List<HttpContext> downstreamContexts)
     {
-        var contentBuilder = new StringBuilder();
+        var json = new StringBuilder("{");
+        var responseKeys = downstreamContexts
+            .Select(s => s.Items.DownstreamRoute().Key)
+            .Distinct().ToArray();
 
-        contentBuilder.Append('{');
-
-        var responseKeys = downstreamContexts.Select(s => s.Items.DownstreamRoute().Key).Distinct().ToArray();
-
-        for (var k = 0; k < responseKeys.Length; k++)
+        foreach (var key in responseKeys)
         {
-            var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == responseKeys[k]).ToArray();
+            var contexts = downstreamContexts.Where(w => w.Items.DownstreamRoute().Key == key).ToArray();
             if (contexts.Length == 1)
             {
-                if (contexts[0].Items.Errors().Count > 0)
+                var ctx = contexts[0];
+                if (ctx.Items.Errors().Count > 0)
                 {
-                    MapAggregateError(originalContext, contexts[0]);
+                    MapAggregateError(context, ctx);
                     return;
                 }
 
-                var content = await contexts[0].Items.DownstreamResponse().Content.ReadAsStringAsync();
-                contentBuilder.Append($"\"{responseKeys[k]}\":{content}");
+                var drsp = ctx.Items.DownstreamResponse();
+                var content = await drsp.Content.ReadAsStringAsync(context.RequestAborted); // WTF? Can't read from ctx?
+                json.Append($"\"{key}\":{content}"); // TODO Chain of Append instead of interpolated obj
             }
             else
             {
-                contentBuilder.Append($"\"{responseKeys[k]}\":");
-                contentBuilder.Append('[');
+                json.Append($"\"{key}\":[");
 
-                for (var i = 0; i < contexts.Length; i++)
+                foreach (var ctxt in contexts)
                 {
-                    if (contexts[i].Items.Errors().Count > 0)
+                    if (ctxt.Items.Errors().Count > 0)
                     {
-                        MapAggregateError(originalContext, contexts[i]);
+                        MapAggregateError(context, ctxt);
                         return;
                     }
 
-                    var content = await contexts[i].Items.DownstreamResponse().Content.ReadAsStringAsync();
+                    var drsp = ctxt.Items.DownstreamResponse();
+                    var content = await drsp.Content.ReadAsStringAsync(context.RequestAborted);
                     if (string.IsNullOrWhiteSpace(content))
-                    {
                         continue;
-                    }
 
-                    contentBuilder.Append($"{content}");
-
-                    if (i + 1 < contexts.Length)
-                    {
-                        contentBuilder.Append(',');
-                    }
+                    json.Append(content).Append(',');
                 }
-
-                contentBuilder.Append(']');
+                json.Length--; // remove last comma ','
+                json.Append(']');
             }
 
-            if (k + 1 < responseKeys.Length)
-            {
-                contentBuilder.Append(',');
-            }
+            json.Append(',');
         }
+        json.Length--; // remove last comma ','
+        json.Append('}');
 
-        contentBuilder.Append('}');
-
-        var stringContent = new StringContent(contentBuilder.ToString())
-        {
-            Headers = { ContentType = new MediaTypeHeaderValue("application/json") },
-        };
-
-        originalContext.Items.UpsertDownstreamResponse(new DownstreamResponse(stringContent, HttpStatusCode.OK, new List<KeyValuePair<string, IEnumerable<string>>>(), "cannot return from aggregate..which reason phrase would you use?"));
+        var jsonContent = new StringContent(json.ToString(), new MediaTypeHeaderValue(MediaTypeNames.Application.Json));
+        var dr = new DownstreamResponse(jsonContent, HttpStatusCode.OK, EmptyHeaders, "cannot return from aggregate..which reason phrase would you use?");
+        context.Items.UpsertDownstreamResponse(dr);
     }
 
-    private static void MapAggregateError(HttpContext originalContext, HttpContext downstreamContext)
+    private static readonly List<Header> EmptyHeaders = [];
+
+    // TODO Make it virtual.
+    private static void MapAggregateError(HttpContext context, HttpContext downstreamContext)
     {
-        originalContext.Items.UpsertErrors(downstreamContext.Items.Errors());
-        originalContext.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
+        context.Items.UpsertErrors(downstreamContext.Items.Errors());
+        context.Items.UpsertDownstreamResponse(downstreamContext.Items.DownstreamResponse());
     }
 }

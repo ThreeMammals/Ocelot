@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.IO.Compression;
-using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ocelot.Acceptance.Request;
@@ -11,20 +12,18 @@ public sealed class GzipTests : Steps
     [Fact]
     [Trait("Bug", "263")] // https://github.com/ThreeMammals/Ocelot/issues/263
     [Trait("Feat", "267")] // https://github.com/ThreeMammals/Ocelot/pull/267
-    public void Should_return_response_200_with_simple_url()
+    public async Task Should_return_response_200_with_simple_url()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithMethods(HttpMethods.Post);
         var configuration = GivenConfiguration(route);
         var input = "people";
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura", "\"people\""))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input)))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura", "\"people\"");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", GivenThePostHasGzipContent(input));
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     private static StreamContent GivenThePostHasGzipContent(object input)
@@ -39,7 +38,7 @@ public sealed class GzipTests : Steps
 
         ms.Position = 0;
         var content = new StreamContent(ms);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        content.Headers.ContentType = new(MediaTypeNames.Application.Json);
         content.Headers.ContentEncoding.Add("gzip");
         return content;
     }
@@ -48,7 +47,7 @@ public sealed class GzipTests : Steps
     {
         handler.GivenThereIsAServiceRunningOn(port, basePath, async context =>
         {
-            if (context.Request.Headers.TryGetValue("Content-Encoding", out var contentEncoding))
+            if (context.Request.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncoding))
             {
                 contentEncoding.First().ShouldBe("gzip");
 

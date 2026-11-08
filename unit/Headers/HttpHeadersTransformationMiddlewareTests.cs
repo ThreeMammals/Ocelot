@@ -87,10 +87,9 @@ public class HttpHeadersTransformationMiddlewareTests : UnitTest
             .WithDownstreamHeaderFindAndReplace(fAndRs)
             .Build();
         var route = new Route(dRoute);
-        var dR = new Ocelot.DownstreamRouteFinder.DownstreamRouteHolder(null, route);
 
-        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(dR.TemplatePlaceholderNameAndValues);
-        _httpContext.Items.UpsertDownstreamRoute(dR.Route.DownstreamRoute[0]);
+        _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
     }
 
     private void ThenTheIHttpContextRequestHeaderReplacerIsCalledCorrectly()

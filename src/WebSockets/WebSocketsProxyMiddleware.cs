@@ -3,6 +3,7 @@
 // Modified https://github.com/aspnet/Proxy websockets class to use in Ocelot.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Middleware;
@@ -13,10 +14,16 @@ namespace Ocelot.WebSockets;
 
 public class WebSocketsProxyMiddleware : OcelotMiddleware
 {
-    public static readonly string[] NotForwardedWebSocketHeaders = new[]
+    public static readonly HashSet<string> NotForwardedWebSocketHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Connection", "Host", "Upgrade",
-        "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions",
+        HeaderNames.Connection,
+        HeaderNames.Host,
+        HeaderNames.SecWebSocketAccept,
+        HeaderNames.SecWebSocketExtensions,
+        HeaderNames.SecWebSocketKey,
+        HeaderNames.SecWebSocketProtocol,
+        HeaderNames.SecWebSocketVersion,
+        HeaderNames.Upgrade,
     };
 
     public const int Default4KBufferSize = 4096;

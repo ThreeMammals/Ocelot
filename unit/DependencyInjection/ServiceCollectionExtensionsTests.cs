@@ -8,18 +8,15 @@ using Extensions = Ocelot.DependencyInjection.ServiceCollectionExtensions;
 
 namespace Ocelot.UnitTests.DependencyInjection;
 
-public class ServiceCollectionExtensionsTests
+public class ServiceCollectionExtensionsTests : DepInjectionUnitTest
 {
     [Fact]
     [Trait("PR", "1986")]
     [Trait("Issue", "1518")]
     public void AddOcelot_NoConfiguration_DefaultConfiguration()
     {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        var ocelot = services.AddOcelot();
+        // Arrange, Act
+        var ocelot = Services.AddOcelot();
 
         // Assert
         ocelot.ShouldNotBeNull()
@@ -36,12 +33,12 @@ public class ServiceCollectionExtensionsTests
         // Arrange
         IConfiguration config = hasConfig ? new ConfigurationBuilder().Build() : null;
         var descriptor = new ServiceDescriptor(typeof(IConfiguration), (p) => config, ServiceLifetime.Transient);
-        var services = new ServiceCollection().Add(descriptor);
+        Services.Add(descriptor);
         IWebHostEnvironment env = null;
 
         // Act
         var method = typeof(Extensions).GetMethod("FindConfiguration", BindingFlags.NonPublic | BindingFlags.Static);
-        var actual = (IConfiguration)method.Invoke(null, new object[] { services, env });
+        var actual = (IConfiguration)method.Invoke(null, [Services, env]);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -57,12 +54,11 @@ public class ServiceCollectionExtensionsTests
     public void AddOcelotUsingBuilder_NoConfigurationParam_ShouldFindConfiguration()
     {
         // Arrange
-        var services = new ServiceCollection();
         var config = new ConfigurationBuilder().Build();
-        services.AddSingleton<IConfiguration>(config);
+        Services.AddSingleton<IConfiguration>(config);
 
         // Act
-        var ocelot = services.AddOcelotUsingBuilder(null, CustomBuilder);
+        var ocelot = Services.AddOcelotUsingBuilder(null, CustomBuilder);
 
         // Assert
         AssertConfiguration(ocelot, config);
@@ -76,15 +72,14 @@ public class ServiceCollectionExtensionsTests
     public void AddOcelotUsingBuilder_WithConfigurationParam_ShouldFindConfiguration(bool shouldFind)
     {
         // Arrange
-        var services = new ServiceCollection();
         var config = new ConfigurationBuilder().Build();
         if (shouldFind)
         {
-            services.AddSingleton<IConfiguration>(config);
+            Services.AddSingleton<IConfiguration>(config);
         }
 
         // Act
-        var ocelot = services.AddOcelotUsingBuilder(shouldFind ? null : config, CustomBuilder);
+        var ocelot = Services.AddOcelotUsingBuilder(shouldFind ? null : config, CustomBuilder);
 
         // Assert
         AssertConfiguration(ocelot, config);

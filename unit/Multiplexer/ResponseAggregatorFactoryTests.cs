@@ -1,7 +1,7 @@
 using Ocelot.Configuration;
 using Ocelot.Multiplexer;
 
-namespace Ocelot.UnitTests.Multiplexing;
+namespace Ocelot.UnitTests.Multiplexer;
 
 public class ResponseAggregatorFactoryTests : UnitTest
 {

@@ -21,7 +21,7 @@ public sealed class InvalidHeaderValueTests : Steps
     [InlineData("utf8char", "-=é=-", HttpStatusCode.BadRequest)]
     [InlineData("utf16char", "-=漢=-", HttpStatusCode.BadRequest)]
     [InlineData("ascii", "valid-ascii", HttpStatusCode.OK)]
-    public void Should_return_400_BadRequest_having_non_ascii_header_value_otherwise_200_OK(
+    public async Task Should_return_400_BadRequest_having_non_ascii_header_value_otherwise_200_OK(
         string headerName, string headerValue, HttpStatusCode status)
     {
         var port = PortFinder.GetRandomPort();
@@ -29,14 +29,12 @@ public sealed class InvalidHeaderValueTests : Steps
         var configuration = GivenConfiguration(route);
         HeadersCollection headers = [new(headerName, headerValue)];
         string reason = Regex.Replace(status.ToString(), "(?<=[a-z])(?=[A-Z])", " ");
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy"))
-            .And(x => GivenOcelotHostIsRunning())
-            .When(x => WhenIGetRawAsync(_gatewayPort, "/ocelot/posts/askdj", headers, CancelMe))
-            .Then(x => ThenRawResponseShouldNotBeNullOrEmpty())
-            .And(x => ThenRawResponseShouldStartWith($"HTTP/1.1 {(int)status} {reason}"))
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        GivenThereIsAServiceRunningOnPath(port, "/todos/askdj", "Hello from Laura Demkowicz-Duffy");
+        await GivenOcelotHostIsRunning();
+        await WhenIGetRawAsync(_gatewayPort, "/ocelot/posts/askdj", headers, CancelMe);
+        ThenRawResponseShouldNotBeNullOrEmpty();
+        ThenRawResponseShouldStartWith($"HTTP/1.1 {(int)status} {reason}");
     }
 
     private async Task GivenOcelotHostIsRunning()

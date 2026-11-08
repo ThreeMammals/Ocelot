@@ -6,10 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Shouldly;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
@@ -246,24 +248,27 @@ public class AcceptanceSteps : IDisposable
     }
 
     protected async Task<int> GivenOcelotHostIsRunning(
-        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate,
-        Action<IServiceCollection>? configureServices,
-        Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? сonfigureWebHost, Action<IWebHostBuilder>? postConfigureHost,
-        // Action<TestServer>? configureServer,
-        Action<HttpClient>? configureClient)
+        Action<WebHostBuilderContext, IConfigurationBuilder>? configureDelegate = null,
+        Action<IServiceCollection>? configureServices = null,
+        Action<IApplicationBuilder>? configureApp = null,
+        Action<IWebHostBuilder>? сonfigureWebHost = null,
+        Action<IWebHostBuilder>? postConfigureHost = null,
+        // Action<TestServer>? configureServer = null,
+        Action<HttpClient>? configureClient = null,
+        int? port = null, bool useKestrel = true)
     {
-        int port = PortFinder.GetRandomPort();
-        var baseUrl = DownstreamUrl(port);
+        port ??= PortFinder.GetRandomPort();
+        var baseUrl = DownstreamUrl(port.Value);
         void ConfigureWeb(IWebHostBuilder builder)
         {
             builder
-                .UseKestrel()
                 .ConfigureAppConfiguration(configureDelegate ?? WithBasicConfiguration)
                 .ConfigureServices(configureServices ?? WithAddOcelot)
                 .Configure(configureApp ?? WithUseOcelot)
                 .UseUrls(baseUrl);
-                //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            //.UseTestServer(o => o.BaseAddress = new(baseUrl));
+            if (useKestrel)
+                builder.UseKestrel();
             postConfigureHost?.Invoke(builder);
         }
         var host = TestHostBuilder
@@ -277,7 +282,7 @@ public class AcceptanceSteps : IDisposable
         ocelotClient = ocelotServer?.CreateClient();
         ocelotClient ??= new() { BaseAddress = new(baseUrl), };
         configureClient?.Invoke(ocelotClient);
-        return port;
+        return port.Value;
     }
 
     protected IServiceProvider OcelotServices { get => ocelotServer?.Services ?? ocelotHost!.Services; }
@@ -290,27 +295,34 @@ public class AcceptanceSteps : IDisposable
 
     protected virtual HttpStatusCode MapStatus_StatusCode { get; set; } = HttpStatusCode.OK;
     protected virtual Func<HttpContext, string>? MapStatus_ResponseBody { get; set; }
-    protected virtual Task MapStatus(HttpContext context)
+    protected virtual Func<HttpContext, Task<string>>? MapStatus_ResponseBodyAsync { get; set; }
+    protected virtual async Task MapStatus(HttpContext context)
     {
         context.Response.StatusCode = (int)MapStatus_StatusCode;
-        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty, context.RequestAborted);
+        string body = MapStatus_ResponseBodyAsync is not null
+            ? await MapStatus_ResponseBodyAsync.Invoke(context)
+            : MapStatus_ResponseBody?.Invoke(context) ?? string.Empty;
+        await context.Response.WriteAsync(body, context.RequestAborted);
     }
+
     public virtual void GivenThereIsAServiceRunningOn(int port, HttpStatusCode statusCode, [CallerMemberName] string responseBody = "")
     {
         MapStatus_StatusCode = statusCode;
-        MapStatus_ResponseBody ??= (ctx) => responseBody;
+        PortAndBody[port] = responseBody;
+        MapStatus_ResponseBody ??= Body;
         handler.GivenThereIsAServiceRunningOn(port, MapStatus);
     }
 
-    protected virtual Task MapOK(HttpContext context)
-    {
-        context.Response.StatusCode = StatusCodes.Status200OK;
-        return context.Response.WriteAsync(MapStatus_ResponseBody?.Invoke(context) ?? string.Empty, context.RequestAborted);
-    }
+    protected readonly ConcurrentDictionary<int, string> PortAndBody = [];
+    protected string Body(int port) => PortAndBody[port];
+    protected string Body(HttpContext context) => Body(context.Request.Host.Port ?? 0);
+
     public virtual void GivenThereIsAServiceRunningOnPath(int port, string basePath, [CallerMemberName] string responseBody = "")
     {
-        MapStatus_ResponseBody ??= (ctx) => responseBody;
-        handler.GivenThereIsAServiceRunningOn(port, basePath, MapOK);
+        MapStatus_StatusCode = HttpStatusCode.OK;
+        PortAndBody[port] = responseBody;
+        MapStatus_ResponseBody ??= Body;
+        handler.GivenThereIsAServiceRunningOn(port, basePath, MapStatus);
     }
     public virtual void GivenThereIsAServiceRunningOn(int port, string basePath, RequestDelegate requestDelegate)
     {
@@ -334,7 +346,7 @@ public class AcceptanceSteps : IDisposable
     public Task<HttpResponseMessage> WhenIGetUrlOnTheApiGateway(string url, CookieHeaderValue cookie)
     {
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-        requestMessage.Headers.Add("Cookie", cookie.ToString());
+        requestMessage.Headers.Add(HeaderNames.Cookie, cookie.ToString());
         return ocelotClient.ShouldNotBeNull().SendAsync(requestMessage, CancelMe);
     }
     #endregion
@@ -387,13 +399,10 @@ public class AcceptanceSteps : IDisposable
         ocelotClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, token);
     }
 
-    public async Task WhenIGetUrlOnTheApiGateway(string url)
-        => response = await ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
-
     public Task<HttpResponseMessage> WhenImGettingUrlOnTheApiGateway(string url)
         => ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
 
-    public async Task WhenIGetUrlOnTheApiGatewayWithBody(string url, string body)
+    public async Task WhenIGetUrlOnTheApiGateway(string url, string body)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
@@ -407,39 +416,32 @@ public class AcceptanceSteps : IDisposable
         var content = new MultipartFormDataContent();
         var dataContent = new FormUrlEncodedContent(values);
         content.Add(dataContent, name);
-        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+        content.Headers.ContentDisposition = new("form-data");
         var request = new HttpRequestMessage(HttpMethod.Get, url)
         {
             Content = content,
         };
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        response = await ocelotClient.SendAsync(request, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().SendAsync(request, CancelMe);
     }
 
-    public async Task WhenIGetUrlOnTheApiGateway(string url, HttpContent content)
+    public async Task WhenIGetUrlOnTheApiGateway(string url)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url) { Content = content };
-        response = await ocelotClient.SendAsync(httpRequestMessage, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().GetAsync(url, CancelMe);
     }
 
     public async Task WhenIPostUrlOnTheApiGateway(string url, HttpContent content)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
-        var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
-        response = await ocelotClient.SendAsync(request, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, content, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content);
-        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIPostUrlOnTheApiGateway(string url, string content, string contentType)
     {
-        ArgumentNullException.ThrowIfNull(ocelotClient);
         var postContent = new StringContent(content, new MediaTypeHeaderValue(contentType));
-        response = await ocelotClient.PostAsync(url, postContent, CancelMe);
+        response = await ocelotClient.ShouldNotBeNull().PostAsync(url, postContent, CancelMe);
     }
     public async Task WhenIDeleteUrlOnTheApiGateway(string url)
         => response = await ocelotClient.ShouldNotBeNull().DeleteAsync(url, CancelMe);
