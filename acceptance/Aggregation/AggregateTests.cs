@@ -429,9 +429,17 @@ public sealed class AggregateTests : AuthSteps
 
         ThenTheStatusCodeShouldBeOk();
         if (httpVerb.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+        {
+#if NET10_0_OR_GREATER
             await ThenTheResponseBodyShouldBeEmpty();
+#else
+            await ThenTheResponseBodyShouldBeAsync("{\"Service1\":,\"Service2\":}");
+#endif
+        }
         else
+        {
             await ThenTheResponseBodyShouldBeAsync(expected);
+        }
     }
 
     [Theory]

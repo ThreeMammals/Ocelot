@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamPathManipulation;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.PathManipulation;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
