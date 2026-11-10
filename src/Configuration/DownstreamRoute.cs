@@ -144,7 +144,7 @@ public class DownstreamRoute
     {
         var path = !string.IsNullOrEmpty(UpstreamPathTemplate?.OriginalValue)
             ? UpstreamPathTemplate.OriginalValue
-            : !string.IsNullOrEmpty(DownstreamPathTemplate.Value) // can't be null because it is created by DownstreamRouteBuilder
+            : !string.IsNullOrEmpty(DownstreamPathTemplate?.Value) // can't be null because it is created by DownstreamRouteBuilder
                 ? DownstreamPathTemplate.ToString()
                 : "?";
         if (escapePath)

@@ -7,6 +7,7 @@ using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 using System.Reflection;
 using Route = Ocelot.Configuration.Route;
@@ -15,7 +16,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
 public class DiscoveryDownstreamRouteFinderTests : UnitTest
 {
-    private readonly DiscoveryDownstreamRouteFinder _finder;
+    private DiscoveryDownstreamRouteFinder _finder;
     private QoSOptions _qoSOptions;
     private LoadBalancerOptions _loadBalancerOptions;
     private Response<Route> _result;
@@ -26,7 +27,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private IInternalConfiguration _configuration;
     private Response<Route> _resultTwo;
     private readonly string _upstreamQuery;
-    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator = new();
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _headerTemplatePatternCreator = new();
+    private readonly Mock<IDynamicRouting> _dynamicRouting = new();
     private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
@@ -38,7 +40,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();
-        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
+        _finder = new(new RouteKeyCreator(), _headerTemplatePatternCreator.Object, _dynamicRouting.Object);
+        _dynamicRouting.Setup(x => x.GetDownstreamPath())
+            .Returns(() => _upstreamUrlPath.IsEmpty() ? "/test" : DynamicRouting.Path(_upstreamUrlPath));
         _upstreamQuery = string.Empty;
     }
 
@@ -48,6 +52,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
+        _upstreamUrlPath = "/auth/test";
 
         // Act
         WhenICreate();
@@ -385,10 +390,10 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"" },
             { "sec-ch-ua-mobile", "?0" },
         };
-        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator());
+        _finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator(), _dynamicRouting.Object);
 
         // Act
-        _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        WhenICreate();
 
         // Assert
         _result.Data.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
@@ -423,7 +428,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     {
         var route = _result.Data;
         var downstreamRoute = route.DownstreamRoute[0];
-        downstreamRoute.DownstreamPathTemplate.Value.ShouldBe("/test");
+        downstreamRoute.DownstreamPathTemplate.ShouldNotBeNull().Value.ShouldBe("/test");
         downstreamRoute.DownstreamScheme.ShouldBe("http");
         downstreamRoute.HttpHandlerOptions.ShouldBe(_handlerOptions);
         downstreamRoute.HttpHandlerOptions.ShouldNotBeNull();
@@ -463,7 +468,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "testHeader", "testHeaderValue" },
         };
         var kv = _upstreamHeaders.First();
-        _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IHeaderDictionary>(), It.IsAny<bool>()))
+        _headerTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IHeaderDictionary>(), It.IsAny<bool>()))
             .Returns(new Dictionary<string, UpstreamHeaderTemplate>()
             {
                 { kv.Key, new(kv.Value, kv.Value) },

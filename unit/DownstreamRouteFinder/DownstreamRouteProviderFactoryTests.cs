@@ -1,15 +1,17 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.DependencyInjection;
+using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Logging;
+using Ocelot.ServiceDiscovery;
+using _DownstreamRouteFinder_ = Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
-
-using Ocelot.DependencyInjection;
-using Ocelot.DownstreamRouteFinder.Finder;
 
 public class DownstreamRouteProviderFactoryTests : UnitTest
 {
@@ -28,8 +30,10 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         services.AddSingleton<IHeadersToHeaderTemplatesMatcher, HeadersToHeaderTemplatesMatcher>();
         services.AddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         services.AddSingleton<IRouteKeyCreator, RouteKeyCreator>();
-        services.AddSingleton<IDownstreamRouteProvider, DownstreamRouteFinder>();
+        services.AddSingleton<IDownstreamRouteProvider, _DownstreamRouteFinder_>();
         services.AddSingleton<IDownstreamRouteProvider, DiscoveryDownstreamRouteFinder>();
+        services.AddSingleton(Mock.Of<IDynamicRouting>());
+        services.AddSingleton(Mock.Of<IHttpContextAccessor>());
         Features.AddOcelotHeaderRouting(services); // AddSingleton<IUpstreamHeaderTemplatePatternCreator, UpstreamHeaderTemplatePatternCreator>()
         var provider = services.BuildServiceProvider(true);
         _logger = new Mock<IOcelotLogger>();
@@ -49,7 +53,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]
@@ -68,7 +72,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]
@@ -83,7 +87,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]
@@ -98,7 +102,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]
@@ -113,7 +117,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]
@@ -128,7 +132,7 @@ public class DownstreamRouteProviderFactoryTests : UnitTest
         _result = _factory.Get(_config);
 
         // Assert
-        _result.ShouldBeOfType<DownstreamRouteFinder>();
+        _result.ShouldBeOfType<_DownstreamRouteFinder_>();
     }
 
     [Fact]

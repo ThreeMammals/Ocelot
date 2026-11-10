@@ -21,7 +21,7 @@ public class DiscoverySteps : ConcurrentSteps
 
     /// <summary>Dynamic Routing upstream path.</summary>
     public virtual string UpstreamPath(string path = "/", [CallerMemberName] string? serviceName = null, string? serviceNamespace = null)
-        => DynamicRouting.Path(path, serviceName, serviceNamespace);
+        => DynamicRouting.UpstreamPath(path, serviceName, serviceNamespace);
 
     public FileConfiguration GivenStaticRouting(Dictionary<string, IEnumerable<string>> services, params FileRoute[] routes)
     {

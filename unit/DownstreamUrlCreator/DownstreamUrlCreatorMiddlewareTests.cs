@@ -6,6 +6,8 @@ using Ocelot.DownstreamUrlCreator;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
+using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
@@ -240,7 +242,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
             .Build();
-        var route = new Route(downstreamRoute);
+        var route = new Route(downstreamRoute)
+        {
+            DownstreamPathTemplate = new("/api/products/{id}"),
+        };
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -266,7 +271,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
             .Build();
-        var route = new Route(downstreamRoute);
+        var route = new Route(downstreamRoute)
+        {
+            DownstreamPathTemplate = new("/api/products/{id}"),
+        };
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -292,7 +300,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithDownstreamScheme("http")
             .WithServiceName("Ocelot/OcelotApp")
             .Build();
-        var route = new Route(downstreamRoute);
+        var route = new Route(downstreamRoute)
+        {
+            DownstreamPathTemplate = new("/api/products/{id}"),
+        };
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -314,12 +325,15 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     public async Task Should_create_service_fabric_url_with_version_from_upstream_path_template()
     {
         // Arrange
-        var dr = new DownstreamRouteBuilder()
+        var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme("http")
             .WithUpstreamPathTemplate(new UpstreamPathTemplateBuilder().WithOriginalValue("/products").Build())
             .WithServiceName("Service_1.0/Api")
             .Build();
-        var route = new Route(dr);
+        var route = new Route(downstreamRoute)
+        {
+            DownstreamPathTemplate = new("/products"),
+        };
         var config = new ServiceProviderConfigurationBuilder()
             .WithType("ServiceFabric")
             .WithHost("localhost")
@@ -376,9 +390,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamScheme(string.Empty)
             .WithServiceName("Ocelot/OcelotApp")
+            .WithDownstreamPathTemplate("/api/products/{id}")
             .Build();
         var config = new ServiceProviderConfigurationBuilder()
-            .WithType("ServiceFabric")
+            .WithType(ServiceFabricServiceDiscoveryProvider.Type)
             .WithHost("localhost")
             .WithPort(19081)
             .Build();
@@ -755,7 +770,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     [InlineData("/service/second/", "?id=2", "http://localhost:5000/second/?id=2")]
     [InlineData("/namespace.service/third/path", "?id=3", "http://localhost:5000/third/path?id=3")]
     [Trait("Bug", "2428")] // https://github.com/ThreeMammals/Ocelot/issues/2428
-    public async Task Should_create_downstream_path_of_dynamic_route_from_upstream_path(string upstreamPath, string query, string expected)
+    public async Task Should_create_downstream_path_of_dynamic_route_from_upstream_path(string upstreamPath, string query, string expectedUri)
     {
         // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
@@ -763,21 +778,22 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .WithDownstreamPathTemplate("/first")
             .WithDownstreamScheme(Uri.UriSchemeHttp)
             .Build();
-        var route = new Route(true, downstreamRoute);
+        var route = new Route(true, downstreamRoute)
+        {
+            DownstreamPathTemplate = new(() => DynamicRouting.Path(upstreamPath))
+        };
         GivenTheDownStreamRouteIs(route);
         _httpContext.Items.UpsertRoute(route);
         _httpContext.Request.Path = upstreamPath;
         GivenTheDownstreamRequestUriIs("http://localhost:5000" + upstreamPath + query);
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
-            .Returns((string template, List<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
+        GivenTheUrlReplacerWillReturn(DynamicRouting.Path(upstreamPath));
 
         // Act
         await _middleware.Invoke(_httpContext);
 
         // Assert
-        _httpContext.Items.DownstreamRequest().ToHttpRequestMessage().RequestUri.OriginalString
-            .ShouldBe(expected, "Should create downstream path from upstream path of dynamic route");
+        ThenTheDownstreamRequestUriIs(expectedUri);
     }
 
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
@@ -796,6 +812,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         _httpContext.Items.UpsertTemplatePlaceholderNameAndValues(route.TemplatePlaceholderNameAndValues);
         _httpContext.Items.UpsertDownstreamRoute(route.DownstreamRoute[0]);
+        _httpContext.Items.UpsertRoute(route);
     }
 
     private void GivenTheDownstreamRequestUriIs(string uri)

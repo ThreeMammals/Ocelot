@@ -13,7 +13,7 @@ public class DynamicRoutingTests : UnitTest
         string path, string serviceName, string serviceNamespace, string expected)
     {
         // Act
-        var actual = DynamicRouting.Path(path, serviceName, serviceNamespace);
+        var actual = DynamicRouting.UpstreamPath(path, serviceName, serviceNamespace);
 
         // Assert
         Assert.Equal(expected, actual);

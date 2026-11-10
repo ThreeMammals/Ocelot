@@ -75,7 +75,10 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-        Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
+
+        Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>(); // TODO 2
+        Services.TryAddSingleton<IDynamicRouting, DynamicRouting>();
+
         Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
         Services.AddSingleton<ILoadBalancerCreator, CookieStickySessionsCreator>();

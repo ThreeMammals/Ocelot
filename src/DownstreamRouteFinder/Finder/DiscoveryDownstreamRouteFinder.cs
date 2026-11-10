@@ -4,6 +4,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
@@ -19,15 +20,18 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
     private readonly ConcurrentDictionary<string, Route> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
-    private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
+    private readonly IUpstreamHeaderTemplatePatternCreator _headerTemplatePatternCreator;
+    private readonly IDynamicRouting _routing;
 
     public DiscoveryDownstreamRouteFinder(
         IRouteKeyCreator routeKeyCreator,
-        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
+        IUpstreamHeaderTemplatePatternCreator headerTemplatePatternCreator,
+        IDynamicRouting routing)
     {
         _cache = new();
         _routeKeyCreator = routeKeyCreator;
-        _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
+        _headerTemplatePatternCreator = headerTemplatePatternCreator;
+        _routing = routing;
     }
 
     public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
@@ -36,7 +40,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var serviceName = GetServiceName(configuration, upstreamHeaders, upstreamHost, upstreamHttpMethod, upstreamUrlPath, upstreamQueryString,
             out var serviceNamespace);
 
-        var downstreamPath = GetDownstreamPath(upstreamUrlPath);
+        var downstreamPath = new DownstreamPathTemplate(_routing.GetDownstreamPath, false); // GetDownstreamPath(upstreamUrlPath);
         var dynamicRoute = configuration.Routes
             .Where(r => r.IsDynamic) // process dynamic routes only
             .SelectMany(r => r.DownstreamRoute)
@@ -51,7 +55,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
 
         // TODO Under development. Implementation returns empty collection.
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
+        var upstreamHeaderTemplates = _headerTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
             .WithServiceName(serviceName)
@@ -60,7 +64,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
             .WithCacheOptions(configuration.CacheOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
             .WithDownstreamHttpVersionPolicy(configuration.DownstreamHttpVersionPolicy)
-            .WithDownstreamPathTemplate(downstreamPath)
+            .WithDownstreamPathTemplate(downstreamPath) // Actually, it keeps the path value of the first incoming cold request, and it should not be read by the Route DownstreamPathTemplate property!
             .WithDownstreamScheme(configuration.DownstreamScheme)
             .WithHttpHandlerOptions(configuration.HttpHandlerOptions)
             .WithLoadBalancerKey(loadBalancerKey)
@@ -94,6 +98,7 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var downstreamRoute = routeBuilder.Build();
         var route = new Route(true, downstreamRoute) // IsDynamic -> true
         {
+            DownstreamPathTemplate = new(_routing.GetDownstreamPath, false), // Parse downstream path dynamically for each request, don't cache value
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
             UpstreamHost = upstreamHost,
             UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
@@ -109,12 +114,13 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     /// </summary>
     /// <param name="upstreamUrlPath">The URL with the service name in the first segment.</param>
     /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
-    internal static string GetDownstreamPath(string upstreamUrlPath)
+    protected virtual string GetDownstreamPath(string upstreamUrlPath)
     {
-        int index = upstreamUrlPath.IndexOf(Slash, 1);
-        return index != -1
-            ? upstreamUrlPath[index..]
-            : Slash.ToString();
+        //int index = upstreamUrlPath.IndexOf(Slash, 1);
+        //return index != -1
+        //    ? upstreamUrlPath[index..]
+        //    : Slash.ToString();
+        return _routing.GetDownstreamPath(upstreamUrlPath);
     }
 
     /// <summary>Gets service name and its namespace of request URL.
