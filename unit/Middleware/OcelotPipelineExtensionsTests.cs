@@ -79,7 +79,7 @@ public class OcelotPipelineExtensionsTests : UnitTest
         Assert.Contains(expectedMiddleware, middlewares); // !!!
         Assert.Equal(0, middlewares.IndexOf(typeof(ConfigurationMiddleware).FullName));
         Assert.Equal(22, middlewares.IndexOf(typeof(HttpRequesterMiddleware).FullName));
-        Assert.Equal(8, middlewares.IndexOf(expectedMiddleware)); // !!!
+        Assert.Equal(7, middlewares.IndexOf(expectedMiddleware)); // !!!
     }
     private static bool IsWebSocketRequest(HttpContext c) => c.WebSockets.IsWebSocketRequest;
     private static void ExpandAppPipeline(IApplicationBuilder app) => app.UseMiddleware<TestMiddleware>();

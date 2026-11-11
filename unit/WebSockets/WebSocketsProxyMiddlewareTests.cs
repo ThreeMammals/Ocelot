@@ -91,12 +91,10 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     {
         // Arrange
         List<object> messages = new();
-        HeaderDictionary headers = new()
-        {
-            { "TestMe", nameof(Proxy_ThereAreHeaders_SetRequestHeaders) },
-        };
         GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
-        AndSetupProtocolsAndHeaders(null, headers);
+        var request = _context.Object.Items.DownstreamRequest();
+        request.Headers.Add("TestMe", nameof(Proxy_ThereAreHeaders_SetRequestHeaders));
+        AndSetupProtocolsAndHeaders(null, null);
         AndDoNotConnectReally(null);
         var options = new Mock<IClientWebSocketOptions>();
         _client.SetupGet(x => x.Options).Returns(options.Object).Verifiable();
@@ -120,12 +118,10 @@ public class WebSocketsProxyMiddlewareTests : UnitTest
     {
         // Arrange
         List<object> messages = new();
-        HeaderDictionary headers = new()
-        {
-            { "TestMe", nameof(Proxy_ThereAreHeaders_ThrownExceptionButCaughtIt) },
-        };
         GivenPropertyDangerousAcceptAnyServerCertificateValidator(false, messages);
-        AndSetupProtocolsAndHeaders(null, headers);
+        var request = _context.Object.Items.DownstreamRequest();
+        request.Headers.Add("TestMe", nameof(Proxy_ThereAreHeaders_SetRequestHeaders));
+        AndSetupProtocolsAndHeaders(null, null);
         AndDoNotConnectReally(null);
         var options = new Mock<IClientWebSocketOptions>();
         _client.SetupGet(x => x.Options).Returns(options.Object).Verifiable();

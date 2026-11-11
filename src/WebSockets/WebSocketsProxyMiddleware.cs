@@ -107,13 +107,13 @@ public class WebSocketsProxyMiddleware : OcelotMiddleware
             client.Options.AddSubProtocol(protocol);
         }
 
-        foreach (var header in context.Request.Headers)
+        foreach (var header in request.Headers)
         {
             if (!NotForwardedWebSocketHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
-                    client.Options.SetRequestHeader(header.Key, header.Value);
+                    client.Options.SetRequestHeader(header.Key, string.Join(", ", header.Value));
                 }
                 catch (ArgumentException)
                 {
