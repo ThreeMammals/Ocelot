@@ -34,6 +34,11 @@ public class ResponderMiddleware : OcelotMiddleware
         if (errors.Count > 0)
         {
             Logger.LogWarning(() => $"{MiddlewareName} found {errors.Count} error{errors.Count.Plural()} ->{errors.ToErrorString(true, true)}Setting error response for request: {context.Request.Method} {context.Request.Path}");
+            if (context.Response.HasStarted)
+            {
+                Logger.LogWarning(() => "Errors can't be sent because the response has already been started!");
+                return;
+            }
             await SetErrorResponse(context, errors);
             return;
         }

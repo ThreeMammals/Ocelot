@@ -33,9 +33,7 @@ public static class OcelotPipelineExtensions
         // It also sets the Request Id if anything is set globally
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-        // If the request is for WebSockets upgrade we fork into a different pipeline
-        app.UseWebSockets(); // Adds WebSocketMiddleware, critical for CONNECT HTTP method implementation and WS handshaking (thus IsWebSocketRequest becomes true)
-        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, app => app.ConfigureWebSockets(configuration));
+        app.UseWebSockets(); // Enables WS handshake detection (WS requests continue through main pipeline and are proxied after DownstreamUrlCreatorMiddleware)
 
         // Allow the user to respond with absolutely anything they want.
         app.UseIfNotNull(configuration.PreErrorResponderMiddleware);
@@ -105,6 +103,13 @@ public static class OcelotPipelineExtensions
 
         // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
         app.UseMiddleware<DownstreamUrlCreatorMiddleware>();
+        
+        // WebSockets request branch here after all feature middlewares have run
+        app.MapWhen(context => context.WebSockets.IsWebSocketRequest, wsApp => 
+        { 
+            wsApp.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddlewareType);
+            wsApp.UseIfNotNull<WebSocketsProxyMiddleware>(configuration.WebSocketsMiddleware, configuration.WebSocketsMiddlewareType is null);
+        });
 
         // Not sure if this is the best place for this but we use the downstream url
         // as the basis for our cache key.
@@ -134,6 +139,7 @@ public static class OcelotPipelineExtensions
         return builder.UseMiddleware(middlewareType);
     }
 
+    [Obsolete("WebSocket requests now go through the main Ocelot pipeline via UseOcelot(), so this method is no longer needed! It also skips authentication, authorization and rate limiting. To customize WebSocket proxying, use OcelotPipelineConfiguration.WebSocketsMiddlewareType or WebSocketsMiddleware instead. Note that ConfigureWebSockets will be removed in version 26.0!")]
     public static void ConfigureWebSockets(this IApplicationBuilder app, OcelotPipelineConfiguration configuration)
     {
         app.UseMiddleware<DownstreamRouteFinderMiddleware>();
