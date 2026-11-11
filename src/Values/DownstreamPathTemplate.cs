@@ -3,7 +3,7 @@
 public class DownstreamPathTemplate : Lazy<string>
 {
     private readonly bool cached;
-    private readonly Func<string> valueGetter;
+    private readonly Func<string> getter;
 
     public DownstreamPathTemplate(string value)
         : base(value)
@@ -15,13 +15,13 @@ public class DownstreamPathTemplate : Lazy<string>
         : base(valueFactory)
     {
         cached = cacheValue;
-        valueGetter = valueFactory;
+        getter = valueFactory;
     }
 
     public new string Value
     {
         get => cached ? base.Value
-            : valueGetter?.Invoke() ?? base.Value;
+            : getter?.Invoke() ?? base.Value;
     }
 
     public override string ToString() => Value ?? string.Empty;

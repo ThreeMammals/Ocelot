@@ -6,7 +6,6 @@ using Ocelot.DownstreamUrlCreator;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
@@ -773,6 +772,8 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     public async Task Should_create_downstream_path_of_dynamic_route_from_upstream_path(string upstreamPath, string query, string expectedUri)
     {
         // Arrange
+        var downstreamPath = upstreamPath.TrimStart('/');
+        downstreamPath = downstreamPath[downstreamPath.IndexOf('/')..];
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithServiceName("service")
             .WithDownstreamPathTemplate("/first")
@@ -780,14 +781,14 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
             .Build();
         var route = new Route(true, downstreamRoute)
         {
-            DownstreamPathTemplate = new(() => DynamicRouting.Path(upstreamPath))
+            DownstreamPathTemplate = new(downstreamPath)
         };
         GivenTheDownStreamRouteIs(route);
         _httpContext.Items.UpsertRoute(route);
         _httpContext.Request.Path = upstreamPath;
         GivenTheDownstreamRequestUriIs("http://localhost:5000" + upstreamPath + query);
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        GivenTheUrlReplacerWillReturn(DynamicRouting.Path(upstreamPath));
+        GivenTheUrlReplacerWillReturn(downstreamPath);
 
         // Act
         await _middleware.Invoke(_httpContext);

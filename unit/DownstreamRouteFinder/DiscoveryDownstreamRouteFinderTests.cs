@@ -42,8 +42,21 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _rateLimitOptions = new RateLimitOptions();
         _finder = new(new RouteKeyCreator(), _headerTemplatePatternCreator.Object, _dynamicRouting.Object);
         _dynamicRouting.Setup(x => x.GetDownstreamPath())
-            .Returns(() => _upstreamUrlPath.IsEmpty() ? "/test" : DynamicRouting.Path(_upstreamUrlPath));
+            .Returns(() => DownstreamPath(_upstreamUrlPath));
         _upstreamQuery = string.Empty;
+    }
+
+    private static string DownstreamPath(string urlPath)
+    {
+        return urlPath.IsEmpty() ? "/test"
+            : '/' + string.Join('/', urlPath.TrimStart('/').Split('/').Skip(1));
+    }
+
+    private void GivenDynamicRouting(string upstreamUrlPath, string serviceName, string serviceNamespace = null)
+    {
+        _upstreamUrlPath = upstreamUrlPath;
+        _dynamicRouting.Setup(x => x.GetServiceName(upstreamUrlPath))
+            .Returns(new ServiceInfo(serviceName, serviceNamespace ?? string.Empty));
     }
 
     [Fact]
@@ -52,7 +65,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/test";
+        GivenDynamicRouting("/auth/test", "auth");
 
         // Act
         WhenICreate();
@@ -84,6 +97,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
         GivenTheConfiguration();
+        GivenDynamicRouting(null, downstreamRoute.ServiceName);
 
         // Act
         WhenICreate();
@@ -141,7 +155,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/";
+        GivenDynamicRouting("/auth/", "auth");
 
         // Act
         WhenICreate();
@@ -156,7 +170,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth";
+        GivenDynamicRouting("/auth", "auth");
 
         // Act
         WhenICreate();
@@ -171,7 +185,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/test";
+        GivenDynamicRouting("/auth/test", "auth");
 
         // Act
         WhenICreate();
@@ -193,7 +207,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         GivenInternalConfiguration();
         GivenTheConfiguration();
         const string queryString = "?test=1&best=2";
-        _upstreamUrlPath = "/auth/test" + queryString;
+        GivenDynamicRouting("/auth/test" + queryString, "auth");
 
         // Act
         WhenICreate();
@@ -259,46 +273,30 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _result.Data.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
     }
 
-    [Theory]
-    [Trait("PR", "2324")]
-    [InlineData("/service1", "service1", "")]
-    [InlineData("/service2/", "service2", "")]
-    [InlineData("/service3/bla", "service3", "")]
-    [InlineData("/namespace1.service1", "service1", "namespace1")]
-    [InlineData("/namespace2.service2/", "service2", "namespace2")]
-    [InlineData("/namespace3.service3/bla-bla", "service3", "namespace3")]
-    [InlineData("/namespace4.service.4/ha-a", "service.4", "namespace4")]
-    [InlineData("/name.space5.service5/ha-ha", "space5.service5", "name")]
-    public void GetServiceName_ReturnsNamespace(string urlPath, string expected, string expectedNamespace)
-    {
-        // Act
-        string actual = GetServiceName(urlPath, out string actualNamespace);
-
-        Assert.Equal(expected, actual);
-        Assert.Equal(expectedNamespace, actualNamespace);
-    }
     private MethodInfo GetServiceName() => _finder.GetType()
-        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), typeof(string).MakeByRefType()]);
-    protected string GetServiceName(string upstreamUrlPath, out string serviceNamespace)
-    {
-        object[] parameters = [upstreamUrlPath, null];
-        var sn = GetServiceName().Invoke(_finder, parameters);
-        serviceNamespace = (string)parameters[1];
-        return sn as string;
-    }
+        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string)]);
+    protected ServiceInfo GetServiceName(string upstreamUrlPath)
+        => (ServiceInfo)GetServiceName().Invoke(_finder, [upstreamUrlPath]);
 
-    [Theory]
+    [Fact]
     [Trait("PR", "1198")]
-    [InlineData(null, "", "")]
-    [InlineData("", "", "")]
-    [InlineData("/", "", "")]
-    public void GetServiceName_EmptyUrl_ReturnsEmpty(string urlPath, string expected, string expectedNamespace)
+    public void GetServiceName_ForwardedParamsToDependantService()
     {
-        // Act
-        string actual = GetServiceName(urlPath, out string actualNamespace);
+        // Arrange
+        string actualParam = null;
+        _dynamicRouting.Setup(x => x.GetServiceName(It.IsAny<string>()))
+            .Callback<string>(upstreamUrlPath => actualParam = upstreamUrlPath)
+            .Returns(new ServiceInfo(TestName(), GetType().Name));
 
-        Assert.Equal(expected, actual);
-        Assert.Equal(expectedNamespace, actualNamespace);
+        // Act
+        var path = DynamicRouting.UpstreamPath(serviceNamespace: GetType().Name);
+        var actual = GetServiceName(path);
+
+        Assert.Same(path, actualParam);
+        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Once);
+
+        Assert.Equal(TestName(), actual.Name);
+        Assert.Equal(nameof(DiscoveryDownstreamRouteFinderTests), actual.Namespace);
     }
 
     [Fact]
@@ -321,6 +319,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
         GivenTheConfiguration();
+        GivenDynamicRouting(null, downstreamRoute.ServiceName);
 
         // Act
         WhenICreate();
@@ -364,6 +363,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _upstreamUrlPath = hasNamespace
             ? $"/{dRoute2.ServiceNamespace}.{dRoute2.ServiceName}/test"
             : $"/{dRoute2.ServiceName}/test";
+        GivenDynamicRouting(_upstreamUrlPath, dRoute2.ServiceName, dRoute2.ServiceNamespace);
 
         // Act
         WhenICreate();
