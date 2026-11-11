@@ -135,6 +135,11 @@ If you want to ignore SSL warnings (errors) [#f3]_, configure your route as foll
 Refer to the official notes regarding :ref:`ssl-errors` in the :doc:`../features/configuration` documentation.
 There, you can also explore best practices tailored for your environments.
 
+.. note::
+  Since version `25.1`_, *WebSocket* upgrade requests are processed by the same Ocelot pipeline as regular HTTP requests.
+  Route features such as authentication, rate limiting, request ID and header transformation now apply to the handshake (see issue `2422`_).
+  The ``ConfigureWebSockets`` extension method is deprecated and will be removed in version 26.0.
+
 .. _ws-supported:
 
 Supported
@@ -144,6 +149,11 @@ Supported
 2. :doc:`../features/loadbalancer`
 3. :ref:`Security Options <routing-security-options>` [#f4]_
 4. :doc:`../features/servicediscovery`
+5. :doc:`../features/ratelimiting`
+6. :doc:`../features/logging` :ref:`lg-request-id`
+7. :doc:`../features/authentication` (browser clients cannot set the ``Authorization`` on a *WebSocket*, so they usually send the token in the query string; configure the JWT bearer ``OnMessageReceived`` event to read it frm there)
+8. :doc:`../features/middlewareinjection` :ref:`Sample <ws-sample>`
+9. :doc:`../features/headerstransformation` (upstream request headers only)
 
 This means you can configure your downstream services to run *WebSockets* and either:
 
@@ -154,21 +164,15 @@ This means you can configure your downstream services to run *WebSockets* and ei
 Not Supported
 -------------
 
-Unfortunately, many Ocelot features are not specific to *WebSockets*, such as header handling and HTTP client functionalities.
-Below is a list of features that will not work:
+These features act on the HTTP request/response exchange that a *WebSocket* connection replaces, so they do not apply:
 
 1. :doc:`../features/tracing`
-2. :doc:`../features/logging` :ref:`lg-request-id`
-3. :doc:`../features/aggregation`
-4. :doc:`../features/ratelimiting`
-5. :doc:`../features/qualityofservice`
-6. :doc:`../features/middlewareinjection` (except the :ref:`mi-ocelotpipelineconfiguration-class` ``WebSocketsMiddlewareType`` and ``WebSocketsMiddleware`` properties, see :ref:`Sample <ws-sample>`)
-7. :doc:`../features/headerstransformation`
-8. :doc:`../features/delegatinghandlers`
-9. :doc:`../features/claimstransformation`
-10. :doc:`../features/caching`
-11. :doc:`../features/authentication` [#f5]_
-12. :doc:`../features/authorization`
+2. :doc:`../features/aggregation`
+3. :doc:`../features/qualityofservice`
+4. :doc:`../features/delegatinghandlers`
+5. :doc:`../features/claimstransformation`
+6. :doc:`../features/caching`
+7. :doc:`../features/authorization`
 
 We cannot be entirely sure how this feature will behave once it is widely used. Therefore, thorough testing is strongly recommended!
 
@@ -254,7 +258,6 @@ Additionally, we welcome any bug reports, enhancement suggestions, or proposals 
   However, it will be either removed or reworked in future releases. For further details, refer to the :ref:`ssl-errors` section.
 .. [#f4] IP allowed/blocked lists are enforced on the *WebSocket* upgrade request.
   The ":ref:`Security Options <routing-security-options>`" feature has been supported since version `25.0`_, as a result of fixing bug `2403`_ in pull request `2406`_.
-.. [#f5] If requested, we might explore options for implementing basic authentication.
 .. [#f6] The :ref:`Sample <ws-sample>` was introduced for issue `2386`_ and implemented in pull request `2387`_, as part of version `25.0`_.
 
 .. _Program: https://github.com/ThreeMammals/Ocelot/blob/main/samples/WebSocket/Program.cs
