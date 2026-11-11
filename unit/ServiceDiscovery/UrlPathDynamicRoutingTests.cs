@@ -4,11 +4,11 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;
 
-public class DynamicRoutingTests : UnitTest
+public class UrlPathDynamicRoutingTests : UnitTest
 {
-    private readonly DynamicRouting sut;
+    private readonly UrlPathDynamicRouting sut;
     private readonly Mock<IHttpContextAccessor> contextAccessor = new();
-    public DynamicRoutingTests()
+    public UrlPathDynamicRoutingTests()
     {
         contextAccessor.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
         sut = new(contextAccessor.Object);
@@ -22,7 +22,7 @@ public class DynamicRoutingTests : UnitTest
         string path, string serviceName, string serviceNamespace, string expected)
     {
         // Act
-        var actual = DynamicRouting.UpstreamPath(path, serviceName, serviceNamespace);
+        var actual = UrlPathDynamicRouting.UpstreamPath(path, serviceName, serviceNamespace);
 
         // Assert
         Assert.Equal(expected, actual);

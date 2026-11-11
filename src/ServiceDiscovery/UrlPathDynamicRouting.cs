@@ -4,7 +4,15 @@ using System.Runtime.CompilerServices;
 
 namespace Ocelot.ServiceDiscovery;
 
-public class DynamicRouting(IHttpContextAccessor contextAccessor) : IDynamicRouting
+/// <summary>
+/// Default dynamic routing utilities based on the "URL path first segment" as a service name.
+/// </summary>
+/// <remarks>It supports service namespaces as a prefix to a dot character that delimits the namespace from the service name.<br/>
+/// The namespace value <b>must not</b> contain dots at all; thus, only the service name is allowed to have dots in its value.
+/// <para>Example: the <c>http://ocelot.net/namespace.service-name/path</c> URL.</para>
+/// </remarks>
+/// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
+public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDynamicRouting
 {
     public const char Dot = '.';
     public const char Slash = '/';

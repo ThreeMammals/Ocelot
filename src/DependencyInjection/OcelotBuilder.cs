@@ -77,7 +77,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
 
         Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>(); // TODO 2
-        Services.TryAddSingleton<IDynamicRouting, DynamicRouting>();
+        Services.TryAddSingleton<IDynamicRouting, UrlPathDynamicRouting>();
 
         Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
