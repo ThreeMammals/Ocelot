@@ -2,7 +2,9 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
+using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
@@ -34,10 +36,26 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         _routing = routing;
     }
 
-    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+    public Route Get(HttpRequest request, out IEnumerable<Error> errors)
+    {
+        var configuration = request.HttpContext.Items.IInternalConfiguration();
+        var response = Find(configuration, request.Path, request.QueryString, new(request.Method), UpstreamHost(request), request.Headers);
+        errors = response.Errors;
+        return response.Data;
+    }
+
+    [Obsolete(Use_Get_HttpRequest_IEnumerable_method)]
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var service = GetServiceName(configuration, upstreamHeaders, upstreamHost, upstreamHttpMethod, upstreamUrlPath, upstreamQueryString);
+        throw new NotSupportedException(Use_Get_HttpRequest_IEnumerable_method); // Aggressively ask developers to stop using it!
+    }
+    internal const string Use_Get_HttpRequest_IEnumerable_method = "Use the Get(HttpRequest, IEnumerable<Error>) method instead of this one! Note that this method has been deprecated since version 26.0!";
+
+    protected virtual Response<Route> Find(IInternalConfiguration configuration,
+        PathString upstreamUrlPath, QueryString upstreamQueryString, HttpMethod method, HostString upstreamHost, IHeaderDictionary upstreamHeaders)
+    {
+        var service = GetServiceName(upstreamUrlPath);
         var downstreamPath = new DownstreamPathTemplate(GetDownstreamPath, false); // Parse downstream path dynamically for each request, don't cache value
 
         var dynamicRoute = configuration.Routes
@@ -101,8 +119,8 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         {
             DownstreamPathTemplate = downstreamPath,
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
-            UpstreamHost = upstreamHost,
-            UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
+            UpstreamHost = upstreamHost.Host,
+            UpstreamHttpMethod = [method],
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
         var cached = _cache.GetOrAdd(loadBalancerKey, route);
@@ -129,11 +147,6 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         return _routing.GetServiceName(upstreamUrlPath); // TODO Ignore or not ignore? That's the question! See parameterless version
     }
 
-    protected virtual ServiceInfo GetServiceName(IInternalConfiguration configuration, IHeaderDictionary upstreamHeaders,
-        string upstreamHost, string upstreamMethod, string upstreamUrlPath, string upstreamQueryString)
-    {
-        return GetServiceName(upstreamUrlPath);
-    }
-
     // protected string GetServiceName(HttpRequest request, out string serviceNamespace) => string.Empty;
+    protected virtual HostString UpstreamHost(HttpRequest request) => request.Host;
 }

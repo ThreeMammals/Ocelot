@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.HeaderMatcher;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Errors;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 using _DownstreamRouteFinder_ = Ocelot.DownstreamRouteFinder.Finder.DownstreamRouteFinder;
@@ -18,7 +19,6 @@ public class DownstreamRouteFinderTests : UnitTest
     private readonly Mock<IPlaceholderNameAndValueFinder> _urlPlaceholderFinder;
     private readonly Mock<IHeaderPlaceholderNameAndValueFinder> _headerPlaceholderFinder;
     private string _upstreamUrlPath;
-    private Response<Route> _result;
     private List<Route> _routesConfig;
     private InternalConfiguration _config;
     private UrlMatch _match;
@@ -34,6 +34,8 @@ public class DownstreamRouteFinderTests : UnitTest
         _urlPlaceholderFinder = new Mock<IPlaceholderNameAndValueFinder>();
         _headerPlaceholderFinder = new Mock<IHeaderPlaceholderNameAndValueFinder>();
         _routeFinder = new _DownstreamRouteFinder_(_mockUrlMatcher.Object, _urlPlaceholderFinder.Object, _mockHeadersMatcher.Object, _headerPlaceholderFinder.Object);
+        _upstreamUrlPath += "/";
+        _upstreamHeaders = new HeaderDictionary();
     }
 
     [Fact]
@@ -41,7 +43,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -57,10 +59,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(expectedRoute);
+        ThenTheFollowingIsReturned(actual, expectedRoute);
     }
 
     [Fact]
@@ -68,7 +70,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -84,10 +86,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(expectedRoute);
+        ThenTheFollowingIsReturned(actual, expectedRoute);
     }
 
     [Fact]
@@ -95,7 +97,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -109,10 +111,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -121,7 +123,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher";
+        _upstreamUrlPath += "matchInUrlMatcher";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -136,13 +138,13 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
 
         // Assert: Then The Url Matcher Is Called Correctly
-        _mockUrlMatcher.Verify(x => x.Match("matchInUrlMatcher", _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Once);
+        _mockUrlMatcher.Verify(x => x.Match(_upstreamUrlPath, _upstreamQuery, _routesConfig[0].UpstreamTemplatePattern), Times.Once);
     }
 
     [Fact]
@@ -150,7 +152,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -164,10 +166,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
     }
 
     [Fact]
@@ -175,7 +177,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -190,10 +192,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(
+        ThenTheFollowingIsReturned(actual, GivenRoute(
             downstream: "someDownstreamPathForAPost",
             method: "Post",
             priority: 1));
@@ -204,7 +206,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "dontMatchPath/";
+        _upstreamUrlPath += "dontMatchPath/";
         _upstreamQuery = string.Empty;
         _routesConfig =
         [
@@ -216,10 +218,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        _result.IsError.ShouldBeTrue();
+        Assert.Null(actual);
+        errors.ShouldNotBeEmpty();
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -228,7 +231,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -242,10 +245,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(
+        ThenTheFollowingIsReturned(actual,
             GivenRoute(upstreamMethods: ["Post"], priority: 1));
     }
 
@@ -254,7 +257,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -268,10 +271,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(
+        ThenTheFollowingIsReturned(actual,
             GivenRoute(upstreamMethods: ["Post"], priority: 1));
     }
 
@@ -280,7 +283,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "someUpstreamPath";
+        _upstreamUrlPath += "someUpstreamPath";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -294,10 +297,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Post";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        _result.IsError.ShouldBeTrue();
+        Assert.Null(actual);
+        errors.ShouldNotBeEmpty();
         ThenTheUrlMatcherIsNotCalled();
     }
 
@@ -306,7 +310,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "MATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -321,10 +325,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -333,7 +337,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "MATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -348,10 +352,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -360,7 +364,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "DONTMATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -376,10 +380,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        _result.IsError.ShouldBeTrue();
+        Assert.Null(actual);
+        errors.ShouldNotBeEmpty();
         ThenTheUrlMatcherIsNotCalled();
     }
 
@@ -388,7 +393,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "DONTMATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -403,10 +408,11 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        _result.IsError.ShouldBeTrue();
+        Assert.Null(actual);
+        errors.ShouldNotBeEmpty();
         ThenTheUrlMatcherIsNotCalled();
     }
 
@@ -415,7 +421,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "MATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -430,7 +436,7 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
         ThenTheUrlMatcherIsCalledCorrectly(1, 0);
@@ -441,7 +447,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHost = "MATCH";
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
@@ -457,10 +463,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        ThenTheFollowingIsReturned(GivenRoute(priority: 1));
+        ThenTheFollowingIsReturned(actual, GivenRoute(priority: 1));
         ThenTheUrlMatcherIsCalledCorrectly(1, 0);
         ThenTheUrlMatcherIsCalledCorrectly(1, 1);
     }
@@ -485,7 +491,7 @@ public class DownstreamRouteFinderTests : UnitTest
         };
         var urlPlaceholders = new List<PlaceholderNameAndValue> { new("url", "urlValue") };
         var headerPlaceholders = new List<PlaceholderNameAndValue> { new("header", "headerValue") };
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHeaders = upstreamHeaders;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(urlPlaceholders));
@@ -500,14 +506,14 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
         var r = GivenRoute(
             priority: 1,
             placeholders: [.. urlPlaceholders.Union(headerPlaceholders)]
         );
-        ThenTheFollowingIsReturned(r);
+        ThenTheFollowingIsReturned(actual, r);
         ThenTheUrlMatcherIsCalledCorrectly();
     }
 
@@ -523,7 +529,7 @@ public class DownstreamRouteFinderTests : UnitTest
             ["header1"] = new UpstreamHeaderTemplate("headerValue1", "headerValue1"),
             ["header2"] = new UpstreamHeaderTemplate("headerValue2", "headerValue2"),
         };
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         _upstreamHeaders = new HeaderDictionary() { { "header1", "headerValue1" } };
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new List<PlaceholderNameAndValue>()));
@@ -539,10 +545,10 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
 
         // Assert
-        _result.IsError.ShouldBeTrue();
+        errors.ShouldNotBeEmpty();
     }
 
     [Theory]
@@ -554,7 +560,7 @@ public class DownstreamRouteFinderTests : UnitTest
     {
         // Arrange
         var serviceProviderConfig = new ServiceProviderConfigurationBuilder().Build();
-        _upstreamUrlPath = "matchInUrlMatcher/";
+        _upstreamUrlPath += "matchInUrlMatcher/";
         _upstreamQuery = string.Empty;
         GivenTheTemplateVariableAndNameFinderReturns(new OkResponse<List<PlaceholderNameAndValue>>(new()));
         GivenTheHeaderPlaceholderAndNameFinderReturns(new List<PlaceholderNameAndValue>());
@@ -569,14 +575,14 @@ public class DownstreamRouteFinderTests : UnitTest
         _upstreamHttpMethod = "Get";
 
         // Act, Assert
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
-        _result.Data.IsDynamic.ShouldBeFalse();
+        var actual = WhenIFindRoute(out IEnumerable<Error> errors);
+        actual.IsDynamic.ShouldBeFalse();
 
         // Act, Assert 2
         _routesConfig.RemoveAll(r => !r.IsDynamic); // remove all static routes
         GivenTheConfigurationIs(string.Empty, serviceProviderConfig);
-        _result = _routeFinder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders);
-        _result.IsError.ShouldBeTrue();
+        actual = WhenIFindRoute(out errors);
+        errors.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -599,8 +605,10 @@ public class DownstreamRouteFinderTests : UnitTest
             .Returns<string, string, string>((path, query, template) => new OkResponse<List<PlaceholderNameAndValue>>([new("{id}", path.Split('/')[^1])]));
 
         // Act
-        var first = _routeFinder.Get("/products/1", _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders).Data;
-        var second = _routeFinder.Get("/products/2", _upstreamQuery, _upstreamHttpMethod, _config, _upstreamHost, _upstreamHeaders).Data;
+        _upstreamUrlPath = "/products/1";
+        var first = WhenIFindRoute(out IEnumerable<Error> errors);
+        _upstreamUrlPath = "/products/2";
+        var second = WhenIFindRoute(out errors);
 
         // Assert
         route.TemplatePlaceholderNameAndValues.ShouldBeNull(); // !!!
@@ -654,6 +662,28 @@ public class DownstreamRouteFinderTests : UnitTest
             .Returns(placeholders);
     }
 
+    private DefaultHttpContext GivenHttpContext(string upstreamUrlPath = null)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = upstreamUrlPath ?? _upstreamUrlPath;
+        context.Request.QueryString = new(_upstreamQuery);
+        context.Request.Method = _upstreamHttpMethod;
+        context.Items.SetIInternalConfiguration(_config);
+        context.Request.Host = new(_upstreamHost);
+        foreach (var (key, value) in _upstreamHeaders)
+        {
+            context.Request.Headers[key] = value;
+        }
+        return context;
+    }
+
+    private Route WhenIFindRoute(out IEnumerable<Error> errors)
+    {
+        var context = GivenHttpContext();
+        return _routeFinder.Get(context.Request, out errors);
+    }
+
+
     private void ThenTheUrlMatcherIsCalledCorrectly()
     {
         _mockUrlMatcher
@@ -701,18 +731,15 @@ public class DownstreamRouteFinderTests : UnitTest
         };
     }
 
-    private void ThenTheFollowingIsReturned(Route expected)
+    private void ThenTheFollowingIsReturned(Route actual, Route expected)
     {
-        var actual = _result.Data;
         actual.DownstreamRoute[0].DownstreamPathTemplate.Value.ShouldBe(expected.DownstreamRoute[0].DownstreamPathTemplate.Value);
         actual.UpstreamTemplatePattern.Priority.ShouldBe(expected.UpstreamTemplatePattern.Priority);
 
-        for (var i = 0; i < _result.Data.TemplatePlaceholderNameAndValues.Count; i++)
+        for (var i = 0; i < actual.TemplatePlaceholderNameAndValues.Count; i++)
         {
             actual.TemplatePlaceholderNameAndValues[i].Name.ShouldBe(expected.TemplatePlaceholderNameAndValues[i].Name);
             actual.TemplatePlaceholderNameAndValues[i].Value.ShouldBe(expected.TemplatePlaceholderNameAndValues[i].Value);
         }
-
-        _result.IsError.ShouldBeFalse();
     }
 }

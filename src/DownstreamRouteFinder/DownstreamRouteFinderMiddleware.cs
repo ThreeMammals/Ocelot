@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Errors;
+using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -47,15 +48,11 @@ public class DownstreamRouteFinderMiddleware : OcelotMiddleware
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(request);
 
-        var configuration = request.HttpContext.Items.IInternalConfiguration();
-        var upstreamHost = UpstreamHost(request);
-        var response = provider.Get(request.Path, request.QueryString.ToString(), request.Method, configuration, upstreamHost, request.Headers);
-        route = response.Data;
-        errors = response.Errors;
-        return !response.IsError;
+        route = provider.Get(request, out errors);
+        return route != null && !errors.NotNull().Any();
     }
 
-    private string UpstreamHost(HttpRequest request)
+    internal static string UpstreamHost(HttpRequest request)
     {
         var host = request.Headers.Host.ToString();
         return host.Contains(':')
