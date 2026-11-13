@@ -29,6 +29,7 @@ using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Multiplexer;
 using Ocelot.UnitTests.Requester;
@@ -186,6 +187,17 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    public void AddDynamicRouting_RegistersCustomImplementation()
+    {
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        _ocelotBuilder.AddDynamicRouting<FakeDynamicRouting>();
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        Assert.IsType<FakeDynamicRouting>(_serviceProvider.GetRequiredService<IDynamicRouting>());
+    }
+
+    [Fact]
     public void Should_add_singleton_defined_aggregators()
     {
         // Arrange
@@ -204,6 +216,15 @@ public class OcelotBuilderTests : UnitTest
         aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
         var second = aggregators[0];
         first.ShouldBe(second);
+    }
+
+    private sealed class FakeDynamicRouting : IDynamicRouting
+    {
+        public HttpRequest Request => null;
+        public string GetDownstreamPath() => string.Empty;
+        public ServiceInfo GetServiceName() => new(string.Empty);
+        public ServiceInfo GetServiceName(string upstreamUrlPath) => new(string.Empty);
+        public object SetServiceName(object state, ServiceInfo service) => state;
     }
 
     [Fact]
