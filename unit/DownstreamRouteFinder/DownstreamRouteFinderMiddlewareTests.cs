@@ -7,6 +7,7 @@ using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
@@ -52,6 +53,24 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
 
         // Assert
         ThenTheScopedDataRepositoryIsCalledCorrectly();
+    }
+
+    [Fact]
+    public async Task Should_store_errors_when_route_cannot_be_found()
+    {
+        var errors = new List<Error> { new AnyError() };
+        GivenTheFollowingConfig(new InternalConfiguration());
+        _finder
+            .Setup(x => x.Get(It.IsAny<HttpRequest>(), out It.Ref<IEnumerable<Error>>.IsAny))
+            .Returns(new GetCallback((HttpRequest request, out IEnumerable<Error> returnedErrors) =>
+            {
+                returnedErrors = errors;
+                return null;
+            }));
+
+        await _middleware.Invoke(_httpContext);
+
+        Assert.Equal(errors, _httpContext.Items.Errors());
     }
 
     [Theory]
