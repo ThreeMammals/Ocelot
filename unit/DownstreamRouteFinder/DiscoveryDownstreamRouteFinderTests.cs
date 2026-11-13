@@ -301,6 +301,31 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
+    public void GetServiceName_ReturnsServiceFromCurrentRequest()
+    {
+        var expected = new ServiceInfo("orders", "catalog");
+        _dynamicRouting.Setup(x => x.GetServiceName()).Returns(expected);
+
+        var actual = GetServiceName("/ignored");
+
+        Assert.Equal(expected.Name, actual.Name);
+        Assert.Equal(expected.Namespace, actual.Namespace);
+        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public void ObsoleteGet_ThrowsNotSupportedException()
+    {
+        var exception = Assert.Throws<NotSupportedException>(() =>
+#pragma warning disable CS0618
+            _finder.Get("/", string.Empty, "GET", null, string.Empty, new HeaderDictionary())
+#pragma warning restore CS0618
+        );
+
+        Assert.Equal(DiscoveryDownstreamRouteFinder.Use_Get_HttpRequest_IEnumerable_method, exception.Message);
+    }
+
+    [Fact]
     [Trait("Feat", "585")]
     [Trait("Feat", "2319")] // https://github.com/ThreeMammals/Ocelot/pull/2324
     public void Should_create_downstream_route_with_load_balancer_options()
