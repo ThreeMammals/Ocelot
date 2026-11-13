@@ -301,27 +301,34 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public void GetServiceName_ReturnsServiceFromCurrentRequest()
     {
+        // Arrange
         var expected = new ServiceInfo("orders", "catalog");
         _dynamicRouting.Setup(x => x.GetServiceName()).Returns(expected);
 
+        // Act
         var actual = GetServiceName("/ignored");
 
+        // Assert
         Assert.Equal(expected.Name, actual.Name);
         Assert.Equal(expected.Namespace, actual.Namespace);
         _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public void ObsoleteGet_ThrowsNotSupportedException()
     {
+        // Act
         var exception = Assert.Throws<NotSupportedException>(() =>
 #pragma warning disable CS0618
             _finder.Get("/", string.Empty, "GET", null, string.Empty, new HeaderDictionary())
 #pragma warning restore CS0618
         );
 
+        // Assert
         Assert.Equal(DiscoveryDownstreamRouteFinder.Use_Get_HttpRequest_IEnumerable_method, exception.Message);
     }
 

@@ -227,14 +227,17 @@ public class DownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public void ObsoleteGet_ThrowsNotSupportedException()
     {
+        // Act
         var exception = Assert.Throws<NotSupportedException>(() =>
 #pragma warning disable CS0618
             _routeFinder.Get("/", string.Empty, "GET", null, string.Empty, new HeaderDictionary())
 #pragma warning restore CS0618
         );
 
+        // Assert
         Assert.Equal(_DownstreamRouteFinder_.Use_Get_HttpRequest_IEnumerable_method, exception.Message);
     }
 

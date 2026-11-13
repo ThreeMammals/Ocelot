@@ -62,8 +62,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public async Task Should_use_downstream_route_template_when_route_is_not_available()
     {
+        // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api/products")
             .WithUpstreamHttpMethod(["Get"])
@@ -74,8 +76,10 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
         GivenTheUrlReplacerWillReturn("/api/products");
 
+        // Act
         await _middleware.Invoke(_httpContext);
 
+        // Assert
         ThenTheDownstreamRequestUriIs("http://my.url:80/api/products?q=123");
     }
 

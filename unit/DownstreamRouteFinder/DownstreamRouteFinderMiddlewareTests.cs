@@ -56,8 +56,10 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public async Task Should_store_errors_when_route_cannot_be_found()
     {
+        // Arrange
         var errors = new List<Error> { new AnyError() };
         GivenTheFollowingConfig(new InternalConfiguration());
         _finder
@@ -68,20 +70,26 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
                 return null;
             }));
 
+        // Act
         await _middleware.Invoke(_httpContext);
 
+        // Assert
         Assert.Equal(errors, _httpContext.Items.Errors());
     }
 
     [Theory]
+    [Trait("PR", "1198")]
     [InlineData("localhost", "localhost")]
     [InlineData("localhost:5000", "localhost")]
     public void UpstreamHost_ReturnsHostNameWithoutPort(string host, string expected)
     {
+        // Arrange
         _httpContext.Request.Headers.Host = host;
 
+        // Act
         var actual = DownstreamRouteFinderMiddleware.UpstreamHost(_httpContext.Request);
 
+        // Assert
         Assert.Equal(expected, actual);
     }
 

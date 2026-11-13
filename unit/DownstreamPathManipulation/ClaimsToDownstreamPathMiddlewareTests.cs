@@ -80,23 +80,29 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public async Task Should_call_next_when_route_has_no_claims_to_path()
     {
+        // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api")
             .WithUpstreamHttpMethod(["Get"])
             .Build();
         _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
 
+        // Act
         await _middleware.Invoke(_httpContext);
 
+        // Assert
         Assert.True(_nextCalled);
         _changePath.VerifyNoOtherCalls();
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public async Task Should_store_errors_when_claim_path_change_fails()
     {
+        // Arrange
         var downstreamRoute = new DownstreamRouteBuilder()
             .WithDownstreamPathTemplate("/api")
             .WithClaimsToDownstreamPath([new("UserId", "Subject", string.Empty, 0)])
@@ -111,8 +117,10 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
                 It.IsAny<List<PlaceholderNameAndValue>>()))
             .Returns(new ErrorResponse(new AnyError()));
 
+        // Act
         await _middleware.Invoke(_httpContext);
 
+        // Assert
         Assert.False(_nextCalled);
         Assert.NotEmpty(_httpContext.Items.Errors());
     }

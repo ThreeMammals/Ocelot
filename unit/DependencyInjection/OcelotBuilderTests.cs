@@ -187,13 +187,17 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
     public void AddDynamicRouting_RegistersCustomImplementation()
     {
+        // Arrange
         _ocelotBuilder = _services.AddOcelot(_configRoot);
 
+        // Act
         _ocelotBuilder.AddDynamicRouting<FakeDynamicRouting>();
         _serviceProvider = _services.BuildServiceProvider(true);
 
+        // Assert
         Assert.IsType<FakeDynamicRouting>(_serviceProvider.GetRequiredService<IDynamicRouting>());
     }
 

@@ -4,6 +4,8 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;
 
+[Trait("PR", "1198")]
+[Trait("Feat", "1188")]
 public class UrlPathDynamicRoutingTests : UnitTest
 {
     private readonly UrlPathDynamicRouting sut;
@@ -69,6 +71,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
         // Act
         var actual = sut.Request;
 
+        // Assert
         Assert.Same(contextAccessor.Object.HttpContext.Request, actual);
     }
 
@@ -77,34 +80,40 @@ public class UrlPathDynamicRoutingTests : UnitTest
     [InlineData("/orders", "/")]
     public void GetDownstreamPath_ReturnsPathWithoutServiceName(string upstreamPath, string expected)
     {
+        // Arrange
         contextAccessor.Object.HttpContext.Request.Path = upstreamPath;
 
         // Act
         var actual = sut.GetDownstreamPath();
 
+        // Assert
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public void GetDownstreamPath_WithRequest_ReturnsPathWithoutServiceName()
     {
+        // Arrange
         var request = new DefaultHttpContext().Request;
         request.Path = "/catalog.orders/api";
 
         // Act
         var actual = sut.GetDownstreamPath(request);
 
+        // Assert
         Assert.Equal("/api", actual);
     }
 
     [Fact]
     public void GetServiceName_WithoutPathArgument_UsesCurrentRequest()
     {
+        // Arrange
         contextAccessor.Object.HttpContext.Request.Path = "/catalog.orders/api";
 
         // Act
         var actual = sut.GetServiceName();
 
+        // Assert
         Assert.Equal("orders", actual.Name);
         Assert.Equal("catalog", actual.Namespace);
     }
@@ -115,6 +124,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
         // Act
         var actual = sut.SetServiceName("/api", new ServiceInfo("orders", "catalog"));
 
+        // Assert
         Assert.Equal("/catalog.orders/api", actual);
     }
 
@@ -124,6 +134,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
         // Act
         var actual = UrlPathDynamicRouting.UpstreamPath(null, "orders");
 
+        // Assert
         Assert.Equal("/orders/", actual);
     }
 }
