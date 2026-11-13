@@ -54,6 +54,18 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
         ThenTheScopedDataRepositoryIsCalledCorrectly();
     }
 
+    [Theory]
+    [InlineData("localhost", "localhost")]
+    [InlineData("localhost:5000", "localhost")]
+    public void UpstreamHost_ReturnsHostNameWithoutPort(string host, string expected)
+    {
+        _httpContext.Request.Headers.Host = host;
+
+        var actual = DownstreamRouteFinderMiddleware.UpstreamHost(_httpContext.Request);
+
+        Assert.Equal(expected, actual);
+    }
+
     private void GivenTheFollowingConfig(IInternalConfiguration config)
     {
         _config = config;
