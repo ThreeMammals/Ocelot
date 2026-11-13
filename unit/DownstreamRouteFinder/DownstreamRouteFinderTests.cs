@@ -227,6 +227,18 @@ public class DownstreamRouteFinderTests : UnitTest
     }
 
     [Fact]
+    public void ObsoleteGet_ThrowsNotSupportedException()
+    {
+        var exception = Assert.Throws<NotSupportedException>(() =>
+#pragma warning disable CS0618
+            _routeFinder.Get("/", string.Empty, "GET", null, string.Empty, new HeaderDictionary())
+#pragma warning restore CS0618
+        );
+
+        Assert.Equal(_DownstreamRouteFinder_.Use_Get_HttpRequest_IEnumerable_method, exception.Message);
+    }
+
+    [Fact]
     public void Should_return_correct_route_for_http_verb_setting_multiple_upstream_http_method()
     {
         // Arrange
