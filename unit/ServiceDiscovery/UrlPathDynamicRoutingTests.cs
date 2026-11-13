@@ -62,4 +62,68 @@ public class UrlPathDynamicRoutingTests : UnitTest
         Assert.Equal(expected, actual.Name);
         Assert.Equal(expectedNamespace, actual.Namespace);
     }
+
+    [Fact]
+    public void Request_ReturnsCurrentHttpRequest()
+    {
+        // Act
+        var actual = sut.Request;
+
+        Assert.Same(contextAccessor.Object.HttpContext.Request, actual);
+    }
+
+    [Theory]
+    [InlineData("/orders/api", "/api")]
+    [InlineData("/orders", "/")]
+    public void GetDownstreamPath_ReturnsPathWithoutServiceName(string upstreamPath, string expected)
+    {
+        contextAccessor.Object.HttpContext.Request.Path = upstreamPath;
+
+        // Act
+        var actual = sut.GetDownstreamPath();
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void GetDownstreamPath_WithRequest_ReturnsPathWithoutServiceName()
+    {
+        var request = new DefaultHttpContext().Request;
+        request.Path = "/catalog.orders/api";
+
+        // Act
+        var actual = sut.GetDownstreamPath(request);
+
+        Assert.Equal("/api", actual);
+    }
+
+    [Fact]
+    public void GetServiceName_WithoutPathArgument_UsesCurrentRequest()
+    {
+        contextAccessor.Object.HttpContext.Request.Path = "/catalog.orders/api";
+
+        // Act
+        var actual = sut.GetServiceName();
+
+        Assert.Equal("orders", actual.Name);
+        Assert.Equal("catalog", actual.Namespace);
+    }
+
+    [Fact]
+    public void SetServiceName_ReturnsPathWithServiceName()
+    {
+        // Act
+        var actual = sut.SetServiceName("/api", new ServiceInfo("orders", "catalog"));
+
+        Assert.Equal("/catalog.orders/api", actual);
+    }
+
+    [Fact]
+    public void UpstreamPath_WithNullPath_UsesRootPath()
+    {
+        // Act
+        var actual = UrlPathDynamicRouting.UpstreamPath(null, "orders");
+
+        Assert.Equal("/orders/", actual);
+    }
 }
