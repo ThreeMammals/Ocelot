@@ -26,12 +26,6 @@ public readonly struct ServiceInfo
         Namespace = serviceNamespace.ToString();
     }
 
-    public ServiceInfo(ServiceInfo from)
-    {
-        Name = from.Name;
-        Namespace = from.Namespace;
-    }
-
     public string Name { get; init; }
     public string Namespace { get; init; }
 

@@ -46,15 +46,4 @@ public class ServiceInfoTests : UnitTest
         Assert.Equal("orders", actual.Name);
         Assert.Equal("catalog", actual.Namespace);
     }
-
-    [Fact]
-    public void CopyConstructor_CopiesValues()
-    {
-        var original = new ServiceInfo("orders", "catalog");
-
-        var actual = new ServiceInfo(original);
-
-        Assert.Equal(original.Name, actual.Name);
-        Assert.Equal(original.Namespace, actual.Namespace);
-    }
 }

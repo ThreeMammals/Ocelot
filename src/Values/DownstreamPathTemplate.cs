@@ -20,8 +20,9 @@ public class DownstreamPathTemplate : Lazy<string>
 
     public new string Value
     {
-        get => cached ? base.Value
-            : getter?.Invoke() ?? base.Value;
+        get => cached || getter is null
+            ? base.Value
+            : getter.Invoke();
     }
 
     public override string ToString() => Value ?? string.Empty;
