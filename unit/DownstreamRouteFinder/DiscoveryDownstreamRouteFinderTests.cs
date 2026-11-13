@@ -275,13 +275,13 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     }
 
     private MethodInfo GetServiceName() => _finder.GetType()
-        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string)]);
+        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(PathString)]);
     protected ServiceInfo GetServiceName(string upstreamUrlPath)
-        => (ServiceInfo)GetServiceName().Invoke(_finder, [upstreamUrlPath]);
+        => (ServiceInfo)GetServiceName().Invoke(_finder, [new PathString(upstreamUrlPath)]);
 
     [Fact]
     [Trait("PR", "1198")]
-    public void GetServiceName_ForwardedParamsToDependantService()
+    public void GetServiceName_ForwardedParamsToDependentService()
     {
         // Arrange
         string actualParam = null;
@@ -290,7 +290,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .Returns(new ServiceInfo(TestName(), GetType().Name));
 
         // Act
-        var path = UrlPathDynamicRouting.UpstreamPath(serviceNamespace: GetType().Name);
+        var path = UrlPathDynamicRouting.UpstreamPath("/", TestName(), GetType().Name);
         var actual = GetServiceName(path);
 
         Assert.Same(path, actualParam);

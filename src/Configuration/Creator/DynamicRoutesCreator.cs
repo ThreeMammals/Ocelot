@@ -83,7 +83,6 @@ public class DynamicRoutesCreator : IDynamicsCreator
             .WithCacheOptions(cacheOptions)
             .WithDownstreamHttpVersion(version)
             .WithDownstreamHttpVersionPolicy(versionPolicy)
-            .WithDownstreamPathTemplate(string.Empty) // The downstream path is unknown until the actual HTTP request path arrives, or until the defined dynamic route instance re-defines the value. Later consumers will then initialize the property.
             .WithDownstreamScheme(scheme)
             .WithHttpHandlerOptions(handlerOptions)
             .WithLoadBalancerKey(lbKey)

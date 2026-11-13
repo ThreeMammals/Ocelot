@@ -132,21 +132,20 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         return _routing.GetDownstreamPath();
     }
 
-    protected virtual ServiceInfo GetServiceName() // TODO: We must always call this to guarantee full support for all kinds of dynamic routing, including URL-path-based routing.
-    {
-        return _routing.GetServiceName();
-    }
-
     /// <summary>Gets service name and its namespace of request URL.
     /// <para>Note: A namespace and service name should be separated by a '.' (dot) character.</para></summary>
     /// <remarks>Example: <c>http://ocelot.net/namespace.service-name/path</c> URL.</remarks>
     /// <param name="upstreamUrlPath">The upstream path.</param>
     /// <returns>A <see cref="ServiceInfo"/> value.</returns>
-    protected virtual ServiceInfo GetServiceName(string upstreamUrlPath)
+    protected virtual ServiceInfo GetServiceName(PathString upstreamUrlPath)
     {
-        return _routing.GetServiceName(upstreamUrlPath); // TODO Ignore or not ignore? That's the question! See parameterless version
+        var service = _routing.GetServiceName();
+        if (service.Name.IsNotEmpty())
+            return service;
+
+        service = _routing.GetServiceName(upstreamUrlPath);
+        return service;
     }
 
-    // protected string GetServiceName(HttpRequest request, out string serviceNamespace) => string.Empty;
     protected virtual HostString UpstreamHost(HttpRequest request) => request.Host;
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.Extensions;
-using System.Runtime.CompilerServices;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -19,21 +18,21 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
 
     private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
 
-    /// <summary>
-    /// Dynamic Routing upstream path.
-    /// </summary>
-    public static string UpstreamPath(string path = "/", [CallerMemberName] string serviceName = null, string serviceNamespace = null)
-    {
-        var pth = path.TrimStart('/');
-        return serviceNamespace.IsEmpty()
-            ? $"/{serviceName}/{pth}" // first segment is always Service Name
-            : $"/{serviceNamespace}.{serviceName}/{pth}";
-    }
+    public HttpRequest Request => _contextAccessor.HttpContext.Request;
 
     public virtual string GetDownstreamPath()
-        => GetDownstreamPath(_contextAccessor.HttpContext.Request.Path);
+        => DownstreamPath(Request.Path);
 
-    public virtual string GetDownstreamPath(string upstreamUrlPath)
+    /// <summary>
+    /// Gets the downstream path part of the URL without the service name.
+    /// Thus, the first segment of the upstream URL is removed.
+    /// </summary>
+    /// <param name="request">The request URL with the service name in the first segment.</param>
+    /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
+    public virtual string GetDownstreamPath(HttpRequest request)
+        => DownstreamPath(request.Path);
+
+    protected virtual string DownstreamPath(string upstreamUrlPath)
     {
         int index = upstreamUrlPath.IndexOf(Slash, 1);
         return index != -1
@@ -42,7 +41,7 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
     }
 
     public virtual ServiceInfo GetServiceName()
-        => GetServiceName(_contextAccessor.HttpContext.Request.Path);
+        => GetServiceName(Request.Path);
 
     public virtual ServiceInfo GetServiceName(string upstreamUrlPath)
     {
@@ -58,5 +57,23 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
         return (index != -1)
             ? new(name[++index..], name[..--index])
             : new(name); // service namespace -> string.Empty
+    }
+
+    public virtual object SetServiceName(object state, ServiceInfo service)
+        => SetServiceName(state.ToString(), service.Name, service.Namespace);
+
+    protected virtual string SetServiceName(string path, string serviceName, string serviceNamespace = null)
+        => UpstreamPath(path, serviceName, serviceNamespace);
+
+    /// <summary>
+    /// Creates Dynamic Routing upstream path.
+    /// </summary>
+    public static string UpstreamPath(string path, string serviceName, string serviceNamespace = null)
+    {
+        path ??= Slash.ToString();
+        var pth = path.TrimStart(Slash);
+        return serviceNamespace.IsEmpty()
+            ? string.Concat(Slash, serviceName, Slash, pth) // $"/{serviceName}/{pth}"
+            : string.Concat(Slash, serviceNamespace, Dot, serviceName, Slash, pth); // $"/{serviceNamespace}.{serviceName}/{pth}";
     }
 }
