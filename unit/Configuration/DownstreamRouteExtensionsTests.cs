@@ -35,7 +35,7 @@ public class DownstreamRouteExtensionsTests
             new List<ClaimToThing>(),
             new List<ClaimToThing>(),
             new AuthenticationOptions(null, null),
-            new DownstreamPathTemplate(null),
+            new DownstreamPathTemplate(string.Empty),
             null,
             new List<string>(),
             new List<AddHeader>(),

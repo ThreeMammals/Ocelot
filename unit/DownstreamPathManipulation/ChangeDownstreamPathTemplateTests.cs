@@ -1,9 +1,9 @@
 ﻿using Ocelot.Configuration;
+using Ocelot.DownstreamPathManipulation;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
 using Ocelot.Infrastructure;
 using Ocelot.Infrastructure.Claims;
-using Ocelot.PathManipulation;
 using Ocelot.Responses;
 using Ocelot.UnitTests.Responder;
 using Ocelot.Values;

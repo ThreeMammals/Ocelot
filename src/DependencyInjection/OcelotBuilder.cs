@@ -10,6 +10,7 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Repository;
+using Ocelot.DownstreamPathManipulation;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator;
@@ -23,7 +24,6 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
-using Ocelot.PathManipulation;
 using Ocelot.QualityOfService;
 using Ocelot.QueryStrings;
 using Ocelot.Request.Creator;
@@ -75,7 +75,6 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IQoSOptionsCreator, QoSOptionsCreator>();
         Services.TryAddSingleton<IRateLimitOptionsCreator, RateLimitOptionsCreator>();
         Services.TryAddSingleton<IBaseUrlFinder, BaseUrlFinder>();
-        Services.TryAddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
         Services.AddSingleton<ILoadBalancerCreator, NoLoadBalancerCreator>();
         Services.AddSingleton<ILoadBalancerCreator, RoundRobinCreator>();
         Services.AddSingleton<ILoadBalancerCreator, CookieStickySessionsCreator>();
@@ -101,7 +100,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.TryAddSingleton<IHttpHandlerOptionsCreator, HttpHandlerOptionsCreator>();
         Services.TryAddSingleton<IDownstreamAddressesCreator, DownstreamAddressesCreator>();
         Services.TryAddSingleton<IDelegatingHandlerFactory, DelegatingHandlerFactory>();
-        
+
         Services.TryAddSingleton<IOcelotConfigurationChangeTokenSource, OcelotConfigurationChangeTokenSource>();
         Services.TryAddSingleton<IOptionsMonitor<IInternalConfiguration>, OcelotConfigurationMonitor>();
 
@@ -133,6 +132,7 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotQualityOfService();
         Services.AddOcelotRateLimiting();
         Services.AddOcelotRequester();
+        Services.AddOcelotServiceDiscovery();
     }
 
     /// <summary>
@@ -363,13 +363,20 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
-    public IOcelotBuilder AddQualityOfService<THandler>()
-        where THandler : CircuitBreakerDelegatingHandler
+    public IOcelotBuilder AddQualityOfService<T>()
+        where T : CircuitBreakerDelegatingHandler
     {
         Services.RemoveAll<QosDelegatingHandlerDelegate>();
-        Services.AddSingleton<QosDelegatingHandlerDelegate>(sp =>
+        Services.AddSingleton<QosDelegatingHandlerDelegate>(provider =>
             (route, contextAccessor, loggerFactory) =>
-                ActivatorUtilities.CreateInstance<THandler>(sp, route, loggerFactory));
+                ActivatorUtilities.CreateInstance<T>(provider, route, loggerFactory));
+        return this;
+    }
+
+    public IOcelotBuilder AddDynamicRouting<T>()
+        where T : class, IDynamicRouting
+    {
+        Services.AddOcelotDynamicRouting<T>();
         return this;
     }
 }

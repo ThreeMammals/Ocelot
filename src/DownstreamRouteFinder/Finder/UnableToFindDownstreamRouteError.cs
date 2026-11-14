@@ -5,7 +5,7 @@ namespace Ocelot.DownstreamRouteFinder.Finder;
 
 public class UnableToFindDownstreamRouteError : Error
 {
-    public UnableToFindDownstreamRouteError(string path, string httpVerb)
+    public UnableToFindDownstreamRouteError(string path, HttpMethod httpVerb)
         : base($"Failed to match route configuration for upstream: {httpVerb} {path}", OcelotErrorCode.UnableToFindDownstreamRouteError, (int)Status.NotFound)
     { }
 }

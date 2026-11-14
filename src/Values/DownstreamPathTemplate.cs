@@ -1,13 +1,29 @@
 ﻿namespace Ocelot.Values;
 
-public class DownstreamPathTemplate
+public class DownstreamPathTemplate : Lazy<string>
 {
+    private readonly bool cached;
+    private readonly Func<string> getter;
+
     public DownstreamPathTemplate(string value)
+        : base(value)
     {
-        Value = value;
+        cached = true;
     }
 
-    public string Value { get; }
+    public DownstreamPathTemplate(Func<string> valueFactory, bool cacheValue = true)
+        : base(valueFactory)
+    {
+        cached = cacheValue;
+        getter = valueFactory;
+    }
+
+    public new string Value
+    {
+        get => cached || getter is null
+            ? base.Value
+            : getter.Invoke();
+    }
 
     public override string ToString() => Value ?? string.Empty;
 }

@@ -8,7 +8,7 @@ public class DownstreamRouteBuilder
 {
     private AuthenticationOptions _authenticationOptions;
     private string _loadBalancerKey;
-    private string _downstreamPathTemplate;
+    private DownstreamPathTemplate _downstreamPathTemplate;
     private UpstreamPathTemplate _upstreamTemplatePattern;
     private HashSet<HttpMethod> _upstreamHttpMethod;
     private List<ClaimToThing> _claimsToHeaders;
@@ -73,9 +73,14 @@ public class DownstreamRouteBuilder
         return this;
     }
 
-    public DownstreamRouteBuilder WithDownstreamPathTemplate(string input)
+    public DownstreamRouteBuilder WithDownstreamPathTemplate(string pathTemplate)
     {
-        _downstreamPathTemplate = input;
+        _downstreamPathTemplate = new(pathTemplate);
+        return this;
+    }
+    public DownstreamRouteBuilder WithDownstreamPathTemplate(DownstreamPathTemplate template)
+    {
+        _downstreamPathTemplate = template;
         return this;
     }
 
@@ -276,7 +281,7 @@ public class DownstreamRouteBuilder
             _claimToClaims,
             _claimToDownstreamPath,
             _authenticationOptions,
-            new DownstreamPathTemplate(_downstreamPathTemplate),
+            _downstreamPathTemplate,
             _loadBalancerKey,
             _delegatingHandlers,
             _addHeadersToDownstream,

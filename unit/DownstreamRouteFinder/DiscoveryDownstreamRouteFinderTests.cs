@@ -6,7 +6,9 @@ using Ocelot.Configuration.File;
 using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.LoadBalancer.Balancers;
+using Ocelot.Middleware;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 using System.Reflection;
 using Route = Ocelot.Configuration.Route;
@@ -15,18 +17,18 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
 public class DiscoveryDownstreamRouteFinderTests : UnitTest
 {
-    private readonly DiscoveryDownstreamRouteFinder _finder;
+    private DiscoveryDownstreamRouteFinder _finder;
     private QoSOptions _qoSOptions;
     private LoadBalancerOptions _loadBalancerOptions;
-    private Response<Route> _result;
+    private Response<Route>[] _result = new Response<Route>[2];
     private string _upstreamHost;
     private string _upstreamUrlPath;
+    private string _upstreamQuery;
     private string _upstreamHttpMethod;
     private IHeaderDictionary _upstreamHeaders;
     private IInternalConfiguration _configuration;
-    private Response<Route> _resultTwo;
-    private readonly string _upstreamQuery;
-    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _upstreamHeaderTemplatePatternCreator = new();
+    private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _headerTemplatePatternCreator = new();
+    private readonly Mock<IDynamicRouting> _dynamicRouting = new();
     private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
@@ -38,8 +40,23 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _loadBalancerOptions = new(nameof(NoLoadBalancer), default, default);
         _metadataOptions = new MetadataOptions();
         _rateLimitOptions = new RateLimitOptions();
-        _finder = new(new RouteKeyCreator(), _upstreamHeaderTemplatePatternCreator.Object);
+        _finder = new(new RouteKeyCreator(), _headerTemplatePatternCreator.Object, _dynamicRouting.Object);
+        _dynamicRouting.Setup(x => x.GetDownstreamPath())
+            .Returns(() => DownstreamPath(_upstreamUrlPath) + _upstreamQuery);
         _upstreamQuery = string.Empty;
+    }
+
+    private static string DownstreamPath(string urlPath)
+    {
+        return urlPath.IsEmpty() ? "/test"
+            : '/' + string.Join('/', urlPath.TrimStart('/').Split('/').Skip(1));
+    }
+
+    private void GivenDynamicRouting(string upstreamUrlPath, string serviceName, string serviceNamespace = null)
+    {
+        _upstreamUrlPath = upstreamUrlPath;
+        _dynamicRouting.Setup(x => x.GetServiceName(upstreamUrlPath))
+            .Returns(new ServiceInfo(serviceName, serviceNamespace ?? string.Empty));
     }
 
     [Fact]
@@ -48,6 +65,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
+        GivenDynamicRouting("/auth/test", "auth");
 
         // Act
         WhenICreate();
@@ -79,6 +97,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
         GivenTheConfiguration();
+        GivenDynamicRouting($"/{downstreamRoute.ServiceName}/test", downstreamRoute.ServiceName);
 
         // Act
         WhenICreate();
@@ -87,7 +106,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         ThenTheDownstreamRouteIsCreated(lbKey: downstreamRoute.LoadBalancerKey);
 
         // Assert: With RateLimitOptions
-        var actual = _result.Data.DownstreamRoute[0].RateLimitOptions;
+        var actual = _result[0].Data.DownstreamRoute[0].RateLimitOptions;
         actual.EnableRateLimiting.ShouldBeTrue();
         actual.EnableRateLimiting.ShouldBe(rateLimitOptions.EnableRateLimiting);
         actual.ClientIdHeader.ShouldBe(rateLimitOptions.ClientIdHeader);
@@ -108,8 +127,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreateAgain();
 
         // Assert
-        Assert.NotSame(_resultTwo, _result);
-        Assert.Same(_resultTwo.Data, _result.Data); // same Route instances
+        Assert.NotSame(_result[1], _result[0]);
+        Assert.Same(_result[1].Data, _result[0].Data); // same Route instances
     }
 
     [Fact]
@@ -127,7 +146,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreateAgain();
 
         // Assert
-        _result.ShouldNotBe(_resultTwo);
+        _result[0].ShouldNotBe(_result[1]);
     }
 
     [Fact]
@@ -136,7 +155,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/";
+        GivenDynamicRouting("/auth/", "auth");
 
         // Act
         WhenICreate();
@@ -151,7 +170,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth";
+        GivenDynamicRouting("/auth", "auth");
 
         // Act
         WhenICreate();
@@ -166,13 +185,13 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Arrange
         GivenInternalConfiguration();
         GivenTheConfiguration();
-        _upstreamUrlPath = "/auth/test";
+        GivenDynamicRouting("/auth/test", "auth");
 
         // Act
         WhenICreate();
 
         // Assert: Then the path does not have trailing slash
-        var actual = _result.Data.DownstreamRoute[0];
+        var actual = _result[0].Data.DownstreamRoute[0];
         actual.DownstreamPathTemplate.Value.ShouldBe("/test");
         actual.ServiceName.ShouldBe("auth");
         actual.ServiceNamespace.ShouldBeEmpty();
@@ -188,13 +207,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         GivenInternalConfiguration();
         GivenTheConfiguration();
         const string queryString = "?test=1&best=2";
-        _upstreamUrlPath = "/auth/test" + queryString;
+        _upstreamQuery = queryString;
+        GivenDynamicRouting("/auth/test", "auth");
 
         // Act
         WhenICreate();
 
         // Assert: Then the query string is removed
-        var actual = _result.Data.DownstreamRoute[0];
+        var actual = _result[0].Data.DownstreamRoute[0];
         actual.DownstreamPathTemplate.Value.ShouldContain(queryString); // !!!
         actual.DownstreamPathTemplate.Value.ShouldBe("/test?test=1&best=2");
         actual.ServiceName.ShouldBe("auth");
@@ -214,7 +234,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreate();
 
         // Assert
-        var actual = _result.Data.DownstreamRoute[0];
+        var actual = _result[0].Data.DownstreamRoute[0];
         actual.LoadBalancerKey.ShouldBe("CookieStickySessions:boom");
         actual.LoadBalancerOptions.Type.ShouldBe("CookieStickySessions");
         actual.LoadBalancerOptions.ShouldBe(_loadBalancerOptions);
@@ -235,7 +255,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreate();
 
         // Assert: Then the Qos options are set
-        var actual = _result.Data.DownstreamRoute[0];
+        var actual = _result[0].Data.DownstreamRoute[0];
         actual.QosOptions.ShouldNotBeNull();
         actual.QosOptions.UseQos.ShouldBeTrue();
     }
@@ -251,30 +271,65 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         WhenICreate();
 
         // Assert: Then The Handler Options Are Set
-        _result.Data.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
+        _result[0].Data.DownstreamRoute[0].HttpHandlerOptions.ShouldBe(_handlerOptions);
     }
 
-    [Theory]
-    [Trait("PR", "2324")]
-    [InlineData("/service1", "service1", "")]
-    [InlineData("/service2/", "service2", "")]
-    [InlineData("/service3/bla", "service3", "")]
-    [InlineData("/namespace1.service1", "service1", "namespace1")]
-    [InlineData("/namespace2.service2/", "service2", "namespace2")]
-    [InlineData("/namespace3.service3/bla-bla", "service3", "namespace3")]
-    [InlineData("/namespace4.service.4/ha-a", "service.4", "namespace4")]
-    [InlineData("/name.space5.service5/ha-ha", "space5.service5", "name")]
-    public void GetServiceName(string urlPath, string expected, string expectedNamespace)
+    private MethodInfo GetServiceName() => _finder.GetType()
+        .GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(PathString)]);
+    protected ServiceInfo GetServiceName(string upstreamUrlPath)
+        => (ServiceInfo)GetServiceName().Invoke(_finder, [new PathString(upstreamUrlPath)]);
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public void GetServiceName_ForwardedParamsToDependentService()
     {
-        var method = _finder.GetType().GetMethod(nameof(GetServiceName), BindingFlags.Instance | BindingFlags.NonPublic);
-        object[] parameters = [urlPath, null];
+        // Arrange
+        string actualParam = null;
+        _dynamicRouting.Setup(x => x.GetServiceName(It.IsAny<string>()))
+            .Callback<string>(upstreamUrlPath => actualParam = upstreamUrlPath)
+            .Returns(new ServiceInfo(TestName(), GetType().Name));
 
         // Act
-        string actual = (string)method.Invoke(_finder, parameters);
-        string actualNamespace = (string)parameters[1];
+        var path = UrlPathDynamicRouting.UpstreamPath("/", TestName(), GetType().Name);
+        var actual = GetServiceName(path);
 
-        Assert.Equal(expected, actual);
-        Assert.Equal(expectedNamespace, actualNamespace);
+        Assert.Same(path, actualParam);
+        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Once);
+
+        Assert.Equal(TestName(), actual.Name);
+        Assert.Equal(nameof(DiscoveryDownstreamRouteFinderTests), actual.Namespace);
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public void GetServiceName_ReturnsServiceFromCurrentRequest()
+    {
+        // Arrange
+        var expected = new ServiceInfo("orders", "catalog");
+        _dynamicRouting.Setup(x => x.GetServiceName()).Returns(expected);
+
+        // Act
+        var actual = GetServiceName("/ignored");
+
+        // Assert
+        Assert.Equal(expected.Name, actual.Name);
+        Assert.Equal(expected.Namespace, actual.Namespace);
+        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public void ObsoleteGet_ThrowsNotSupportedException()
+    {
+        // Act
+        var exception = Assert.Throws<NotSupportedException>(() =>
+#pragma warning disable CS0618
+            _finder.Get("/", string.Empty, "GET", null, string.Empty, new HeaderDictionary())
+#pragma warning restore CS0618
+        );
+
+        // Assert
+        Assert.Equal(DiscoveryDownstreamRouteFinder.Use_Get_HttpRequest_IEnumerable_method, exception.Message);
     }
 
     [Fact]
@@ -297,13 +352,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         var route = new Route(true, downstreamRoute); // create dynamic route
         GivenInternalConfiguration(route);
         GivenTheConfiguration();
+        GivenDynamicRouting($"/{downstreamRoute.ServiceName}/test", downstreamRoute.ServiceName);
 
         // Act
         WhenICreate();
 
         // Assert
         ThenTheDownstreamRouteIsCreated(lbType: "testBalancer", lbKey: "|auth");
-        var downstream = _result.Data.DownstreamRoute[0];
+        var downstream = _result[0].Data.DownstreamRoute[0];
         downstream.LoadBalancerOptions.ShouldNotBeNull();
         downstream.LoadBalancerOptions.Type.ShouldBe("testBalancer");
         downstream.LoadBalancerOptions.Key.ShouldBe("testKey");
@@ -340,13 +396,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         _upstreamUrlPath = hasNamespace
             ? $"/{dRoute2.ServiceNamespace}.{dRoute2.ServiceName}/test"
             : $"/{dRoute2.ServiceName}/test";
+        GivenDynamicRouting(_upstreamUrlPath, dRoute2.ServiceName, dRoute2.ServiceNamespace);
 
         // Act
         WhenICreate();
 
         // Assert
         ThenTheDownstreamRouteIsCreated("service2", hasNamespace ? "namespace2" : "", "testBalancer", "namespace2-service2");
-        var downstream = _result.Data.DownstreamRoute[0];
+        var downstream = _result[0].Data.DownstreamRoute[0];
         downstream.LoadBalancerOptions.ShouldNotBeNull();
         downstream.LoadBalancerOptions.Type.ShouldBe("testBalancer");
         downstream.LoadBalancerOptions.Key.ShouldBe("testKey");
@@ -366,14 +423,14 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"" },
             { "sec-ch-ua-mobile", "?0" },
         };
-        var finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator());
+        _finder = new DiscoveryDownstreamRouteFinder(new RouteKeyCreator(), new UpstreamHeaderTemplatePatternCreator(), _dynamicRouting.Object);
 
         // Act
-        _result = finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        WhenICreate();
 
         // Assert
-        _result.Data.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
-        _result.Data.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
+        _result[0].Data.UpstreamHeaderTemplates.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
+        _result[0].Data.DownstreamRoute[0].UpstreamHeaders.ShouldNotBeNull().ShouldBeEmpty("Should return empty collection for request headers");
     }
 
     [Fact]
@@ -388,8 +445,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         DownstreamRoute WhenICreateConcurrently(int request)
         {
             barrier.SignalAndWait();
-            return _finder.Get($"/auth/path{request}", _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders)
-                .Data.DownstreamRoute[0];
+            var context = GivenHttpContext($"/auth/path{request}");
+            var route = _finder.Get(context.Request, out var errors);
+            return route.DownstreamRoute[0];
         }
 
         // Act
@@ -402,9 +460,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     private void ThenTheDownstreamRouteIsCreated(string serviceName = null, string serviceNamespace = null, string lbType = null, string lbKey = null)
     {
-        var route = _result.Data;
+        var route = _result[0].Data;
         var downstreamRoute = route.DownstreamRoute[0];
-        downstreamRoute.DownstreamPathTemplate.Value.ShouldBe("/test");
+        downstreamRoute.DownstreamPathTemplate.ShouldNotBeNull().Value.ShouldBe("/test");
         downstreamRoute.DownstreamScheme.ShouldBe("http");
         downstreamRoute.HttpHandlerOptions.ShouldBe(_handlerOptions);
         downstreamRoute.HttpHandlerOptions.ShouldNotBeNull();
@@ -427,7 +485,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     private void ThenTheDownstreamPathIsForwardSlash()
     {
-        var downstreamRoute = _result.Data.DownstreamRoute[0];
+        var downstreamRoute = _result[0].Data.DownstreamRoute[0];
         downstreamRoute.DownstreamPathTemplate.Value.ShouldBe("/");
         downstreamRoute.ServiceName.ShouldBe("auth");
         downstreamRoute.ServiceNamespace.ShouldBeEmpty();
@@ -444,7 +502,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             { "testHeader", "testHeaderValue" },
         };
         var kv = _upstreamHeaders.First();
-        _upstreamHeaderTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IHeaderDictionary>(), It.IsAny<bool>()))
+        _headerTemplatePatternCreator.Setup(x => x.Create(It.IsAny<IHeaderDictionary>(), It.IsAny<bool>()))
             .Returns(new Dictionary<string, UpstreamHeaderTemplate>()
             {
                 { kv.Key, new(kv.Value, kv.Value) },
@@ -470,13 +528,29 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         };
     }
 
-    private void WhenICreate()
+    private DefaultHttpContext WhenICreate(int i = 0)
     {
-        _result = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        var context = GivenHttpContext();
+        var route = _finder.Get(context.Request, out var errors);
+        _result[i] = errors.Any()
+            ? new ErrorResponse<Route>(errors.ToList())
+            : new OkResponse<Route>(route);
+        return context;
     }
 
-    private void WhenICreateAgain()
+    private DefaultHttpContext WhenICreateAgain() => WhenICreate(1);
+
+    private DefaultHttpContext GivenHttpContext(string upstreamUrlPath = null)
     {
-        _resultTwo = _finder.Get(_upstreamUrlPath, _upstreamQuery, _upstreamHttpMethod, _configuration, _upstreamHost, _upstreamHeaders);
+        var context = new DefaultHttpContext();
+        context.Request.Path = upstreamUrlPath ?? _upstreamUrlPath;
+        context.Request.QueryString = new(_upstreamQuery);
+        context.Request.Method = _upstreamHttpMethod;
+        context.Items.SetIInternalConfiguration(_configuration);
+        context.Request.Host = new(_upstreamHost);
+        foreach (var (key, value) in _upstreamHeaders)
+            context.Request.Headers[key] = value;
+
+        return context;
     }
 }
