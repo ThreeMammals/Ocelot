@@ -33,11 +33,11 @@ public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
     }
 
     [Theory]
-    [InlineData("/authorization", "authorization.service.web")]
-    [InlineData("/authorization/api", "authorization.service.api")]
-    public async Task ShouldUseTwoUpstreamPathSegmentsToFindNamespacedService(string upstreamPath, string serviceName)
+    [InlineData("/authorization", "authorization.service.web", "namespace")]
+    [InlineData("/authorization/api", "authorization.service.api", "namespace")]
+    public async Task ShouldUseTwoUpstreamPathSegmentsToFindNamespacedService(
+        string upstreamPath, string serviceName, string serviceNamespace)
     {
-        const string serviceNamespace = "namespace";
         var port = PortFinder.GetRandomPort();
         var serviceUrls = new[] { DownstreamUrl(port) };
         var configuration = GivenDynamicRouting(new()
