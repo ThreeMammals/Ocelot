@@ -9,9 +9,6 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
     public Func<string, string, string> ServiceNameMapping { get; set; }
         = (serviceName, version) => $"{serviceName}.service.{version}";
 
-    public override string GetDownstreamPath()
-        => DownstreamPath(Request.Path);
-
     protected override string DownstreamPath(string upstreamUrlPath)
     {
         var path = upstreamUrlPath.AsSpan();
@@ -34,7 +31,7 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
         var firstSegment = path[1..].IndexOf(Slash);
         if (firstSegment < 0)
         {
-            return new(CreateServiceName(service.Name, "web"), service.Namespace);
+            return new(CreateServiceName(service.Name), service.Namespace);
         }
 
         var secondSegment = path[(firstSegment + 2)..].IndexOf(Slash);
@@ -44,6 +41,9 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
         return new(CreateServiceName(service.Name, version), service.Namespace);
     }
 
+    protected readonly string DefaultVersion = "web";
+    protected virtual string CreateServiceName(string serviceName)
+        => ServiceNameMapping(serviceName, DefaultVersion);
     protected virtual string CreateServiceName(string serviceName, string version)
         => ServiceNameMapping(serviceName, version);
 }

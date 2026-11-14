@@ -19,7 +19,7 @@ namespace Ocelot.Acceptance.ServiceDiscovery;
 /// <summary>
 /// These tests are based on the custom service discovery provider, abstracting from currently implemented discovery providers and focusing on the dynamic routing features.
 /// </summary>
-public class DynamicRoutingTests : DiscoverySteps
+public class DynamicRoutingTests : DynamicSteps
 {
     public const bool EnabledDiscovery = true;
 
@@ -688,7 +688,4 @@ public class DynamicRoutingTests : DiscoverySteps
         pool.ShouldNotBeNull().CreatedHandlers.Keys.Count(route => route.ServiceName == serviceName)
             .ShouldBe(1, "Should use one HTTP handler for all downstream paths of the service");
     }
-
-    public override string ServiceNamespace() => nameof(DynamicRoutingTests);
-    public override CancellationToken CancelMe => TestContext.Current.CancellationToken;
 }

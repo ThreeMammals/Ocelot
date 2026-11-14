@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Ocelot.ServiceDiscovery;
-using Ocelot.Testing.Steps;
-using System.Net;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
 
 [Trait("Feat", "1188")] // https://github.com/ThreeMammals/Ocelot/issues/1188
-public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
+public sealed class UrlPathDynamicRoutingTests : DynamicSteps
 {
     [Theory]
     [InlineData("/authorization", "authorization.service.web")]
@@ -27,16 +23,17 @@ public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
         GivenOcelotIsRunning(WithDiscovery);
         await WhenIGetUrlOnTheApiGateway(upstreamPath);
 
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseHeaderIs(HeaderNames.Path, "/");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/"); // downstream path
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
     [Theory]
-    [InlineData("/authorization", "authorization.service.web", "namespace")]
-    [InlineData("/authorization/api", "authorization.service.api", "namespace")]
-    public async Task ShouldUseTwoUpstreamPathSegmentsToFindNamespacedService(
-        string upstreamPath, string serviceName, string serviceNamespace)
+    [InlineData("/namespace.authorization", "authorization.service.web", "/")]
+    [InlineData("/namespace.authorization/web/path1", "authorization.service.web", "/path1")]
+    [InlineData("/namespace.authorization/api", "authorization.service.api", "/")]
+    [InlineData("/namespace.authorization/api/path2?query", "authorization.service.api", "/path2?query")]
+    public async Task ShouldUseTwoUpstreamPathSegmentsToFindNamespacedService(string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
         var serviceUrls = new[] { DownstreamUrl(port) };
@@ -44,15 +41,14 @@ public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
         {
             { serviceName, serviceUrls },
         });
-        var namespacedPath = $"/{serviceNamespace}.{upstreamPath.TrimStart('/')}";
 
         GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
         GivenThereIsAConfiguration(configuration);
         GivenOcelotIsRunning(WithDiscovery);
-        await WhenIGetUrlOnTheApiGateway(namespacedPath);
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
 
-        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseHeaderIs(HeaderNames.Path, "/");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
@@ -61,6 +57,4 @@ public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
         base.WithDiscovery(services);
         services.AddOcelotDynamicRouting<TwoSegmentsUrlPathDynamicRouting>();
     }
-
-    public override CancellationToken CancelMe => TestContext.Current.CancellationToken;
 }
