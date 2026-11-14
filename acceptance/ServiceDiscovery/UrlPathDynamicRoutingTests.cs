@@ -32,6 +32,30 @@ public sealed class UrlPathDynamicRoutingTests : DiscoverySteps
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
+    [Theory]
+    [InlineData("/authorization", "authorization.service.web")]
+    [InlineData("/authorization/api", "authorization.service.api")]
+    public async Task ShouldUseTwoUpstreamPathSegmentsToFindNamespacedService(string upstreamPath, string serviceName)
+    {
+        const string serviceNamespace = "namespace";
+        var port = PortFinder.GetRandomPort();
+        var serviceUrls = new[] { DownstreamUrl(port) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+        var namespacedPath = $"/{serviceNamespace}.{upstreamPath.TrimStart('/')}";
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithDiscovery);
+        await WhenIGetUrlOnTheApiGateway(namespacedPath);
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/");
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
     public override void WithDiscovery(IServiceCollection services)
     {
         base.WithDiscovery(services);

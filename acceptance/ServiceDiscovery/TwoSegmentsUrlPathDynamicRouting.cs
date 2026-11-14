@@ -30,18 +30,18 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
     public override ServiceInfo GetServiceName(string upstreamUrlPath)
     {
         var path = upstreamUrlPath.AsSpan();
+        var service = base.GetServiceName(upstreamUrlPath);
         var firstSegment = path[1..].IndexOf(Slash);
         if (firstSegment < 0)
         {
-            return new(CreateServiceName(path[1..].ToString(), "web"));
+            return new(CreateServiceName(service.Name, "web"), service.Namespace);
         }
 
-        var serviceName = path[1..(firstSegment + 1)].ToString();
         var secondSegment = path[(firstSegment + 2)..].IndexOf(Slash);
         var version = secondSegment < 0
             ? path[(firstSegment + 2)..].ToString()
             : path.Slice(firstSegment + 2, secondSegment).ToString();
-        return new(CreateServiceName(serviceName, version));
+        return new(CreateServiceName(service.Name, version), service.Namespace);
     }
 
     protected virtual string CreateServiceName(string serviceName, string version)
