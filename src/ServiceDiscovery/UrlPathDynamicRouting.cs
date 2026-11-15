@@ -15,6 +15,7 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
 {
     public const char Dot = '.';
     public const char Slash = '/';
+    public const string SlashStr = "/";
 
     private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
 
@@ -37,7 +38,7 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
         int index = upstreamUrlPath.IndexOf(Slash, 1);
         return index != -1
             ? upstreamUrlPath[index..]
-            : Slash.ToString();
+            : SlashStr;
     }
 
     public virtual ServiceInfo GetServiceName()
@@ -70,10 +71,14 @@ public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDyna
     /// </summary>
     public static string UpstreamPath(string path, string serviceName, string serviceNamespace = null)
     {
-        path ??= Slash.ToString();
-        var pth = path.TrimStart(Slash);
+        path ??= string.Empty;
+        // var pth = path.TrimStart(Slash); // Skip TrimStart allocation when not needed
+        ReadOnlySpan<char> pth = path.AsSpan();
+        if (pth.Length > 0 && pth[0] == Slash)
+            pth = pth[1..];
+
         return serviceNamespace.IsEmpty()
-            ? string.Concat(Slash, serviceName, Slash, pth) // $"/{serviceName}/{pth}"
-            : string.Concat(Slash, serviceNamespace, Dot, serviceName, Slash, pth); // $"/{serviceNamespace}.{serviceName}/{pth}";
+            ? string.Concat(SlashStr, serviceName, SlashStr, pth)
+            : string.Concat(SlashStr, serviceNamespace, Dot, serviceName, SlashStr, pth.ToString());
     }
 }

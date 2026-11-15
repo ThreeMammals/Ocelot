@@ -13,11 +13,12 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData("/authorization/api$", "authorization/api", "/")]
     [InlineData("/authorization/api/user$", "authorization/api/user", "/")]
     [InlineData("/authorization/jobs$", "authorization/jobs", "/")]
-    [InlineData("/authorization/api/user$/details", "authorization/api/user", "/details")]
-    [InlineData("/authorization/api/user$details", "authorization/api/user", "/details")]
-    [InlineData("/authorization/api/user/$/details", "authorization/api/user", "/details")]
+    [InlineData("/authorization/api/user$/path", "authorization/api/user", "/path")]
+    [InlineData("/authorization/api/user$path", "authorization/api/user", "/path")]
+    [InlineData("/authorization/api/user/$/path", "authorization/api/user", "/path")]
     [InlineData("/namespace.authorization/api$", "authorization/api", "/")]
-    [InlineData("/namespace.authorization/api$/details", "authorization/api", "/details")]
+    [InlineData("/namespace.authorization/api$/path", "authorization/api", "/path")]
+    [InlineData("/namespace.authorization/api$/path?query", "authorization/api", "/path?query")]
     public async Task ShouldUseMultipleUpstreamPathSegmentsToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {
@@ -40,7 +41,7 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
 
     [Theory]
     [InlineData("/authorization/api::", "authorization/api", "/")]
-    [InlineData("/authorization/api::details", "authorization/api", "/details")]
+    [InlineData("/authorization/api::path", "authorization/api", "/path")]
     public async Task ShouldUseMultipleCharacterDelimiterToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {
@@ -63,9 +64,9 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
 
     [Theory]
     [InlineData("/authorization/api||", "authorization/api", "/")]
-    [InlineData("/authorization/api||details", "authorization/api", "/details")]
+    [InlineData("/authorization/api||path", "authorization/api", "/path")]
     [InlineData("/authorization/api%7C%7C", "authorization/api", "/")]
-    [InlineData("/authorization/api%7C%7Cdetails", "authorization/api", "/details")]
+    [InlineData("/authorization/api%7C%7Cpath", "authorization/api", "/path")]
     public async Task ShouldDecodeEncodedServiceNameEnding(
         string upstreamPath, string serviceName, string downstreamPath)
     {

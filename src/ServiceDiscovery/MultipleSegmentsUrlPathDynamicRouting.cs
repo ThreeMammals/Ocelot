@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -15,7 +14,6 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
 
     protected virtual char ServiceNameDelimiter => '$';
     protected virtual string ServiceNameEnding => string.Empty;
-    protected static readonly string SlashStr = Slash.ToString();
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
