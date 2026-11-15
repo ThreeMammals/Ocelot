@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
@@ -37,6 +38,38 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
+    [Theory]
+    [InlineData("/authorization/api::", "authorization/api", "/")]
+    [InlineData("/authorization/api::details", "authorization/api", "/details")]
+    public async Task ShouldUseMultipleCharacterDelimiterToFindService(
+        string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var serviceUrls = new[] { DownstreamUrl(port) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithMultiCharacterDelimiterRouting);
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
     private void WithDynamicRouting(IServiceCollection services)
         => WithDynamicRouting<MultipleSegmentsUrlPathDynamicRouting>(services);
+
+    private void WithMultiCharacterDelimiterRouting(IServiceCollection services)
+        => WithDynamicRouting<MultiCharacterDelimiterRouting>(services);
+
+    private sealed class MultiCharacterDelimiterRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameDelimiterString => "::";
+    }
 }

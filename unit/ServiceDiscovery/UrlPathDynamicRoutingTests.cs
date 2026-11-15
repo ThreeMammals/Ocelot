@@ -207,10 +207,93 @@ public class UrlPathDynamicRoutingTests : UnitTest
         Assert.Equal("authorization/api", actualServiceName.Name);
     }
 
+    [Theory]
+    [InlineData("/authorization/api::details", "authorization/api", "/details")]
+    [InlineData("/authorization/api::", "authorization/api", "/")]
+    [InlineData("/authorization/api--/details", "authorization", "/api--/details")]
+    public void MultipleSegmentsRouting_UsesCustomDelimiterString(
+        string upstreamPath, string expectedServiceName, string expectedDownstreamPath)
+    {
+        // Arrange
+        var routing = new CustomDelimiterStringRouting(contextAccessor.Object);
+        contextAccessor.Object.HttpContext.Request.Path = upstreamPath;
+
+        // Act
+        var actualServiceName = routing.GetServiceName(upstreamPath);
+        var actualDownstreamPath = routing.GetDownstreamPath();
+
+        // Assert
+        Assert.Equal(expectedServiceName, actualServiceName.Name);
+        Assert.Equal(expectedDownstreamPath, actualDownstreamPath);
+    }
+
+    [Fact]
+    public void MultipleSegmentsRouting_RemovesSlashesFromCustomDelimiterString()
+    {
+        // Arrange
+        var routing = new SlashInDelimiterStringRouting(contextAccessor.Object);
+
+        // Act
+        var actual = routing.GetServiceName("/authorization/api::details");
+
+        // Assert
+        Assert.Equal("authorization/api", actual.Name);
+    }
+
+    [Fact]
+    public void MultipleSegmentsRouting_ReplacesSlashCustomDelimiterWithDefault()
+    {
+        // Arrange
+        var routing = new SlashDelimiterRouting(contextAccessor.Object);
+
+        // Act
+        var actual = routing.GetServiceName("/authorization/api$details");
+
+        // Assert
+        Assert.Equal("authorization/api", actual.Name);
+    }
+
+    [Fact]
+    public void MultipleSegmentsRouting_WithNullDelimiterStringUsesCharacterDelimiter()
+    {
+        // Arrange
+        var routing = new NullDelimiterStringRouting(contextAccessor.Object);
+
+        // Act
+        var actual = routing.GetServiceName("/authorization/api$details");
+
+        // Assert
+        Assert.Equal("authorization/api", actual.Name);
+    }
+
     private sealed class CustomDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
         protected override char ServiceNameDelimiter => '#';
+    }
+
+    private sealed class CustomDelimiterStringRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameDelimiterString => "::";
+    }
+
+    private sealed class SlashInDelimiterStringRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameDelimiterString => ":/:";
+    }
+
+    private sealed class SlashDelimiterRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override char ServiceNameDelimiter => Slash;
+    }
+
+    private sealed class NullDelimiterStringRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameDelimiterString => null;
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)

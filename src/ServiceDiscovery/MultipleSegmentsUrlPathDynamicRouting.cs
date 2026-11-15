@@ -11,6 +11,7 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
     : UrlPathDynamicRouting(contextAccessor)
 {
     protected virtual char ServiceNameDelimiter => '$';
+    protected virtual string ServiceNameDelimiterString => string.Empty;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -18,11 +19,11 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
         if (upstreamUrlPath.Length <= 1)
             return Slash.ToString();
 
-        int delimiter = upstreamUrlPath.IndexOf(ServiceNameDelimiter, 1);
+        int delimiter = FindServiceNameDelimiter(upstreamUrlPath, out int delimiterLength);
         if (delimiter < 0)
             return base.DownstreamPath(upstreamUrlPath);
 
-        var downstreamPath = upstreamUrlPath[(delimiter + 1)..];
+        var downstreamPath = upstreamUrlPath[(delimiter + delimiterLength)..];
         return downstreamPath.IsEmpty() || downstreamPath[0] == Slash
             ? downstreamPath.IsEmpty() ? Slash.ToString() : downstreamPath
             : string.Concat(Slash, downstreamPath); // ensure downstream path starts with a slash
@@ -34,7 +35,7 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
         if (upstreamUrlPath.Length <= 1)
             return base.GetServiceName(upstreamUrlPath);
 
-        int delimiter = upstreamUrlPath.IndexOf(ServiceNameDelimiter, 1);
+        int delimiter = FindServiceNameDelimiter(upstreamUrlPath, out _);
         if (delimiter < 0)
             return base.GetServiceName(upstreamUrlPath);
 
@@ -44,5 +45,23 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
         return dot != -1
             ? new(service[(dot + 1)..], service[..dot])
             : new(service);
+    }
+
+    private int FindServiceNameDelimiter(string upstreamUrlPath, out int delimiterLength)
+    {
+        string delimiterString = ServiceNameDelimiterString?.Replace(Slash.ToString(), string.Empty);
+        if (delimiterString.IsNotEmpty())
+        {
+            delimiterLength = delimiterString.Length;
+            int index = upstreamUrlPath.AsSpan(1).IndexOf(delimiterString.AsSpan());
+            return index < 0 ? -1 : index + 1;
+        }
+
+        delimiterLength = 1;
+        char delimiter = ServiceNameDelimiter == Slash
+            ? '$'
+            : ServiceNameDelimiter;
+        int charIndex = upstreamUrlPath.AsSpan(1).IndexOf(delimiter);
+        return charIndex < 0 ? -1 : charIndex + 1;
     }
 }
