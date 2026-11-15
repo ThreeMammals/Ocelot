@@ -11,11 +11,11 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
     : UrlPathDynamicRouting(contextAccessor)
 {
     protected virtual char ServiceNameDelimiter => '$';
-    protected virtual string ServiceNameDelimiterString => string.Empty;
+    protected virtual string ServiceNameEnding => string.Empty;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
-        upstreamUrlPath ??= string.Empty;
+        upstreamUrlPath = DecodeUrlPath(upstreamUrlPath);
         if (upstreamUrlPath.Length <= 1)
             return Slash.ToString();
 
@@ -31,7 +31,7 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
 
     public override ServiceInfo GetServiceName(string upstreamUrlPath)
     {
-        upstreamUrlPath ??= string.Empty;
+        upstreamUrlPath = DecodeUrlPath(upstreamUrlPath);
         if (upstreamUrlPath.Length <= 1)
             return base.GetServiceName(upstreamUrlPath);
 
@@ -49,7 +49,7 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
 
     private int FindServiceNameDelimiter(string upstreamUrlPath, out int delimiterLength)
     {
-        string delimiterString = ServiceNameDelimiterString?.Replace(Slash.ToString(), string.Empty);
+        string delimiterString = ServiceNameEnding?.Replace(Slash.ToString(), string.Empty);
         if (delimiterString.IsNotEmpty())
         {
             delimiterLength = delimiterString.Length;
@@ -64,4 +64,7 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
         int charIndex = upstreamUrlPath.AsSpan(1).IndexOf(delimiter);
         return charIndex < 0 ? -1 : charIndex + 1;
     }
+
+    private static string DecodeUrlPath(string upstreamUrlPath)
+        => Uri.UnescapeDataString(upstreamUrlPath ?? string.Empty);
 }

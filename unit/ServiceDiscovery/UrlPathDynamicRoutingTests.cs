@@ -228,6 +228,22 @@ public class UrlPathDynamicRoutingTests : UnitTest
     }
 
     [Fact]
+    public void MultipleSegmentsRouting_DecodesEncodedDelimiterString()
+    {
+        // Arrange
+        var routing = new EncodedDelimiterRouting(contextAccessor.Object);
+        contextAccessor.Object.HttpContext.Request.Path = "/authorization/api%7C%7Cdetails";
+
+        // Act
+        var actualServiceName = routing.GetServiceName("/authorization/api%7C%7Cdetails");
+        var actualDownstreamPath = routing.GetDownstreamPath();
+
+        // Assert
+        Assert.Equal("authorization/api", actualServiceName.Name);
+        Assert.Equal("/details", actualDownstreamPath);
+    }
+
+    [Fact]
     public void MultipleSegmentsRouting_RemovesSlashesFromCustomDelimiterString()
     {
         // Arrange
@@ -275,13 +291,19 @@ public class UrlPathDynamicRoutingTests : UnitTest
     private sealed class CustomDelimiterStringRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
-        protected override string ServiceNameDelimiterString => "::";
+        protected override string ServiceNameEnding => "::";
+    }
+
+    private sealed class EncodedDelimiterRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameEnding => "||";
     }
 
     private sealed class SlashInDelimiterStringRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
-        protected override string ServiceNameDelimiterString => ":/:";
+        protected override string ServiceNameEnding => ":/:";
     }
 
     private sealed class SlashDelimiterRouting(IHttpContextAccessor contextAccessor)
@@ -293,7 +315,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
     private sealed class NullDelimiterStringRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
-        protected override string ServiceNameDelimiterString => null;
+        protected override string ServiceNameEnding => null;
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)

@@ -61,15 +61,47 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
+    [Theory]
+    [InlineData("/authorization/api||", "authorization/api", "/")]
+    [InlineData("/authorization/api||details", "authorization/api", "/details")]
+    public async Task ShouldDecodeEncodedServiceNameEnding(
+        string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var serviceUrls = new[] { DownstreamUrl(port) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithEncodedDelimiterRouting);
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
     private void WithDynamicRouting(IServiceCollection services)
         => WithDynamicRouting<MultipleSegmentsUrlPathDynamicRouting>(services);
 
     private void WithMultiCharacterDelimiterRouting(IServiceCollection services)
         => WithDynamicRouting<MultiCharacterDelimiterRouting>(services);
 
+    private void WithEncodedDelimiterRouting(IServiceCollection services)
+        => WithDynamicRouting<EncodedDelimiterRouting>(services);
+
     private sealed class MultiCharacterDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
-        protected override string ServiceNameDelimiterString => "::";
+        protected override string ServiceNameEnding => "::";
+    }
+
+    private sealed class EncodedDelimiterRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameEnding => "||";
     }
 }
