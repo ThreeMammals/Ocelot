@@ -15,6 +15,8 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData("/authorization/api/user$/details", "authorization/api/user", "/details")]
     [InlineData("/authorization/api/user$details", "authorization/api/user", "/details")]
     [InlineData("/authorization/api/user/$/details", "authorization/api/user", "/details")]
+    [InlineData("/namespace.authorization/api$", "authorization/api", "/")]
+    [InlineData("/namespace.authorization/api$/details", "authorization/api", "/details")]
     public async Task ShouldUseMultipleUpstreamPathSegmentsToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {

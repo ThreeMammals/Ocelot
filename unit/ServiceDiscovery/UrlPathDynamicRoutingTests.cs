@@ -143,8 +143,10 @@ public class UrlPathDynamicRoutingTests : UnitTest
     [InlineData("/authorization/api/user$details", "authorization/api/user", "/details")]
     [InlineData("/authorization/api/user/$/details", "authorization/api/user", "/details")]
     [InlineData("/authorization/api/user$", "authorization/api/user", "/")]
+    [InlineData("/namespace.authorization/api$/details", "authorization/api", "/details", "namespace")]
     public void MultipleSegmentsRouting_UsesDelimiterToSplitServiceNameAndDownstreamPath(
-        string upstreamPath, string expectedServiceName, string expectedDownstreamPath)
+        string upstreamPath, string expectedServiceName, string expectedDownstreamPath,
+        string expectedNamespace = "")
     {
         // Arrange
         var routing = new MultipleSegmentsUrlPathDynamicRouting(contextAccessor.Object);
@@ -156,7 +158,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
 
         // Assert
         Assert.Equal(expectedServiceName, actualServiceName.Name);
-        Assert.Equal(string.Empty, actualServiceName.Namespace);
+        Assert.Equal(expectedNamespace, actualServiceName.Namespace);
         Assert.Equal(expectedDownstreamPath, actualDownstreamPath);
     }
 
@@ -177,6 +179,22 @@ public class UrlPathDynamicRoutingTests : UnitTest
     }
 
     [Fact]
+    public void MultipleSegmentsRouting_WithNullPath_UsesRootPath()
+    {
+        // Arrange
+        var routing = new TestableMultipleSegmentsRouting(contextAccessor.Object);
+
+        // Act
+        var actualServiceName = routing.GetServiceName(null);
+        var actualDownstreamPath = routing.GetDownstreamPathForTest(null);
+
+        // Assert
+        Assert.Equal(string.Empty, actualServiceName.Name);
+        Assert.Equal(string.Empty, actualServiceName.Namespace);
+        Assert.Equal("/", actualDownstreamPath);
+    }
+
+    [Fact]
     public void MultipleSegmentsRouting_UsesCustomDelimiter()
     {
         // Arrange
@@ -193,5 +211,12 @@ public class UrlPathDynamicRoutingTests : UnitTest
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
         protected override char ServiceNameDelimiter => '#';
+    }
+
+    private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        public string GetDownstreamPathForTest(string upstreamUrlPath)
+            => DownstreamPath(upstreamUrlPath);
     }
 }

@@ -15,6 +15,9 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
     protected override string DownstreamPath(string upstreamUrlPath)
     {
         upstreamUrlPath ??= string.Empty;
+        if (upstreamUrlPath.Length <= 1)
+            return Slash.ToString();
+
         int delimiter = upstreamUrlPath.IndexOf(ServiceNameDelimiter, 1);
         if (delimiter < 0)
             return base.DownstreamPath(upstreamUrlPath);
@@ -28,12 +31,18 @@ public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextA
     public override ServiceInfo GetServiceName(string upstreamUrlPath)
     {
         upstreamUrlPath ??= string.Empty;
+        if (upstreamUrlPath.Length <= 1)
+            return base.GetServiceName(upstreamUrlPath);
+
         int delimiter = upstreamUrlPath.IndexOf(ServiceNameDelimiter, 1);
         if (delimiter < 0)
             return base.GetServiceName(upstreamUrlPath);
 
-        ReadOnlySpan<char> serviceName = upstreamUrlPath
+        ReadOnlySpan<char> service = upstreamUrlPath
             .AsSpan(1, delimiter - 1).TrimEnd(Slash);
-        return new(serviceName);
+        int dot = service.IndexOf(Dot);
+        return dot != -1
+            ? new(service[(dot + 1)..], service[..dot])
+            : new(service);
     }
 }
