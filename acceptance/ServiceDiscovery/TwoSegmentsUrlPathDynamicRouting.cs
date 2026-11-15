@@ -14,9 +14,7 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
         var path = upstreamUrlPath.AsSpan();
         var firstSegment = path[1..].IndexOf(Slash);
         if (firstSegment < 0)
-        {
             return Slash.ToString();
-        }
 
         var secondSegment = path[(firstSegment + 2)..].IndexOf(Slash);
         return secondSegment < 0
@@ -30,9 +28,7 @@ public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccess
         var service = base.GetServiceName(upstreamUrlPath);
         var firstSegment = path[1..].IndexOf(Slash);
         if (firstSegment < 0)
-        {
             return new(CreateServiceName(service.Name), service.Namespace);
-        }
 
         var secondSegment = path[(firstSegment + 2)..].IndexOf(Slash);
         var version = secondSegment < 0
