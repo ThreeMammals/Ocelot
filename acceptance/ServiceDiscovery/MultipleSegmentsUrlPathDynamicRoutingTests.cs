@@ -7,15 +7,17 @@ namespace Ocelot.Acceptance.ServiceDiscovery;
 public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
 {
     [Theory]
-    [InlineData("/authorization/api/user$/details", "/details")]
-    [InlineData("/authorization/api/user$details", "/details")]
-    [InlineData("/authorization/api/user/$/details", "/details")]
-    [InlineData("/authorization/api/user$", "/")]
+    [InlineData("/authorization$", "authorization", "/")]
+    [InlineData("/authorization/api$", "authorization/api", "/")]
+    [InlineData("/authorization/api/user$", "authorization/api/user", "/")]
+    [InlineData("/authorization/jobs$", "authorization/jobs", "/")]
+    [InlineData("/authorization/api/user$/details", "authorization/api/user", "/details")]
+    [InlineData("/authorization/api/user$details", "authorization/api/user", "/details")]
+    [InlineData("/authorization/api/user/$/details", "authorization/api/user", "/details")]
     public async Task ShouldUseMultipleUpstreamPathSegmentsToFindService(
-        string upstreamPath, string downstreamPath)
+        string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
-        const string serviceName = "authorization/api/user";
         var serviceUrls = new[] { DownstreamUrl(port) };
         var configuration = GivenDynamicRouting(new()
         {
