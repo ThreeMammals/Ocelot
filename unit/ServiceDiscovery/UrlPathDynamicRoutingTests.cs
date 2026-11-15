@@ -282,6 +282,16 @@ public class UrlPathDynamicRoutingTests : UnitTest
         Assert.Equal("authorization/api", actual.Name);
     }
 
+    [Fact]
+    public void MultipleSegmentsRouting_WithOversizedServiceNameEndingThrows()
+    {
+        // Arrange
+        var routing = new OversizedDelimiterStringRouting(contextAccessor.Object);
+
+        // Act and Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => routing.GetServiceName("/authorization$details"));
+    }
+
     private sealed class CustomDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
@@ -316,6 +326,12 @@ public class UrlPathDynamicRoutingTests : UnitTest
         : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => null;
+    }
+
+    private sealed class OversizedDelimiterStringRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+    {
+        protected override string ServiceNameEnding => "12345678901234567";
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)
