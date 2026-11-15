@@ -64,6 +64,8 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
     [Theory]
     [InlineData("/authorization/api||", "authorization/api", "/")]
     [InlineData("/authorization/api||details", "authorization/api", "/details")]
+    [InlineData("/authorization/api%7C%7C", "authorization/api", "/")]
+    [InlineData("/authorization/api%7C%7Cdetails", "authorization/api", "/details")]
     public async Task ShouldDecodeEncodedServiceNameEnding(
         string upstreamPath, string serviceName, string downstreamPath)
     {
