@@ -5,34 +5,21 @@ Tag to substitute: {0}
 https://www.nuget.org/packages/Ocelot/{0}
 -->
 
-## :package: Reference SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md) patch (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
-
-> SDK: [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)  
-> Patched versions: [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0), [25.0.1](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1)
-
-Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) includes upgraded solutions of all [Ocelot packages](https://github.com/ThreeMammals/Ocelot/blob/develop/ReleaseRadar.md) based on .NET SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0), released on October 13, 2026. For more details about SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (also known as Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md)), see the [.NET 10.0.13 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md) as part of the [.NET 10 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
-
-## :fire: Hotfix for bugs #2352 and #2428 (version [{0}](https://www.nuget.org/packages/Ocelot/{0})), a.k.a. [Dynamic Routing](https://ocelot.readthedocs.io/en/25.0/features/servicediscovery.html#dynamic-routing) patch :package:
-
-> Affected Milestones: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13), [Summer '25](https://github.com/ThreeMammals/Ocelot/milestone/9)  
-> Hotfixed versions: [24.1.0](https://github.com/ThreeMammals/Ocelot/releases/tag/24.1.0) ("Globality"), [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0), [25.0.1](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1) (".NET 10")  
+## :warning: End of .NET 8 and .NET 9 support (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
+> **Milestone: [.NET 10](https://github.com/ThreeMammals/Ocelot/milestone/13)** :point_left:
+> Codenamed: [.NET 10](https://devblogs.microsoft.com/dotnet/announcing-dotnet-10/)
 > Read the Docs: [Ocelot 25.0](https://ocelot.readthedocs.io/en/25.0/) with [PDF](https://ocelot.readthedocs.io/_/downloads/en/25.0/pdf/)
 
-:fire: Hotfixed bugs are #2352 and #2428. A sincere and heartfelt "Thank You" goes to @xiexihui, @elenacalugaru, and @alin-popa for reporting these critical bugs.
-:heart: A special "Thank You" goes to **Beka Mosulishvili** (@bekammo) for the professional and timely contributions in pull requests #2427 and #2429.
+The .NET 8 and .NET 9 [support lifecycles](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#lifecycle) have ended on November 10, 2026. This release updates Ocelot's references for `net8.0` and `net9.0` to .NET 8.0.34 and .NET 9.0.23, respectively, and updates `net10.0` references to .NET 10.0.15. **This patch does not remove any target frameworks from project files.** Use .NET 10 to continue receiving Ocelot updates for a supported .NET release.
 
-## :exclamation: Breaking Changes :exclamation:
+Non-Microsoft package references were also updated in the Ocelot solution, and the sample projects now reference the updated Ocelot packages and dependencies.
 
-**Interface Breaking Changes**:
-- Interface FQN: [Ocelot.DownstreamRouteFinder.Finder.IDownstreamRouteProvider](https://github.com/ThreeMammals/Ocelot/blob/25.0.1/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs)
-- Deleted type FQN: [Ocelot.DownstreamRouteFinder.DownstreamRouteHolder](https://github.com/ThreeMammals/Ocelot/blob/25.0.1/src/DownstreamRouteFinder/DownstreamRouteHolder.cs)
+## :package: Reference SDK [10.0.404](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). Runtime [10.0.15](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.15/10.0.15.md) patch (version [{0}](https://www.nuget.org/packages/Ocelot/{0}))
 
-The [IDownstreamRouteProvider.Get](https://github.com/ThreeMammals/Ocelot/blob/{0}/src/DownstreamRouteFinder/Finder/IDownstreamRouteProvider.cs) method now returns `Response<Route>` (previously `Response<DownstreamRouteHolder>`). The `DownstreamRouteHolder` class has been removed. Placeholders are now stored directly on `Route.TemplatePlaceholderNameAndValues`. Custom implementations of `IDownstreamRouteProvider` and any code that references `DownstreamRouteHolder` require updates and recompilation.
+> SDK: [10.0.404](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+> Patched versions: [25.0.0](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0), [25.0.1](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1), [25.0.2](https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.2)
 
-**Other changes affecting deployments**:
-
-1. [Dynamic Routing](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/servicediscovery.rst#dynamic-routing) no longer attempts to build [upstream header templates](https://github.com/ThreeMammals/Ocelot/blob/{0}/docs/features/routing.rst#upstream-headers) from incoming request headers (fixes `RegexParseException` on certain browser headers such as `sec-ch-ua`). An empty collection is returned instead. Static routing is unchanged.
-2. Reference updated to .NET SDK [10.0.402](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) / Runtime [10.0.13](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md).
+Version [{0}](https://www.nuget.org/packages/Ocelot/{0}) updates the Ocelot projects and package references for the November 10, 2026 .NET servicing releases. The .NET 8 and .NET 9 references are updated to their final servicing versions, [8.0.34](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) and [9.0.23](https://dotnet.microsoft.com/en-us/download/dotnet/9.0), respectively. The .NET 10 references are updated to [10.0.15](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.15/10.0.15.md), using SDK [10.0.404](https://dotnet.microsoft.com/en-us/download/dotnet/10.0). See the [.NET 10.0.15 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.15/10.0.15.md) as part of the [.NET 10 Release Notes](https://github.com/dotnet/core/blob/main/release-notes/10.0/README.md).
 
 <!--
 

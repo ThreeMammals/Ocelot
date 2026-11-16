@@ -10,8 +10,10 @@ Welcome
 .. _25.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
 .. _25.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1
 .. _25.0.2: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.2
+.. _25.0.3: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.3
 .. _10.0.401: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 .. _10.0.402: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
+.. _10.0.404: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 .. _2352: https://github.com/ThreeMammals/Ocelot/issues/2352
 .. _2428: https://github.com/ThreeMammals/Ocelot/issues/2428
 
@@ -26,6 +28,8 @@ The major version `25.0.0`_ includes several patches, the history of which is ou
   - `25.0.1`_, on September 14, 2026: Reference SDK `10.0.401`_ (Runtime `10.0.12 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.12/10.0.12.md>`_)
   - `25.0.2`_, on October 15, 2026: Reference SDK `10.0.402`_ (Runtime `10.0.13 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.13/10.0.13.md>`_).
     Hotfix for bugs `2352`_ and `2428`_, a :ref:`Dynamic Routing <sd-dynamic-routing>` patch.
+  - `25.0.3`_, on November 17, 2026: Reference SDK `10.0.404`_ (Runtime `10.0.15 <https://github.com/dotnet/core/blob/main/release-notes/10.0/10.0.15/10.0.15.md>`_).
+    .NET 8/9 support has ended; the ``net8.0`` and ``net9.0`` target frameworks remain in this patch.
 
 .. _release-notes:
 

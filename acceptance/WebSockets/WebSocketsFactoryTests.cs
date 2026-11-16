@@ -4,13 +4,12 @@ using Ocelot.Configuration.File;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
 
 namespace Ocelot.Acceptance.WebSockets;
 
 [Trait("Feat", "212")] // https://github.com/ThreeMammals/Ocelot/issues/212
-public sealed class WebSocketsFactoryTests : WebSocketsSteps
+public sealed class WebSocketsFactoryTests : WSSteps
 {
     [Fact]
     [Trait("PR", "273")] // https://github.com/ThreeMammals/Ocelot/pull/273
@@ -58,6 +57,8 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
     [Trait("PR", "2387")] // https://github.com/ThreeMammals/Ocelot/pull/2387
     public async Task ShouldProxyWebsocketInputToDownstreamServiceUsingCustomMiddleware(bool injectViaType)
     {
+        SkipWhenCiCd();
+
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute("/ws", port);
         var configuration = GivenConfiguration(route);
@@ -94,8 +95,6 @@ public sealed class WebSocketsFactoryTests : WebSocketsSteps
         DownstreamScheme = Uri.UriSchemeWs,
         DownstreamHostAndPorts = ports.Select(Localhost).ToList(),
     };
-
-    public override CancellationToken CancelMe => Xunit.TestContext.Current.CancellationToken;
 
     private sealed class LargeBufferWebSocketsProxyMiddleware : WebSocketsProxyMiddleware
     {

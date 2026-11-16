@@ -5,7 +5,7 @@ using System.Net.WebSockets;
 
 namespace Ocelot.Acceptance.WebSockets;
 
-public sealed class DiscoveryWebSocketTests : WebSocketsSteps
+public sealed class DiscoveryWebSocketTests : WSSteps
 {
     private readonly DiscoveryWebSocketSteps steps = new();
     public override void Dispose()
