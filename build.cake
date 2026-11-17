@@ -761,7 +761,10 @@ Task("PublishToNuget")
 			Warning("We are not running on the CI/CD so we won't publish NuGet packages.");
 			//return;
 		}
-		var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY_2025");
+		var nugetFeedStableKey = EnvironmentVariable("OCELOT_NUGET_API_KEY");
+		if (string.IsNullOrWhiteSpace(nugetFeedStableKey))
+			Warning("Environment variable 'OCELOT_NUGET_API_KEY' was not injected: it is absent or empty!");
+
 		var nugetFeedStableUploadUrl = "https://www.nuget.org/api/v2/package";
 		var nugetFeedStableSymbolsUploadUrl = "https://www.nuget.org/api/v2/package";
 		PublishPackages(packagesDir, artifactsFile, nugetFeedStableKey, nugetFeedStableUploadUrl, nugetFeedStableSymbolsUploadUrl);

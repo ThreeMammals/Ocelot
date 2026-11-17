@@ -51,8 +51,14 @@ public class AcceptanceSteps : IDisposable
     }
 
     protected virtual bool IsCiCd() => IsRunningInGitHubActions();
-    protected static bool IsRunningInGitHubActions()
-        => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+    protected static bool IsRunningInGitHubActions() => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+    public virtual void SkipWhen(Func<bool>? when = null, string? message = null)
+    {
+        when ??= IsCiCd;
+        message ??= "Skipped in CI/CD!";
+        if (when())
+            throw new PlatformNotSupportedException(message);
+    }
 
     protected List<string> Files { get; }
     protected List<string> Folders { get; }

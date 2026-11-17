@@ -21,6 +21,10 @@ public class WebSocketsSteps : AcceptanceSteps
     private readonly List<string> _secondRecieved = new();
     protected readonly List<string> _firstRecieved = new();
 
+    public virtual string Skipped_In_CI_CD => "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.";
+    public override void SkipWhen(Func<bool>? when = null, string? message = null)
+        => base.SkipWhen(when ?? IsCiCd, message ?? Skipped_In_CI_CD);
+
     protected static void WithConsole(WebHostBuilderContext context, ILoggingBuilder logging) => logging
         .AddConfiguration(context.Configuration.GetSection("Logging"))
         .AddConsole();
