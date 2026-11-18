@@ -10,9 +10,8 @@ public class ClaimsToHeadersMiddleware : OcelotMiddleware
     private readonly IAddHeadersToRequest _addHeadersToRequest;
 
     public ClaimsToHeadersMiddleware(RequestDelegate next,
-        IOcelotLoggerFactory loggerFactory,
-        IAddHeadersToRequest addHeadersToRequest)
-            : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
+        IOcelotLoggerFactory loggerFactory, IAddHeadersToRequest addHeadersToRequest)
+        : base(loggerFactory.CreateLogger<ClaimsToHeadersMiddleware>())
     {
         _next = next;
         _addHeadersToRequest = addHeadersToRequest;

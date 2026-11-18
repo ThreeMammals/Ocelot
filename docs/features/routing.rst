@@ -480,6 +480,11 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 
   **Note**: For comprehensive documentation regarding errors and status codes in Ocelot, please refer to the :doc:`../features/errorcodes` chapter.
 
+* **The** ``multipart/form-data`` **content type**.
+  For handling file uploads and form submissions with binary data, Ocelot automatically preserves the multipart structure,
+  allowing downstream services to receive the complete request with all form fields and file boundaries intact.
+  See the ":ref:`rproxy-multipart-form-data`" feature for detailed configuration and examples.
+
 """"
 
 .. [#f1] The ":ref:`Embedded Placeholders <routing-embedded-placeholders>`" feature was requested as part of issue `2199`_ , and released in version `23.4`_

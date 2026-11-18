@@ -11,35 +11,31 @@ public sealed class ReturnsErrorTests : Steps
     [Trait("Feat", "603")] // https://github.com/ThreeMammals/Ocelot/issues/603
     [Trait("PR", "1149")] // https://github.com/ThreeMammals/Ocelot/pull/1149
     [Trait("Release", "15.0.1")] // https://github.com/ThreeMammals/Ocelot/releases/tag/15.0.1
-    public void Should_return_bad_gateway_error_if_downstream_service_doesnt_respond()
+    public async Task Should_return_bad_gateway_error_if_downstream_service_doesnt_respond()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     [Fact]
     [Trait("Commit", "1599694")] // https://github.com/ThreeMammals/Ocelot/commit/159969483b64c5491b1d86b1aa4dac7b4b2a3ba1
     [Trait("Commit", "ef3deec")] // https://github.com/ThreeMammals/Ocelot/commit/ef3deec8da78fd282f6b5f2bff8e6d6853496c31
     [Trait("Release", "1.4.0")] // https://github.com/ThreeMammals/Ocelot/releases/tag/1.4.0
-    public void Should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
+    public async Task Should_return_internal_server_error_if_downstream_service_returns_internal_server_error()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceThrowingAnException(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError))
-        .BDDfy();
+        GivenThereIsAServiceThrowingAnException(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.InternalServerError);
     }
 
     [Fact]
@@ -48,18 +44,16 @@ public sealed class ReturnsErrorTests : Steps
     [Trait("Release", "14.0.4")] // https://github.com/ThreeMammals/Ocelot/releases/tag/14.0.4
     [Trait("Commit", "9da55ea")] // https://github.com/ThreeMammals/Ocelot/commit/9da55ea037d0df3b8b22d32dec9b004a50709251
     [Trait("PR", "1106")] // https://github.com/ThreeMammals/Ocelot/pull/1106
-    public void Should_log_warning_if_downstream_service_returns_internal_server_error()
+    public async Task Should_log_warning_if_downstream_service_returns_internal_server_error()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceThrowingAnException(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => x.GivenOcelotIsRunningWithLogger())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenWarningShouldBeLogged(1))
-        .BDDfy();
+        GivenThereIsAServiceThrowingAnException(port);
+        GivenThereIsAConfiguration(configuration);
+        await GivenOcelotIsRunningWithLogger();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenWarningShouldBeLogged(1);
     }
 
     private Task<int> GivenOcelotIsRunningWithLogger()

@@ -30,12 +30,12 @@ using Ocelot.QualityOfService;
 using Ocelot.Requester;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.UnitTests.Multiplexer;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using static Ocelot.UnitTests.Multiplexing.UserDefinedResponseAggregatorTests;
 
 namespace Ocelot.UnitTests.DependencyInjection;
 

@@ -2,12 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 using System.Net;
 
@@ -176,6 +174,17 @@ public class ServiceHandler : IDisposable
 
     #endregion
 
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <c>localhost</c> URL to listen on the <paramref name="port"/>.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="port">The port to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IHost"/> object as an instance of a web server.</returns>
 #if NET10_0_OR_GREATER
     public IHost
 #else
@@ -189,6 +198,17 @@ public class ServiceHandler : IDisposable
         Action<IWebHostBuilder>? configureWebHost)
     => GivenThereIsAServiceRunningOn(Localhost(port), configureDelegate, configureLogging, configureServices, configureApp, configureWebHost);
 
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <paramref name="baseUrl"/> to listen on.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="baseUrl">The URL to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IHost"/> object as an instance of a web server.</returns>
 #if NET10_0_OR_GREATER
     public IHost
 #else
@@ -201,24 +221,35 @@ public class ServiceHandler : IDisposable
         Action<IApplicationBuilder>? configureApp,
         Action<IWebHostBuilder>? configureWebHost)
     {
-        void ConfigureWeb(IWebHostBuilder builder)
-        {
-            builder.UseUrls(baseUrl).UseKestrel();
-            if (configureDelegate != null) builder.ConfigureAppConfiguration(configureDelegate);
-            if (configureLogging != null) builder.ConfigureLogging(configureLogging);
-            if (configureServices != null) builder.ConfigureServices(configureServices);
-            if (configureApp != null) builder.Configure(configureApp);
-            configureWebHost?.Invoke(builder);
-        }
-        var host = CreateBuilder(ConfigureWeb).Build();
-        AddOrStopAsync(baseUrl, host).GetAwaiter().GetResult();
-        host.Start();
-        return host;
+        return GivenThereIsAServiceRunningOnAsync(baseUrl, configureDelegate, configureLogging, configureServices, configureApp, configureWebHost)
+            .GetAwaiter().GetResult();
     }
 
 #if NET10_0_OR_GREATER
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <c>localhost</c> URL to listen on the <paramref name="port"/>.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="port">The port to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IHost"/> object as an instance of a web server.</returns>
     public Task<IHost>
 #else
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <c>localhost</c> URL to listen on the <paramref name="port"/>.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="port">The port to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IWebHost"/> object as an instance of a web server.</returns>
     public Task<IWebHost>
 #endif
     GivenThereIsAServiceRunningOnAsync(int port,
@@ -226,12 +257,34 @@ public class ServiceHandler : IDisposable
         Action<WebHostBuilderContext, ILoggingBuilder>? configureLogging,
         Action<IServiceCollection>? configureServices,
         Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? configureWebHost)
+        Action<IWebHostBuilder>? configureWebHost) // TODO Add CancellationToken argument
         => GivenThereIsAServiceRunningOnAsync(Localhost(port), configureDelegate, configureLogging, configureServices, configureApp, configureWebHost);
 
 #if NET10_0_OR_GREATER
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <paramref name="baseUrl"/> to listen on.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="baseUrl">The URL to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IHost"/> object as an instance of a web server.</returns>
     public Task<IHost>
 #else
+    /// <summary>
+    /// Creates and runs a service to be hosted on a Kestrel web server by default, additionally binding a <paramref name="baseUrl"/> to listen on.
+    /// </summary>
+    /// <remarks>Use the <paramref name="configureWebHost"/> parameter to run non-Kestrel servers.</remarks>
+    /// <param name="baseUrl">The URL to run the service on.</param>
+    /// <param name="configureDelegate">Custom configuration method.</param>
+    /// <param name="configureLogging">Custom logging configuration method.</param>
+    /// <param name="configureServices">Custom services configuration method.</param>
+    /// <param name="configureApp">Custom application configuration method.</param>
+    /// <param name="configureWebHost">Custom web host configuration method.</param>
+    /// <returns>An <see cref="IWebHost"/> object as an instance of a web server.</returns>
     public Task<IWebHost>
 #endif
     GivenThereIsAServiceRunningOnAsync(string baseUrl,
@@ -239,16 +292,17 @@ public class ServiceHandler : IDisposable
         Action<WebHostBuilderContext, ILoggingBuilder>? configureLogging,
         Action<IServiceCollection>? configureServices,
         Action<IApplicationBuilder>? configureApp,
-        Action<IWebHostBuilder>? configureWebHost)
+        Action<IWebHostBuilder>? configureWebHost) // TODO Add CancellationToken argument
     {
         void ConfigureWeb(IWebHostBuilder builder)
         {
-            builder.UseUrls(baseUrl).UseKestrel();
             if (configureDelegate != null) builder.ConfigureAppConfiguration(configureDelegate);
             if (configureLogging != null) builder.ConfigureLogging(configureLogging);
             if (configureServices != null) builder.ConfigureServices(configureServices);
             if (configureApp != null) builder.Configure(configureApp);
-            configureWebHost?.Invoke(builder);
+            builder.UseUrls(baseUrl);
+            if (configureWebHost is null) builder.UseKestrel();
+            else configureWebHost.Invoke(builder);
         }
         var host = CreateBuilder(ConfigureWeb).Build();
         return AddOrStopAsync(baseUrl, host)

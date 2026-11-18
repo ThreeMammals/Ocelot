@@ -6,27 +6,27 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Acceptance.Security;
 
-public sealed class SecurityOptionsTests: Steps
+public sealed class SecurityOptionsTests : Steps
 {
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_call_with_allowed_ip_in_global_config()
+    public async Task Should_call_with_allowed_ip_in_global_config()
     {
         var ip = "192.168.1.35";
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, "/worldPath", "/myPath");
         GivenRouteForwardingClientIpAddressViaHeader(route, ForwardedHeadersDefaults.XForwardedForHeaderName);
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Fabrizio"))
-            .And(x => ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
+        ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
@@ -38,20 +38,20 @@ public sealed class SecurityOptionsTests: Steps
         var route = GivenRoute(port, "/worldPath", "/myPath");
         GivenRouteForwardingClientIpAddressViaHeader(route, ForwardedHeadersDefaults.XForwardedForHeaderName);
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .And(x => ThenTheResponseBodyShouldBeEmpty())
-            .And(x => ThenTheResponseHeaderExists(ForwardedHeadersDefaults.XForwardedForHeaderName, false))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        await ThenTheResponseBodyShouldBeEmpty();
+        ThenTheResponseHeaderExists(ForwardedHeadersDefaults.XForwardedForHeaderName, false);
     }
 
     [Fact]
-    public void Should_call_with_allowed_ip_in_route_config()
+    public async Task Should_call_with_allowed_ip_in_route_config()
     {
         var ip = "192.168.1.1";
         var port = PortFinder.GetRandomPort();
@@ -62,20 +62,20 @@ public sealed class SecurityOptionsTests: Steps
             IPAllowedList = [ip],
         };
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Fabrizio"))
-            .And(x => ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
+        ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
-    public void Should_block_call_with_blocked_ip_in_route_config()
+    public async Task Should_block_call_with_blocked_ip_in_route_config()
     {
         var ip = "192.168.1.1";
         var port = PortFinder.GetRandomPort();
@@ -86,20 +86,20 @@ public sealed class SecurityOptionsTests: Steps
             IPBlockedList = [ip],
         };
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .And(x => ThenTheResponseBodyShouldBeEmpty())
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
+    public async Task Should_call_with_allowed_ip_in_route_config_and_blocked_ip_in_global_config()
     {
         var ip = "192.168.1.55";
         var port = PortFinder.GetRandomPort();
@@ -110,21 +110,21 @@ public sealed class SecurityOptionsTests: Steps
             IPAllowedList = [ip],
         };
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Fabrizio"))
-            .And(x => ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Fabrizio");
+        ThenTheResponseHeaderIs(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
     }
 
     [Fact]
     [Trait("Feat", "2170")] // https://github.com/ThreeMammals/Ocelot/pull/2170
-    public void Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
+    public async Task Should_block_call_with_blocked_ip_in_route_config_and_allowed_ip_in_global_config()
     {
         var ip = "192.168.1.35";
         var port = PortFinder.GetRandomPort();
@@ -135,15 +135,15 @@ public sealed class SecurityOptionsTests: Steps
             IPBlockedList = [ip],
         };
         var configuration = GivenGlobalConfiguration(route, "192.168.1.30-50", "192.168.1.1-100");
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithUseForwardedHeaders))
-            .And(x => GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip))
-            .When(x => WhenIGetUrlOnTheApiGateway("/worldPath"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden))
-            .And(x => ThenTheResponseBodyShouldBeEmpty())
-        .BDDfy();
+
+        GivenThereIsAServiceRunningOn(port, route.DownstreamPathTemplate, EchoHeaders);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithUseForwardedHeaders);
+        GivenIAddAHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
+        await WhenIGetUrlOnTheApiGateway("/worldPath");
+
+        ThenTheStatusCodeShouldBe(HttpStatusCode.Forbidden);
+        await ThenTheResponseBodyShouldBeEmpty();
     }
 
     private static void GivenRouteForwardingClientIpAddressViaHeader(FileRoute r, string header)
@@ -151,7 +151,6 @@ public sealed class SecurityOptionsTests: Steps
 
     private static Task EchoHeaders(HttpContext context)
     {
-        // context.Connection.RemoteIpAddress = ipAddess;
         foreach (var h in context.Request.Headers)
             context.Response.Headers.Add(h);
         context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -172,10 +171,9 @@ public sealed class SecurityOptionsTests: Steps
 
     private static void WithUseForwardedHeaders(IApplicationBuilder app)
     {
-        // Tell the middleware to look for the X-Forwarded-For header
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
         });
         app.UseOcelot().GetAwaiter().GetResult();
     }

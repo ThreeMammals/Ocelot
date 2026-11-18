@@ -52,7 +52,7 @@ public sealed class LoadTests : ConcurrentSteps
 
         await WhenIGetUrlOnTheApiGateway("/my-gateway/order/1");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
-        ThenTheResponseBodyShouldBe("Hello from Donny");
+        await ThenTheResponseBodyShouldBeAsync("Hello from Donny");
 
         GC.Collect();
         var totalMemory1 = ToMegabytes(GC.GetTotalMemory(true));

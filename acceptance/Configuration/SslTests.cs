@@ -8,35 +8,31 @@ public sealed class SslTests : Steps
 {
     [Fact]
     [Trait("PR", "325")] // https://github.com/ThreeMammals/Ocelot/pull/325
-    public void Should_dangerous_accept_any_server_certificate_validator()
+    public async Task Should_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenSslRoute(port, true);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
     [Trait("PR", "325")] // https://github.com/ThreeMammals/Ocelot/pull/325
-    public void Should_not_dangerous_accept_any_server_certificate_validator()
+    public async Task Should_not_dangerous_accept_any_server_certificate_validator()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenSslRoute(port, false);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.BadGateway);
     }
 
     private FileRoute GivenSslRoute(int port, bool validatorEnabled)

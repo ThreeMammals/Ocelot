@@ -51,7 +51,7 @@ public class DownstreamRouteFinderMiddlewareBenchmarks : ManualConfig
                 QueryString = new QueryString("?a=b"),
             },
         };
-        httpContext.Request.Headers.Append("Host", "most");
+        httpContext.Request.Headers.Host = "most";
         httpContext.Items.SetIInternalConfiguration(new InternalConfiguration());
         _httpContext = httpContext;
     }

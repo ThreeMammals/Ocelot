@@ -5,35 +5,31 @@ public sealed class RequestIdTests : Steps
     public const string RequestIdKey = "Oc-RequestId";
 
     [Fact]
-    public void Should_use_default_request_id_and_forward()
+    public async Task Should_use_default_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         route.RequestIdKey = RequestIdKey;
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheRequestIdIsReturned())
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheRequestIdIsReturned();
     }
 
     [Fact]
-    public void Should_use_request_id_and_forward()
+    public async Task Should_use_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         var requestId = Guid.NewGuid().ToString();
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId))
-            .Then(x => ThenTheRequestIdIsReturned(requestId))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId);
+        ThenTheRequestIdIsReturned(requestId);
     }
 
     /// <summary>
@@ -41,37 +37,33 @@ public sealed class RequestIdTests : Steps
     /// </summary>
     [Fact]
     [Trait("Commit", "ff57766")] // https://github.com/ThreeMammals/Ocelot/commit/ff5776613f973e838473eedb7f3eeac988da25f0
-    public void Should_use_global_request_id_and_forward()
+    public async Task Should_use_global_request_id_and_forward()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.RequestIdKey = RequestIdKey;
         var requestId = Guid.NewGuid().ToString();
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId))
-            .Then(x => ThenTheRequestIdIsReturned(requestId))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGatewayWithRequestId("/", requestId);
+        ThenTheRequestIdIsReturned(requestId);
     }
 
     [Fact]
     [Trait("PR", "329")] // https://github.com/ThreeMammals/Ocelot/pull/329
-    public void Should_use_global_request_id_create_and_forward()
+    public async Task Should_use_global_request_id_create_and_forward()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port);
         var configuration = GivenConfiguration(route);
         configuration.GlobalConfiguration.RequestIdKey = RequestIdKey;
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheRequestIdIsReturned())
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheRequestIdIsReturned();
     }
 
     private async Task WhenIGetUrlOnTheApiGatewayWithRequestId(string url, string requestId)

@@ -12,7 +12,7 @@ namespace Ocelot.Acceptance.Transformations;
 public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
 {
     [Fact]
-    public void Should_return_200_OK_and_change_downstream_path()
+    public async Task Should_return_200_OK_and_change_downstream_path()
     {
         var port = PortFinder.GetRandomPort();
         string[] allowedScopes = ["openid", "offline_access", "api"];
@@ -25,19 +25,18 @@ public sealed class ClaimsToDownstreamPathTests : AuthorizationSteps
         };
         var configuration = GivenConfiguration(route);
         var testName = TestName();
-        this
-            .Given(x => GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor"))
-            .And(x => GivenIUpdateSubClaim())
-            .And(x => GivenIHaveAToken(testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/users"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Victor"))
-            .And(x => ThenTheDownstreamPathIs("/users/1234567890"))
-        .BDDfy();
+        await GivenThereIsExternalJwtSigningService(allowedScopes, CancelMe);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Victor");
+        GivenIUpdateSubClaim();
+        await GivenIHaveAToken(testName);
+        GivenIHaveAddedATokenToMyRequest();
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/users");
+        ThenTheStatusCodeShouldBeOk();
+        await ThenTheResponseBodyShouldBeAsync("Hello from Victor");
+        ThenTheDownstreamPathIs("/users/1234567890");
     }
 
     private const string UserId = "1234567890";

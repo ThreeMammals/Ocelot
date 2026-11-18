@@ -30,6 +30,7 @@ public class HttpHandlerOptionsTests
             MaxConnectionsPerServer = nullInt(),
             PooledConnectionLifetimeSeconds = nullInt(),
             UseCookieContainer = nullBool(),
+            UseCredentials = nullBool(),
             UseProxy = nullBool(),
             UseTracing = nullBool(),
         };
@@ -43,6 +44,7 @@ public class HttpHandlerOptionsTests
         Assert.Equal(isNull ? int.MaxValue : 123, actual.MaxConnectionsPerServer);
         Assert.Equal(isNull ? 120 : 123, (int)actual.PooledConnectionLifeTime.TotalSeconds);
         Assert.Equal(expectedBool, actual.UseCookieContainer);
+        Assert.Equal(expectedBool, actual.UseCredentials);
         Assert.Equal(expectedBool, actual.UseProxy);
         Assert.Equal(expectedBool, actual.UseTracing);
     }

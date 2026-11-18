@@ -7,85 +7,75 @@ namespace Ocelot.Acceptance.Request;
 public sealed class RequestMapperTests : Steps
 {
     [Fact]
-    public void Should_map_request_without_content()
+    public async Task Should_map_request_without_content()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(";;"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, null);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(";;");
     }
 
     [Fact]
-    public void Should_map_request_with_content_length()
+    public async Task Should_map_request_with_content_length()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content")))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("20;;This is some content"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, null);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", new StringContent("This is some content"));
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("20;;This is some content");
     }
 
     [Fact]
-    public void Should_map_request_with_empty_content()
+    public async Task Should_map_request_with_empty_content()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new StringContent("")))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("0;;"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, null);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", new StringContent(""));
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("0;;");
     }
 
     [Fact]
     [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
-    public void Should_map_request_with_chunked_content()
+    public async Task Should_map_request_with_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content")))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(";chunked;This is some content"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, null);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", new ChunkedContent("This ", "is some content"));
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(";chunked;This is some content");
     }
 
     [Fact]
     [Trait("Feat", "928")] // https://github.com/ThreeMammals/Ocelot/issues/928
-    public void Should_map_request_with_empty_chunked_content()
+    public async Task Should_map_request_with_empty_chunked_content()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenRoute(port, HttpMethod.Post);
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => GivenThereIsAServiceRunningOn(port, null))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIPostUrlOnTheApiGateway("/", new ChunkedContent()))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe(";chunked;"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, null);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIPostUrlOnTheApiGateway("/", new ChunkedContent());
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync(";chunked;");
     }
 
     protected override async Task MapStatus(HttpContext context)

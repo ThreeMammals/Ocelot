@@ -4,13 +4,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Testing.Steps;
 using System.Net.WebSockets;
 using System.Text;
 
 namespace Ocelot.Acceptance.WebSockets;
 
-public sealed class WebSocketsSecurityTests : WebSocketsSteps
+public sealed class WebSocketsSecurityTests : WSSteps
 {
     private Exception _connect;
 
@@ -92,7 +91,7 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
 
     [Fact]
     [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
-    public void Should_block_websocket_upgrade_for_blocked_ip()
+    public async Task Should_block_websocket_upgrade_for_blocked_ip()
     {
         const string ip = "192.168.1.1";
         var ports = PortFinder.GetPorts(2);
@@ -103,17 +102,16 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
         ws.Options.CollectHttpResponseDetails = true; // capture the handshake status so HttpStatusCode is populated
-        this.Given(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync))
-            .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
-            .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
-            .When(_ => WhenIConnect(ws, gateway))
-            .Then(_ => ThenTheUpgradeIsRejected(ws))
-        .BDDfy();
+        await GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await StartOcelotBehindForwardedHeaders(ports[1]);
+        await WhenIConnect(ws, gateway);
+        ThenTheUpgradeIsRejected(ws);
     }
 
     [Fact]
     [Trait("Bug", "2403")] // https://github.com/ThreeMammals/Ocelot/issues/2403
-    public void Should_allow_websocket_upgrade_for_allowed_ip()
+    public async Task Should_allow_websocket_upgrade_for_allowed_ip()
     {
         const string ip = "192.168.1.1";
         var ports = PortFinder.GetPorts(2);
@@ -124,14 +122,13 @@ public sealed class WebSocketsSecurityTests : WebSocketsSteps
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader(ForwardedHeadersDefaults.XForwardedForHeaderName, ip);
         ws.Options.CollectHttpResponseDetails = true; // capture the handshake status so HttpStatusCode is populated
-        this.Given(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync))
-            .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
-            .And(_ => StartOcelotBehindForwardedHeaders(ports[1]))
-            .When(_ => WhenIConnect(ws, gateway))
-            .Then(_ => ThenTheUpgradeSucceeds(ws))
-            .And(_ => ThenTheDownstreamEchoesMessage(ws))
-            .And(_ => ThenTheWsClientHasBeenClosedSuccessfully(ws))
-        .BDDfy();
+        await GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await StartOcelotBehindForwardedHeaders(ports[1]);
+        await WhenIConnect(ws, gateway);
+        ThenTheUpgradeSucceeds(ws);
+        await ThenTheDownstreamEchoesMessage(ws);
+        ThenTheWsClientHasBeenClosedSuccessfully(ws);
     }
 
     private async Task WhenIConnect(ClientWebSocket ws, Uri gateway)

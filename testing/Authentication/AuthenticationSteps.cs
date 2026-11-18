@@ -88,7 +88,7 @@ public class AuthenticationSteps : AcceptanceSteps
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = "threemammals.com", // see mycert2.pfx
                     ValidAudience = "threemammals.com",
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ocelot.AcceptanceTests.Authentication")),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Ocelot.AcceptanceTests.Authentication")), // TODO Ha-ha Wrong key due to wrong namespace.
                 };
             });
         var app = builder.Build();

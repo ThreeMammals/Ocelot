@@ -30,31 +30,29 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
     }
 
     [Fact]
-    public void Should_return_200_OK_and_forward_claim_as_query_string()
+    public async Task Should_return_200_OK_and_forward_claim_as_query_string()
     {
         var port = PortFinder.GetRandomPort();
         string[] scopes = ["openid", "offline_access", "api"];
         var route = GivenAuthRoute(port, scopes: scopes);
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
-        var testName = TestName();
-        this
-            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
-            .And(x => GivenIUpdateSubClaim())
-            .And(x => GivenIHaveATokenWithClaims(claims, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBodyShouldBe("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string UserId:1234567890"))
-            .And(x => ThenTheQueryStringIs("?CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string"))
-        .BDDfy();
+
+        await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom");
+        GivenIUpdateSubClaim();
+        await GivenIHaveATokenWithClaims(claims);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBeOk();
+        await ThenTheResponseBodyShouldBeAsync("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string UserId:1234567890");
+        ThenTheQueryStringIs("?CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string");
     }
 
     [Fact]
-    public void Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string()
+    public async Task Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string()
     {
         var port = PortFinder.GetRandomPort();
         string[] scopes = ["openid", "offline_access", "api"];
@@ -62,19 +60,17 @@ public sealed class ClaimsToQueryStringForwardingTests : AuthorizationSteps
         var configuration = GivenConfiguration(route);
         var claims = GivenAddQueriesToRequest(route);
         var testName = TestName();
-        this
-            .Given(x => GivenThereIsExternalJwtSigningService(scopes, CancelMe))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning(WithJwtBearerAuthentication))
-            .And(x => x.GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom"))
-            .And(x => GivenIUpdateSubClaim())
-            .And(x => GivenIHaveATokenWithClaims(claims, testName))
-            .And(x => GivenIHaveAddedATokenToMyRequest())
-            .When(x => WhenIGetUrlOnTheApiGateway("/?test=1&test=2"))
-            .Then(x => ThenTheStatusCodeShouldBeOk())
-            .And(x => ThenTheResponseBodyShouldBe("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string UserId:1234567890"))
-            .And(x => ThenTheQueryStringIs("?test=1&test=2&CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string"))
-        .BDDfy();
+        await GivenThereIsExternalJwtSigningService(scopes, CancelMe);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(WithJwtBearerAuthentication);
+        GivenThereIsAServiceRunningOn(port, HttpStatusCode.OK, "Hello from Tom");
+        GivenIUpdateSubClaim();
+        await GivenIHaveATokenWithClaims(claims, testName);
+        GivenIHaveAddedATokenToMyRequest();
+        await WhenIGetUrlOnTheApiGateway("/?test=1&test=2");
+        ThenTheStatusCodeShouldBeOk();
+        await ThenTheResponseBodyShouldBeAsync("CustomerId:111 LocationId:222 UserType:Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string UserId:1234567890");
+        ThenTheQueryStringIs("?test=1&test=2&CustomerId=111&LocationId=222&UserId=1234567890&UserType=Should_return_200_OK_and_forward_claim_as_query_string_and_preserve_original_string");
     }
 
     private string _downstreamQueryString;

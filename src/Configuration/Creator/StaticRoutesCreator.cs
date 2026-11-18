@@ -149,7 +149,7 @@ public class StaticRoutesCreator : IRoutesCreator
             .WithServiceNamespace(fileRoute.ServiceNamespace)
             .WithTimeout(CreateTimeout(fileRoute, globalConfiguration))
             .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
-            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod.ToList())
+            .WithUpstreamHttpMethod(fileRoute.UpstreamHttpMethod)
             .WithUpstreamPathTemplate(upstreamTemplatePattern)
             .Build();
         return route;

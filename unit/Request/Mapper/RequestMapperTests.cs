@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Request.Mapper;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Net.Http.Headers;
+using _ContentDispositionHeaderValue_ = System.Net.Http.Headers.ContentDispositionHeaderValue;
 
 namespace Ocelot.UnitTests.Request.Mapper;
 
@@ -164,7 +166,7 @@ public class RequestMapperTests : UnitTest
     public async Task Should_map_content(string method)
     {
         // Arrange
-        GivenTheInputRequestHasContent("This is my content");
+        using var _ = GivenTheInputRequestHasContent("This is my content");
         _inputRequest.Method = method;
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -182,7 +184,7 @@ public class RequestMapperTests : UnitTest
     public async Task Should_map_chucked_content()
     {
         // Arrange
-        GivenTheInputRequestHasChunkedContent("This", " is my content");
+        using var s = GivenTheInputRequestHasChunkedContent("This", " is my content");
         _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -200,7 +202,7 @@ public class RequestMapperTests : UnitTest
     public async Task Should_map_empty_content()
     {
         // Arrange
-        GivenTheInputRequestHasContent("");
+        using var _ = GivenTheInputRequestHasContent("");
         _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -218,7 +220,7 @@ public class RequestMapperTests : UnitTest
     public async Task Should_map_empty_chucked_content()
     {
         // Arrange
-        GivenTheInputRequestHasChunkedContent();
+        using var s = GivenTheInputRequestHasChunkedContent();
         _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -280,21 +282,68 @@ public class RequestMapperTests : UnitTest
     }
 
     [Fact]
+    [Trait("Bug", "714")] // https://github.com/ThreeMammals/Ocelot/issues/714
+    public async Task Should_preserve_multipart_form_data_boundary_and_body()
+    {
+        // Arrange
+        const string boundary = "----OcelotBoundary714";
+        var fieldFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
+        {
+            Name = "\"description\"",
+        };
+        var fileFormData = new _ContentDispositionHeaderValue_(MediaTypeNames.Multipart.FormData.Split('/')[1])
+        {
+            Name = "\"file\"",
+            FileName = "\"test.txt\"",
+        };
+        var body = new StringBuilder()
+            .AppendLine($"--{boundary}")
+            .AppendLine($"{HeaderNames.ContentDisposition}: {fieldFormData}")
+            .AppendLine()
+            .AppendLine("issue-714")
+            .AppendLine($"--{boundary}")
+            .AppendLine($"{HeaderNames.ContentDisposition}: {fileFormData}")
+            .AppendLine($"{HeaderNames.ContentType}: {MediaTypeNames.Text.Plain}")
+            .AppendLine()
+            .AppendLine("multipart-file-content")
+            .AppendLine($"--{boundary}--");
+
+        using var _ = GivenTheInputRequestHasContent(body.ToString());
+        var contentType = new ContentType(MediaTypeNames.Multipart.FormData)
+        {
+            Boundary = boundary,
+        };
+        _inputRequest.ContentType = contentType.ToString();
+        _inputRequest.Method = HttpMethods.Post;
+        GivenTheInputRequestHasAValidUri();
+        GivenTheDownstreamRoute();
+
+        // Act
+        WhenMapped();
+
+        // Assert
+        Assert.NotNull(_mappedRequest.Content);
+        _mappedRequest.Content.Headers.GetValues(HeaderNames.ContentType).Single()
+            .ShouldBe(_inputRequest.ContentType);
+        await ThenTheMappedRequestHasContent(body.ToString());
+    }
+
+    [Fact]
     public void Should_map_content_headers()
     {
         // Arrange
         var bytes = Encoding.UTF8.GetBytes("some md5");
         var md5Bytes = MD5.HashData(bytes);
 
-        GivenTheInputRequestHasContent("This is my content");
-        _inputRequest.ContentType = "application/json";
-        _inputRequest.Headers.Append("Content-Encoding", "gzip, compress");
-        _inputRequest.Headers.Append("Content-Language", "english");
-        _inputRequest.Headers.Append("Content-Location", "/my-receipts/38");
-        _inputRequest.Headers.Append("Content-Range", "bytes 1-2/*");
-        _inputRequest.Headers.Append("Content-Disposition", "inline");
+        using var _ = GivenTheInputRequestHasContent("This is my content");
+        _inputRequest.ContentType = MediaTypeNames.Application.Json;
+        _inputRequest.Headers.Append(HeaderNames.ContentEncoding, "gzip, compress");
+        _inputRequest.Headers.Append(HeaderNames.ContentLanguage, "english");
+        _inputRequest.Headers.Append(HeaderNames.ContentLocation, "/my-receipts/38");
+        _inputRequest.Headers.Append(HeaderNames.ContentRange, "bytes 1-2/*");
+        _inputRequest.Headers.Append(HeaderNames.ContentDisposition, "inline");
         var base64 = Convert.ToBase64String(md5Bytes);
-        _inputRequest.Headers.Append("Content-MD5", base64);
+        _inputRequest.Headers.Append(HeaderNames.ContentMD5, base64);
         _inputRequest.Method = "GET";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -303,7 +352,7 @@ public class RequestMapperTests : UnitTest
         WhenMapped();
 
         // Assert
-        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheMappedRequestHasContentTypeHeader(MediaTypeNames.Application.Json);
         Assert.NotNull(_mappedRequest.Content);
         _mappedRequest.Content.Headers.ContentEncoding.ToArray()[0].ShouldBe("gzip");
         _mappedRequest.Content.Headers.ContentEncoding.ToArray()[1].ShouldBe("compress");
@@ -323,22 +372,22 @@ public class RequestMapperTests : UnitTest
         _mappedRequest.Content.Headers.ContentDisposition.DispositionType.ShouldBe("inline");
 
         // Assert: Then The Content-* Headers Are Not Added To Non Content Headers
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Disposition");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentMD5");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentRange");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentLanguage");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentEncoding");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-ContentLocation");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Length");
-        _mappedRequest.Headers.ShouldNotContain(x => x.Key == "Content-Type");
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentDisposition);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentMD5);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentRange);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLanguage);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentEncoding);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLocation);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentLength);
+        _mappedRequest.Headers.ShouldNotContain(x => x.Key == HeaderNames.ContentType);
     }
 
     [Fact]
     public void Should_not_add_content_headers()
     {
         // Arrange
-        GivenTheInputRequestHasContent("This is my content");
-        _inputRequest.ContentType = "application/json";
+        using var _ = GivenTheInputRequestHasContent("This is my content");
+        _inputRequest.ContentType = MediaTypeNames.Application.Json;
         _inputRequest.Method = "POST";
         GivenTheInputRequestHasAValidUri();
         GivenTheDownstreamRoute();
@@ -347,7 +396,7 @@ public class RequestMapperTests : UnitTest
         WhenMapped();
 
         // Assert
-        ThenTheMappedRequestHasContentTypeHeader("application/json");
+        ThenTheMappedRequestHasContentTypeHeader(MediaTypeNames.Application.Json);
 
         // Assert: Then The Other Content Type Headers Are Not Mapped
         Assert.NotNull(_mappedRequest.Content);
@@ -399,18 +448,32 @@ public class RequestMapperTests : UnitTest
         GivenTheInputRequestHasHost("www.google.com");
     }
 
-    private void GivenTheInputRequestHasContent(string content)
+    private Stream GivenTheInputRequestHasContent(string content)
     {
-        _inputRequest.ContentLength = content.Length;
-        _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        var buffer = Encoding.UTF8.GetBytes(content);
+        var stream = new MemoryStream(buffer);
+        _inputRequest.Body = stream;
+        _inputRequest.ContentLength = buffer.Length;
+        return stream;
     }
 
-    private void GivenTheInputRequestHasChunkedContent(params string[] chunks)
+    private MemoryStream GivenTheInputRequestHasChunkedContent(params string[] chunks)
     {
-        // ASP.Net Core decodes chucked streams, so that the input request just sees the decoded data
-        // Because of that, we just give a stream with the concatenated chunks to the test
-        _inputRequest.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Join("", chunks)));
+        // ASP.NET Core has already decoded the chunked encoding by the time
+        // the request reaches application code. Request.Body therefore contains
+        // only the concatenated payload.
+        var payload = string.Join("", chunks);
+        var stream = new MemoryStream(Encoding.UTF8.GetBytes(payload))
+        {
+            Position = 0 // explicit, though MemoryStream starts at 0
+        };
+
+        _inputRequest.Body = stream;
         _inputRequest.Headers.TransferEncoding = "chunked";
+
+        // Content-Length and Transfer-Encoding: chunked are mutually exclusive
+        _inputRequest.ContentLength = null;
+        return stream;
     }
 
     private void WhenMapped()
@@ -421,7 +484,7 @@ public class RequestMapperTests : UnitTest
     private async Task ThenTheMappedRequestHasContent(string expectedContent)
     {
         Assert.NotNull(_mappedRequest.Content);
-        var contentAsString = await _mappedRequest.Content.ReadAsStringAsync();
+        var contentAsString = await _mappedRequest.Content.ReadAsStringAsync(CancelMe);
         contentAsString.ShouldBe(expectedContent);
     }
 

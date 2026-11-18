@@ -1,5 +1,6 @@
 ﻿using Ocelot.Middleware;
 using Ocelot.Headers;
+using Microsoft.Net.Http.Headers;
 
 namespace Ocelot.UnitTests.Headers;
 
@@ -13,7 +14,7 @@ public class RemoveHeadersTests : UnitTest
         // Arrange
         var headers = new List<Header>
         {
-            new("Transfer-Encoding", new List<string> {"chunked"}),
+            new(HeaderNames.TransferEncoding, ["chunked"]),
         };
 
         // Act

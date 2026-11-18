@@ -9,88 +9,78 @@ namespace Ocelot.Acceptance.Routing;
 public sealed class UpstreamHostTests : Steps
 {
     [Fact]
-    public void Should_return_response_200_with_simple_url_and_hosts_match()
+    public async Task Should_return_response_200_with_simple_url_and_hosts_match()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
-    public void Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
+    public async Task Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
     {
         var port = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("localhost");
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("DONTMATCH");
         var configuration = GivenConfiguration(route, route2);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
-    public void Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed()
+    public async Task Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed()
     {
         var port = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("DONTMATCH");
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route, route2);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
-    public void Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed_with_no_host_first()
+    public async Task Should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes_reversed_with_no_host_first()
     {
         var port = PortFinder.GetRandomPort();
         var port2 = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost(null);
         var route2 = GivenDefaultRoute(port2).WithUpstreamHost("localhost");
         var configuration = GivenConfiguration(route, route2);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
-            .And(x => ThenTheResponseBodyShouldBe("Hello from Laura"))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port2, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
+        await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
     }
 
     [Fact]
-    public void Should_return_response_404_with_simple_url_and_hosts_dont_match()
+    public async Task Should_return_response_404_with_simple_url_and_hosts_dont_match()
     {
         var port = PortFinder.GetRandomPort();
         var route = GivenDefaultRoute(port).WithUpstreamHost("127.0.0.20:5000");
         var configuration = GivenConfiguration(route);
-        this
-            .Given(x => x.GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura"))
-            .And(x => GivenThereIsAConfiguration(configuration))
-            .And(x => GivenOcelotIsRunning())
-            .When(x => WhenIGetUrlOnTheApiGateway("/"))
-            .Then(x => ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
-        .BDDfy();
+        GivenThereIsAServiceRunningOn(port, "/", HttpStatusCode.OK, "Hello from Laura");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning();
+        await WhenIGetUrlOnTheApiGateway("/");
+        ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound);
     }
 
     private void GivenThereIsAServiceRunningOn(int port, string basePath, HttpStatusCode statusCode, string responseBody)

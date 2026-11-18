@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ocelot Multipart Upload</title>
+  <link rel="icon" type="image/png" href="/ocelot_icon.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: 0 auto;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .welcome-text {
+      color: #555;
+      font-size: 1em;
+      margin: 20px 0;
+      line-height: 1.8;
+    }
+
+    .features {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .feature {
+      flex: 1;
+      min-width: 150px;
+      margin: 10px;
+      padding: 18px 16px;
+      border-left: 4px solid #667eea;
+      background: #f7f7fb;
+      border-radius: 8px;
+    }
+
+    .feature-title {
+      color: #667eea;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      color: #777;
+      font-size: 0.9em;
+    }
+
+    .cta {
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+
+    .cta-title {
+      color: #333;
+      font-weight: bold;
+      margin-bottom: 18px;
+      font-size: 1.1em;
+    }
+
+    .routes-section {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid #e5e7eb;
+    }
+
+    .route-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+      .route-item:last-child {
+        margin-bottom: 0;
+      }
+
+    .status-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      margin-right: 15px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+      .status-indicator.not-tested {
+        background-color: #999;
+      }
+
+      .status-indicator.testing {
+        background-color: #667eea;
+        animation: pulse 1s infinite;
+      }
+
+      .status-indicator.success {
+        background-color: #4caf50;
+      }
+
+      .status-indicator.error {
+        background-color: #f44336;
+      }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .route-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .route-method {
+      color: #667eea;
+      font-weight: bold;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+
+    .route-path {
+      font-family: 'Courier New', monospace;
+      font-size: 0.95em;
+      color: #333;
+    }
+
+    .route-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: 15px;
+    }
+
+    .route-status {
+      font-size: 0.85em;
+      color: #999;
+      min-width: 86px;
+      text-align: right;
+    }
+
+      .route-status.success {
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .route-status.error {
+        color: #f44336;
+        font-weight: bold;
+      }
+
+      .route-status.testing {
+        color: #667eea;
+        font-weight: bold;
+      }
+
+    .test-button,
+    .submit-button,
+    .field input[type="file"]::file-selector-button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+    }
+
+      .test-button:hover,
+      .submit-button:hover,
+      .field input[type="file"]::file-selector-button:hover {
+        transform: translateY(-1px);
+      }
+
+    .upload-panel {
+      display: none;
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 22px;
+      border: 1px solid #e5e7eb;
+      margin-top: 12px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+      .upload-panel.visible {
+        display: block;
+      }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #333;
+      font-weight: 600;
+      flex: 1 1 0;
+      min-width: 220px;
+      max-width: 50%;
+    }
+
+      .field input[name="description"],
+      .field input[type="file"] {
+        width: 100%;
+        height: 48px;
+        padding: 12px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: white;
+        color: #111827;
+      }
+
+      .field input[type="file"] {
+        padding: 8px 12px;
+        max-width: 100%;
+        height: 48px;
+      }
+
+        .field input[type="file"]::file-selector-button {
+          margin-right: 12px;
+        }
+
+    .upload-action {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .upload-status {
+      color: #6b7280;
+      font-size: 0.9em;
+      font-weight: 600;
+      min-height: 1.2em;
+    }
+
+      .upload-status.testing {
+        color: #667eea;
+      }
+
+      .upload-status.success {
+        color: #4caf50;
+      }
+
+      .upload-status.error {
+        color: #f44336;
+      }
+
+    .logging-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .logging-title {
+      color: #333;
+      font-weight: bold;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: #667eea;
+      color: white;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+      .action-button:hover {
+        background-color: #764ba2;
+      }
+
+      .action-button:active {
+        transform: scale(0.98);
+      }
+
+    .logging-window {
+      background: #f5f5f5;
+      color: #333;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: calc(100vh - 400px);
+      overflow-y: auto;
+      line-height: 1.4;
+      border: 1px solid #e0e0e0;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #e0e0e0;
+      white-space: pre-line;
+    }
+
+      .log-entry:last-child {
+        border-bottom: none;
+      }
+
+    .log-time {
+      color: #4caf50;
+      margin-right: 8px;
+    }
+
+    .log-info {
+      color: #667eea;
+    }
+
+    .log-success {
+      color: #4caf50;
+    }
+
+    .log-error {
+      color: #f44336;
+    }
+
+    .file-content-toggle {
+      display: inline-block;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      font-size: 0.8em;
+      font-weight: 700;
+      margin: 0;
+      line-height: normal;
+      vertical-align: baseline;
+    }
+
+    .file-content-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+      .file-content-overlay.visible {
+        display: flex;
+      }
+
+    .file-content-modal {
+      width: min(900px, 90vw);
+      max-height: 80vh;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .file-content-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-content-title {
+      color: #333;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .file-content-close {
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .file-content-body {
+      background: #f5f5f5;
+      color: #111827;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px;
+      overflow: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 60vh;
+    }
+
+    .file-content-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #667eea;
+      font-size: 0.9em;
+      font-weight: 700;
+      margin: 0 auto;
+      white-space: nowrap;
+    }
+
+      .file-content-loading::before {
+        content: '';
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #667eea;
+        animation: pulse 1s infinite;
+        display: inline-block;
+        flex-shrink: 0;
+      }
+
+    .note {
+      margin-top: 14px;
+      color: #6b7280;
+      font-size: 0.9em;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .footer-text {
+      color: #6b7280;
+      font-size: 0.85em;
+    }
+
+      .footer-text a {
+        color: #667eea;
+        text-decoration: none;
+      }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+
+      .features {
+        flex-direction: column;
+      }
+
+      .field {
+        max-width: 100%;
+      }
+
+      .route-item {
+        flex-wrap: wrap;
+      }
+
+      .route-controls {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="file-content-overlay" id="file-content-overlay" aria-live="polite">
+    <div class="file-content-modal" role="dialog" aria-modal="true" aria-labelledby="file-content-title">
+      <div class="file-content-modal-header">
+        <div class="file-content-title" id="file-content-title">File contents</div>
+        <button type="button" class="file-content-close" id="file-content-close">Close</button>
+      </div>
+      <div class="file-content-body" id="file-content-body"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <img src="/ocelot_logo.png" alt="Ocelot Logo" class="logo">
+      <h1>Ocelot Multipart Upload</h1>
+      <p class="subtitle">Forward a text field and file through the gateway to a downstream service.</p>
+
+      <div class="welcome-text">
+        <p>Welcome to the <strong>Ocelot Multipart Form Data</strong> sample.</p>
+        <p>This gateway preserves the multipart payload as it forwards the request to the downstream API.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-title">🚀 Fast</div>
+          <div class="feature-desc">Low-friction upload testing</div>
+        </div>
+        <div class="feature">
+          <div class="feature-title">🔒 Safe</div>
+          <div class="feature-desc">Multipart payload preserved</div>
+        </div>
+        <div class="feature">
+          <div class="feature-title">⚙️ Verified</div>
+          <div class="feature-desc">Regression scenario for issue #714</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p class="cta-title">Routes</p>
+
+      <div class="routes-section" id="routes-section" aria-live="polite"></div>
+
+      <div id="upload-panel" class="upload-panel" aria-live="polite">
+        <p class="cta-title" style="margin-bottom: 12px;">📤 Upload a file</p>
+
+        <form id="upload-form" enctype="multipart/form-data">
+          <div class="field-row">
+            <label class="field">
+              Description
+              <input name="description" value="issue-714" required>
+            </label>
+
+            <label class="field">
+              File
+              <input name="file" type="file" required>
+            </label>
+          </div>
+
+          <div class="upload-action">
+            <button class="submit-button" type="submit">Upload</button>
+            <span class="upload-status" id="upload-status">Ready</span>
+          </div>
+        </form>
+      </div>
+
+      <p class="note">This sample posts a multipart/form-data request to /upload, then forwards it to the downstream service so the payload can be inspected in the browser response.</p>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <div class="logging-header">
+        <p class="logging-title">📋 Test Log</p>
+        <div class="action-buttons">
+          <button class="action-button" id="clear-log-btn" type="button">Clear log</button>
+          <button class="action-button" id="clear-status-btn" type="button">Clear status</button>
+        </div>
+      </div>
+      <div class="logging-window" id="logging-window" aria-live="polite">
+        <div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p class="footer-text">
+        📖 Learn more at <a href="https://github.com/ThreeMammals/Ocelot">github.com/ThreeMammals/Ocelot</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const routes = [
+      {
+        method: 'POST',
+        path: '/upload',
+        statusId: 'status-upload',
+        statusTextId: 'status-text-upload',
+        buttonId: 'btn-upload'
+      }
+    ];
+
+    const routesSection = document.getElementById('routes-section');
+    const uploadPanel = document.getElementById('upload-panel');
+    const uploadStatus = document.getElementById('upload-status');
+    const loggingWindow = document.getElementById('logging-window');
+    const fileContentOverlay = document.getElementById('file-content-overlay');
+    const fileContentTitle = document.getElementById('file-content-title');
+    const fileContentBody = document.getElementById('file-content-body');
+    const fileContentClose = document.getElementById('file-content-close');
+    const fileContentMap = new Map();
+
+    function getFileDisplayName(fileName) {
+      if (!fileName) {
+        return 'File contents';
+      }
+
+      const sanitized = String(fileName).trim();
+      return sanitized || 'File contents';
+    }
+
+    function addLogEntry(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const stamp = document.createElement('span');
+      stamp.className = 'log-time';
+      const time = new Date().toLocaleTimeString();
+      stamp.textContent = `[${time}]`;
+
+      const content = document.createElement('span');
+      content.className = type === 'error' ? 'log-error' : type === 'success' ? 'log-success' : 'log-info';
+      content.innerHTML = ' ' + message;
+
+      entry.appendChild(stamp);
+      entry.appendChild(content);
+      loggingWindow.appendChild(entry);
+      loggingWindow.scrollTop = loggingWindow.scrollHeight;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function openFileContentOverlay(content, title) {
+      fileContentTitle.textContent = title || 'File contents';
+      fileContentBody.textContent = '';
+      fileContentOverlay.classList.add('visible');
+      fileContentBody.setAttribute('data-source', title || 'File contents');
+
+      const loader = document.createElement('div');
+      loader.className = 'file-content-loading';
+      loader.textContent = 'loading...';
+      fileContentBody.appendChild(loader);
+
+      setTimeout(() => {
+        fileContentBody.textContent = '';
+        const textNode = document.createTextNode(content);
+        fileContentBody.appendChild(textNode);
+      }, 500);
+    }
+
+    function closeFileContentOverlay() {
+      fileContentOverlay.classList.remove('visible');
+      fileContentBody.textContent = '';
+    }
+
+    fileContentClose.addEventListener('click', closeFileContentOverlay);
+
+    fileContentOverlay.addEventListener('click', (event) => {
+      if (event.target === fileContentOverlay) {
+        closeFileContentOverlay();
+      }
+    });
+
+    function formatHeaderList(headers) {
+      return Array.from(headers.entries())
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+    }
+
+    function indentJson(value) {
+      return JSON.stringify(value, null, 2)
+        .split('\n')
+        .map((line) => line.replace(/^\s+/, (spaces) => spaces.replace(/ /g, '&nbsp;')))
+        .join('<br>');
+    }
+
+    function formatResponsePayload(payloadText) {
+      try {
+        const parsed = JSON.parse(payloadText);
+        const clone = JSON.parse(JSON.stringify(parsed));
+
+        if (clone && typeof clone === 'object' && clone.file && typeof clone.file === 'object' && typeof clone.file.contents === 'string') {
+          const content = clone.file.contents;
+          const fileName = getFileDisplayName(clone.file.fileName || clone.file.name || clone.file.filename);
+          const key = `file-content-${fileContentMap.size + 1}`;
+          fileContentMap.set(key, {
+            fileName,
+            content
+          });
+          const buttonHtml = `<button type='button' class='file-content-toggle' data-content-key='${key}'>${escapeHtml(fileName)} contents (${content.length} chars)</button>`;
+          clone.file.contents = buttonHtml;
+          return indentJson(clone);
+        }
+
+        return indentJson(parsed);
+      } catch (error) {
+        return escapeHtml(payloadText);
+      }
+    }
+
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('.file-content-toggle');
+      if (!button) {
+        return;
+      }
+
+      const key = button.dataset.contentKey;
+      const item = fileContentMap.get(key);
+      if (item && typeof item === 'object') {
+        openFileContentOverlay(item.content, item.fileName);
+      }
+    });
+
+    function clearLog() {
+      loggingWindow.innerHTML = '<div class="log-entry"><span class="log-time">[INFO]</span> <span class="log-info">Logging window initialized. Click "Test" to begin route testing.</span></div>';
+    }
+
+    function clearStatus() {
+      routes.forEach((route) => {
+        const indicator = document.getElementById(route.statusId);
+        const status = document.getElementById(route.statusTextId);
+        if (indicator) {
+          indicator.className = 'status-indicator not-tested';
+        }
+        if (status) {
+          status.className = 'route-status';
+          status.textContent = 'Not tested';
+        }
+      });
+      uploadStatus.className = 'upload-status';
+      uploadStatus.textContent = 'Ready';
+    }
+
+    routes.forEach((route) => {
+      const item = document.createElement('div');
+      item.className = 'route-item';
+      item.innerHTML = `
+                  <div class="status-indicator not-tested" id="${route.statusId}"></div>
+                  <div class="route-info">
+                      <div class="route-method">${route.method}</div>
+                      <div class="route-path">${route.path}</div>
+                  </div>
+                  <div class="route-controls">
+                      <button type="button" class="test-button" id="${route.buttonId}">Test</button>
+                      <div class="route-status" id="${route.statusTextId}">Not tested</div>
+                  </div>
+              `;
+      routesSection.appendChild(item);
+
+      const button = document.getElementById(route.buttonId);
+      const indicator = document.getElementById(route.statusId);
+      const status = document.getElementById(route.statusTextId);
+
+      button.addEventListener('click', () => {
+        addLogEntry(`Route test started for ${route.method} ${route.path}.`);
+        const isVisible = uploadPanel.classList.contains('visible');
+        uploadPanel.classList.toggle('visible', !isVisible);
+        indicator.className = 'status-indicator testing';
+        status.className = 'route-status testing';
+        status.textContent = 'Testing';
+        uploadStatus.className = 'upload-status testing';
+        uploadStatus.textContent = 'Uploading...';
+      });
+    });
+
+    document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+    document.getElementById('clear-status-btn').addEventListener('click', clearStatus);
+
+    document.getElementById('upload-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const route = routes[0];
+      const indicator = document.getElementById(route.statusId);
+      const status = document.getElementById(route.statusTextId);
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+
+      indicator.className = 'status-indicator testing';
+      status.className = 'route-status testing';
+      status.textContent = 'Testing';
+      uploadStatus.className = 'upload-status testing';
+      uploadStatus.textContent = 'Uploading...';
+      addLogEntry(`Submitting multipart upload to ${route.path}.`);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Request-Source': 'browser-ui'
+          }
+        });
+
+        const headersText = formatHeaderList(response.headers);
+        const responseText = await response.text();
+        const payload = formatResponsePayload(responseText);
+        const jsonLength = responseText.length;
+
+        addLogEntry(`Response status: ${response.status} ${response.statusText} | JSON length: ${jsonLength}`);
+        addLogEntry(`Response headers:\n${headersText}`);
+        addLogEntry(`Response payload:\n${payload}`);
+
+        if (response.ok) {
+          indicator.className = 'status-indicator success';
+          status.className = 'route-status success';
+          status.textContent = 'Success';
+          uploadStatus.className = 'upload-status success';
+          uploadStatus.textContent = `200 OK`;
+        } else {
+          indicator.className = 'status-indicator error';
+          status.className = 'route-status error';
+          status.textContent = 'Error';
+          uploadStatus.className = 'upload-status error';
+          uploadStatus.textContent = `${response.status} ${response.statusText}`;
+        }
+      } catch (error) {
+        addLogEntry(`Upload failed: ${error.message}`, 'error');
+        indicator.className = 'status-indicator error';
+        status.className = 'route-status error';
+        status.textContent = 'Error';
+        uploadStatus.className = 'upload-status error';
+        uploadStatus.textContent = 'Request failed';
+      }
+    });
+  </script>
+</body>
+</html>
