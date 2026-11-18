@@ -11,7 +11,7 @@ public sealed class WebSocketsRateLimitingTests : WebSocketsSteps
 
     [Fact]
     [Trait("Bug", "2422")] // https://github.com/ThreeMammals/Ocelot/issues/2422
-    public void Should_reject_websocket_upgrade_with_429_when_rate_limit_exceeded()
+    public async Task Should_reject_websocket_upgrade_with_429_when_rate_limit_exceeded()
     {
         var ports = PortFinder.GetPorts(2);
         var route = GivenRoute(ports[0], "/", "/");
@@ -27,20 +27,19 @@ public sealed class WebSocketsRateLimitingTests : WebSocketsSteps
         using var ws1 = CreateClient();
         using var ws2 = CreateClient();
         using var ws3 = CreateClient();
-        this.Given(_ => GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync))
-            .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
-            .And(_ => StartOcelotWithWebSockets(ports[1], null))
-            .When(_ => WhenIConnect(ws1, gateway))
-            .Then(_ => ThenTheUpgradeSucceeds(ws1))
-            .And(_ => ThenTheDownstreamEchoesMessage(ws1))
-            .And(_ => ThenTheWsClientHasBeenClosedSuccessfully(ws1))
-            .When(_ => WhenIConnect(ws2, gateway))
-            .Then(_ => ThenTheUpgradeSucceeds(ws2))
-            .And(_ => ThenTheDownstreamEchoesMessage(ws2))
-            .And(_ => ThenTheWsClientHasBeenClosedSuccessfully(ws2))
-            .When(_ => WhenIConnect(ws3, gateway))
-            .Then(_ => ThenTheUpgradeIsRejected(ws3))
-        .BDDfy();
+        await GivenWebSocketsServiceIsRunningAsync(ports[0], "/", EchoAsync);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await StartOcelotWithWebSockets(ports[1], null);
+        await WhenIConnect(ws1, gateway);
+        ThenTheUpgradeSucceeds(ws1);
+        await ThenTheDownstreamEchoesMessage(ws1);
+        ThenTheWsClientHasBeenClosedSuccessfully(ws1);
+        await WhenIConnect(ws2, gateway);
+        ThenTheUpgradeSucceeds(ws2);
+        await ThenTheDownstreamEchoesMessage(ws2);
+        ThenTheWsClientHasBeenClosedSuccessfully(ws2);
+        await WhenIConnect(ws3, gateway);
+        ThenTheUpgradeIsRejected(ws3);
     }
 
     private ClientWebSocket CreateClient()

@@ -33,7 +33,7 @@ public sealed class WebSocketsHeadersTests : WebSocketsSteps
 
     [Fact]
     [Trait("Bug", "2422")] // https://github.com/ThreeMammals/Ocelot/issues/2422
-    public void Should_forward_request_id_header_to_websocket_downstream()
+    public async Task Should_forward_request_id_header_to_websocket_downstream()
     {
         var ports = PortFinder.GetPorts(2);
         var route = GivenRoute(ports[0], "/", "/");
@@ -42,15 +42,14 @@ public sealed class WebSocketsHeadersTests : WebSocketsSteps
         var gateway = new UriBuilder(Uri.UriSchemeWs, "localhost", ports[1]).Uri;
         using var ws = new ClientWebSocket();
         ws.Options.CollectHttpResponseDetails = true; // capture the handshake status so HttpStatusCode is populated
-        this.Given(_ => GivenWebSocketServiceIsRunningOnAsync(DownstreamUrl(ports[0]), NoOptions, TheMiddleware))
-            .And(_ => GivenThereIsAConfiguration(GivenConfiguration(route)))
-            .And(_ => StartOcelotWithWebSockets(ports[1], null))
-            .When(_ => WhenIConnect(ws, gateway))
-            .Then(_ => ThenTheUpgradeSucceeds(ws))
-            .And(_ => ThenTheDownstreamEchoesMessage(ws))
-            .And(_ => ThenTheWsClientHasBeenClosedSuccessfully(ws))
-            .And(_ => ThenTheDownstreamReceivedTheRequestId())
-        .BDDfy();
+        await GivenWebSocketServiceIsRunningOnAsync(DownstreamUrl(ports[0]), NoOptions, TheMiddleware);
+        GivenThereIsAConfiguration(GivenConfiguration(route));
+        await StartOcelotWithWebSockets(ports[1], null);
+        await WhenIConnect(ws, gateway);
+        ThenTheUpgradeSucceeds(ws);
+        await ThenTheDownstreamEchoesMessage(ws);
+        ThenTheWsClientHasBeenClosedSuccessfully(ws);
+        ThenTheDownstreamReceivedTheRequestId();
     }
 
     private async Task WhenIConnect(ClientWebSocket ws, Uri gateway)
