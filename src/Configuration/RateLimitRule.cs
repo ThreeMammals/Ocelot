@@ -74,8 +74,8 @@ public class RateLimitRule
         }
 
         string floating = val[..++pos], unit = val[pos..];
-        double value = Math.Abs(double.Parse(floating)); // negative values should be disallowed as they could cause everything to malfunction; TODO: Make sense to have validation in src/Ocelot/Configuration/Validator/RouteFluentValidator
-        return unit.ToLower() switch
+        double value = Math.Abs(double.Parse(floating, CultureInfo.InvariantCulture)); // negative values should be disallowed as they could cause everything to malfunction; TODO: Make sense to have validation in src/Ocelot/Configuration/Validator/RouteFluentValidator
+        return unit.ToLowerInvariant() switch
         {
             "d" => TimeSpan.FromDays(value),
             "h" => TimeSpan.FromHours(value),
