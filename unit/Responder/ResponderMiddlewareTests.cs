@@ -4,6 +4,7 @@ using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responder;
 using Ocelot.Responder.Middleware;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Ocelot.UnitTests.Responder;
 
@@ -68,6 +69,23 @@ public class ResponderMiddlewareTests : UnitTest
 
         // Assert
         _httpContext.Items.Errors().ShouldBeEmpty();
+        _responder.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Should_not_set_error_response_when_response_has_already_started()
+    {
+        // Arrange
+        var responseFeature = new Mock<IHttpResponseFeature>();
+        responseFeature.Setup(x => x.HasStarted).Returns(true);
+        
+        _httpContext.Items.SetError(new UnableToFindDownstreamRouteError("/path", "GET"));
+        _httpContext.Features.Set<IHttpResponseFeature>(responseFeature.Object);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
         _responder.VerifyNoOtherCalls();
     }
 }
