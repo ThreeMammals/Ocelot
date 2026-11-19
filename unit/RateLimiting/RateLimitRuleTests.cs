@@ -1,4 +1,5 @@
 ﻿using Ocelot.Configuration;
+using System.Globalization;
 
 namespace Ocelot.UnitTests.RateLimiting;
 
@@ -78,5 +79,26 @@ public class RateLimitRuleTests
     {
         var error = Assert.Throws<FormatException>(() => RateLimitRule.ParseTimespan(value));
         Assert.Equal(message, error.Message);
+    }
+
+    [Theory]
+    [Trait("Bug", "2440")] // https://github.com/ThreeMammals/Ocelot/issues/2440
+    [InlineData("tr-TR")] // the '.' is the group separator
+    [InlineData("de-DE")] // the ',' is the decimal separator
+    [InlineData("fr-FR")]
+    public void ParseTimespan_ShouldNotDependOnCurrentCulture(string cultureName)
+    {
+        var original = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+            Assert.Equal(TimeSpan.FromMilliseconds(1500), RateLimitRule.ParseTimespan("1.5s"));
+            Assert.Equal(TimeSpan.FromMilliseconds(0.4), RateLimitRule.ParseTimespan(".4"));
+            Assert.Equal(TimeSpan.FromSeconds(3), RateLimitRule.ParseTimespan("3.0S"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
     }
 }
