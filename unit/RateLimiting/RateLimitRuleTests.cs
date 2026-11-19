@@ -82,8 +82,7 @@ public class RateLimitRuleTests
     }
 
     [Theory]
-    [Trait("Feat", "585")]
-    [Trait("Feat", "1915")]
+    [Trait("Bug", "2440")] // https://github.com/ThreeMammals/Ocelot/issues/2440
     [InlineData("tr-TR")] // the '.' is the group separator
     [InlineData("de-DE")] // the ',' is the decimal separator
     [InlineData("fr-FR")]
