@@ -6,7 +6,7 @@ namespace Ocelot.ServiceDiscovery;
 /// Dynamic routing utilities that use multiple URL path segments as a service name.
 /// </summary>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
-public class MultipleSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
+public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
     : UrlPathDynamicRouting(contextAccessor)
 {
     private const int MaxServiceNameEndingLength = 16;

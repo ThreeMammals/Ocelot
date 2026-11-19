@@ -6,7 +6,7 @@ namespace Ocelot.Acceptance.ServiceDiscovery;
 
 [Trait("Feat", "1188")] // https://github.com/ThreeMammals/Ocelot/issues/1188
 [Trait("PR", "1198")] // https://github.com/ThreeMammals/Ocelot/pull/1198
-public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
+public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
 {
     [Theory]
     [InlineData("/authorization$", "authorization", "/")]
@@ -88,7 +88,7 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
     }
 
     private void WithDynamicRouting(IServiceCollection services)
-        => WithDynamicRouting<MultipleSegmentsUrlPathDynamicRouting>(services);
+        => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services);
 
     private void WithMultiCharacterDelimiterRouting(IServiceCollection services)
         => WithDynamicRouting<MultiCharacterDelimiterRouting>(services);
@@ -97,13 +97,13 @@ public sealed class MultipleSegmentsUrlPathDynamicRoutingTests : DynamicSteps
         => WithDynamicRouting<EncodedDelimiterRouting>(services);
 
     private sealed class MultiCharacterDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => "::";
     }
 
     private sealed class EncodedDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => "||";
     }

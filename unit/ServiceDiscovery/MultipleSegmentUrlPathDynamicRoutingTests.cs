@@ -5,11 +5,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery;
 
 [Trait("PR", "1198")]
 [Trait("Feat", "1188")]
-public class MultipleSegmentsUrlPathDynamicRoutingTests : UnitTest
+public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
 {
     private readonly Mock<IHttpContextAccessor> contextAccessor = new();
 
-    public MultipleSegmentsUrlPathDynamicRoutingTests()
+    public MultipleSegmentUrlPathDynamicRoutingTests()
     {
         contextAccessor.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
     }
@@ -25,7 +25,7 @@ public class MultipleSegmentsUrlPathDynamicRoutingTests : UnitTest
         string expectedNamespace = "")
     {
         // Arrange
-        var routing = new MultipleSegmentsUrlPathDynamicRouting(contextAccessor.Object);
+        var routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object);
         contextAccessor.Object.HttpContext.Request.Path = upstreamPath;
 
         // Act
@@ -42,7 +42,7 @@ public class MultipleSegmentsUrlPathDynamicRoutingTests : UnitTest
     public void UsesBaseRoutingWithoutDelimiter()
     {
         // Arrange
-        var routing = new MultipleSegmentsUrlPathDynamicRouting(contextAccessor.Object);
+        var routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object);
         contextAccessor.Object.HttpContext.Request.Path = "/authorization/api";
 
         // Act
@@ -169,49 +169,49 @@ public class MultipleSegmentsUrlPathDynamicRoutingTests : UnitTest
     }
 
     private sealed class CustomDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override char ServiceNameDelimiter => '#';
     }
 
     private sealed class CustomDelimiterStringRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => "::";
     }
 
     private sealed class EncodedDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => "||";
     }
 
     private sealed class SlashInDelimiterStringRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => ":/:";
     }
 
     private sealed class SlashDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override char ServiceNameDelimiter => Slash;
     }
 
     private sealed class NullDelimiterStringRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => null;
     }
 
     private sealed class OversizedDelimiterStringRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         protected override string ServiceNameEnding => "12345678901234567";
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentsUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
     {
         public string GetDownstreamPathForTest(string upstreamUrlPath)
             => DownstreamPath(upstreamUrlPath);
