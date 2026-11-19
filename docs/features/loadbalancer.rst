@@ -281,7 +281,7 @@ We have used the most complex example below to show all of the data and types th
 
     using Ocelot.Configuration;
     using Ocelot.DependencyInjection;
-    using Ocelot.ServiceDiscovery.Providers;
+    using Ocelot.ServiceDiscovery;
 
     Func<IServiceProvider, DownstreamRoute, IServiceDiscoveryProvider, MyLoadBalancer> lbFactory
         = (serviceProvider, Route, discoveryProvider) => new MyLoadBalancer(discoveryProvider.GetAsync);

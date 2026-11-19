@@ -8,7 +8,7 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.DependencyInjection;
 

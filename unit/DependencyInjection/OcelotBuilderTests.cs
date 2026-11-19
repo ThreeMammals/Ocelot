@@ -29,7 +29,7 @@ using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
 using Ocelot.Requester;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 using Ocelot.UnitTests.Multiplexer;
 using Ocelot.UnitTests.Requester;
 using Ocelot.Values;

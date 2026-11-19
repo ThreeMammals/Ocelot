@@ -1,12 +1,14 @@
 ﻿using Ocelot.Configuration;
 using Ocelot.Metadata;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 
 namespace Ocelot.Samples.ServiceDiscovery.ApiGateway.ServiceDiscovery;
 
 public class MyServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
+    public string Name => nameof(MyServiceDiscoveryProvider);
+
     private readonly IServiceProvider _serviceProvider;
     private readonly ServiceProviderConfiguration _config;
     private readonly DownstreamRoute _downstreamRoute;

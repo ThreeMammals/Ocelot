@@ -42,3 +42,5 @@ With Consul
 With Service Fabric
 -------------------
 .. image:: ../images/OcelotServiceFabric.jpg
+
+Ocelot forwards through the Service Fabric Reverse Proxy; the proxy resolves the destination service, partition, and replica.

@@ -3,7 +3,7 @@ using Ocelot.Infrastructure;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.LoadBalancer.Creators;
 

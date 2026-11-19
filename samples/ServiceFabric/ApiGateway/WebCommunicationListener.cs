@@ -2,6 +2,7 @@
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Samples.Web;
+using Ocelot.ServiceFabric;
 using System.Fabric;
 using System.Globalization;
 
@@ -51,7 +52,8 @@ public class WebCommunicationListener : ICommunicationListener
                 .SetBasePath(builder.Environment.ContentRootPath)
                 .AddOcelot();
             builder.Services
-                .AddOcelot(builder.Configuration);
+                .AddOcelot(builder.Configuration)
+                .AddServiceFabric();
             if (builder.Environment.IsDevelopment())
             {
                 builder.Logging.AddConsole();

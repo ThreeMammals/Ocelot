@@ -6,7 +6,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer.Balancers;
 using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Providers;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Testing.LoadBalancer;
 using Ocelot.Testing.Steps;
 using Ocelot.Values;
