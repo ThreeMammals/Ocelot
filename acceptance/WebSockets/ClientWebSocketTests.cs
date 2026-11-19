@@ -4,7 +4,6 @@ using Ocelot.Acceptance.Logging;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Logging;
-using Ocelot.Testing.Steps;
 using Ocelot.WebSockets;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -13,7 +12,7 @@ using System.Text;
 
 namespace Ocelot.Acceptance.WebSockets;
 
-public sealed class ClientWebSocketTests : WebSocketsSteps
+public sealed class ClientWebSocketTests : WSSteps
 {
     private readonly ClientWebSocket _ws = new();
     private readonly CancellationTokenSource _cts = new();
@@ -41,7 +40,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("wss://ws.postman-echo.com/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11ClientWhenDirectConnectionThenShouldConnect(string url, string expected)
     {
-        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+        SkipWhenCiCd();
 
         var echoEndpoint = new Uri(url);
         GivenOptions();
@@ -85,7 +84,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw", null)] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11ClientWhenOcelotInTheMiddleThenShouldConnect(string scheme, string host, int port, string path, string expected)
     {
-        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+        SkipWhenCiCd();
 
         var route = GivenWsRoute(scheme, host, port, path);
         var configuration = GivenConfiguration(route);
@@ -145,7 +144,7 @@ public sealed class ClientWebSocketTests : WebSocketsSteps
     [InlineData("wss", "ws.postman-echo.com", 443, "/raw")] // https://blog.postman.com/introducing-postman-websocket-echo-service/
     public async Task Http11ClientWhenConnectionClosedPrematurelyThenShouldCloseSocketsWithoutExceptions(string scheme, string host, int port, string path)
     {
-        Assert.SkipWhen(IsCiCd(), "Skipped in CI/CD! Running the test in a local development environment is sufficient to ensure the quality of the related WebSocket features.");
+        SkipWhenCiCd();
 
         static void WithExtraLogging(IServiceCollection services) =>
             services.AddOcelot()

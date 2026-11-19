@@ -11,8 +11,8 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ubuntu, macos, windows]
-        framework: [net10] # net8, net9, 
-    runs-on: ${{ matrix.os }}-latest
+        framework: [net8, net9, net10]
+    runs-on: ${{ matrix.os }}-${{ fromJSON(vars.OS_VERSION)[matrix.os] || 'latest' }}
     defaults:
       run:
         shell: bash
@@ -62,7 +62,7 @@ jobs:
 
   release-cake:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: build.cake # TODO Rename to Release
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
@@ -111,7 +111,7 @@ jobs:
           target: Release
         env:
           OCELOT_GITHUB_API_KEY: ${{ secrets.OCELOT_GITHUB_API_KEY }}
-          OCELOT_NUGET_API_KEY_2025: ${{ secrets.OCELOT_NUGET_API_KEY_2025 }}
+          OCELOT_NUGET_API_KEY: ${{ secrets.OCELOT_NUGET_API_KEY_2026_11_17 }}
           # COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       # - name: Coverage files
       #   id: coverage

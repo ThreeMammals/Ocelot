@@ -4,13 +4,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Testing.Steps;
 using System.Net.WebSockets;
 using System.Text;
 
 namespace Ocelot.Acceptance.WebSockets;
 
-public sealed class WebSocketsSecurityTests : WebSocketsSteps
+public sealed class WebSocketsSecurityTests : WSSteps
 {
     private Exception _connect;
 
