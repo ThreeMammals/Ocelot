@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -24,13 +23,16 @@ public static class ServiceCollectionExtensions
         where TDynamicRouting : class, IDynamicRouting
         => services.RemoveAll<IDynamicRouting>().AddSingleton<IDynamicRouting, TDynamicRouting>();
 
-    public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(
-        this IServiceCollection services,
-        Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
+    /// <summary>
+    /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation and configures multiple-segment routing options.
+    /// </summary>
+    /// <typeparam name="TDynamicRouting">The dynamic routing type.</typeparam>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="configureOptions">The action used to configure the options.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
+    public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(this IServiceCollection services, Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
         where TDynamicRouting : MultipleSegmentUrlPathDynamicRouting
-        => services
-            .AddOptions<MultipleSegmentUrlPathDynamicRoutingOptions>()
+        => services.AddOptions<MultipleSegmentUrlPathDynamicRoutingOptions>()
             .Configure(configureOptions)
-            .Services
-            .AddOcelotDynamicRouting<TDynamicRouting>();
+            .Services.AddOcelotDynamicRouting<TDynamicRouting>();
 }

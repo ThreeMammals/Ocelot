@@ -7,6 +7,7 @@ namespace Ocelot.ServiceDiscovery;
 /// Dynamic routing utilities that use multiple URL path segments as a service name.
 /// </summary>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
+/// <param name="options">User defined options.</param>
 public class MultipleSegmentUrlPathDynamicRouting(
     IHttpContextAccessor contextAccessor,
     IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
@@ -72,5 +73,8 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
 public class MultipleSegmentUrlPathDynamicRoutingOptions
 {
+    public MultipleSegmentUrlPathDynamicRoutingOptions() => Delimiter = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
+    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter) => Delimiter = delimiter;
+
     public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
 }
