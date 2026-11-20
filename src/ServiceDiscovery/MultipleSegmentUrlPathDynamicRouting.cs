@@ -9,11 +9,9 @@ namespace Ocelot.ServiceDiscovery;
 public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
     : UrlPathDynamicRouting(contextAccessor)
 {
-    private const int MaxServiceNameEndingLength = 16;
-    private string _sanitizedServiceNameEnding;
-
-    protected virtual char ServiceNameDelimiter => '$';
-    protected virtual string ServiceNameEnding => string.Empty;
+    public const char Percent = '%';
+    public const char DefaultDelimiter = '$';
+    protected virtual char ServiceNameDelimiter => DefaultDelimiter;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -21,11 +19,11 @@ public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAc
         if (path.Length <= 1)
             return SlashStr;
 
-        int delimiter = FindServiceNameDelimiter(path, out int delimiterLength);
+        int delimiter = FindDelimiter(path);
         if (delimiter < 0)
             return base.DownstreamPath(path.ToString());
 
-        var downstreamPath = path[(delimiter + delimiterLength)..];
+        var downstreamPath = path[++delimiter..];
         return downstreamPath.Length == 0 || downstreamPath[0] == Slash
             ? downstreamPath.Length == 0 ? SlashStr : downstreamPath.ToString()
             : string.Concat(SlashStr.AsSpan(), downstreamPath); // ensure downstream path starts with a slash
@@ -37,7 +35,7 @@ public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAc
         if (path.Length <= 1)
             return base.GetServiceName(path.ToString());
 
-        int delimiter = FindServiceNameDelimiter(path, out _);
+        int delimiter = FindDelimiter(path);
         if (delimiter < 0)
             return base.GetServiceName(path.ToString());
 
@@ -48,53 +46,22 @@ public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAc
             : new(service);
     }
 
-    private int FindServiceNameDelimiter(ReadOnlySpan<char> upstreamUrlPath, out int delimiterLength)
+    protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
-        if (_sanitizedServiceNameEnding is null)
-        {
-            ReadOnlySpan<char> serviceNameEnding = ServiceNameEnding.AsSpan();
-            Span<char> sanitizedEnding = stackalloc char[MaxServiceNameEndingLength];
-            int sanitizedLength = SanitizeServiceNameEnding(serviceNameEnding, sanitizedEnding);
-            _sanitizedServiceNameEnding = sanitizedEnding[..sanitizedLength].ToString();
-        }
-
-        ReadOnlySpan<char> delimiterString = _sanitizedServiceNameEnding.AsSpan();
-        if (delimiterString.Length > 0)
-        {
-            delimiterLength = delimiterString.Length;
-            int index = upstreamUrlPath[1..].IndexOf(delimiterString);
-            return index < 0 ? -1 : index + 1;
-        }
-
-        delimiterLength = 1;
         char delimiter = ServiceNameDelimiter == Slash
-            ? '$'
+            ? DefaultDelimiter
             : ServiceNameDelimiter;
-        int charIndex = upstreamUrlPath[1..].IndexOf(delimiter);
-        return charIndex < 0 ? -1 : charIndex + 1;
+        int index = upstreamUrlPath[1..].IndexOf(delimiter);
+        return index < 0 ? -1 : ++index;
     }
 
-    private static int SanitizeServiceNameEnding(ReadOnlySpan<char> serviceNameEnding, Span<char> sanitizedEnding)
-    {
-        if (serviceNameEnding.Length > MaxServiceNameEndingLength)
-            throw new ArgumentOutOfRangeException(nameof(serviceNameEnding), $"The service name ending cannot exceed {MaxServiceNameEndingLength} characters.");
-
-        int sanitizedLength = 0;
-        foreach (char character in serviceNameEnding)
-        {
-            if (character != Slash)
-                sanitizedEnding[sanitizedLength++] = character;
-        }
-        return sanitizedLength;
-    }
-
-    private static ReadOnlySpan<char> DecodeUrlPath(string upstreamUrlPath)
+    protected virtual ReadOnlySpan<char> DecodeUrlPath(string upstreamUrlPath)
     {
         if (upstreamUrlPath is null)
             return [];
 
         ReadOnlySpan<char> path = upstreamUrlPath.AsSpan();
-        return path.IndexOf('%') < 0
+        return path.IndexOf(Percent) < 0
             ? path
             : Uri.UnescapeDataString(upstreamUrlPath).AsSpan();
     }
