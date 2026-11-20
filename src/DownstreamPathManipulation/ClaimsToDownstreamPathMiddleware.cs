@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.PathManipulation;
 
-namespace Ocelot.DownstreamPathManipulation.Middleware;
+namespace Ocelot.DownstreamPathManipulation;
 
 public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
 {
@@ -13,34 +12,33 @@ public class ClaimsToDownstreamPathMiddleware : OcelotMiddleware
     public ClaimsToDownstreamPathMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
         IChangeDownstreamPathTemplate changeDownstreamPathTemplate)
-            : base(loggerFactory.CreateLogger<ClaimsToDownstreamPathMiddleware>())
+        : base(loggerFactory.CreateLogger<ClaimsToDownstreamPathMiddleware>())
     {
         _next = next;
         _changeDownstreamPathTemplate = changeDownstreamPathTemplate;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext context)
     {
-        var downstreamRoute = httpContext.Items.DownstreamRoute();
-
-        if (downstreamRoute.ClaimsToPath.Any())
+        var downstreamRoute = context.Items.DownstreamRoute();
+        if (downstreamRoute.ClaimsToPath.Count != 0)
         {
             Logger.LogInformation(() => $"{downstreamRoute.DownstreamPathTemplate.Value} has instructions to convert claims to path");
 
-            var templatePlaceholderNameAndValues = httpContext.Items.TemplatePlaceholderNameAndValues();
+            var templatePlaceholderNameAndValues = context.Items.TemplatePlaceholderNameAndValues();
 
-            var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamRoute.ClaimsToPath, httpContext.User.Claims,
+            var response = _changeDownstreamPathTemplate.ChangeDownstreamPath(downstreamRoute.ClaimsToPath, context.User.Claims,
                 downstreamRoute.DownstreamPathTemplate, templatePlaceholderNameAndValues);
 
             if (response.IsError)
             {
                 Logger.LogWarning("there was an error setting queries on context, setting pipeline error");
 
-                httpContext.Items.UpsertErrors(response.Errors);
+                context.Items.UpsertErrors(response.Errors);
                 return;
             }
         }
 
-        await _next.Invoke(httpContext);
+        await _next.Invoke(context);
     }
 }

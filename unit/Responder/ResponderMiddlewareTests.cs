@@ -47,7 +47,7 @@ public class ResponderMiddlewareTests : UnitTest
     {
         // Arrange
         _httpContext.Items.UpsertDownstreamResponse(new DownstreamResponse(new HttpResponseMessage()));
-        _httpContext.Items.SetError(new UnableToFindDownstreamRouteError("/path", "GET"));
+        _httpContext.Items.SetError(new UnableToFindDownstreamRouteError("/path", HttpMethod.Get));
 
         // Act
         await _middleware.Invoke(_httpContext);

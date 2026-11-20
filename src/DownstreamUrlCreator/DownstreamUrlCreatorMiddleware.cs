@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Ocelot.Configuration;
-using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
@@ -16,33 +15,32 @@ namespace Ocelot.DownstreamUrlCreator;
 public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IDownstreamPathPlaceholderReplacer _replacer;
+    private readonly IDownstreamPathPlaceholderReplacer _placeholderReplacer;
 
     private const char Ampersand = '&';
     private const char QuestionMark = '?';
     protected const char Slash = '/';
 
-    public DownstreamUrlCreatorMiddleware(
-        RequestDelegate next,
+    public DownstreamUrlCreatorMiddleware(RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IDownstreamPathPlaceholderReplacer replacer)
+        IDownstreamPathPlaceholderReplacer placeholderReplacer)
         : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
     {
         _next = next;
-        _replacer = replacer;
+        _placeholderReplacer = placeholderReplacer;
     }
 
     public async Task Invoke(HttpContext context)
     {
+        var route = context.Items.Route();
         var downstreamRoute = context.Items.DownstreamRoute();
+        var downstreamPathTemplate = route?.DownstreamPathTemplate ?? downstreamRoute.DownstreamPathTemplate; // TODO See MultiplexingMiddleware.ProcessRouteAsync
+        var pathTemplate = downstreamPathTemplate.Value;
         var placeholders = context.Items.TemplatePlaceholderNameAndValues();
-        var downstreamPathTemplate = context.Items.Route()?.IsDynamic == true
-            ? DiscoveryDownstreamRouteFinder.GetDownstreamPath(context.Request.Path.ToString()) // TODO Consider extending the IDownstreamRouteProvider interface and injecting it
-            : downstreamRoute.DownstreamPathTemplate.Value; // TODO Consider overriding the constructor with a second version that has a Func<T> callback. For a dynamic route, DownstreamPathTemplate should be empty, but with an initialized callback.
-        var downstreamPath = _replacer.Replace(downstreamPathTemplate, placeholders);
+        var downstreamPath = _placeholderReplacer.Replace(pathTemplate, placeholders);
         if (downstreamPath.Value.IsEmpty())
         {
-            throw new NotSupportedException($"{_replacer.GetType().Name} returned an empty {nameof(DownstreamPath)} for the route {downstreamRoute.Name()}.");
+            throw new NotSupportedException($"{_placeholderReplacer.GetType().Name} returned an empty {nameof(DownstreamPath)} for the route {downstreamRoute.Name()}.");
         }
 
         var dsPath = downstreamPath.Value;
@@ -160,7 +158,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     protected (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamPath dsPath)
     {
         var query = downstreamRequest.Query;
-        var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);
+        var serviceName = _placeholderReplacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);
         var pathTemplate = $"/{serviceName.Value}{dsPath.Value}";
         return (pathTemplate, query);
     }

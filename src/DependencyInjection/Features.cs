@@ -14,6 +14,7 @@ using Ocelot.Logging;
 using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
 using Ocelot.RateLimiting;
+using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.DependencyInjection;
 
@@ -127,4 +128,8 @@ public static class Features
 
     public static IServiceCollection AddOcelotQualityOfService(this IServiceCollection services) => services
         .AddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
+
+    public static IServiceCollection AddOcelotServiceDiscovery(this IServiceCollection services) => services
+        .AddSingleton<IDynamicRouting, UrlPathDynamicRouting>()
+        .AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
 }

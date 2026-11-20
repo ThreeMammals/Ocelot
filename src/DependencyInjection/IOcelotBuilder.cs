@@ -8,6 +8,7 @@ using Ocelot.LoadBalancer.Interfaces;
 using Ocelot.Middleware;
 using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
+using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.DependencyInjection;
@@ -117,8 +118,25 @@ public interface IOcelotBuilder
     /// Adds a custom Quality of Service handler that inherits from <see cref="CircuitBreakerDelegatingHandler"/>,
     /// allowing overrides such as a custom <c>ServerErrorCodes</c> set.
     /// </summary>
-    /// <typeparam name="THandler">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
+    /// <typeparam name="T">A concrete subclass of <see cref="CircuitBreakerDelegatingHandler"/>.</typeparam>
     /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
-    IOcelotBuilder AddQualityOfService<THandler>()
-        where THandler : CircuitBreakerDelegatingHandler;
+    IOcelotBuilder AddQualityOfService<T>()
+        where T : CircuitBreakerDelegatingHandler;
+
+    /// <summary>
+    /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation to the DI container.
+    /// </summary>
+    /// <typeparam name="T">The dynamic routing type.</typeparam>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    IOcelotBuilder AddDynamicRouting<T>()
+        where T : class, IDynamicRouting;
+
+    /// <summary>
+    /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation and configures multiple-segment routing options.
+    /// </summary>
+    /// <typeparam name="T">The dynamic routing type.</typeparam>
+    /// <param name="configureOptions">The options configuration delegate.</param>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
+        where T : MultipleSegmentUrlPathDynamicRouting;
 }

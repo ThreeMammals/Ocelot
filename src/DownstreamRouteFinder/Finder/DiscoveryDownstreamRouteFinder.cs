@@ -2,13 +2,18 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Errors;
 using Ocelot.Infrastructure.Extensions;
+using Ocelot.Middleware;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.Values;
 
 namespace Ocelot.DownstreamRouteFinder.Finder;
 
+/// <summary>
+/// Dynamic route finder when service discovery is enabled.
+/// </summary>
 public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 {
     public const char Dot = '.';
@@ -17,29 +22,51 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
 
     private readonly ConcurrentDictionary<string, Route> _cache;
     private readonly IRouteKeyCreator _routeKeyCreator;
-    private readonly IUpstreamHeaderTemplatePatternCreator _upstreamHeaderTemplatePatternCreator;
+    private readonly IUpstreamHeaderTemplatePatternCreator _headerTemplatePatternCreator;
+    private readonly IDynamicRouting _routing;
 
     public DiscoveryDownstreamRouteFinder(
         IRouteKeyCreator routeKeyCreator,
-        IUpstreamHeaderTemplatePatternCreator upstreamHeaderTemplatePatternCreator)
+        IUpstreamHeaderTemplatePatternCreator headerTemplatePatternCreator,
+        IDynamicRouting routing)
     {
         _cache = new();
         _routeKeyCreator = routeKeyCreator;
-        _upstreamHeaderTemplatePatternCreator = upstreamHeaderTemplatePatternCreator;
+        _headerTemplatePatternCreator = headerTemplatePatternCreator;
+        _routing = routing;
     }
 
-    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string upstreamHttpMethod,
+    public Route Get(HttpRequest request, out IEnumerable<Error> errors)
+    {
+        var configuration = request.HttpContext.Items.IInternalConfiguration();
+        var response = Find(configuration, request.Path, request.QueryString, new(request.Method), UpstreamHost(request), request.Headers);
+        errors = response.Errors;
+        return response.Data;
+    }
+
+    [Obsolete(Use_Get_HttpRequest_IEnumerable_method)]
+    public Response<Route> Get(string upstreamUrlPath, string upstreamQueryString, string httpMethod,
         IInternalConfiguration configuration, string upstreamHost, IHeaderDictionary upstreamHeaders)
     {
-        var serviceName = GetServiceName(upstreamUrlPath, out var serviceNamespace);
-        var downstreamPath = GetDownstreamPath(upstreamUrlPath);
+        throw new NotSupportedException(Use_Get_HttpRequest_IEnumerable_method); // Aggressively ask developers to stop using it!
+    }
+    internal const string Use_Get_HttpRequest_IEnumerable_method = "Use the Get(HttpRequest, IEnumerable<Error>) method instead of this one! Note that this method has been deprecated since version 26.0!";
+
+    protected virtual Response<Route> Find(IInternalConfiguration configuration,
+        PathString upstreamUrlPath, QueryString upstreamQueryString, HttpMethod method, HostString upstreamHost, IHeaderDictionary upstreamHeaders)
+    {
+        var service = GetServiceName(upstreamUrlPath);
+        var downstreamPath = new DownstreamPathTemplate(GetDownstreamPath, false); // Parse downstream path dynamically for each request, don't cache value
+
         var dynamicRoute = configuration.Routes
             .Where(r => r.IsDynamic) // process dynamic routes only
             .SelectMany(r => r.DownstreamRoute)
-            .FirstOrDefault(dr => dr.ServiceName == serviceName && (serviceNamespace.IsEmpty() || dr.ServiceNamespace == serviceNamespace));
+            .FirstOrDefault(dr => dr.ServiceName == service.Name && (service.Namespace.IsEmpty() || dr.ServiceNamespace == service.Namespace));
+
         var loadBalancerKey = dynamicRoute != null
             ? dynamicRoute.LoadBalancerKey
-            : _routeKeyCreator.Create(serviceNamespace, serviceName, configuration.LoadBalancerOptions);
+            : _routeKeyCreator.Create(service.Namespace, service.Name, configuration.LoadBalancerOptions);
+
         if (_cache.TryGetValue(loadBalancerKey, out var cachedRoute))
             return new OkResponse<Route>(cachedRoute);
 
@@ -47,11 +74,11 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
         var upstreamPathTemplate = new UpstreamPathTemplateBuilder().WithOriginalValue(upstreamUrlPath).Build();
 
         // TODO Under development. Implementation returns empty collection.
-        var upstreamHeaderTemplates = _upstreamHeaderTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
+        var upstreamHeaderTemplates = _headerTemplatePatternCreator.Create(upstreamHeaders, false); // ? discoveryDownstreamRoute.UpstreamHeaders
 
         var routeBuilder = new DownstreamRouteBuilder()
-            .WithServiceName(serviceName)
-            .WithServiceNamespace(serviceNamespace)
+            .WithServiceName(service.Name)
+            .WithServiceNamespace(service.Namespace)
             .WithAuthenticationOptions(configuration.AuthenticationOptions)
             .WithCacheOptions(configuration.CacheOptions)
             .WithDownstreamHttpVersion(configuration.DownstreamHttpVersion)
@@ -82,56 +109,43 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
                 .WithMetadata(dynamicRoute.MetadataOptions)
                 .WithQosOptions(dynamicRoute.QosOptions)
                 .WithRateLimitOptions(dynamicRoute.RateLimitOptions)
-                .WithServiceName(serviceName/*dynamicRoute.ServiceName*/)
-                .WithServiceNamespace(serviceNamespace/*dynamicRoute.ServiceNamespace*/)
+                .WithServiceName(service.Name/*dynamicRoute.ServiceName*/)
+                .WithServiceNamespace(service.Namespace/*dynamicRoute.ServiceNamespace*/)
                 .WithTimeout(dynamicRoute.Timeout);
         }
 
         var downstreamRoute = routeBuilder.Build();
         var route = new Route(true, downstreamRoute) // IsDynamic -> true
         {
+            DownstreamPathTemplate = downstreamPath,
             UpstreamHeaderTemplates = upstreamHeaderTemplates,
-            UpstreamHost = upstreamHost,
-            UpstreamHttpMethod = [new(upstreamHttpMethod.Trim())],
+            UpstreamHost = upstreamHost.Host,
+            UpstreamHttpMethod = [method],
             UpstreamTemplatePattern = upstreamPathTemplate,
         };
         var cached = _cache.GetOrAdd(loadBalancerKey, route);
         return new OkResponse<Route>(cached);
     }
 
-    /// <summary>
-    /// Gets the downstream path part of the URL without the service name.
-    /// Thus, the first segment of the upstream URL is removed.
-    /// </summary>
-    /// <param name="upstreamUrlPath">The URL with the service name in the first segment.</param>
-    /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
-    internal static string GetDownstreamPath(string upstreamUrlPath)
+    protected virtual string GetDownstreamPath()
     {
-        int index = upstreamUrlPath.IndexOf(Slash, 1);
-        return index != -1
-            ? upstreamUrlPath[index..]
-            : Slash.ToString();
+        return _routing.GetDownstreamPath();
     }
 
     /// <summary>Gets service name and its namespace of request URL.
     /// <para>Note: A namespace and service name should be separated by a '.' (dot) character.</para></summary>
     /// <remarks>Example: <c>http://ocelot.net/namespace.service-name/path</c> URL.</remarks>
     /// <param name="upstreamUrlPath">The upstream path.</param>
-    /// <param name="serviceNamespace">Extracted namespace.</param>
-    /// <returns>A <see cref="string"/> object.</returns>
-    protected virtual string GetServiceName(string upstreamUrlPath, out string serviceNamespace)
+    /// <returns>A <see cref="ServiceInfo"/> value.</returns>
+    protected virtual ServiceInfo GetServiceName(PathString upstreamUrlPath)
     {
-        var path = upstreamUrlPath.AsSpan();
-        int index = path[1..].IndexOf(Slash);
-        var name = index == -1
-            ? path[1..]
-            : path.Slice(1, index).TrimEnd(Slash);
+        var service = _routing.GetServiceName();
+        if (service.Name.IsNotEmpty())
+            return service;
 
-        index = name.IndexOf(Dot);
-        serviceNamespace = index == -1
-            ? string.Empty
-            : name[..index].ToString();
-        var serviceName = index == -1 ? name : name[++index..];
-        return serviceName.ToString();
+        service = _routing.GetServiceName(upstreamUrlPath);
+        return service;
     }
+
+    protected virtual HostString UpstreamHost(HttpRequest request) => request.Host;
 }

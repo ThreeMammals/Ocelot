@@ -9,10 +9,16 @@ public class Route
     public Route() { }
     public Route(bool isDynamic) : this() => IsDynamic = isDynamic;
     public Route(bool isDynamic, DownstreamRoute route) : this(route) => IsDynamic = isDynamic;
-    public Route(DownstreamRoute route) => DownstreamRoute.Add(route);
-    public Route(DownstreamRoute route, HttpMethod method = null, List<PlaceholderNameAndValue> placeholders = null)
+
+    public Route(DownstreamRoute route)
     {
         DownstreamRoute.Add(route);
+        DownstreamPathTemplate = route.DownstreamPathTemplate;
+    }
+
+    public Route(DownstreamRoute route, HttpMethod method = null, List<PlaceholderNameAndValue> placeholders = null)
+        : this(route)
+    {
         UpstreamHttpMethod.Add(method ?? HttpMethod.Get);
         TemplatePlaceholderNameAndValues = placeholders ?? [];
     }
@@ -23,6 +29,7 @@ public class Route
     {
         IsDynamic = from.IsDynamic;
         Aggregator = from.Aggregator;
+        DownstreamPathTemplate = from.DownstreamPathTemplate;
         DownstreamRoute = from.DownstreamRoute;
         DownstreamRouteConfig = from.DownstreamRouteConfig;
         TemplatePlaceholderNameAndValues = from.TemplatePlaceholderNameAndValues;
@@ -44,6 +51,7 @@ public class Route
 
     public bool IsDynamic { get; }
     public string Aggregator { get; init; }
+    public DownstreamPathTemplate DownstreamPathTemplate { get; init; }
     public List<DownstreamRoute> DownstreamRoute { get; init; } = [];
     public List<AggregateRouteConfig> DownstreamRouteConfig { get; init; }
     public List<PlaceholderNameAndValue> TemplatePlaceholderNameAndValues { get; init; } = [];
