@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;
@@ -34,6 +35,26 @@ public class ServiceCollectionExtensionsTests : UnitTest
 
         // Assert
         Assert.IsType<FakeDynamicRouting>(services.BuildServiceProvider().GetRequiredService<IDynamicRouting>());
+    }
+
+    [Fact]
+    public void AddOcelotDynamicRouting_RegistersConfiguredOptions()
+    {
+        // Arrange
+        var services = new ServiceCollection()
+            .AddHttpContextAccessor();
+
+        // Act
+        services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
+            options => options.Delimiter = '#');
+
+        // Assert
+        var routing = services.BuildServiceProvider().GetRequiredService<IDynamicRouting>();
+        var actual = routing.GetServiceName("/authorization/api#details");
+        Assert.Equal("authorization/api", actual.Name);
+        Assert.Equal('#', services.BuildServiceProvider()
+            .GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRoutingOptions>>()
+            .Value.Delimiter);
     }
 
     private sealed class FakeDynamicRouting : IDynamicRouting

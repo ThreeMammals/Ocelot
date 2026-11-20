@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -22,4 +23,14 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(this IServiceCollection services)
         where TDynamicRouting : class, IDynamicRouting
         => services.RemoveAll<IDynamicRouting>().AddSingleton<IDynamicRouting, TDynamicRouting>();
+
+    public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(
+        this IServiceCollection services,
+        Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
+        where TDynamicRouting : MultipleSegmentUrlPathDynamicRouting
+        => services
+            .AddOptions<MultipleSegmentUrlPathDynamicRoutingOptions>()
+            .Configure(configureOptions)
+            .Services
+            .AddOcelotDynamicRouting<TDynamicRouting>();
 }

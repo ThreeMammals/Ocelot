@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -6,12 +7,14 @@ namespace Ocelot.ServiceDiscovery;
 /// Dynamic routing utilities that use multiple URL path segments as a service name.
 /// </summary>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
-public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
+public class MultipleSegmentUrlPathDynamicRouting(
+    IHttpContextAccessor contextAccessor,
+    IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
     : UrlPathDynamicRouting(contextAccessor)
 {
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
-    protected virtual char ServiceNameDelimiter => DefaultDelimiter;
+    protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -65,4 +68,9 @@ public class MultipleSegmentUrlPathDynamicRouting(IHttpContextAccessor contextAc
             ? path
             : Uri.UnescapeDataString(upstreamUrlPath).AsSpan();
     }
+}
+
+public class MultipleSegmentUrlPathDynamicRoutingOptions
+{
+    public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
 }

@@ -202,6 +202,27 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
+    public void AddDynamicRouting_RegistersConfiguredOptions()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
+            options => options.Delimiter = '#');
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        var actual = _serviceProvider.GetRequiredService<IDynamicRouting>()
+            .GetServiceName("/authorization/api#details");
+        Assert.Equal("authorization/api", actual.Name);
+        Assert.Equal('#', _serviceProvider
+            .GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRoutingOptions>>()
+            .Value.Delimiter);
+    }
+
+    [Fact]
     public void Should_add_singleton_defined_aggregators()
     {
         // Arrange

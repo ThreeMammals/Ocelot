@@ -42,8 +42,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [Theory]
     [InlineData("/authorization/api%23", "authorization/api", "/")]
     [InlineData("/authorization/api%23path", "authorization/api", "/path")]
-    [InlineData("/authorization/api%23/path?query", "authorization/api", "/path?query")]
-    public async Task ShouldUseEncodedCustomDelimiterToFindService(
+    public async Task ShouldUseOverriddenCustomDelimiterToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
@@ -55,7 +54,55 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
 
         GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(WithHashDelimiterRouting);
+        GivenOcelotIsRunning(services => WithDynamicRouting<HashDelimiterRouting>(services));
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
+    [Theory]
+    [InlineData('#', "/authorization/api%23", "authorization/api", "/")]
+    [InlineData(':', "/authorization/api%3Apath", "authorization/api", "/path")]
+    [InlineData('@', "/authorization/api%40/path?query", "authorization/api", "/path?query")]
+    public async Task ShouldUseEncodedConfiguredCustomDelimiterToFindService(
+        char delimiter, string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var serviceUrls = new[] { DownstreamUrl(port) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDelimiterOptions(services, delimiter));
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
+    [Theory]
+    [InlineData(':', "/authorization/api:", "authorization/api", "/")]
+    [InlineData(':', "/authorization/api:path", "authorization/api", "/path")]
+    [InlineData('@', "/authorization/api@/path?query", "authorization/api", "/path?query")]
+    public async Task ShouldUseUnencodedConfiguredCustomDelimiterToFindService(
+        char delimiter, string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var port = PortFinder.GetRandomPort();
+        var serviceUrls = new[] { DownstreamUrl(port) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { serviceName, serviceUrls },
+        });
+
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDelimiterOptions(services, delimiter));
         await WhenIGetUrlOnTheApiGateway(upstreamPath);
 
         ThenTheStatusCodeShouldBeOk();
@@ -66,8 +113,10 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     private void WithDynamicRouting(IServiceCollection services)
         => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services);
 
-    private void WithHashDelimiterRouting(IServiceCollection services)
-        => WithDynamicRouting<HashDelimiterRouting>(services);
+    private void WithDelimiterOptions(IServiceCollection services, char delimiter)
+        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
+                services,
+                options => options.Delimiter = delimiter);
 
     private sealed class HashDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentUrlPathDynamicRouting(contextAccessor)

@@ -130,4 +130,13 @@ public interface IOcelotBuilder
     /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     IOcelotBuilder AddDynamicRouting<T>()
         where T : class, IDynamicRouting;
+
+    /// <summary>
+    /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation and configures multiple-segment routing options.
+    /// </summary>
+    /// <typeparam name="T">The dynamic routing type.</typeparam>
+    /// <param name="configureOptions">The options configuration delegate.</param>
+    /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
+    IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
+        where T : MultipleSegmentUrlPathDynamicRouting;
 }

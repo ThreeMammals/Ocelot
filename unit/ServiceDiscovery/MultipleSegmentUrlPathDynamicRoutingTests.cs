@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.UnitTests.ServiceDiscovery;
@@ -71,10 +72,13 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
     }
 
     [Fact]
-    public void UsesCustomDelimiter()
+    [Trait("PR", "1198")]
+    [Trait("Feat", "1188")]
+    public void UsesConfiguredDelimiterWhenServiceNameDelimiterIsNotOverridden()
     {
         // Arrange
-        var routing = new CustomDelimiterRouting(contextAccessor.Object);
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions { Delimiter = '#' });
+        var routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
 
         // Act
         var actualServiceName = routing.GetServiceName("/authorization/api#details");
@@ -96,8 +100,41 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         Assert.Equal("authorization/api", actual.Name);
     }
 
-    private sealed class CustomDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
+    [Fact]
+    [Trait("PR", "1198")]
+    [Trait("Feat", "1188")]
+    public void UsesDefaultDelimiterWithoutOptions()
+    {
+        // Arrange
+        var routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object);
+
+        // Act
+        var actual = routing.GetServiceName("/authorization/api$details");
+
+        // Assert
+        Assert.Equal("authorization/api", actual.Name);
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    [Trait("Feat", "1188")]
+    public void UsesOverriddenDelimiterInsteadOfConfiguredDelimiter()
+    {
+        // Arrange
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions { Delimiter = '$' });
+        var routing = new CustomDelimiterRouting(contextAccessor.Object, options);
+
+        // Act
+        var actual = routing.GetServiceName("/authorization/api#details");
+
+        // Assert
+        Assert.Equal("authorization/api", actual.Name);
+    }
+
+    private sealed class CustomDelimiterRouting(
+        IHttpContextAccessor contextAccessor,
+        IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
+        : MultipleSegmentUrlPathDynamicRouting(contextAccessor, options)
     {
         protected override char ServiceNameDelimiter => '#';
     }
