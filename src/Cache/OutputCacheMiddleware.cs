@@ -57,11 +57,17 @@ public class OutputCacheMiddleware : OcelotMiddleware
         }
 
         var downstreamResponse = httpContext.Items.DownstreamResponse();
-        cached = await CreateCachedResponse(downstreamResponse);
-
-        var ttl = TimeSpan.FromSeconds(options.TtlSeconds);
-        _outputCache.Add(downStreamRequestCacheKey, cached, options.Region, ttl);
-        Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
+        if (downstreamResponse.StatusCode == HttpStatusCode.OK)
+        {
+            cached = await CreateCachedResponse(downstreamResponse);
+            var ttl = TimeSpan.FromSeconds(options.TtlSeconds);
+            _outputCache.Add(downStreamRequestCacheKey, cached, options.Region, ttl);
+            Logger.LogDebug(() => $"Finished response added to cache for the '{downstreamUrlKey}' key.");
+        }
+        else
+        {
+            Logger.LogDebug($"HTTP request failed: could not create cache for the '{downstreamUrlKey}' key.");
+        }
     }
 
     private static void SetHttpResponseMessageThisRequest(HttpContext context, DownstreamResponse response)
