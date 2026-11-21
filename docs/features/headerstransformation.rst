@@ -245,7 +245,7 @@ Roadmap
 .. _significant effort: https://github.com/ThreeMammals/Ocelot/labels/large%20effort
 
 2. The *Headers Transformation* feature is not implemented for :ref:`Dynamic Routes <config-dynamic-route-schema>` and :ref:`Aggregate Routes <config-aggregate-route-schema>`.
-   For :ref:`Dynamic Routing <routing-dynamic>`, potential development would require `moderate effort`_.
+   For :doc:`../features/dynamic-routing`, potential development would require `moderate effort`_.
    However, the Ocelot team expects that designing and implementing *Headers Transformation* for :doc:`../features/aggregation` will demand `significant effort`_, as aggregated routes typically lose their headers.
 
 .. |octocat| image:: https://github.githubassets.com/images/icons/emoji/octocat.png

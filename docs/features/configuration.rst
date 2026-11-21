@@ -43,7 +43,7 @@ From the :doc:`../introduction/gettingstarted` chapter and its :ref:`getstarted-
         Once static routes have been loaded during gateway startup, in general, they cannot be changed during the lifetime of the app instance, with a few exceptional use cases.
     * - ``DynamicRoutes`` with :ref:`config-dynamic-route-schema`
       - This section enables dynamic routing when using a :doc:`../features/servicediscovery` provider.
-        Please refer to the :ref:`routing-dynamic` docs for more details.
+        Please refer to the :doc:`../features/dynamic-routing` docs for more details.
     * - ``Aggregates`` with :ref:`config-aggregate-route-schema`
       - This section allows specifying aggregated routes that compose multiple normal routes and map their responses into one JSON object.
         It allows you to start implementing a *Back-end For a Front-end* (BFF) type architecture with Ocelot.
@@ -148,7 +148,7 @@ The actual dynamic route schema with all the properties can be found in the C# `
   For backward compatibility in version `24.1`_, the ``RateLimitRule`` section takes precedence over the ``RateLimitOptions`` section.
 
   **Note 2**: The following options were not supported in versions prior to `24.1`_ for overriding globally configured options: ``AuthenticationOptions``, ``CacheOptions``, ``HttpHandlerOptions``, ``LoadBalancerOptions``, ``QoSOptions``, ``RateLimitOptions``, ``ServiceNamespace``, and ``Timeout``.
-  Starting with version `24.1`_, both global and route-level options for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+  Starting with version `24.1`_, both global and route-level options for :doc:`../features/dynamic-routing` were introduced.
   For a clearer understanding of the changes, refer to the `previous schema (version 24.0) <https://ocelot.readthedocs.io/en/24.0/features/configuration.html#dynamic-route-schema>`_.
 
 .. _config-aggregate-route-schema:
@@ -619,7 +619,7 @@ As a final step, you could add shutdown logic to save the complete configuration
 
 Use ``HttpHandlerOptions`` in a route configuration to set up `HttpMessageHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+HttpMessageHandler+path%3A%2F%5Esrc%5C%2F%2F&type=code>`_ behavior
 based on a `SocketsHttpHandler <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+SocketsHttpHandler+path%3A%2F%5Esrc%5C%2F%2F&type=code>`_ instance:
-These options can be set at the route or global level for both static and :ref:`dynamic routing <routing-dynamic>`.
+These options can be set at the route or global level for both static and :doc:`../features/dynamic-routing`.
 
 .. code-block:: json
 

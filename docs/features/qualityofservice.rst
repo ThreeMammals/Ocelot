@@ -420,7 +420,7 @@ These global options can also be overridden in the ``Routes`` configuration sect
   }
 
 Dynamic routes were not supported in versions prior to `24.1`_.
-However, global *Quality of Service* options have been available in :ref:`Dynamic Routing <routing-dynamic>` mode for a long time.
+However, global *Quality of Service* options have been available in :doc:`../features/dynamic-routing` mode for a long time.
 Starting with version `24.1`_, global *QoS* options can also be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
 
 .. code-block:: json
@@ -473,7 +473,7 @@ allow 3 errors before breaking the circuit for 1 second, and allow up to 10% err
   When using the **built-in** implementation: each route also gets its own independent ``CircuitBreakerDelegatingHandler`` instance, so circuit state is always per-route.
 
   4. Dynamic routes were not supported in versions prior to `24.1`_.
-  Beginning with version `24.1`_, global *QoS* options for :ref:`Dynamic Routing <routing-dynamic>` may be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
+  Beginning with version `24.1`_, global *QoS* options for :doc:`../features/dynamic-routing` may be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
   Additionally, global configuration for static routes (also known as ``Routes``) has been supported since version `24.1`_.
 
 .. _Resilience pipeline registry: https://www.pollydocs.org/pipelines/resilience-pipeline-registry.html

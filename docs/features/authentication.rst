@@ -191,7 +191,7 @@ Global Configuration [#f4]_
 ---------------------------
 
 Since the global configuration for static routes has already been described above, here are additional details regarding dynamic routes, whose configuration was not supported in versions prior to `24.1`_.
-Starting with version `24.1`_, global and route *authentication options* for :ref:`Dynamic Routing <routing-dynamic>` were introduced.
+Starting with version `24.1`_, global and route *authentication options* for :doc:`../features/dynamic-routing` were introduced.
 These global options may also be overridden in the ``DynamicRoutes`` configuration section, as defined by the :ref:`config-dynamic-route-schema`.
 
 .. code-block:: json
