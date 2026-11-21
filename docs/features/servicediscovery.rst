@@ -470,8 +470,8 @@ Please refer to the :doc:`../features/servicefabric` chapter for the complete *e
 Dynamic Routing
 ---------------
 
-Dynamic routing is based on *service discovery*: Ocelot uses the first segment of the upstream path to look up the downstream service through the configured *service discovery* provider.
-For the complete dynamic routing reference, see the :doc:`../features/dynamic-routing` chapter.
+*Dynamic routing* is based on *service discovery*: Ocelot uses the first segment of the upstream path to look up the downstream service through the configured *service discovery* provider.
+For the complete dynamic routing reference, see the ":doc:`../features/dynamic-routing`" chapter.
 
 .. _sd-custom-providers:
 
