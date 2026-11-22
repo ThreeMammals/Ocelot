@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Ocelot.Infrastructure.Extensions;
 
 namespace Ocelot.ServiceDiscovery;
 
@@ -13,13 +14,35 @@ public class MultipleSegmentUrlPathDynamicRouting(
     IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
     : UrlPathDynamicRouting(contextAccessor)
 {
+    public static class Headers
+    {
+        public const string Ocelot_DynamicRouting_UrlPath_Delimiter = "Ocelot-DynamicRouting-UrlPath-Delimiter";
+        public const string Ocelot_DynamicRouting_UrlPath_Segments = "Ocelot-DynamicRouting-UrlPath-Segments";
+    }
+
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
-    protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
+    protected virtual char ServiceNameDelimiter
+    {
+        get
+        {
+            // Detect delimiter from the header first
+            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var hdr)
+                && hdr.TryGetNonEnumeratedCount(out int count) && count > 0)
+            {
+                var decoded = Decode(hdr).Trim();
+                return decoded[0];
+            }
+            else
+            {
+                return options?.Value?.Delimiter ?? DefaultDelimiter;
+            }
+        }
+    }
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
-        ReadOnlySpan<char> path = DecodeUrlPath(upstreamUrlPath);
+        ReadOnlySpan<char> path = Decode(upstreamUrlPath);
         if (path.Length <= 1)
             return SlashStr;
 
@@ -35,7 +58,7 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
     public override ServiceInfo GetServiceName(string upstreamUrlPath)
     {
-        ReadOnlySpan<char> path = DecodeUrlPath(upstreamUrlPath);
+        ReadOnlySpan<char> path = Decode(upstreamUrlPath);
         if (path.Length <= 1)
             return base.GetServiceName(path.ToString());
 
@@ -52,6 +75,29 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
     protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
+        // Detect delimiter position via number of segments from the header first
+        if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var segments)
+            && int.TryParse(segments, out int segmentCount))
+        {
+            if (segmentCount < 1)
+                return 0; // should return full path as downstream path, thus no service name detected
+            else if (segmentCount == 1)
+                return -1; // will fallback to base class implementation aka first-segment
+
+            // Count slashes
+            int pos = upstreamUrlPath[0] == Slash ? 1 : 0,
+                count = 0;
+            while (pos < upstreamUrlPath.Length && count < segmentCount)
+            {
+                if (upstreamUrlPath[pos++] == Slash)
+                    count++;
+            }
+            return pos != upstreamUrlPath.Length
+                ? --pos // happy path, wanted slash position was found
+                : -1; // abnormal error, either segmentCount is greater than actual number of slashes, or path is too short, thus fallback to base class implementation
+        }
+
+        // No header, detect delimiter position
         char delimiter = ServiceNameDelimiter == Slash
             ? DefaultDelimiter
             : ServiceNameDelimiter;
@@ -59,15 +105,15 @@ public class MultipleSegmentUrlPathDynamicRouting(
         return index < 0 ? -1 : ++index;
     }
 
-    protected virtual ReadOnlySpan<char> DecodeUrlPath(string upstreamUrlPath)
+    protected virtual ReadOnlySpan<char> Decode(string value)
     {
-        if (upstreamUrlPath is null)
+        if (value.IsEmpty())
             return [];
 
-        ReadOnlySpan<char> path = upstreamUrlPath.AsSpan();
-        return path.IndexOf(Percent) < 0
-            ? path
-            : Uri.UnescapeDataString(upstreamUrlPath).AsSpan();
+        ReadOnlySpan<char> val = value.AsSpan();
+        return val.IndexOf(Percent) < 0
+            ? val
+            : Uri.UnescapeDataString(value).AsSpan();
     }
 }
 
