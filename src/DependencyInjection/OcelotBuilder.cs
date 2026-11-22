@@ -380,15 +380,15 @@ public class OcelotBuilder : IOcelotBuilder
         return this;
     }
 
-    public IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
-        where T : MultipleSegmentUrlPathDynamicRouting
+    public IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRouterOptions> configureOptions)
+        where T : MultipleSegmentUrlPathDynamicRouter
     {
         Services.AddOcelotDynamicRouting<T>(configureOptions);
         return this;
     }
 
     public IOcelotBuilder AddDynamicRouting<T>(bool isHeaderManagement)
-        where T : MultipleSegmentUrlPathDynamicRouting
+        where T : MultipleSegmentUrlPathDynamicRouter
     {
         Services.AddOcelotDynamicRouting<T>(isHeaderManagement);
         return this;

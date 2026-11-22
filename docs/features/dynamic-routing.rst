@@ -230,7 +230,7 @@ To summarize, the route provider injects ``IDynamicRouting``, asks it for the se
   search for `IDynamicRouting <https://github.com/search?q=repo%3AThreeMammals%2FOcelot+IDynamicRouting&type=code>`_.
 
   Note that the :class:`IDynamicRouting` service was introduced in version `26.0 <https://github.com/ThreeMammals/Ocelot/releases/tag/26.0.0>`_ to support multiple router types,
-  currently including the default :ref:`dr-url-path-router` and the new :ref:`dr-multiple-segment-url-path-router`.
+  currently including the default :ref:`dr-url-path-router` and the new :ref:`Multiple Segment URL Path Router <dr-multiple-segment-url-path-router>`.
 
   Need a custom router? The community is welcome to contribute additional router types from the :ref:`dr-roadmap`.
   Unfortunately, the Ocelot team has run out of development capacity.
@@ -245,7 +245,7 @@ URL Path Router
   | Interface: :class:`IDynamicRouting`
   | Class: :class:`UrlPathDynamicRouter`
 
-The default *dynamic routing* type is the *URL path router*. It detects the service name from the first segment of the upstream URL path.
+The default *dynamic routing* type is the *URL path router*. It detects the service name from *the first segment* of the upstream URL path.
 For example, ``/product/products`` resolves ``product`` as the service name and forwards ``/products`` as the downstream path.
 The first segment may also contain a namespace separated from the service name by a dot, such as ``/namespace.product/products``.
 
@@ -288,33 +288,33 @@ The following is only the customization shape; the routing implementation is app
 Multiple Segment URL Path Router [#f3]_
 ---------------------------------------
   | Interface: :class:`IDynamicRouting`
-  | Class: :class:`MultipleSegmentUrlPathDynamicRouting`
+  | Class: :class:`MultipleSegmentUrlPathDynamicRouter`
 
 The *multiple-segment URL path router* is a dynamic routing type that extracts the service name from multiple segments at the beginning of the upstream path.
 :underline:`It supports service names that contain slashes` (``/``) and must end with a delimiter.
 For example, ``/authorization/api$/path`` resolves ``authorization/api`` as the service name and forwards ``/path`` downstream.
 
-The built-in :class:`MultipleSegmentUrlPathDynamicRouting` class extends :class:`UrlPathDynamicRouter`.
+The built-in :class:`MultipleSegmentUrlPathDynamicRouter` class extends :class:`UrlPathDynamicRouter`.
 It is therefore still used by :class:`DiscoveryDownstreamRouteFinder` through the :class:`IDynamicRouting` abstraction, while overriding service-name and downstream-path detection for multiple segments.
 It would be registered in the same way as other custom dynamic routers:
 
 .. code-block:: csharp
 
   // via IServiceCollection
-  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>();
+  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouter>();
 
   // via IOcelotBuilder
   builder.Services
       .AddOcelot(builder.Configuration) // -> IOcelotBuilder
-      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>();
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>();
 
-To create a custom *multiple-segment URL path router*, inherit from :class:`MultipleSegmentUrlPathDynamicRouting` and override the methods that define the service-name delimiter or service-name mapping.
+To create a custom *multiple-segment URL path router*, inherit from :class:`MultipleSegmentUrlPathDynamicRouter` and override the methods that define the service-name delimiter or service-name mapping.
 The following shows the customization shape without prescribing the implementation:
 
 .. code-block:: csharp
 
-  public class MyMultipleSegmentRouting(IHttpContextAccessor contextAccessor)
-      : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
+  public class MyMultipleSegmentRouter(IHttpContextAccessor contextAccessor)
+      : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
   {
       protected override char ServiceNameDelimiter => ':'; // why not?
 
@@ -333,18 +333,18 @@ The default delimiter is ``$``. It can be configured through options:
 .. code-block:: csharp
 
   // via IServiceCollection
-  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(options => options.Delimiter = ':');
+  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(options => options.Delimiter = ':');
 
   // via IOcelotBuilder
   builder.Services
       .AddOcelot(builder.Configuration) // -> IOcelotBuilder
-      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(options => options.Delimiter = ':');
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(options => options.Delimiter = ':');
 
 Choose a delimiter that is not alphanumeric and is not ``/``.
 When the delimiter is a reserved URL-path character, encode it in the request URL according to URL standards.
 For example, a ``#`` delimiter should be sent as ``%23`` so that it remains part of the path instead of becoming a fragment marker.
 
-.. _MultipleSegmentUrlPathDynamicRoutingOptions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/ServiceDiscovery/MultipleSegmentUrlPathDynamicRouting.cs
+.. _MultipleSegmentUrlPathDynamicRouterOptions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/ServiceDiscovery/MultipleSegmentUrlPathDynamicRouter.cs
 
 Management headers
 ^^^^^^^^^^^^^^^^^^
@@ -357,17 +357,17 @@ To enable per-request control, set ``IsHeaderManagement`` to ``true``:
 .. code-block:: csharp
 
   // via IServiceCollection
-  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(isHeaderManagement: true);
+  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(isHeaderManagement: true);
 
   // via IOcelotBuilder, with default fallback delimiter '$'
   builder.Services
       .AddOcelot(builder.Configuration) // -> IOcelotBuilder
-      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(true);
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(true);
 
   // via IOcelotBuilder, with a configured fallback delimiter
   builder.Services
       .AddOcelot(builder.Configuration) // -> IOcelotBuilder
-      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(options =>
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(options =>
       {
           options.Delimiter = ':';
           options.IsHeaderManagement = true;
@@ -419,12 +419,12 @@ Roadmap
 -------
 
 The first-segment :ref:`dr-url-path-router` has been available for many years.
-The :ref:`dr-multiple-segment-url-path-router` is available starting with version `26.0`_.
+The :ref:`Multiple Segment URL Path Router <dr-multiple-segment-url-path-router>` is available starting with version `26.0`_.
 
 The broader goal of dynamic routing is to allow the service name to be detected from service discovery artifacts or from HTTP request data, rather than only from the URL path.
 The community may benefit from additional dynamic router types such as:
 
-* Service discovery provider data routers
+* :doc:`../features/servicediscovery` provider data routers
 * Query-string parameter routers
 * Header routers
 * Host-name routers
@@ -438,7 +438,7 @@ These desired router types are tracked in issue `1188`_ (see this `issue comment
 .. [#f1] The ":ref:`Dynamic Routing <dr-about>`" feature was requested in issue `340`_ (pull request `351`_) and released in version `7.0.1`_.
   Later, the new ``DynamicRoutes`` :doc:`../features/configuration` section was introduced in pull request `508`_ and released in version `8.0.4`_.
 .. [#f2] The :ref:`Configuration <dr-configuration>` feature of :doc:`../features/dynamic-routing` was requested in issue `585`_, then significantly redeveloped and released in version `24.1`_.
-.. [#f3] The ":ref:`dr-multiple-segment-url-path-router`" was developed for issue `1188`_ in pull request `1198`_ and released in version `26.0`_.
+.. [#f3] The ":ref:`Multiple Segment URL Path Router <dr-multiple-segment-url-path-router>`" was developed for issue `1188`_ in pull request `1198`_ and released in version `26.0`_.
 
 .. _Consul: https://www.consul.io/
 .. _ocelot.json: https://github.com/ThreeMammals/Ocelot/blob/main/samples/ServiceDiscovery/ApiGateway/ocelot.json

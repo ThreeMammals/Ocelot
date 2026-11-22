@@ -9,8 +9,8 @@ namespace Ocelot.ServiceDiscovery;
 /// </summary>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
 /// <param name="options">User defined options.</param>
-public class MultipleSegmentUrlPathDynamicRouting(
-    IHttpContextAccessor contextAccessor, IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
+public class MultipleSegmentUrlPathDynamicRouter(
+    IHttpContextAccessor contextAccessor, IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options = null)
     : UrlPathDynamicRouter(contextAccessor)
 {
     public static class Headers
@@ -99,21 +99,21 @@ public class MultipleSegmentUrlPathDynamicRouting(
     }
 }
 
-public class MultipleSegmentUrlPathDynamicRoutingOptions
+public class MultipleSegmentUrlPathDynamicRouterOptions
 {
-    public MultipleSegmentUrlPathDynamicRoutingOptions()
-        => Delimiter = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
-    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter)
+    public MultipleSegmentUrlPathDynamicRouterOptions()
+        => Delimiter = MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter;
+    public MultipleSegmentUrlPathDynamicRouterOptions(char delimiter)
         => Delimiter = delimiter;
-    public MultipleSegmentUrlPathDynamicRoutingOptions(bool isHeaderManagement)
+    public MultipleSegmentUrlPathDynamicRouterOptions(bool isHeaderManagement)
         => IsHeaderManagement = isHeaderManagement;
 
-    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter, bool isHeaderManagement)
+    public MultipleSegmentUrlPathDynamicRouterOptions(char delimiter, bool isHeaderManagement)
     {
         Delimiter = delimiter;
         IsHeaderManagement = isHeaderManagement;
     }
 
-    public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
+    public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter;
     public bool IsHeaderManagement { get; set; } = false;
 }

@@ -126,7 +126,7 @@ public interface IOcelotBuilder
     /// <summary>
     /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation to the DI container.
     /// </summary>
-    /// <typeparam name="T">The dynamic routing type.</typeparam>
+    /// <typeparam name="T">The dynamic router type.</typeparam>
     /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     IOcelotBuilder AddDynamicRouting<T>()
         where T : class, IDynamicRouting;
@@ -134,13 +134,13 @@ public interface IOcelotBuilder
     /// <summary>
     /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation and configures multiple-segment routing options.
     /// </summary>
-    /// <typeparam name="T">The dynamic routing type.</typeparam>
+    /// <typeparam name="T">The dynamic router type.</typeparam>
     /// <param name="configureOptions">The options configuration delegate.</param>
     /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
-    IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
-        where T : MultipleSegmentUrlPathDynamicRouting;
+    IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRouterOptions> configureOptions)
+        where T : MultipleSegmentUrlPathDynamicRouter;
 
     /// <summary>Registers a multiple-segment router and sets whether request headers can manage routing.</summary>
     IOcelotBuilder AddDynamicRouting<T>(bool isHeaderManagement)
-        where T : MultipleSegmentUrlPathDynamicRouting;
+        where T : MultipleSegmentUrlPathDynamicRouter;
 }

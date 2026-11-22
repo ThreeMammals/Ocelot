@@ -7,15 +7,15 @@ namespace Ocelot.UnitTests.ServiceDiscovery;
 
 [Trait("PR", "1198")] // https://github.com/ThreeMammals/Ocelot/pull/1198
 [Trait("Feat", "1188")] // https://github.com/ThreeMammals/Ocelot/issues/1188
-public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
+public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
 {
-    private MultipleSegmentUrlPathDynamicRouting _routing;
+    private MultipleSegmentUrlPathDynamicRouter _routing;
     private readonly Mock<IHttpContextAccessor> contextAccessor = new();
 
-    public MultipleSegmentUrlPathDynamicRoutingTests()
+    public MultipleSegmentUrlPathDynamicRouterTests()
     {
         contextAccessor.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object);
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object);
     }
 
     [Fact]
@@ -24,26 +24,26 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         // Arrange, Act
         char actual = (char)ServiceNameDelimiter().GetValue(_routing);
 
-        Assert.Equal(MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter, actual);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
     }
 
     [Fact]
     public void ServiceNameDelimiter_WithOptions()
     {
         // Arrange, Act
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, null);
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, null);
         char actual = (char)ServiceNameDelimiter().GetValue(_routing);
-        Assert.Equal(MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter, actual);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
-        var options = Options.Create((MultipleSegmentUrlPathDynamicRoutingOptions)null);
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
+        var options = Options.Create((MultipleSegmentUrlPathDynamicRouterOptions)null);
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
         actual = (char)ServiceNameDelimiter().GetValue(_routing);
-        Assert.Equal(MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter, actual);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
-        options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions('*'));
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
+        options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions('*'));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
         actual = (char)ServiceNameDelimiter().GetValue(_routing);
         Assert.Equal('*', actual);
     }
@@ -113,8 +113,8 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
     public void GetServiceName_UsesConfiguredDelimiterWhenServiceNameDelimiterIsNotOverridden()
     {
         // Arrange
-        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions { Delimiter = '#' });
-        var routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions { Delimiter = '#' });
+        var routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
 
         // Act
         var actualServiceName = routing.GetServiceName("/authorization/api#path");
@@ -150,7 +150,7 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
     public void GetServiceName_UsesOverriddenDelimiterInsteadOfConfiguredDelimiter()
     {
         // Arrange
-        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions('$'));
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions('$'));
         var routing = new HashDelimiterRouting(contextAccessor.Object, options);
 
         // Act, Assert
@@ -195,9 +195,9 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         bool isHeaderManagement, string header, string path, string name, string serviceNamespace, string downstream)
     {
         // Arrange
-        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(':', isHeaderManagement));
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
-        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = header;
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(':', isHeaderManagement));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
+        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = header;
         contextAccessor.Object.HttpContext.Request.Path = path;
 
         // Act
@@ -226,12 +226,12 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         string segments, string path, string name, string serviceNamespace, string downstream)
     {
         // Arrange
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
-            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions('#', true)));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions('#', true)));
         var request = contextAccessor.Object.HttpContext.Request;
         request.Path = path;
-        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = segments;
-        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
+        request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = segments;
+        request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
 
         // Act
         var service = _routing.GetServiceName(path);
@@ -248,8 +248,8 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
     {
         // Arrange
         contextAccessor.Setup(x => x.HttpContext).Returns((HttpContext)null);
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
-            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(false)));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(false)));
 
         // Act
         var service = _routing.GetServiceName("/service/api$path");
@@ -264,10 +264,10 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         // Arrange
         var request = contextAccessor.Object.HttpContext.Request;
         request.Path = "/service/api:details";
-        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = "@";
-        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = "1";
-        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
-            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(':')));
+        request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = "@";
+        request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = "1";
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(':')));
 
         // Act
         var service = _routing.GetServiceName();
@@ -282,9 +282,9 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
     public void EnabledHeader_OverridesVirtualDelimiter()
     {
         // Arrange
-        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(true));
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(true));
         _routing = new HashDelimiterRouting(contextAccessor.Object, options);
-        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
+        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
 
         // Act
         var service = _routing.GetServiceName("/service/api:path");
@@ -295,20 +295,20 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
 
     private sealed class HashDelimiterRouting(
         IHttpContextAccessor contextAccessor,
-        IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
-        : MultipleSegmentUrlPathDynamicRouting(contextAccessor, options)
+        IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options = null)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor, options)
     {
         protected override char ServiceNameDelimiter => '#';
     }
 
     private sealed class SlashDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
         protected override char ServiceNameDelimiter => Slash;
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
         public string GetDownstreamPathForTest(string upstreamUrlPath)
             => DownstreamPath(upstreamUrlPath);

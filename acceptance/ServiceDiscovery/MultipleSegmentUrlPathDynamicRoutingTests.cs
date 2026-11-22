@@ -126,7 +126,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     public async Task ShouldApplyManagementHeadersAndFallbacks(
         bool isHeaderManagement, string delimiter, string segments, string upstreamPath, string serviceName, string downstreamPath)
     {
-        void WithOptions(MultipleSegmentUrlPathDynamicRoutingOptions options)
+        void WithOptions(MultipleSegmentUrlPathDynamicRouterOptions options)
         {
             options.Delimiter = ':';
             options.IsHeaderManagement = isHeaderManagement;
@@ -135,10 +135,10 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         var configuration = GivenDynamicRouting(new() { { serviceName, serviceUrls } });
         GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services, WithOptions));
-        GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, delimiter);
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services, WithOptions));
+        GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, delimiter);
         if (segments != null)
-            GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments, segments);
+            GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments, segments);
 
         await WhenIGetUrlOnTheApiGateway(upstreamPath);
 
@@ -158,10 +158,10 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         });
         GivenMultipleServiceInstancesAreRunning(serviceUrls, "service");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(
             services, options => options.IsHeaderManagement = true));
 
-        const string header = MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments;
+        const string header = MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments;
         GivenIAddAHeader(header, "2");
         await WhenIGetUrlOnTheApiGateway("/service/api/path?try=1");
         ThenTheStatusCodeShouldBeOk();
@@ -176,14 +176,14 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     }
 
     private void WithDynamicRouting(IServiceCollection services)
-        => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services);
+        => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services);
 
     private void WithDelimiterOptions(IServiceCollection services, char delimiter)
-        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services,
+        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services,
                 options => options.Delimiter = delimiter);
 
     private sealed class HashDelimiterRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentUrlPathDynamicRouting(contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
         protected override char ServiceNameDelimiter => '#';
     }
