@@ -6,12 +6,12 @@ namespace Ocelot.ServiceDiscovery;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Forcibly adds the default <see cref="IDynamicRouting"/> implementation to the DI container, a.k.a. the default <see cref="UrlPathDynamicRouting"/> service.
+    /// Forcibly adds the default <see cref="IDynamicRouting"/> implementation to the DI container, a.k.a. the default <see cref="UrlPathDynamicRouter"/> service.
     /// </summary>
     /// <param name="services">The services collection to add the feature to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddOcelotDynamicRouting(this IServiceCollection services)
-        => services.AddOcelotDynamicRouting<UrlPathDynamicRouting>();
+        => services.AddOcelotDynamicRouting<UrlPathDynamicRouter>();
 
     /// <summary>
     /// Forcibly adds a custom <see cref="IDynamicRouting"/> implementation to the DI container.

@@ -3,8 +3,8 @@ using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
 
-public class TwoSegmentsUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
-    : UrlPathDynamicRouting(contextAccessor)
+public class TwoSegmentsUrlPathDynamicRouter(IHttpContextAccessor contextAccessor)
+    : UrlPathDynamicRouter(contextAccessor)
 {
     public Func<string, string, string> ServiceNameMapping { get; set; }
         = (serviceName, version) => $"{serviceName}.service.{version}";

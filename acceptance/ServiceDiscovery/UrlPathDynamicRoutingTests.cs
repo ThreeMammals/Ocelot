@@ -53,5 +53,5 @@ public sealed class UrlPathDynamicRoutingTests : DynamicSteps
     }
 
     private void WithDynamicRouting(IServiceCollection services)
-        => WithDynamicRouting<TwoSegmentsUrlPathDynamicRouting>(services);
+        => WithDynamicRouting<TwoSegmentsUrlPathDynamicRouter>(services);
 }

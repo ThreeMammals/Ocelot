@@ -130,6 +130,6 @@ public static class Features
         .AddSingleton<IQualityOfServiceFactory, QualityOfServiceFactory>();
 
     public static IServiceCollection AddOcelotServiceDiscovery(this IServiceCollection services) => services
-        .AddSingleton<IDynamicRouting, UrlPathDynamicRouting>()
+        .AddSingleton<IDynamicRouting, UrlPathDynamicRouter>()
         .AddSingleton<IServiceDiscoveryProviderFactory, ServiceDiscoveryProviderFactory>();
 }

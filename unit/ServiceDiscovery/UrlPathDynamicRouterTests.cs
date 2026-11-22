@@ -6,11 +6,11 @@ namespace Ocelot.UnitTests.ServiceDiscovery;
 
 [Trait("PR", "1198")]
 [Trait("Feat", "1188")]
-public class UrlPathDynamicRoutingTests : UnitTest
+public class UrlPathDynamicRouterTests : UnitTest
 {
-    private readonly UrlPathDynamicRouting sut;
+    private readonly UrlPathDynamicRouter sut;
     private readonly Mock<IHttpContextAccessor> contextAccessor = new();
-    public UrlPathDynamicRoutingTests()
+    public UrlPathDynamicRouterTests()
     {
         contextAccessor.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
         sut = new(contextAccessor.Object);
@@ -24,7 +24,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
         string path, string serviceName, string serviceNamespace, string expected)
     {
         // Act
-        var actual = UrlPathDynamicRouting.UpstreamPath(path, serviceName, serviceNamespace);
+        var actual = UrlPathDynamicRouter.UpstreamPath(path, serviceName, serviceNamespace);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -132,7 +132,7 @@ public class UrlPathDynamicRoutingTests : UnitTest
     public void UpstreamPath_WithNullPath_UsesRootPath()
     {
         // Act
-        var actual = UrlPathDynamicRouting.UpstreamPath(null, "orders");
+        var actual = UrlPathDynamicRouter.UpstreamPath(null, "orders");
 
         // Assert
         Assert.Equal("/orders/", actual);

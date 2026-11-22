@@ -290,7 +290,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
             .Returns(new ServiceInfo(TestName(), GetType().Name));
 
         // Act
-        var path = UrlPathDynamicRouting.UpstreamPath("/", TestName(), GetType().Name);
+        var path = UrlPathDynamicRouter.UpstreamPath("/", TestName(), GetType().Name);
         var actual = GetServiceName(path);
 
         Assert.Same(path, actualParam);

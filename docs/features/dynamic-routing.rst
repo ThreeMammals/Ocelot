@@ -240,16 +240,16 @@ To summarize, the route provider injects ``IDynamicRouting``, asks it for the se
 
 URL Path Router
 ---------------
-.. _TwoSegmentsUrlPathDynamicRouting: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TwoSegmentsUrlPathDynamicRouting&type=code
+.. _TwoSegmentsUrlPathDynamicRouter: https://github.com/search?q=repo%3AThreeMammals%2FOcelot+TwoSegmentsUrlPathDynamicRouter&type=code
 
   | Interface: :class:`IDynamicRouting`
-  | Class: :class:`UrlPathDynamicRouting`
+  | Class: :class:`UrlPathDynamicRouter`
 
 The default *dynamic routing* type is the *URL path router*. It detects the service name from the first segment of the upstream URL path.
 For example, ``/product/products`` resolves ``product`` as the service name and forwards ``/products`` as the downstream path.
 The first segment may also contain a namespace separated from the service name by a dot, such as ``/namespace.product/products``.
 
-The default implementation is :class:`UrlPathDynamicRouting`, which implements :class:`IDynamicRouting`.
+The default implementation is :class:`UrlPathDynamicRouter`, which implements :class:`IDynamicRouting`.
 The :class:`DiscoveryDownstreamRouteFinder` uses this service to obtain the service name and the downstream path while creating dynamic routes.
 It is registered in the dependency injection container by ``AddOcelotServiceDiscovery()``, which is called by :doc:`../features/dependencyinjection` when configuring Ocelot.
 
@@ -258,21 +258,21 @@ Applications can replace the default implementation with the ``IServiceCollectio
 .. code-block:: csharp
 
   // via IServiceCollection
-  services.AddOcelotDynamicRouting<MyUrlPathDynamicRouting>();
+  services.AddOcelotDynamicRouting<MyUrlPathDynamicRouter>();
 
   // via IOcelotBuilder
   builder.Services
       .AddOcelot(builder.Configuration) // -> IOcelotBuilder
-      .AddDynamicRouting<MyUrlPathDynamicRouting>();
+      .AddDynamicRouting<MyUrlPathDynamicRouter>();
 
-To create a custom URL path router, inherit from :class:`UrlPathDynamicRouting` and override the methods that determine the downstream path and service name.
-The acceptance tests contain `TwoSegmentsUrlPathDynamicRouting`_ as an example that combines two URL path segments into one service name.
+To create a custom URL path router, inherit from :class:`UrlPathDynamicRouter` and override the methods that determine the downstream path and service name.
+The acceptance tests contain `TwoSegmentsUrlPathDynamicRouter`_ as an example that combines two URL path segments into one service name.
 The following is only the customization shape; the routing implementation is application-specific:
 
 .. code-block:: csharp
 
-  public class MyUrlPathDynamicRouting(IHttpContextAccessor contextAccessor)
-      : UrlPathDynamicRouting(contextAccessor)
+  public class MyUrlPathDynamicRouter(IHttpContextAccessor contextAccessor)
+      : UrlPathDynamicRouter(contextAccessor)
   {
       protected override string DownstreamPath(string upstreamUrlPath)
           => "implement me!" // Return the path after the custom service-name segments
@@ -294,7 +294,7 @@ The *multiple-segment URL path router* is a dynamic routing type that extracts t
 :underline:`It supports service names that contain slashes` (``/``) and must end with a delimiter.
 For example, ``/authorization/api$/path`` resolves ``authorization/api`` as the service name and forwards ``/path`` downstream.
 
-The built-in :class:`MultipleSegmentUrlPathDynamicRouting` class extends :class:`UrlPathDynamicRouting`.
+The built-in :class:`MultipleSegmentUrlPathDynamicRouting` class extends :class:`UrlPathDynamicRouter`.
 It is therefore still used by :class:`DiscoveryDownstreamRouteFinder` through the :class:`IDynamicRouting` abstraction, while overriding service-name and downstream-path detection for multiple segments.
 It would be registered in the same way as other custom dynamic routers:
 

@@ -29,7 +29,7 @@ public readonly struct ServiceInfo
     public string Name { get; init; }
     public string Namespace { get; init; }
 
-    public const char Dot = UrlPathDynamicRouting.Dot;
+    public const char Dot = UrlPathDynamicRouter.Dot;
 
     public override string ToString()
         => Namespace.IsNotEmpty()

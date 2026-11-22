@@ -11,7 +11,7 @@ namespace Ocelot.ServiceDiscovery;
 /// <para>Example: the <c>http://ocelot.net/namespace.service-name/path</c> URL.</para>
 /// </remarks>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
-public class UrlPathDynamicRouting(IHttpContextAccessor contextAccessor) : IDynamicRouting
+public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IDynamicRouting
 {
     public const char Dot = '.';
     public const char Slash = '/';

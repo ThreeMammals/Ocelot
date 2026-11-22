@@ -21,7 +21,7 @@ public class ServiceCollectionExtensionsTests : UnitTest
 
         // Assert
         Assert.Same(services, actual);
-        Assert.IsType<UrlPathDynamicRouting>(services.BuildServiceProvider().GetRequiredService<IDynamicRouting>());
+        Assert.IsType<UrlPathDynamicRouter>(services.BuildServiceProvider().GetRequiredService<IDynamicRouting>());
     }
 
     [Fact]

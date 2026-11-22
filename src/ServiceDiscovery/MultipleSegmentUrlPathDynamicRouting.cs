@@ -10,9 +10,8 @@ namespace Ocelot.ServiceDiscovery;
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
 /// <param name="options">User defined options.</param>
 public class MultipleSegmentUrlPathDynamicRouting(
-    IHttpContextAccessor contextAccessor,
-    IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
-    : UrlPathDynamicRouting(contextAccessor)
+    IHttpContextAccessor contextAccessor, IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)
+    : UrlPathDynamicRouter(contextAccessor)
 {
     public static class Headers
     {
