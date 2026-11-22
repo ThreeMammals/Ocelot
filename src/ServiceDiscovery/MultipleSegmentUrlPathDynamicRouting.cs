@@ -22,23 +22,7 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
-    protected virtual char ServiceNameDelimiter
-    {
-        get
-        {
-            // Detect delimiter from the header first
-            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var hdr)
-                && hdr.TryGetNonEnumeratedCount(out int count) && count > 0)
-            {
-                var decoded = Decode(hdr).Trim();
-                return decoded[0];
-            }
-            else
-            {
-                return options?.Value?.Delimiter ?? DefaultDelimiter;
-            }
-        }
-    }
+    protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -75,32 +59,31 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
     protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
-        // Detect delimiter position via number of segments from the header first
-        if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var segments)
-            && int.TryParse(segments, out int segmentCount))
+        char delimiter = ServiceNameDelimiter;
+        if (options?.Value?.IsHeaderManagement == true)
         {
-            if (segmentCount < 1)
-                return 0; // should return full path as downstream path, thus no service name detected
-            else if (segmentCount == 1)
-                return -1; // will fallback to base class implementation aka first-segment
-
-            // Count slashes
-            int pos = upstreamUrlPath[0] == Slash ? 1 : 0,
-                count = 0;
-            while (pos < upstreamUrlPath.Length && count < segmentCount)
+            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var segments)
+                && int.TryParse(segments, out int segmentCount) && segmentCount > 0)
             {
-                if (upstreamUrlPath[pos++] == Slash)
-                    count++;
+                int count = 0;
+                for (int pos = 1; pos < upstreamUrlPath.Length; pos++)
+                {
+                    if (upstreamUrlPath[pos] == Slash && ++count == segmentCount)
+                        return pos;
+                }
+                return -1;
             }
-            return pos != upstreamUrlPath.Length
-                ? --pos // happy path, wanted slash position was found
-                : -1; // abnormal error, either segmentCount is greater than actual number of slashes, or path is too short, thus fallback to base class implementation
+
+            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var header))
+            {
+                var decoded = Decode(header);
+                if (!decoded.IsEmpty && decoded[0] != Slash)
+                    delimiter = decoded[0];
+            }
         }
 
-        // No header, detect delimiter position
-        char delimiter = ServiceNameDelimiter == Slash
-            ? DefaultDelimiter
-            : ServiceNameDelimiter;
+        if (delimiter == Slash)
+            delimiter = DefaultDelimiter;
         int index = upstreamUrlPath[1..].IndexOf(delimiter);
         return index < 0 ? -1 : ++index;
     }
@@ -122,5 +105,15 @@ public class MultipleSegmentUrlPathDynamicRoutingOptions
     public MultipleSegmentUrlPathDynamicRoutingOptions() => Delimiter = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
     public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter) => Delimiter = delimiter;
 
+    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter, bool isHeaderManagement)
+    {
+        Delimiter = delimiter;
+        IsHeaderManagement = isHeaderManagement;
+    }
+
+    public MultipleSegmentUrlPathDynamicRoutingOptions(bool isHeaderManagement)
+        => IsHeaderManagement = isHeaderManagement;
+
     public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
+    public bool IsHeaderManagement { get; set; }
 }

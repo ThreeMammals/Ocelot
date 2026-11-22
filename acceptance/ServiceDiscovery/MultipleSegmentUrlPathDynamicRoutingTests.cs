@@ -110,6 +110,70 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         ThenAllServicesShouldHaveBeenCalledTimes(1);
     }
 
+    [Theory]
+    [InlineData(true, "%23extra", null, "/service/api%23/details", "service/api", "/details")]
+    [InlineData(true, "@extra", null, "/service/api@details", "service/api", "/details")]
+    [InlineData(true, "@", "2", "/service/api/details", "service/api", "/details")]
+    [InlineData(true, "@", "1", "/service/api:path", "service", "/api:path")]
+    [InlineData(true, "@", "2", "/service/api/", "service/api", "/")]
+    [InlineData(true, "@", "9", "/service/api/details", "service", "/api/details")]
+    [InlineData(true, "@", "0", "/service/api@details", "service/api", "/details")]
+    [InlineData(true, "@", "-1", "/service/api@details", "service/api", "/details")]
+    [InlineData(true, "@", "invalid", "/service/api@details", "service/api", "/details")]
+    [InlineData(true, "%2F", null, "/service/api:path", "service/api", "/path")]
+    [InlineData(true, "%2F", null, "/service/api:path?query", "service/api", "/path?query")]
+    [InlineData(false, "@", "1", "/service/api:path", "service/api", "/path")]
+    public async Task ShouldApplyManagementHeadersAndFallbacks(
+        bool isHeaderManagement, string delimiter, string segments, string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
+        var configuration = GivenDynamicRouting(new() { { serviceName, serviceUrls } });
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services, options =>
+        {
+            options.Delimiter = ':';
+            options.IsHeaderManagement = isHeaderManagement;
+        }));
+        GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, delimiter);
+        if (segments != null)
+            GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments, segments);
+
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
+    [Fact]
+    public async Task ShouldChangeSegmentCountPerRequest()
+    {
+        var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
+        var configuration = GivenDynamicRouting(new()
+        {
+            { "service", serviceUrls },
+            { "service/api", serviceUrls },
+        });
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, "service");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
+            services, options => options.IsHeaderManagement = true));
+
+        const string header = MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments;
+        GivenIAddAHeader(header, "2");
+        await WhenIGetUrlOnTheApiGateway("/service/api/details");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/details");
+
+        ocelotClient.DefaultRequestHeaders.Remove(header);
+        GivenIAddAHeader(header, "1");
+        await WhenIGetUrlOnTheApiGateway("/service/api/details");
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/api/details");
+        ThenAllServicesShouldHaveBeenCalledTimes(2);
+    }
+
     private void WithDynamicRouting(IServiceCollection services)
         => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services);
 

@@ -139,4 +139,8 @@ public interface IOcelotBuilder
     /// <returns>A reference to the same <see cref="IOcelotBuilder"/> object.</returns>
     IOcelotBuilder AddDynamicRouting<T>(Action<MultipleSegmentUrlPathDynamicRoutingOptions> configureOptions)
         where T : MultipleSegmentUrlPathDynamicRouting;
+
+    /// <summary>Registers a multiple-segment router and sets whether request headers can manage routing.</summary>
+    IOcelotBuilder AddDynamicRouting<T>(bool isHeaderManagement)
+        where T : MultipleSegmentUrlPathDynamicRouting;
 }

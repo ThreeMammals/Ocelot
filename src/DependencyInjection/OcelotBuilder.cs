@@ -386,4 +386,11 @@ public class OcelotBuilder : IOcelotBuilder
         Services.AddOcelotDynamicRouting<T>(configureOptions);
         return this;
     }
+
+    public IOcelotBuilder AddDynamicRouting<T>(bool isHeaderManagement)
+        where T : MultipleSegmentUrlPathDynamicRouting
+    {
+        Services.AddOcelotDynamicRouting<T>(isHeaderManagement);
+        return this;
+    }
 }

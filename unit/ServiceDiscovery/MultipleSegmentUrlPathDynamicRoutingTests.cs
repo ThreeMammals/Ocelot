@@ -184,6 +184,113 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
         Assert.Equal(downstreamPath, actualPath);
     }
 
+    [Theory]
+    [InlineData(true, "%23extra", "/ns.service/api%23/path", "service/api", "ns", "/path")]
+    [InlineData(true, "@ignored", "/service/api@path", "service/api", "", "/path")]
+    [InlineData(true, "%40%23", "/service/api@path", "service/api", "", "/path")]
+    [InlineData(true, "", "/service/api:part", "service/api", "", "/part")]
+    [InlineData(true, "%2F", "/service/api:part", "service/api", "", "/part")]
+    [InlineData(false, "%23", "/service/api:part", "service/api", "", "/part")]
+    public void DelimiterHeader_OverridesConfigurationOnlyWhenEnabled(
+        bool isHeaderManagement, string header, string path, string name, string serviceNamespace, string downstream)
+    {
+        // Arrange
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(':', isHeaderManagement));
+        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object, options);
+        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = header;
+        contextAccessor.Object.HttpContext.Request.Path = path;
+
+        // Act
+        var service = _routing.GetServiceName(path);
+        var downstreamPath = _routing.GetDownstreamPath();
+
+        // Assert
+        Assert.Equal(name, service.Name);
+        Assert.Equal(serviceNamespace, service.Namespace);
+        Assert.Equal(downstream, downstreamPath);
+    }
+
+    [Theory]
+    [InlineData("1", "/ns.service/api:part", "service", "ns", "/api:part")]
+    [InlineData("2", "/ns.service/api/details", "service/api", "ns", "/details")]
+    [InlineData("2", "/service/api/", "service/api", "", "/")]
+    [InlineData("3", "/service/api/details", "service", "", "/api/details")]
+    [InlineData("2147483647", "/service/api/details", "service", "", "/api/details")]
+    [InlineData("0", "/service/api:details", "service/api", "", "/details")]
+    [InlineData("-1", "/service/api:details", "service/api", "", "/details")]
+    [InlineData("invalid", "/service/api:details", "service/api", "", "/details")]
+    [InlineData("2147483648", "/service/api:details", "service/api", "", "/details")]
+    public void SegmentHeader_SelectsBoundaryOrFallsBack(
+        string segments, string path, string name, string serviceNamespace, string downstream)
+    {
+        // Arrange
+        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions('#', true)));
+        var request = contextAccessor.Object.HttpContext.Request;
+        request.Path = path;
+        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = segments;
+        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
+
+        // Act
+        var service = _routing.GetServiceName(path);
+        var downstreamPath = _routing.GetDownstreamPath();
+
+        // Assert
+        Assert.Equal(name, service.Name);
+        Assert.Equal(serviceNamespace, service.Namespace);
+        Assert.Equal(downstream, downstreamPath);
+    }
+
+    [Fact]
+    public void DisabledHeaderManagement_IgnoresBothHeadersWithoutAccessingHttpContext()
+    {
+        // Arrange
+        contextAccessor.Setup(x => x.HttpContext).Returns((HttpContext)null);
+        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(false)));
+
+        // Act
+        var service = _routing.GetServiceName("/service/api$path");
+
+        // Assert
+        Assert.Equal("service/api", service.Name);
+    }
+
+    [Fact]
+    public void DisabledHeaderManagement_IgnoresBothHeaders()
+    {
+        // Arrange
+        var request = contextAccessor.Object.HttpContext.Request;
+        request.Path = "/service/api:details";
+        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = "@";
+        request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = "1";
+        _routing = new MultipleSegmentUrlPathDynamicRouting(contextAccessor.Object,
+            Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(':')));
+
+        // Act
+        var service = _routing.GetServiceName();
+        var downstreamPath = _routing.GetDownstreamPath();
+
+        // Assert
+        Assert.Equal("service/api", service.Name);
+        Assert.Equal("/details", downstreamPath);
+    }
+
+    [Fact]
+    public void EnabledHeader_OverridesVirtualDelimiter()
+    {
+        // Arrange
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRoutingOptions(true));
+        _routing = new HashDelimiterRouting(contextAccessor.Object, options);
+        contextAccessor.Object.HttpContext.Request.Headers[MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter] = ":";
+
+        // Act
+        var service = _routing.GetServiceName("/service/api:path");
+
+        // Assert
+        Assert.Equal("service/api", service.Name);
+    }
+
     private sealed class HashDelimiterRouting(
         IHttpContextAccessor contextAccessor,
         IOptions<MultipleSegmentUrlPathDynamicRoutingOptions> options = null)

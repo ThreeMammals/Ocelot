@@ -35,4 +35,9 @@ public static class ServiceCollectionExtensions
         => services.AddOptions<MultipleSegmentUrlPathDynamicRoutingOptions>()
             .Configure(configureOptions)
             .Services.AddOcelotDynamicRouting<TDynamicRouting>();
+
+    /// <summary>Registers a multiple-segment router and sets whether request headers can manage routing.</summary>
+    public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(this IServiceCollection services, bool isHeaderManagement)
+        where TDynamicRouting : MultipleSegmentUrlPathDynamicRouting
+        => services.AddOcelotDynamicRouting<TDynamicRouting>(options => options.IsHeaderManagement = isHeaderManagement);
 }

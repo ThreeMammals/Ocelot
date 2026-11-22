@@ -57,6 +57,23 @@ public class ServiceCollectionExtensionsTests : UnitTest
             .Value.Delimiter);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddOcelotDynamicRouting_ConfiguresHeaderManagement(bool isHeaderManagement)
+    {
+        // Arrange
+        var services = new ServiceCollection().AddHttpContextAccessor();
+
+        // Act
+        services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(isHeaderManagement);
+        using var provider = services.BuildServiceProvider();
+
+        // Assert
+        Assert.IsType<MultipleSegmentUrlPathDynamicRouting>(provider.GetRequiredService<IDynamicRouting>());
+        Assert.Equal(isHeaderManagement, provider.GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRoutingOptions>>().Value.IsHeaderManagement);
+    }
+
     private sealed class FakeDynamicRouting : IDynamicRouting
     {
         public HttpRequest Request => null;

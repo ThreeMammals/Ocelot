@@ -346,6 +346,64 @@ For example, a ``#`` delimiter should be sent as ``%23`` so that it remains part
 
 .. _MultipleSegmentUrlPathDynamicRoutingOptions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/ServiceDiscovery/MultipleSegmentUrlPathDynamicRouting.cs
 
+Management headers
+~~~~~~~~~~~~~~~~~~
+
+Header management is disabled by default: the router ignores management headers and uses its configured or overridden delimiter.
+To enable per-request control, set ``IsHeaderManagement`` to ``true``:
+
+.. code-block:: csharp
+
+  // via IServiceCollection
+  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(isHeaderManagement: true);
+
+  // via IOcelotBuilder, with a configured fallback delimiter
+  builder.Services
+      .AddOcelot(builder.Configuration)
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(options =>
+      {
+          options.Delimiter = ':';
+          options.IsHeaderManagement = true;
+      });
+
+When enabled, the following headers take priority over the configured or overridden delimiter:
+
+* ``Ocelot-DynamicRouting-UrlPath-Segments`` specifies a positive integer: the number of slash-separated path segments belonging to the service name.
+  The slash after the last counted segment marks the boundary to the downstream path.
+* ``Ocelot-DynamicRouting-UrlPath-Delimiter`` specifies the delimiter character in the path.
+  The header can be percent-encoded; if its decoded value contains more than one character, only the first is used.
+
+The segment count has priority over the delimiter header when both are valid.
+For example:
+
+.. code-block:: http
+
+  GET /authorization/api/users/downstream-path?query HTTP/1.1
+  Host: gateway.example
+  Ocelot-DynamicRouting-UrlPath-Segments: 3
+  Ocelot-DynamicRouting-UrlPath-Delimiter: %23
+
+This request resolves ``authorization/api/users`` as the service name and forwards ``/downstream-path?query`` downstream.
+Another request can use a different segment count, or omit it and use the delimiter header instead:
+
+.. code-block:: http
+
+  GET /authorization/api%23/downstream-path?query HTTP/1.1
+  Host: gateway.example
+  Ocelot-DynamicRouting-UrlPath-Delimiter: %23
+
+This resolves ``authorization/api`` and forwards ``/downstream-path?query``.
+Headers can therefore vary per request when service names cover different numbers of segments.
+
+If the segment header is missing, non-numeric, outside the integer range, zero, or negative, the router tries the delimiter header.
+If the delimiter header is missing, empty, or decodes to a value beginning with ``/``, it uses the configured or overridden delimiter instead.
+A configured or overridden ``/`` delimiter is replaced by the default ``$``.
+If a valid segment count has no corresponding slash in the path, or the selected delimiter is not found, the router falls back to first-segment routing.
+When the matching slash or delimiter is at the end of the path, the downstream path is ``/``.
+
+Enabling header management allows clients to change routing per request, which can reduce stability if headers are invalid or unexpected.
+Enable it only for known, trusted clients that supply valid header values; otherwise leave it disabled for predictable configuration-based routing.
+
 .. _dr-roadmap:
 
 Roadmap

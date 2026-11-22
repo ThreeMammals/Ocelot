@@ -222,6 +222,23 @@ public class OcelotBuilderTests : UnitTest
             .Value.Delimiter);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddDynamicRouting_ConfiguresHeaderManagement(bool isHeaderManagement)
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(isHeaderManagement);
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        Assert.IsType<MultipleSegmentUrlPathDynamicRouting>(_serviceProvider.GetRequiredService<IDynamicRouting>());
+        Assert.Equal(isHeaderManagement, _serviceProvider.GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRoutingOptions>>().Value.IsHeaderManagement);
+    }
+
     [Fact]
     public void Should_add_singleton_defined_aggregators()
     {
