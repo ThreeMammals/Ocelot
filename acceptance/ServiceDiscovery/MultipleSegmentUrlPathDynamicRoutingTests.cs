@@ -111,30 +111,31 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     }
 
     [Theory]
-    [InlineData(true, "%23extra", null, "/service/api%23/details", "service/api", "/details")]
-    [InlineData(true, "@extra", null, "/service/api@details", "service/api", "/details")]
-    [InlineData(true, "@", "2", "/service/api/details", "service/api", "/details")]
+    [InlineData(true, "%23extra", null, "/service/api%23/path", "service/api", "/path")]
+    [InlineData(true, "@extra", null, "/service/api@path", "service/api", "/path")]
+    [InlineData(true, "@", "2", "/service/api/path", "service/api", "/path")]
     [InlineData(true, "@", "1", "/service/api:path", "service", "/api:path")]
     [InlineData(true, "@", "2", "/service/api/", "service/api", "/")]
-    [InlineData(true, "@", "9", "/service/api/details", "service", "/api/details")]
-    [InlineData(true, "@", "0", "/service/api@details", "service/api", "/details")]
-    [InlineData(true, "@", "-1", "/service/api@details", "service/api", "/details")]
-    [InlineData(true, "@", "invalid", "/service/api@details", "service/api", "/details")]
+    [InlineData(true, "@", "9", "/service/api/path", "service", "/api/path")]
+    [InlineData(true, "@", "0", "/service/api@path", "service/api", "/path")]
+    [InlineData(true, "@", "-1", "/service/api@path", "service/api", "/path")]
+    [InlineData(true, "@", "invalid", "/service/api@path", "service/api", "/path")]
     [InlineData(true, "%2F", null, "/service/api:path", "service/api", "/path")]
     [InlineData(true, "%2F", null, "/service/api:path?query", "service/api", "/path?query")]
     [InlineData(false, "@", "1", "/service/api:path", "service/api", "/path")]
     public async Task ShouldApplyManagementHeadersAndFallbacks(
         bool isHeaderManagement, string delimiter, string segments, string upstreamPath, string serviceName, string downstreamPath)
     {
+        void WithOptions(MultipleSegmentUrlPathDynamicRoutingOptions options)
+        {
+            options.Delimiter = ':';
+            options.IsHeaderManagement = isHeaderManagement;
+        }
         var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
         var configuration = GivenDynamicRouting(new() { { serviceName, serviceUrls } });
         GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services, options =>
-        {
-            options.Delimiter = ':';
-            options.IsHeaderManagement = isHeaderManagement;
-        }));
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services, WithOptions));
         GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, delimiter);
         if (segments != null)
             GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments, segments);
@@ -162,15 +163,15 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
 
         const string header = MultipleSegmentUrlPathDynamicRouting.Headers.Ocelot_DynamicRouting_UrlPath_Segments;
         GivenIAddAHeader(header, "2");
-        await WhenIGetUrlOnTheApiGateway("/service/api/details");
+        await WhenIGetUrlOnTheApiGateway("/service/api/path?try=1");
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseHeaderIs(HeaderNames.Path, "/details");
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/path?try=1");
 
         ocelotClient.DefaultRequestHeaders.Remove(header);
         GivenIAddAHeader(header, "1");
-        await WhenIGetUrlOnTheApiGateway("/service/api/details");
+        await WhenIGetUrlOnTheApiGateway("/service/api/path?try=2");
         ThenTheStatusCodeShouldBeOk();
-        ThenTheResponseHeaderIs(HeaderNames.Path, "/api/details");
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/api/path?try=2");
         ThenAllServicesShouldHaveBeenCalledTimes(2);
     }
 
@@ -178,8 +179,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services);
 
     private void WithDelimiterOptions(IServiceCollection services, char delimiter)
-        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(
-                services,
+        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(services,
                 options => options.Delimiter = delimiter);
 
     private sealed class HashDelimiterRouting(IHttpContextAccessor contextAccessor)

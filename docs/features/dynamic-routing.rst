@@ -347,7 +347,9 @@ For example, a ``#`` delimiter should be sent as ``%23`` so that it remains part
 .. _MultipleSegmentUrlPathDynamicRoutingOptions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/ServiceDiscovery/MultipleSegmentUrlPathDynamicRouting.cs
 
 Management headers
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
+  * ``Ocelot-DynamicRouting-UrlPath-Segments``
+  * ``Ocelot-DynamicRouting-UrlPath-Delimiter``
 
 Header management is disabled by default: the router ignores management headers and uses its configured or overridden delimiter.
 To enable per-request control, set ``IsHeaderManagement`` to ``true``:
@@ -357,9 +359,14 @@ To enable per-request control, set ``IsHeaderManagement`` to ``true``:
   // via IServiceCollection
   services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(isHeaderManagement: true);
 
+  // via IOcelotBuilder, with default fallback delimiter '$'
+  builder.Services
+      .AddOcelot(builder.Configuration) // -> IOcelotBuilder
+      .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(true);
+
   // via IOcelotBuilder, with a configured fallback delimiter
   builder.Services
-      .AddOcelot(builder.Configuration)
+      .AddOcelot(builder.Configuration) // -> IOcelotBuilder
       .AddDynamicRouting<MultipleSegmentUrlPathDynamicRouting>(options =>
       {
           options.Delimiter = ':';
@@ -379,7 +386,7 @@ For example:
 .. code-block:: http
 
   GET /authorization/api/users/downstream-path?query HTTP/1.1
-  Host: gateway.example
+  Host: ocelot.net
   Ocelot-DynamicRouting-UrlPath-Segments: 3
   Ocelot-DynamicRouting-UrlPath-Delimiter: %23
 
@@ -389,20 +396,22 @@ Another request can use a different segment count, or omit it and use the delimi
 .. code-block:: http
 
   GET /authorization/api%23/downstream-path?query HTTP/1.1
-  Host: gateway.example
+  Host: ocelot.net
   Ocelot-DynamicRouting-UrlPath-Delimiter: %23
 
 This resolves ``authorization/api`` and forwards ``/downstream-path?query``.
 Headers can therefore vary per request when service names cover different numbers of segments.
 
-If the segment header is missing, non-numeric, outside the integer range, zero, or negative, the router tries the delimiter header.
-If the delimiter header is missing, empty, or decodes to a value beginning with ``/``, it uses the configured or overridden delimiter instead.
-A configured or overridden ``/`` delimiter is replaced by the default ``$``.
-If a valid segment count has no corresponding slash in the path, or the selected delimiter is not found, the router falls back to first-segment routing.
-When the matching slash or delimiter is at the end of the path, the downstream path is ``/``.
+.. note::
+  If the segment header is missing, non-numeric, outside the integer range, zero, or negative, the router tries the delimiter header.
+  If the delimiter header is missing, empty, or decodes to a value beginning with ``/``, it uses the configured or overridden delimiter instead.
+  A configured or overridden ``/`` delimiter is replaced by the default ``$``.
+  If a valid segment count has no corresponding slash in the path, or the selected delimiter is not found, the router falls back to first-segment routing.
+  When the matching slash or delimiter is at the end of the path, the downstream path is ``/``.
 
-Enabling header management allows clients to change routing per request, which can reduce stability if headers are invalid or unexpected.
-Enable it only for known, trusted clients that supply valid header values; otherwise leave it disabled for predictable configuration-based routing.
+.. caution::
+  Enabling header management allows clients to change routing per request, which can reduce stability if headers are invalid or unexpected.
+  Enable it only for known, trusted clients that supply valid header values; otherwise leave it disabled for predictable configuration-based routing.
 
 .. _dr-roadmap:
 

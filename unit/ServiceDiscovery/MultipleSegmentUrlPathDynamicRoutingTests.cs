@@ -212,14 +212,16 @@ public class MultipleSegmentUrlPathDynamicRoutingTests : UnitTest
 
     [Theory]
     [InlineData("1", "/ns.service/api:part", "service", "ns", "/api:part")]
-    [InlineData("2", "/ns.service/api/details", "service/api", "ns", "/details")]
+    [InlineData("2", "/ns.service/api/path", "service/api", "ns", "/path")]
     [InlineData("2", "/service/api/", "service/api", "", "/")]
-    [InlineData("3", "/service/api/details", "service", "", "/api/details")]
-    [InlineData("2147483647", "/service/api/details", "service", "", "/api/details")]
-    [InlineData("0", "/service/api:details", "service/api", "", "/details")]
-    [InlineData("-1", "/service/api:details", "service/api", "", "/details")]
-    [InlineData("invalid", "/service/api:details", "service/api", "", "/details")]
-    [InlineData("2147483648", "/service/api:details", "service/api", "", "/details")]
+    [InlineData("3", "/service/api/path", "service", "", "/api/path")] // fallback
+    [InlineData("2147483647", "/service/api/path", "service", "", "/api/path")] // fallback
+    [InlineData("0", "/service/api:path", "service/api", "", "/path")]
+    [InlineData("-1", "/service/api:path", "service/api", "", "/path")]
+    [InlineData("invalid", "/service/api:path", "service/api", "", "/path")]
+    [InlineData("2147483648", "/service/api:path", "service/api", "", "/path")]
+    [InlineData("0", "/service/api$path", "service", "", "/api$path")] // fallback to 1st segment
+    [InlineData("0", "/service/api#path", "service", "", "/api#path")] // fallback to 1st segment
     public void SegmentHeader_SelectsBoundaryOrFallsBack(
         string segments, string path, string name, string serviceNamespace, string downstream)
     {

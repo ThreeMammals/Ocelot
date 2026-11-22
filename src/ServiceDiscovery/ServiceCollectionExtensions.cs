@@ -36,7 +36,13 @@ public static class ServiceCollectionExtensions
             .Configure(configureOptions)
             .Services.AddOcelotDynamicRouting<TDynamicRouting>();
 
-    /// <summary>Registers a multiple-segment router and sets whether request headers can manage routing.</summary>
+    /// <summary>
+    /// Registers a multiple-segment router and sets whether request headers can manage routing.
+    /// </summary>
+    /// <typeparam name="TDynamicRouting">The dynamic routing type.</typeparam>
+    /// <param name="services">The services collection to add the feature to.</param>
+    /// <param name="isHeaderManagement">Enable header management or disable.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddOcelotDynamicRouting<TDynamicRouting>(this IServiceCollection services, bool isHeaderManagement)
         where TDynamicRouting : MultipleSegmentUrlPathDynamicRouting
         => services.AddOcelotDynamicRouting<TDynamicRouting>(options => options.IsHeaderManagement = isHeaderManagement);

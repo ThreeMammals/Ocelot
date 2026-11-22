@@ -102,8 +102,12 @@ public class MultipleSegmentUrlPathDynamicRouting(
 
 public class MultipleSegmentUrlPathDynamicRoutingOptions
 {
-    public MultipleSegmentUrlPathDynamicRoutingOptions() => Delimiter = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
-    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter) => Delimiter = delimiter;
+    public MultipleSegmentUrlPathDynamicRoutingOptions()
+        => Delimiter = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
+    public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter)
+        => Delimiter = delimiter;
+    public MultipleSegmentUrlPathDynamicRoutingOptions(bool isHeaderManagement)
+        => IsHeaderManagement = isHeaderManagement;
 
     public MultipleSegmentUrlPathDynamicRoutingOptions(char delimiter, bool isHeaderManagement)
     {
@@ -111,9 +115,6 @@ public class MultipleSegmentUrlPathDynamicRoutingOptions
         IsHeaderManagement = isHeaderManagement;
     }
 
-    public MultipleSegmentUrlPathDynamicRoutingOptions(bool isHeaderManagement)
-        => IsHeaderManagement = isHeaderManagement;
-
     public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouting.DefaultDelimiter;
-    public bool IsHeaderManagement { get; set; }
+    public bool IsHeaderManagement { get; set; } = false;
 }
