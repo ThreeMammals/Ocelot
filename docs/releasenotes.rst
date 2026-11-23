@@ -133,6 +133,7 @@ To be added...
 .. _issues: https://github.com/ThreeMammals/Ocelot/issues
 .. _Ocelot GitHub: https://github.com/ThreeMammals/Ocelot/
 .. _Ocelot Discussions: https://github.com/ThreeMammals/Ocelot/discussions
+.. _Identity-verification procedure for first-time contributors: https://github.com/ThreeMammals/Ocelot/discussions/2441
 .. _ideas: https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas
 .. _questions: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
 .. |octocat| image:: images/octocat.png
@@ -146,6 +147,8 @@ For `ideas`_ and `questions`_, please post them in the `Ocelot Discussions`_ spa
 
 Our :doc:`../building/devprocess` is a part of successful :doc:`../building/releaseprocess`.
 If you are a new contributor, it is crucial to read :doc:`../building/devprocess` attentively to grasp our methods for efficient and swift feature delivery.
+Maintainers may ask first-time contributors to complete identity verification based on a public LinkedIn profile linked to their GitHub profile; Ocelot does not accept pull requests from automated agents.
+See the `Identity-verification procedure for first-time contributors`_ for details.
 We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
 
 We extend our best wishes for your successful contributions to the Ocelot product! |octocat|
