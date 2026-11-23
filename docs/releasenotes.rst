@@ -150,7 +150,7 @@ If you are a new contributor, it is crucial to read :doc:`../building/devprocess
 We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
 
 .. important::
-  Maintainers may ask first-time contributors to complete identity verification based on a public LinkedIn profile linked to their GitHub profile;
+  Maintainers may ask first-time contributors to complete identity verification based on a public `LinkedIn <https://www.linkedin.com/>`_ profile linked to their GitHub profile;
   **Ocelot does not accept pull requests from automated AI agents.**
   See the `Identity-verification procedure for first-time contributors`_ for details.
 
