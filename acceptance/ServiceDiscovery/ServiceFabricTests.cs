@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Ocelot.DependencyInjection;
+using Ocelot.ServiceFabric;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
 
@@ -24,7 +26,7 @@ public sealed class ServiceFabricTests : Steps
         };
         GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/a", 200, "Hello from Laura", "b=c");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        GivenOcelotIsRunning(services => services.AddOcelot().AddServiceFabric());
         await WhenIGetUrlOnTheApiGateway("/a?b=c");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
@@ -46,7 +48,7 @@ public sealed class ServiceFabricTests : Steps
         };
         GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "test=best");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        GivenOcelotIsRunning(services => services.AddOcelot().AddServiceFabric());
         await WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?test=best");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
@@ -68,7 +70,7 @@ public sealed class ServiceFabricTests : Steps
         };
         GivenThereIsAServiceRunningOn(port, "/OcelotServiceApplication/OcelotApplicationService/api/values", 200, "Hello from Laura", "PartitionKind=test&PartitionKey=1");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        GivenOcelotIsRunning(services => services.AddOcelot().AddServiceFabric());
         await WhenIGetUrlOnTheApiGateway("/EquipmentInterfaces?PartitionKind=test&PartitionKey=1");
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync("Hello from Laura");
@@ -93,7 +95,7 @@ public sealed class ServiceFabricTests : Steps
         };
         GivenThereIsAServiceRunningOn(port, downstreamUrl, 200, "Hello from Felix Boers", query);
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning();
+        GivenOcelotIsRunning(services => services.AddOcelot().AddServiceFabric());
         await WhenIGetUrlOnTheApiGateway(url);
         ThenTheStatusCodeShouldBe(HttpStatusCode.OK);
         await ThenTheResponseBodyShouldBeAsync("Hello from Felix Boers");

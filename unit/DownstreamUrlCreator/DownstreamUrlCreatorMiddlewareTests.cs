@@ -6,7 +6,9 @@ using Ocelot.DownstreamUrlCreator;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
+using Ocelot.ServiceFabric;
 using Ocelot.Values;
+using System.Reflection;
 
 namespace Ocelot.UnitTests.DownstreamUrlCreator;
 
@@ -33,7 +35,11 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _replacer = new Mock<IDownstreamPathPlaceholderReplacer>();
         _request = new HttpRequestMessage(HttpMethod.Get, "https://my.url/abc/?q=123");
         _next = context => Task.CompletedTask;
-        _middleware = new DownstreamUrlCreatorMiddleware(_next, _loggerFactory.Object, _replacer.Object);
+        _middleware = new DownstreamUrlCreatorMiddleware(
+            _next,
+            _loggerFactory.Object,
+            _replacer.Object,
+            new ServiceFabricDownstreamPathFormatter(_replacer.Object));
     }
 
     [Fact]
@@ -77,7 +83,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         GivenTheUrlReplacerWillReturn("/api/products/1");
         _downstreamPath = new DownstreamPath(string.Empty);
         _replacer
-            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
             .Returns(_downstreamPath);
 
         // Act, Assert
@@ -113,6 +119,28 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Assert
         ThenTheDownstreamRequestUriIs("https://localhost:5000/api/units/1/2/updates");
         ThenTheQueryStringIs(string.Empty);
+    }
+
+    [Fact]
+    public async Task Should_use_downstream_query_when_request_has_no_query()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/api/products")
+            .WithUpstreamHttpMethod(["Get"])
+            .WithDownstreamScheme(Uri.UriSchemeHttp)
+            .Build();
+        GivenTheDownStreamRouteIs(new(downstreamRoute));
+        GivenTheDownstreamRequestUriIs("http://localhost:5000/products");
+        GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
+        GivenTheUrlReplacerWillReturn("/api/products?source=route");
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        ThenTheDownstreamRequestUriIs("http://localhost:5000/api/products?source=route");
+        ThenTheQueryStringIs("?source=route");
     }
 
     [Fact]
@@ -769,8 +797,8 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         _httpContext.Request.Path = upstreamPath;
         GivenTheDownstreamRequestUriIs("http://localhost:5000" + upstreamPath + query);
         GivenTheServiceProviderConfigIs(new ServiceProviderConfigurationBuilder().Build());
-        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
-            .Returns((string template, List<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
+        _replacer.Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
+            .Returns((string template, IReadOnlyList<PlaceholderNameAndValue> placeholders) => new DownstreamPath(template));
 
         // Act
         await _middleware.Invoke(_httpContext);
@@ -778,6 +806,44 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
         // Assert
         _httpContext.Items.DownstreamRequest().ToHttpRequestMessage().RequestUri.OriginalString
             .ShouldBe(expected, "Should create downstream path from upstream path of dynamic route");
+    }
+
+    [Fact]
+    public void Should_preserve_query_when_no_template_placeholders_match()
+    {
+        // Arrange
+        var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/products?source=client"));
+        var placeholders = new List<PlaceholderNameAndValue> { new("{unused}", "value") };
+        var method = typeof(DownstreamUrlCreatorMiddleware).GetMethod(
+            "RemoveQueryStringParametersThatHaveBeenUsedInTemplate",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        // Act
+        var result = method.Invoke(null, [request, placeholders]);
+
+        // Assert
+        result.ShouldBe("?source=client");
+    }
+
+    [Fact]
+    public void Should_remove_query_when_template_placeholder_matches()
+    {
+        // Arrange
+        var request = new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/products?source=client"));
+        var placeholders = new List<PlaceholderNameAndValue>
+        {
+            new("{source}", "client"),
+            new("{unused}", "value"),
+        };
+        var method = typeof(DownstreamUrlCreatorMiddleware).GetMethod(
+            "RemoveQueryStringParametersThatHaveBeenUsedInTemplate",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        // Act
+        var result = method.Invoke(null, [request, placeholders]);
+
+        // Assert
+        result.ShouldBe(string.Empty);
     }
 
     private static HashSet<HttpMethod> AsHashSet(IEnumerable<string> collection) => collection.Select(AsHttpMethod).ToHashSet();
@@ -807,7 +873,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     private void GivenTheUrlReplacerWillReturnSequence(params string[] paths)
     {
         var setup = _replacer
-            .SetupSequence(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()));
+            .SetupSequence(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()));
         foreach (var path in paths)
         {
             setup.Returns(new DownstreamPath(path));
@@ -818,7 +884,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
     {
         _downstreamPath = new DownstreamPath(path);
         _replacer
-            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Setup(x => x.Replace(It.IsAny<string>(), It.IsAny<IReadOnlyList<PlaceholderNameAndValue>>()))
             .Returns(_downstreamPath);
     }
 
@@ -836,7 +902,7 @@ public sealed class DownstreamUrlCreatorMiddlewareTests : UnitTest
 internal class DownstreamUrlCreatorMiddlewareTestWrapper : DownstreamUrlCreatorMiddleware
 {
     public DownstreamUrlCreatorMiddlewareTestWrapper(RequestDelegate next, IOcelotLoggerFactory loggerFactory, IDownstreamPathPlaceholderReplacer replacer)
-        : base(next, loggerFactory, replacer) { }
+        : base(next, loggerFactory, replacer, new DefaultDownstreamPathFormatter()) { }
 
     public static new ReadOnlySpan<char> GetPath(ReadOnlySpan<char> downstreamPath)
         => DownstreamUrlCreatorMiddleware.GetPath(downstreamPath);

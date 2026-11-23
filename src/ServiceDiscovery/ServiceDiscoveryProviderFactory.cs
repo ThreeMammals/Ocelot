@@ -2,8 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Configuration;
 using Ocelot.Logging;
 using Ocelot.Responses;
-using Ocelot.ServiceDiscovery.Configuration;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 
 namespace Ocelot.ServiceDiscovery;
@@ -11,13 +9,13 @@ namespace Ocelot.ServiceDiscovery;
 public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
 {
     private readonly IServiceProvider _provider;
-    private readonly ServiceDiscoveryFinderDelegate _delegates;
+    private readonly IEnumerable<ServiceDiscoveryFinderDelegate> _finderDelegates;
     private readonly IOcelotLogger _logger;
 
     public ServiceDiscoveryProviderFactory(IOcelotLoggerFactory factory, IServiceProvider provider)
     {
         _provider = provider;
-        _delegates = provider.GetService<ServiceDiscoveryFinderDelegate>();
+        _finderDelegates = provider.GetServices<ServiceDiscoveryFinderDelegate>();
         _logger = factory.CreateLogger<ServiceDiscoveryProviderFactory>();
     }
 
@@ -45,18 +43,12 @@ public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
     {
         _logger.LogInformation(() => $"Getting service discovery provider of {nameof(config.Type)} '{config.Type}'...");
 
-        if (ServiceFabricServiceDiscoveryProvider.Type.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+        foreach (var finder in _finderDelegates)
         {
-            var sfConfig = new ServiceFabricConfiguration(config.Host, config.Port, route.ServiceName);
-            return new OkResponse<IServiceDiscoveryProvider>(new ServiceFabricServiceDiscoveryProvider(sfConfig));
-        }
-
-        if (_delegates != null)
-        {
-            var provider = _delegates?.Invoke(_provider, config, route);
-            if (provider.GetType().Name.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
+            var discoveryProvider = finder.Invoke(_provider, config, route);
+            if (discoveryProvider?.Name?.Equals(config.Type, StringComparison.OrdinalIgnoreCase) == true)
             {
-                return new OkResponse<IServiceDiscoveryProvider>(provider);
+                return new OkResponse<IServiceDiscoveryProvider>(discoveryProvider);
             }
         }
 

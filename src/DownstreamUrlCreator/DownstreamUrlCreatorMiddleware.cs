@@ -7,7 +7,6 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
-using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.Values;
 using System.Web;
 
@@ -17,6 +16,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly IDownstreamPathPlaceholderReplacer _replacer;
+    private readonly IDownstreamPathFormatter _pathFormatter;
 
     private const char Ampersand = '&';
     private const char QuestionMark = '?';
@@ -25,11 +25,13 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     public DownstreamUrlCreatorMiddleware(
         RequestDelegate next,
         IOcelotLoggerFactory loggerFactory,
-        IDownstreamPathPlaceholderReplacer replacer)
+        IDownstreamPathPlaceholderReplacer replacer,
+        IDownstreamPathFormatter pathFormatter)
         : base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
     {
         _next = next;
         _replacer = replacer;
+        _pathFormatter = pathFormatter;
     }
 
     public async Task Invoke(HttpContext context)
@@ -62,15 +64,7 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
 
         var internalConfiguration = context.Items.IInternalConfiguration();
 
-        if (ServiceFabricRequest(internalConfiguration, downstreamRoute))
-        {
-            var (path, query) = CreateServiceFabricUri(downstreamRequest, downstreamRoute, placeholders, downstreamPath);
-
-            // TODO Check this works again hope there is a test..
-            downstreamRequest.AbsolutePath = path;
-            downstreamRequest.Query = query;
-        }
-        else
+        if (!_pathFormatter.TryFormat(downstreamRequest, downstreamRoute, internalConfiguration, placeholders, downstreamPath))
         {
             if (dsPath.Contains(QuestionMark))
             {
@@ -157,15 +151,4 @@ public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
             : ReadOnlySpan<char>.Empty;
     }
 
-    protected (string Path, string Query) CreateServiceFabricUri(DownstreamRequest downstreamRequest, DownstreamRoute downstreamRoute, List<PlaceholderNameAndValue> templatePlaceholderNameAndValues, DownstreamPath dsPath)
-    {
-        var query = downstreamRequest.Query;
-        var serviceName = _replacer.Replace(downstreamRoute.ServiceName, templatePlaceholderNameAndValues);
-        var pathTemplate = $"/{serviceName.Value}{dsPath.Value}";
-        return (pathTemplate, query);
-    }
-
-    protected static bool ServiceFabricRequest(IInternalConfiguration config, DownstreamRoute route)
-        => ServiceFabricServiceDiscoveryProvider.Type.Equals(config.ServiceProviderConfiguration.Type, StringComparison.OrdinalIgnoreCase)
-            && route.UseServiceDiscovery;
 }

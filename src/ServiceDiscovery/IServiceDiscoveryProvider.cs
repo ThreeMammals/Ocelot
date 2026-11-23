@@ -1,8 +1,10 @@
 using Ocelot.Values;
 
-namespace Ocelot.ServiceDiscovery.Providers;
+namespace Ocelot.ServiceDiscovery;
 
 public interface IServiceDiscoveryProvider
 {
+    string Name { get; }
+
     Task<List<Service>> GetAsync();
 }

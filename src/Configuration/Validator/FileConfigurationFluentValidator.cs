@@ -5,7 +5,6 @@ using Ocelot.Errors;
 using Ocelot.Infrastructure;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
-using Ocelot.ServiceDiscovery.Providers;
 
 namespace Ocelot.Configuration.Validator;
 
@@ -32,7 +31,7 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
 
         RuleForEach(configuration => configuration.Routes)
             .Must((config, route) => HaveServiceDiscoveryProviderRegistered(route, config.GlobalConfiguration.ServiceDiscoveryProvider))
-            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
+            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul(), Ocelot.Discovery.Eureka and services.AddEureka(), or the Service Fabric feature and services.AddServiceFabric()?");
 
         RuleForEach(configuration => configuration.Routes)
             .Must((_, route) => IsPlaceholderNotDuplicatedIn(route.UpstreamPathTemplate))
@@ -43,7 +42,7 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
 
         RuleFor(configuration => configuration.GlobalConfiguration.ServiceDiscoveryProvider)
             .Must(HaveServiceDiscoveryProviderRegistered)
-            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul() or Ocelot.Discovery.Eureka and services.AddEureka()?");
+            .WithMessage((_, _) => "Unable to start Ocelot, errors are: Unable to start Ocelot because either a Route or GlobalConfiguration are using ServiceDiscoveryOptions but no ServiceDiscoveryFinderDelegate has been registered in dependency injection container. Are you missing a package like Ocelot.Discovery.Consul and services.AddConsul(), Ocelot.Discovery.Eureka and services.AddEureka(), or the Service Fabric feature and services.AddServiceFabric()?");
 
         RuleForEach(configuration => configuration.Routes)
             .Must((config, route) => IsNotDuplicateIn(route, config.Aggregates))
@@ -62,18 +61,15 @@ public partial class FileConfigurationFluentValidator : AbstractValidator<FileCo
             .WithMessage((_, aggregateRoute) => $"{nameof(aggregateRoute)} {aggregateRoute.UpstreamPathTemplate} contains Route with specific RequestIdKey, this is not possible with Aggregates");
     }
 
-    private const string ServiceFabric = ServiceFabricServiceDiscoveryProvider.Type;
     private bool HaveServiceDiscoveryProviderRegistered(FileRoute route, FileServiceDiscoveryProvider serviceDiscoveryProvider)
     {
         return string.IsNullOrEmpty(route.ServiceName) ||
-               ServiceFabric.Equals(serviceDiscoveryProvider?.Type, StringComparison.OrdinalIgnoreCase) ||
                _serviceDiscoveryFinderDelegates.Any();
     }
 
     private bool HaveServiceDiscoveryProviderRegistered(FileServiceDiscoveryProvider serviceDiscoveryProvider)
     {
         return serviceDiscoveryProvider == null ||
-            ServiceFabric.Equals(serviceDiscoveryProvider.Type, StringComparison.OrdinalIgnoreCase) ||
             string.IsNullOrEmpty(serviceDiscoveryProvider.Type) || _serviceDiscoveryFinderDelegates.Any();
     }
 
