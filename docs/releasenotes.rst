@@ -11,7 +11,7 @@ Welcome
 .. _25.0.1: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.1
 .. _25.0.2: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.2
 .. _25.0.3: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.3
-.. _25.1.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.1.0
+.. _26.0.0: https://github.com/ThreeMammals/Ocelot/releases/tag/26.0.0
 .. _10.0.401: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 .. _10.0.402: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 .. _10.0.404: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
@@ -21,7 +21,7 @@ Welcome
 .. Welcome to the Ocelot `25.0`_ documentation!
 
 .. warning::
-  | Version `25.1 <https://github.com/ThreeMammals/Ocelot/milestone/12>`_ is in development! Full changelog: `release/25.0...develop <https://github.com/ThreeMammals/Ocelot/compare/release/25.0...develop>`_
+  | Version `26.0 <https://github.com/ThreeMammals/Ocelot/milestone/12>`_ is in development! Full changelog: `main...develop <https://github.com/ThreeMammals/Ocelot/compare/main...develop>`_
   | Read the latest **25.0** documentation here: `v25.0 <https://ocelot.readthedocs.io/en/25.0/>`_
 
 It is recommended to read all :ref:`release-notes` if you have deployed the Ocelot app in a production environment and are planning to upgrade to major, minor or patched versions.
@@ -41,9 +41,9 @@ It is recommended to read all :ref:`release-notes` if you have deployed the Ocel
 📢 Release Notes
 -----------------
 
-  | Release Tag: `25.1.0`_ (to be created)
-  | Release Codename: `Rise of Ocelot <https://github.com/ThreeMammals/Ocelot/milestone/12>`_
-  | Release Date: ... 2026
+  | Release Tag: `26.0.0`_ (to be created)
+  | Release Codename: `.NET 11 <https://github.com/ThreeMammals/Ocelot/milestone/12>`_
+  | Release Date: December 2026
 
 To be added...
 
@@ -133,6 +133,7 @@ To be added...
 .. _issues: https://github.com/ThreeMammals/Ocelot/issues
 .. _Ocelot GitHub: https://github.com/ThreeMammals/Ocelot/
 .. _Ocelot Discussions: https://github.com/ThreeMammals/Ocelot/discussions
+.. _Identity-verification procedure for first-time contributors: https://github.com/ThreeMammals/Ocelot/discussions/2441
 .. _ideas: https://github.com/ThreeMammals/Ocelot/discussions/categories/ideas
 .. _questions: https://github.com/ThreeMammals/Ocelot/discussions/categories/q-a
 .. |octocat| image:: images/octocat.png
@@ -147,5 +148,10 @@ For `ideas`_ and `questions`_, please post them in the `Ocelot Discussions`_ spa
 Our :doc:`../building/devprocess` is a part of successful :doc:`../building/releaseprocess`.
 If you are a new contributor, it is crucial to read :doc:`../building/devprocess` attentively to grasp our methods for efficient and swift feature delivery.
 We, as a team, advocate adhering to :ref:`dev-best-practices` throughout the development phase.
+
+.. important::
+  Maintainers may ask first-time contributors to complete identity verification based on a public `LinkedIn <https://www.linkedin.com/>`_ profile linked to their GitHub profile;
+  **Ocelot does not accept pull requests from automated AI agents.**
+  See the `Identity-verification procedure for first-time contributors`_ for details.
 
 We extend our best wishes for your successful contributions to the Ocelot product! |octocat|
