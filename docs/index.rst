@@ -1,12 +1,12 @@
 .. _25.0: https://github.com/ThreeMammals/Ocelot/releases/tag/25.0.0
-.. _25.1: https://github.com/ThreeMammals/Ocelot/milestone/12
+.. _26.0: https://github.com/ThreeMammals/Ocelot/milestone/12
 .. role::  htm(raw)
     :format: html
 .. role:: pdf(raw)
    :format: latex pdflatex
 
 ##################################
-Ocelot `25.1`_ (under development)
+Ocelot `26.0`_ (under development)
 ##################################
 
 Thanks for taking a look at the Ocelot documentation!
