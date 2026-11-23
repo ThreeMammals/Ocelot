@@ -6,7 +6,8 @@ Please complete the relevant [template](https://github.com/ThreeMammals/Ocelot/t
 Sometimes it's worth getting in touch with us to [discuss](https://github.com/ThreeMammals/Ocelot/discussions) changes before doing any work in case this is something we are already doing or it might not make sense.
 We can also give advice on the easiest way to do things <img src="https://raw.githubusercontent.com/ThreeMammals/Ocelot/refs/heads/assets/images/octocat.png" alt="octocat" height="25" />
 
-Before opening your first pull request or issue, please read the [Development Process](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/building/devprocess.rst). Maintainers may ask first-time contributors to complete identity verification based on a public LinkedIn profile linked to their GitHub profile. Ocelot does not accept pull requests from automated AI agents. See the [Identity-verification procedure for first-time contributors](https://github.com/ThreeMammals/Ocelot/discussions/2441) for details.
+>[!IMPORTANT]
+>Before opening your first pull request or issue, please read the [Development Process](https://github.com/ThreeMammals/Ocelot/blob/develop/docs/building/devprocess.rst). Maintainers may ask first-time contributors to complete identity verification based on a public LinkedIn profile linked to their GitHub profile. Ocelot does not accept pull requests from automated AI agents. See the [Identity-verification procedure for first-time contributors](https://github.com/ThreeMammals/Ocelot/discussions/2441) for details.
 
 Finally, we mark all existing issues as [![label: help wanted][~helpwanted]](https://github.com/ThreeMammals/Ocelot/labels/help%20wanted)
 [![label: small effort][~smalleffort]](https://github.com/ThreeMammals/Ocelot/labels/small%20effort)
