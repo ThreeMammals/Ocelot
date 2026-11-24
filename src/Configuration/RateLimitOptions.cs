@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration.File;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
+using System.Globalization;
 
 namespace Ocelot.Configuration;
 
@@ -61,7 +62,7 @@ public class RateLimitOptions
         KeyPrefix = fromRule.RateLimitCounterPrefix.IfEmpty(fromRule.KeyPrefix.IfEmpty(DefaultCounterPrefix));
         Rule = new(
             fromRule.Period.IfEmpty(RateLimitRule.DefaultPeriod),
-            fromRule.PeriodTimespan.HasValue ? $"{fromRule.PeriodTimespan.Value}s" : fromRule.Wait,
+            fromRule.PeriodTimespan.HasValue ? fromRule.PeriodTimespan.Value.ToString(CultureInfo.InvariantCulture) + 's' : fromRule.Wait,
             fromRule.Limit ?? RateLimitRule.ZeroLimit);
     }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.RateLimiting;
+using System.Globalization;
 
 namespace Ocelot.Configuration.File;
 
@@ -87,7 +88,7 @@ public class FileRateLimitRule
         }
 
         char hdrSign = EnableHeaders == false ? '-' : '+';
-        string waitWindow = PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F3") + 's' : Wait.IfEmpty(None);
+        string waitWindow = PeriodTimespan.HasValue ? PeriodTimespan.Value.ToString("F3", CultureInfo.InvariantCulture) + 's' : Wait.IfEmpty(None);
         return $"H{hdrSign}:{Limit}:{Period}:w{waitWindow}";
     }
 
