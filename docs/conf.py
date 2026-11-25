@@ -9,9 +9,9 @@
 project = 'Ocelot API Gateway'
 copyright = ' 2016-2026 Three Mammals'
 author = 'Tom Gardham-Pallister, Raman Maksimchuk'
-release = 'v25.0 ".NET 10"' # OK displayed
-version = '25.0' # version is not displayed in either HTML pages or PDF docs
-today = 'July 29, 2026'
+release = 'v26.0 ".NET 11"' # OK displayed
+version = '26.0' # version is not displayed in either HTML pages or PDF docs
+today = 'December, 2026'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
