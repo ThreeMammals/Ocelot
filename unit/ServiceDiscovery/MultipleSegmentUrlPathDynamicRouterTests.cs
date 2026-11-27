@@ -22,7 +22,7 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     public void Delimiter_NoOptions()
     {
         // Arrange, Act
-        char actual = (char)DelimiterProperty().GetValue(_routing);
+        char actual = (char)Delimiter().GetValue(_routing);
 
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
     }
@@ -30,7 +30,7 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     [Fact]
     public void Segments_IsZeroByDefault()
     {
-        var actual = SegmentsProperty().GetValue(_routing);
+        var actual = Segments().GetValue(_routing);
 
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultSegments, actual);
     }
@@ -40,23 +40,67 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     {
         // Arrange, Act
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, null);
-        char actual = (char)DelimiterProperty().GetValue(_routing);
+        char actual = (char)Delimiter().GetValue(_routing);
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
         var options = Options.Create((MultipleSegmentUrlPathDynamicRouterOptions)null);
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
-        actual = (char)DelimiterProperty().GetValue(_routing);
+        actual = (char)Delimiter().GetValue(_routing);
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
         options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions('*'));
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
-        actual = (char)DelimiterProperty().GetValue(_routing);
+        actual = (char)Delimiter().GetValue(_routing);
         Assert.Equal('*', actual);
     }
-    private PropertyInfo DelimiterProperty() => _routing.GetType().GetProperty("Delimiter", BindingFlags.NonPublic | BindingFlags.Instance);
-    private PropertyInfo SegmentsProperty() => _routing.GetType().GetProperty("Segments", BindingFlags.NonPublic | BindingFlags.Instance);
+
+    [Fact]
+    public void Segments_WithOptions()
+    {
+        // Arrange, Act
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, null);
+        int actual = (int)Segments().GetValue(_routing);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultSegments, actual);
+
+        // Arrange, Act
+        var options = Options.Create((MultipleSegmentUrlPathDynamicRouterOptions)null);
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
+        actual = (int)Segments().GetValue(_routing);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultSegments, actual);
+
+        // Arrange, Act
+        options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(123));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
+        actual = (int)Segments().GetValue(_routing);
+        Assert.Equal(123, actual);
+    }
+
+    [Fact]
+    public void IsHeaderManagement_WithOptions()
+    {
+        // Arrange, Act
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, null);
+        bool actual = (bool)IsHeaderManagement().GetValue(_routing);
+        Assert.False(actual);
+
+        // Arrange, Act
+        var options = Options.Create((MultipleSegmentUrlPathDynamicRouterOptions)null);
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
+        actual = (bool)IsHeaderManagement().GetValue(_routing);
+        Assert.False(actual);
+
+        // Arrange, Act
+        options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(true));
+        _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
+        actual = (bool)IsHeaderManagement().GetValue(_routing);
+        Assert.True(actual);
+    }
+
+    private PropertyInfo Delimiter() => _routing.GetType().GetProperty(nameof(Delimiter), BindingFlags.NonPublic | BindingFlags.Instance);
+    private PropertyInfo Segments() => _routing.GetType().GetProperty(nameof(Segments), BindingFlags.NonPublic | BindingFlags.Instance);
+    private PropertyInfo IsHeaderManagement() => _routing.GetType().GetProperty(nameof(IsHeaderManagement), BindingFlags.NonPublic | BindingFlags.Instance);
 
     [Theory]
     [InlineData("/authorization$path", "authorization", "/path")]

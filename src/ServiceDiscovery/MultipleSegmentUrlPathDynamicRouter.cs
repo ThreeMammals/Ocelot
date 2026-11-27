@@ -31,11 +31,11 @@ public class MultipleSegmentUrlPathDynamicRouter(
         if (path.Length <= 1)
             return SlashStr;
 
-        int delimiterIndex = FindDelimiter(path);
-        if (delimiterIndex < 0)
+        int index = FindDelimiter(path);
+        if (index < 0)
             return base.DownstreamPath(path.ToString());
 
-        var downstreamPath = path[++delimiterIndex..];
+        var downstreamPath = path[++index..];
         return downstreamPath.Length == 0 || downstreamPath[0] == Slash
             ? downstreamPath.Length == 0 ? SlashStr : downstreamPath.ToString()
             : string.Concat(SlashStr.AsSpan(), downstreamPath); // ensure downstream path starts with a slash
@@ -47,27 +47,27 @@ public class MultipleSegmentUrlPathDynamicRouter(
         if (path.Length <= 1)
             return base.GetServiceName(path.ToString());
 
-        int delimiterIndex = FindDelimiter(path);
-        if (delimiterIndex < 0)
+        int index = FindDelimiter(path);
+        if (index < 0)
             return base.GetServiceName(path.ToString());
 
-        ReadOnlySpan<char> service = path[1..delimiterIndex].TrimEnd(Slash);
+        ReadOnlySpan<char> service = path[1..index].TrimEnd(Slash);
         int dot = service.IndexOf(Dot);
         return dot != -1
             ? new(service[(dot + 1)..], service[..dot])
             : new(service);
     }
 
+    private bool IsHeaderManagement => options?.Value?.IsHeaderManagement == true;
+
     protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
         int segments = Segments;
-        if (options?.Value?.IsHeaderManagement == true)
+        if (IsHeaderManagement
+            && Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var headerSegments)
+            && int.TryParse(headerSegments, out int segmentCount) && segmentCount >= 0)
         {
-            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var headerSegments)
-                && int.TryParse(headerSegments, out int headerSegmentCount) && headerSegmentCount >= 0)
-            {
-                segments = headerSegmentCount;
-            }
+            segments = segmentCount;
         }
 
         if (segments > 0)
@@ -81,18 +81,18 @@ public class MultipleSegmentUrlPathDynamicRouter(
             return -1;
         }
 
-        char selectedDelimiter = Delimiter;
-        if (options?.Value?.IsHeaderManagement == true
+        char delimiter = Delimiter;
+        if (IsHeaderManagement
             && Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var header))
         {
             var decoded = Decode(header);
             if (!decoded.IsEmpty && decoded[0] != Slash)
-                selectedDelimiter = decoded[0];
+                delimiter = decoded[0];
         }
 
-        if (selectedDelimiter == Slash)
-            selectedDelimiter = DefaultDelimiter;
-        int index = upstreamUrlPath[1..].IndexOf(selectedDelimiter);
+        if (delimiter == Slash)
+            delimiter = DefaultDelimiter;
+        int index = upstreamUrlPath[1..].IndexOf(delimiter);
         return index < 0 ? -1 : ++index;
     }
 
