@@ -316,7 +316,7 @@ The following shows the customization shape without prescribing the implementati
   public class MyMultipleSegmentRouter(IHttpContextAccessor contextAccessor)
       : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
   {
-      protected override char ServiceNameDelimiter => ':'; // optional delimiter override
+      protected override char Delimiter => ':'; // optional delimiter override
       protected override int? Segments => 2; // optional segment-count override
 
       public override ServiceInfo GetServiceName(string upstreamUrlPath)
@@ -353,7 +353,7 @@ Operation modes
 The router supports two mutually exclusive operation modes:
 
 * **Delimiter mode** locates the service-name boundary by the first selected delimiter character.
-  The default delimiter is ``$``; applications can configure the ``Delimiter`` option or override ``ServiceNameDelimiter``.
+  The default delimiter is ``$``; applications can configure the ``Delimiter`` option or override the protected virtual ``Delimiter`` property.
 * **Segments mode** counts a fixed number of slash-separated path segments after the initial slash and uses the following slash as the boundary.
   Configure the nullable ``Segments`` option with a positive integer, or override the protected virtual ``Segments`` property.
   When neither is configured, the protected property returns ``DefaultSegments`` (``0``), so the router remains in *Delimiter* mode.

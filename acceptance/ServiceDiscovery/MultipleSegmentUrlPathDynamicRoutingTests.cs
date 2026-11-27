@@ -256,7 +256,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     private sealed class HashDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
-        protected override char ServiceNameDelimiter => '#';
+        protected override char Delimiter => '#';
     }
 
     private sealed class TwoSegmentsRouting(

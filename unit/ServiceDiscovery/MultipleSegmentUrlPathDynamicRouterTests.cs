@@ -19,10 +19,10 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     }
 
     [Fact]
-    public void ServiceNameDelimiter_NoOptions()
+    public void Delimiter_NoOptions()
     {
         // Arrange, Act
-        char actual = (char)ServiceNameDelimiter().GetValue(_routing);
+        char actual = (char)DelimiterProperty().GetValue(_routing);
 
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
     }
@@ -36,26 +36,26 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     }
 
     [Fact]
-    public void ServiceNameDelimiter_WithOptions()
+    public void Delimiter_WithOptions()
     {
         // Arrange, Act
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, null);
-        char actual = (char)ServiceNameDelimiter().GetValue(_routing);
+        char actual = (char)DelimiterProperty().GetValue(_routing);
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
         var options = Options.Create((MultipleSegmentUrlPathDynamicRouterOptions)null);
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
-        actual = (char)ServiceNameDelimiter().GetValue(_routing);
+        actual = (char)DelimiterProperty().GetValue(_routing);
         Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter, actual);
 
         // Arrange, Act
         options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions('*'));
         _routing = new MultipleSegmentUrlPathDynamicRouter(contextAccessor.Object, options);
-        actual = (char)ServiceNameDelimiter().GetValue(_routing);
+        actual = (char)DelimiterProperty().GetValue(_routing);
         Assert.Equal('*', actual);
     }
-    private PropertyInfo ServiceNameDelimiter() => _routing.GetType().GetProperty(nameof(ServiceNameDelimiter), BindingFlags.NonPublic | BindingFlags.Instance);
+    private PropertyInfo DelimiterProperty() => _routing.GetType().GetProperty("Delimiter", BindingFlags.NonPublic | BindingFlags.Instance);
     private PropertyInfo SegmentsProperty() => _routing.GetType().GetProperty("Segments", BindingFlags.NonPublic | BindingFlags.Instance);
 
     [Theory]
@@ -119,7 +119,7 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     }
 
     [Fact]
-    public void GetServiceName_UsesConfiguredDelimiterWhenServiceNameDelimiterIsNotOverridden()
+    public void GetServiceName_UsesConfiguredDelimiterWhenDelimiterIsNotOverridden()
     {
         // Arrange
         var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions { Delimiter = '#' });
@@ -428,13 +428,13 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
         IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options = null)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor, options)
     {
-        protected override char ServiceNameDelimiter => '#';
+        protected override char Delimiter => '#';
     }
 
     private sealed class SlashDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
-        protected override char ServiceNameDelimiter => Slash;
+        protected override char Delimiter => Slash;
     }
 
     private sealed class TwoSegmentsRouting(

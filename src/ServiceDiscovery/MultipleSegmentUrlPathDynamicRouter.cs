@@ -22,7 +22,7 @@ public class MultipleSegmentUrlPathDynamicRouter(
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
     public const int DefaultSegments = 0;
-    protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
+    protected virtual char Delimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
     protected virtual int Segments => options?.Value?.Segments ?? DefaultSegments;
 
     protected override string DownstreamPath(string upstreamUrlPath)
@@ -31,11 +31,11 @@ public class MultipleSegmentUrlPathDynamicRouter(
         if (path.Length <= 1)
             return SlashStr;
 
-        int delimiter = FindDelimiter(path);
-        if (delimiter < 0)
+        int delimiterIndex = FindDelimiter(path);
+        if (delimiterIndex < 0)
             return base.DownstreamPath(path.ToString());
 
-        var downstreamPath = path[++delimiter..];
+        var downstreamPath = path[++delimiterIndex..];
         return downstreamPath.Length == 0 || downstreamPath[0] == Slash
             ? downstreamPath.Length == 0 ? SlashStr : downstreamPath.ToString()
             : string.Concat(SlashStr.AsSpan(), downstreamPath); // ensure downstream path starts with a slash
@@ -47,11 +47,11 @@ public class MultipleSegmentUrlPathDynamicRouter(
         if (path.Length <= 1)
             return base.GetServiceName(path.ToString());
 
-        int delimiter = FindDelimiter(path);
-        if (delimiter < 0)
+        int delimiterIndex = FindDelimiter(path);
+        if (delimiterIndex < 0)
             return base.GetServiceName(path.ToString());
 
-        ReadOnlySpan<char> service = path[1..delimiter].TrimEnd(Slash);
+        ReadOnlySpan<char> service = path[1..delimiterIndex].TrimEnd(Slash);
         int dot = service.IndexOf(Dot);
         return dot != -1
             ? new(service[(dot + 1)..], service[..dot])
@@ -81,18 +81,18 @@ public class MultipleSegmentUrlPathDynamicRouter(
             return -1;
         }
 
-        char delimiter = ServiceNameDelimiter;
+        char selectedDelimiter = Delimiter;
         if (options?.Value?.IsHeaderManagement == true
             && Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var header))
         {
             var decoded = Decode(header);
             if (!decoded.IsEmpty && decoded[0] != Slash)
-                delimiter = decoded[0];
+                selectedDelimiter = decoded[0];
         }
 
-        if (delimiter == Slash)
-            delimiter = DefaultDelimiter;
-        int index = upstreamUrlPath[1..].IndexOf(delimiter);
+        if (selectedDelimiter == Slash)
+            selectedDelimiter = DefaultDelimiter;
+        int index = upstreamUrlPath[1..].IndexOf(selectedDelimiter);
         return index < 0 ? -1 : ++index;
     }
 
