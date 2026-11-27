@@ -298,7 +298,7 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     }
 
     [Fact]
-    public void Segments_PrecedenceIsHeaderThenOverrideThenConfiguration()
+    public void OverriddenSegments_TakesPrecedenceOverConfiguredSegments()
     {
         var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(3)
         {
@@ -308,10 +308,20 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
 
         var service = _routing.GetServiceName("/service/api/path");
         Assert.Equal("service/api", service.Name);
+    }
 
+    [Fact]
+    public void SegmentHeader_TakesPrecedenceOverOverriddenSegments()
+    {
+        var options = Options.Create(new MultipleSegmentUrlPathDynamicRouterOptions(3)
+        {
+            IsHeaderManagement = true,
+        });
+        _routing = new TwoSegmentsRouting(contextAccessor.Object, options);
         contextAccessor.Object.HttpContext.Request.Headers[
             MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments] = "1";
-        service = _routing.GetServiceName("/service/api/path");
+
+        var service = _routing.GetServiceName("/service/api/path");
         Assert.Equal("service", service.Name);
     }
 

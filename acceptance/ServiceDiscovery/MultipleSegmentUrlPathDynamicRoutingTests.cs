@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Ocelot.ServiceDiscovery;
 
 namespace Ocelot.Acceptance.ServiceDiscovery;
@@ -202,7 +203,8 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         var configuration = GivenDynamicRouting(new() { { "service/api", serviceUrls } });
         GivenMultipleServiceInstancesAreRunning(serviceUrls, "service/api");
         GivenThereIsAConfiguration(configuration);
-        GivenOcelotIsRunning(services => WithDynamicRouting<TwoSegmentsRouting>(services));
+        GivenOcelotIsRunning(services => WithDynamicRouting<TwoSegmentsRouting>(
+            services, options => options.Segments = 3));
 
         await WhenIGetUrlOnTheApiGateway("/service/api/path");
 
@@ -257,8 +259,10 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         protected override char ServiceNameDelimiter => '#';
     }
 
-    private sealed class TwoSegmentsRouting(IHttpContextAccessor contextAccessor)
-        : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
+    private sealed class TwoSegmentsRouting(
+        IHttpContextAccessor contextAccessor,
+        IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor, options)
     {
         protected override int? Segments => 2;
     }
