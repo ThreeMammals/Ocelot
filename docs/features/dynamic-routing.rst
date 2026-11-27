@@ -291,7 +291,7 @@ Multiple Segment URL Path Router [#f3]_
   | Class: :class:`MultipleSegmentUrlPathDynamicRouter`
 
 The *multiple-segment URL path router* is a dynamic routing type that extracts the service name from multiple segments at the beginning of the upstream path.
-:underline:`It supports service names that contain slashes` (``/``) and must end with a delimiter.
+:underline:`It supports service names that contain slashes` (``/``).
 For example, ``/authorization/api$/path`` resolves ``authorization/api`` as the service name and forwards ``/path`` downstream.
 
 The built-in :class:`MultipleSegmentUrlPathDynamicRouter` class extends :class:`UrlPathDynamicRouter`.
@@ -316,7 +316,8 @@ The following shows the customization shape without prescribing the implementati
   public class MyMultipleSegmentRouter(IHttpContextAccessor contextAccessor)
       : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
   {
-      protected override char ServiceNameDelimiter => ':'; // why not?
+      protected override char ServiceNameDelimiter => ':'; // optional delimiter override
+      protected override int? Segments => 2; // optional segment-count override
 
       public override ServiceInfo GetServiceName(string upstreamUrlPath)
           => base.GetServiceName(upstreamUrlPath); // Wanna be a super star? Just utilize base implementation!
@@ -346,12 +347,46 @@ For example, a ``#`` delimiter should be sent as ``%23`` so that it remains part
 
 .. _MultipleSegmentUrlPathDynamicRouterOptions: https://github.com/ThreeMammals/Ocelot/blob/develop/src/ServiceDiscovery/MultipleSegmentUrlPathDynamicRouter.cs
 
+Operation modes
+^^^^^^^^^^^^^^^
+
+The router supports two mutually exclusive operation modes:
+
+* **Delimiter mode** locates the service-name boundary by the first selected delimiter character.
+  The default delimiter is ``$``; applications can configure the ``Delimiter`` option or override ``ServiceNameDelimiter``.
+* **Segments mode** counts a fixed number of slash-separated path segments after the initial slash and uses the following slash as the boundary.
+  Configure the nullable ``Segments`` option with a positive integer, or override the protected virtual ``Segments`` property.
+
+When header management is enabled, a valid non-negative segment header controls mode selection for the request: a positive value activates *Segments* mode and zero activates *Delimiter* mode.
+Otherwise, an overridden ``Segments`` value takes priority over the configured ``Segments`` value.
+Any positive effective ``Segments`` value activates *Segments* mode and the router ignores both delimiter options and the delimiter management header.
+If the effective value is ``null``, zero, or negative, the router remains in *Delimiter* mode.
+
+For example, this configuration treats ``authorization/api`` as the service name in ``/authorization/api/path`` and forwards ``/path``:
+
+.. code-block:: csharp
+
+  services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(options =>
+  {
+      options.Delimiter = ':'; // ignored while Segments mode is active
+      options.Segments = 2;
+  });
+
+If a positive segment count extends beyond the slash-delimited path segments, or a selected delimiter is not present, the router falls back to the default first-segment routing behavior.
+
+.. note::
+  When header management is enabled, request-time values can temporarily select either mode.
+  In particular, the special zero value for ``Ocelot-DynamicRouting-UrlPath-Segments`` switches a configured *Segments* mode to *Delimiter* mode for that request.
+  See :ref:`dr-management-headers` for the complete fallback rules.
+
+.. _dr-management-headers:
+
 Management headers
 ^^^^^^^^^^^^^^^^^^
   * ``Ocelot-DynamicRouting-UrlPath-Segments``
   * ``Ocelot-DynamicRouting-UrlPath-Delimiter``
 
-Header management is disabled by default: the router ignores management headers and uses its configured or overridden delimiter.
+Header management is disabled by default: the router ignores management headers and uses its configured or overridden operation mode.
 To enable per-request control, set ``IsHeaderManagement`` to ``true``:
 
 .. code-block:: csharp
@@ -373,14 +408,16 @@ To enable per-request control, set ``IsHeaderManagement`` to ``true``:
           options.IsHeaderManagement = true;
       });
 
-When enabled, the following headers take priority over the configured or overridden delimiter:
+When enabled, the following headers take priority over compile-time or overridden values:
 
 * ``Ocelot-DynamicRouting-UrlPath-Segments`` specifies a positive integer: the number of slash-separated path segments belonging to the service name.
   The slash after the last counted segment marks the boundary to the downstream path.
 * ``Ocelot-DynamicRouting-UrlPath-Delimiter`` specifies the delimiter character in the path.
   The header can be percent-encoded; if its decoded value contains more than one character, only the first is used.
 
-The segment count has priority over the delimiter header when both are valid.
+The positive segment count has priority over the delimiter header when both are supplied.
+A positive value selects *Segments* mode, so the delimiter header is ignored.
+The special zero value selects *Delimiter* mode and disables the configured or overridden segment count for that request.
 For example:
 
 .. code-block:: http
@@ -402,11 +439,24 @@ Another request can use a different segment count, or omit it and use the delimi
 This resolves ``authorization/api`` and forwards ``/downstream-path?query``.
 Headers can therefore vary per request when service names cover different numbers of segments.
 
+A request can also switch from configured *Segments* mode to *Delimiter* mode:
+
+.. code-block:: http
+
+  GET /authorization/api%23/downstream-path?query HTTP/1.1
+  Host: ocelot.net
+  Ocelot-DynamicRouting-UrlPath-Segments: 0
+  Ocelot-DynamicRouting-UrlPath-Delimiter: %23
+
+The zero value ignores the configured or overridden segment count, so this request resolves ``authorization/api`` as the service name by using the ``#`` delimiter and forwards ``/downstream-path?query`` downstream.
+
 .. note::
-  If the segment header is missing, non-numeric, outside the integer range, zero, or negative, the router tries the delimiter header.
+  If the segment header is missing, non-numeric, outside the integer range, or negative, the router falls back to its overridden or configured segment count.
+  If that effective value is positive, *Segments* mode remains active and the delimiter header is ignored.
+  A valid zero segment header selects *Delimiter* mode instead and the delimiter header is applied.
   If the delimiter header is missing, empty, or decodes to a value beginning with ``/``, it uses the configured or overridden delimiter instead.
   A configured or overridden ``/`` delimiter is replaced by the default ``$``.
-  If a valid segment count has no corresponding slash in the path, or the selected delimiter is not found, the router falls back to first-segment routing.
+  If a positive segment count has no corresponding slash in the path, or the selected delimiter is not found, the router falls back to first-segment routing.
   When the matching slash or delimiter is at the end of the path, the downstream path is ``/``.
 
 .. caution::

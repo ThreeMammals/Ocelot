@@ -19,7 +19,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData("/namespace.authorization/api$", "authorization/api", "/")]
     [InlineData("/namespace.authorization/api$/path", "authorization/api", "/path")]
     [InlineData("/namespace.authorization/api$/path?query", "authorization/api", "/path?query")]
-    public async Task ShouldUseMultipleUpstreamPathSegmentsToFindService(
+    public async Task DelimiterMode_ShouldUseMultipleUpstreamPathSegmentsToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
@@ -42,7 +42,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [Theory]
     [InlineData("/authorization/api%23", "authorization/api", "/")]
     [InlineData("/authorization/api%23path", "authorization/api", "/path")]
-    public async Task ShouldUseOverriddenCustomDelimiterToFindService(
+    public async Task DelimiterMode_ShouldUseOverriddenCustomDelimiterToFindService(
         string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
@@ -66,7 +66,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData('#', "/authorization/api%23", "authorization/api", "/")]
     [InlineData(':', "/authorization/api%3Apath", "authorization/api", "/path")]
     [InlineData('@', "/authorization/api%40/path?query", "authorization/api", "/path?query")]
-    public async Task ShouldUseEncodedConfiguredCustomDelimiterToFindService(
+    public async Task DelimiterMode_ShouldUseEncodedConfiguredCustomDelimiterToFindService(
         char delimiter, string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
@@ -90,7 +90,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData(':', "/authorization/api:", "authorization/api", "/")]
     [InlineData(':', "/authorization/api:path", "authorization/api", "/path")]
     [InlineData('@', "/authorization/api@/path?query", "authorization/api", "/path?query")]
-    public async Task ShouldUseUnencodedConfiguredCustomDelimiterToFindService(
+    public async Task DelimiterMode_ShouldUseUnencodedConfiguredCustomDelimiterToFindService(
         char delimiter, string upstreamPath, string serviceName, string downstreamPath)
     {
         var port = PortFinder.GetRandomPort();
@@ -123,7 +123,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     [InlineData(true, "%2F", null, "/service/api:path", "service/api", "/path")]
     [InlineData(true, "%2F", null, "/service/api:path?query", "service/api", "/path?query")]
     [InlineData(false, "@", "1", "/service/api:path", "service/api", "/path")]
-    public async Task ShouldApplyManagementHeadersAndFallbacks(
+    public async Task SegmentsMode_ShouldApplyManagementHeadersAndFallbackToDelimiterMode(
         bool isHeaderManagement, string delimiter, string segments, string upstreamPath, string serviceName, string downstreamPath)
     {
         void WithOptions(MultipleSegmentUrlPathDynamicRouterOptions options)
@@ -148,7 +148,7 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
     }
 
     [Fact]
-    public async Task ShouldChangeSegmentCountPerRequest()
+    public async Task SegmentsMode_ShouldChangeSegmentCountPerRequest()
     {
         var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
         var configuration = GivenDynamicRouting(new()
@@ -175,6 +175,71 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         ThenAllServicesShouldHaveBeenCalledTimes(2);
     }
 
+    [Theory]
+    [InlineData(1, "/service/api/path", "service", "/api/path")]
+    [InlineData(2, "/service/api/path", "service/api", "/path")]
+    [InlineData(3, "/service/api/path/downstream", "service/api/path", "/downstream")]
+    public async Task SegmentsMode_ShouldUseConfiguredSegmentCount(
+        int segments, string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
+        var configuration = GivenDynamicRouting(new() { { serviceName, serviceUrls } });
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithSegmentsOptions(services, segments));
+
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
+    [Fact]
+    public async Task SegmentsMode_ShouldUseOverriddenSegmentCount()
+    {
+        var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
+        var configuration = GivenDynamicRouting(new() { { "service/api", serviceUrls } });
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, "service/api");
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDynamicRouting<TwoSegmentsRouting>(services));
+
+        await WhenIGetUrlOnTheApiGateway("/service/api/path");
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, "/path");
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
+    [Theory]
+    [InlineData("0", "@", "/service/api@downstream", "service/api", "/downstream")]
+    [InlineData("2", "@", "/service/api/downstream", "service/api", "/downstream")]
+    [InlineData("-1", "@", "/service/api/path/downstream", "service/api/path", "/downstream")]
+    [InlineData("invalid", "@", "/service/api/path/downstream", "service/api/path", "/downstream")]
+    public async Task SegmentsMode_ShouldApplyHeaderOverridesAndFallbacks(
+        string segments, string delimiter, string upstreamPath, string serviceName, string downstreamPath)
+    {
+        var serviceUrls = new[] { DownstreamUrl(PortFinder.GetRandomPort()) };
+        var configuration = GivenDynamicRouting(new() { { serviceName, serviceUrls } });
+        GivenMultipleServiceInstancesAreRunning(serviceUrls, serviceName);
+        GivenThereIsAConfiguration(configuration);
+        GivenOcelotIsRunning(services => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(
+            services, options =>
+            {
+                options.Delimiter = ':';
+                options.IsHeaderManagement = true;
+                options.Segments = 3;
+            }));
+        GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Segments, segments);
+        GivenIAddAHeader(MultipleSegmentUrlPathDynamicRouter.Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, delimiter);
+
+        await WhenIGetUrlOnTheApiGateway(upstreamPath);
+
+        ThenTheStatusCodeShouldBeOk();
+        ThenTheResponseHeaderIs(HeaderNames.Path, downstreamPath);
+        ThenAllServicesShouldHaveBeenCalledTimes(1);
+    }
+
     private void WithDynamicRouting(IServiceCollection services)
         => WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services);
 
@@ -182,9 +247,19 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services,
                 options => options.Delimiter = delimiter);
 
+    private void WithSegmentsOptions(IServiceCollection services, int segments)
+        => _ = WithDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(services,
+                options => options.Segments = segments);
+
     private sealed class HashDelimiterRouting(IHttpContextAccessor contextAccessor)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
         protected override char ServiceNameDelimiter => '#';
+    }
+
+    private sealed class TwoSegmentsRouting(IHttpContextAccessor contextAccessor)
+        : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
+    {
+        protected override int? Segments => 2;
     }
 }

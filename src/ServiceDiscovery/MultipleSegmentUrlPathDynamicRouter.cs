@@ -22,6 +22,7 @@ public class MultipleSegmentUrlPathDynamicRouter(
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
     protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
+    protected virtual int? Segments => null;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -58,27 +59,34 @@ public class MultipleSegmentUrlPathDynamicRouter(
 
     protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
-        char delimiter = ServiceNameDelimiter;
+        int? segments = Segments ?? options?.Value?.Segments;
         if (options?.Value?.IsHeaderManagement == true)
         {
-            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var segments)
-                && int.TryParse(segments, out int segmentCount) && segmentCount > 0)
+            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var headerSegments)
+                && int.TryParse(headerSegments, out int headerSegmentCount) && headerSegmentCount >= 0)
             {
-                int count = 0;
-                for (int pos = 1; pos < upstreamUrlPath.Length; pos++)
-                {
-                    if (upstreamUrlPath[pos] == Slash && ++count == segmentCount)
-                        return pos;
-                }
-                return -1;
+                segments = headerSegmentCount;
             }
+        }
 
-            if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var header))
+        if (segments > 0)
+        {
+            int count = 0;
+            for (int pos = 1; pos < upstreamUrlPath.Length; pos++)
             {
-                var decoded = Decode(header);
-                if (!decoded.IsEmpty && decoded[0] != Slash)
-                    delimiter = decoded[0];
+                if (upstreamUrlPath[pos] == Slash && ++count == segments)
+                    return pos;
             }
+            return -1;
+        }
+
+        char delimiter = ServiceNameDelimiter;
+        if (options?.Value?.IsHeaderManagement == true
+            && Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Delimiter, out var header))
+        {
+            var decoded = Decode(header);
+            if (!decoded.IsEmpty && decoded[0] != Slash)
+                delimiter = decoded[0];
         }
 
         if (delimiter == Slash)
@@ -108,6 +116,9 @@ public class MultipleSegmentUrlPathDynamicRouterOptions
     public MultipleSegmentUrlPathDynamicRouterOptions(bool isHeaderManagement)
         => IsHeaderManagement = isHeaderManagement;
 
+    public MultipleSegmentUrlPathDynamicRouterOptions(int segments)
+        => Segments = segments;
+
     public MultipleSegmentUrlPathDynamicRouterOptions(char delimiter, bool isHeaderManagement)
     {
         Delimiter = delimiter;
@@ -116,4 +127,5 @@ public class MultipleSegmentUrlPathDynamicRouterOptions
 
     public char Delimiter { get; set; } = MultipleSegmentUrlPathDynamicRouter.DefaultDelimiter;
     public bool IsHeaderManagement { get; set; } = false;
+    public int? Segments { get; set; }
 }
