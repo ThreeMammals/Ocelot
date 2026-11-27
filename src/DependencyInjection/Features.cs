@@ -49,6 +49,7 @@ public static class Features
         return services
             .AddSingleton<IClaimsAuthorizer, ClaimsAuthorizer>()
             .AddSingleton<IScopesAuthorizer, ScopesAuthorizer>()
+            .AddSingleton<IRolesAuthorizer, RolesAuthorizer>()
             .AddSingleton<IPostConfigureOptions<FileConfiguration>>(new RouteClaimsRequirementPostConfigureOptions(configuration));
     }
 

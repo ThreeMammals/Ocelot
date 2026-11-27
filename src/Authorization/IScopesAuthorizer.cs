@@ -17,7 +17,7 @@ public interface IScopesAuthorizer
     /// <param name="claimsPrincipal">Claims object from the current authentication provider's token.</param>
     /// <param name="routeAllowedScopes">List of allowed scopes for the route.</param>
     /// <returns><see langword="true"/> if any token scope claim value is in the allowed scopes; otherwise, <see langword="false"/>.</returns>
-    Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes);
+    Response<bool> Authorize(ClaimsPrincipal claimsPrincipal, List<string> routeAllowedScopes, string scopeKey);
 
     /// <summary>Gets the claim type for <c>scope</c>.</summary>
     /// <value>A <see cref="string"/> representing the <c>scope</c>.</value>
