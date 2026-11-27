@@ -7,7 +7,7 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Authentication;
 
-public sealed class AuthenticationMiddleware : OcelotMiddleware
+public class AuthenticationMiddleware : OcelotMiddleware
 {
     private readonly RequestDelegate _next;
 
@@ -35,6 +35,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         var result = await AuthenticateAsync(context, route);
         if (result.Principal?.Identity == null)
         {
+            await ChallengeAsync(context, route, result);
             SetUnauthenticatedError(context, path, null);
             return;
         }
@@ -47,6 +48,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
             return;
         }
 
+        await ChallengeAsync(context, route, result);
         SetUnauthenticatedError(context, path, context.User.Identity.Name);
     }
 
@@ -58,7 +60,7 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         httpContext.Items.SetError(error);
     }
 
-    private async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)
+    protected virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, DownstreamRoute route)
     {
         var notEmptySchemes = route.AuthenticationOptions.AuthenticationProviderKeys
             .Where(s => !string.IsNullOrWhiteSpace(s));
@@ -81,5 +83,17 @@ public sealed class AuthenticationMiddleware : OcelotMiddleware
         }
 
         return result ?? AuthenticateResult.NoResult();
+    }
+
+    protected virtual async Task ChallengeAsync(HttpContext context, DownstreamRoute route, AuthenticateResult status)
+    {
+        // Perform a challenge. This populates the WWW-Authenticate header on the response
+        await context.ChallengeAsync(route.AuthenticationOptions.AuthenticationProviderKeys[0]); // TODO Read failed scheme from auth result
+
+        // Since the response gets re-created down the pipeline, we store the challenge in the Items, so we can re-apply it when sending the response
+        if (context.Response.Headers.TryGetValue("WWW-Authenticate", out var authenticateHeader))
+        {
+            context.Items.SetAuthChallenge(authenticateHeader);
+        }
     }
 }
