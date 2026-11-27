@@ -21,8 +21,9 @@ public class MultipleSegmentUrlPathDynamicRouter(
 
     public const char Percent = '%';
     public const char DefaultDelimiter = '$';
+    public const int DefaultSegments = 0;
     protected virtual char ServiceNameDelimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
-    protected virtual int? Segments => options?.Value?.Segments;
+    protected virtual int Segments => options?.Value?.Segments ?? DefaultSegments;
 
     protected override string DownstreamPath(string upstreamUrlPath)
     {
@@ -59,7 +60,7 @@ public class MultipleSegmentUrlPathDynamicRouter(
 
     protected virtual int FindDelimiter(ReadOnlySpan<char> upstreamUrlPath)
     {
-        int? segments = Segments;
+        int segments = Segments;
         if (options?.Value?.IsHeaderManagement == true)
         {
             if (Request.Headers.TryGetValue(Headers.Ocelot_DynamicRouting_UrlPath_Segments, out var headerSegments)

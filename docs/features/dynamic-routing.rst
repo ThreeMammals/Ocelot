@@ -356,6 +356,7 @@ The router supports two mutually exclusive operation modes:
   The default delimiter is ``$``; applications can configure the ``Delimiter`` option or override ``ServiceNameDelimiter``.
 * **Segments mode** counts a fixed number of slash-separated path segments after the initial slash and uses the following slash as the boundary.
   Configure the nullable ``Segments`` option with a positive integer, or override the protected virtual ``Segments`` property.
+  When neither is configured, the protected property returns ``DefaultSegments`` (``0``), so the router remains in *Delimiter* mode.
 
 When header management is enabled, a valid non-negative segment header controls mode selection for the request: a positive value activates *Segments* mode and zero activates *Delimiter* mode.
 Otherwise, an overridden ``Segments`` value takes priority over the configured ``Segments`` value.

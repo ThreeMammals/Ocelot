@@ -28,11 +28,11 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
     }
 
     [Fact]
-    public void Segments_IsNullByDefault()
+    public void Segments_IsZeroByDefault()
     {
         var actual = SegmentsProperty().GetValue(_routing);
 
-        Assert.Null(actual);
+        Assert.Equal(MultipleSegmentUrlPathDynamicRouter.DefaultSegments, actual);
     }
 
     [Fact]
@@ -442,7 +442,7 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
         IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor, options)
     {
-        protected override int? Segments => 2;
+        protected override int Segments => 2;
     }
 
     private sealed class TestableMultipleSegmentsRouting(IHttpContextAccessor contextAccessor)

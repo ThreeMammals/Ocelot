@@ -264,6 +264,6 @@ public sealed class MultipleSegmentUrlPathDynamicRoutingTests : DynamicSteps
         IOptions<MultipleSegmentUrlPathDynamicRouterOptions> options)
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor, options)
     {
-        protected override int? Segments => 2;
+        protected override int Segments => 2;
     }
 }
