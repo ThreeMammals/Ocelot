@@ -41,8 +41,7 @@ public class ServiceCollectionExtensionsTests : UnitTest
     public void AddOcelotDynamicRouting_RegistersConfiguredOptions()
     {
         // Arrange
-        var services = new ServiceCollection()
-            .AddHttpContextAccessor();
+        var services = new ServiceCollection().AddHttpContextAccessor();
 
         // Act
         services.AddOcelotDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(
@@ -50,7 +49,9 @@ public class ServiceCollectionExtensionsTests : UnitTest
 
         // Assert
         var routing = services.BuildServiceProvider().GetRequiredService<IDynamicRouting>();
-        var actual = routing.GetServiceName("/authorization/api#details");
+        var urlPathRouting = routing as IUrlPathDynamicRouting;
+        Assert.NotNull(urlPathRouting);
+        var actual = urlPathRouting.GetServiceName("/authorization/api#details");
         Assert.Equal("authorization/api", actual.Name);
         Assert.Equal('#', services.BuildServiceProvider()
             .GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRouterOptions>>()

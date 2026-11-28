@@ -493,6 +493,6 @@ public class MultipleSegmentUrlPathDynamicRouterTests : UnitTest
         : MultipleSegmentUrlPathDynamicRouter(contextAccessor)
     {
         public string GetDownstreamPathForTest(string upstreamUrlPath)
-            => DownstreamPath(upstreamUrlPath);
+            => GetDownstreamPath(upstreamUrlPath);
     }
 }

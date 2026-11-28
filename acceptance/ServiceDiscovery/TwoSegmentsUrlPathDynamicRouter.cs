@@ -9,7 +9,7 @@ public class TwoSegmentsUrlPathDynamicRouter(IHttpContextAccessor contextAccesso
     public Func<string, string, string> ServiceNameMapping { get; set; }
         = (serviceName, version) => $"{serviceName}.service.{version}";
 
-    protected override string DownstreamPath(string upstreamUrlPath)
+    public override string GetDownstreamPath(string upstreamUrlPath)
     {
         var path = upstreamUrlPath.AsSpan();
         var firstSegment = path[1..].IndexOf(Slash);

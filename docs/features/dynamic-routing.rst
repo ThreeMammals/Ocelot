@@ -274,7 +274,7 @@ The following is only the customization shape; the routing implementation is app
   public class MyUrlPathDynamicRouter(IHttpContextAccessor contextAccessor)
       : UrlPathDynamicRouter(contextAccessor)
   {
-      protected override string DownstreamPath(string upstreamUrlPath)
+      public override string GetDownstreamPath(string upstreamUrlPath)
           => "implement me!" // Return the path after the custom service-name segments
 
       public override ServiceInfo GetServiceName(string upstreamUrlPath)
@@ -322,8 +322,8 @@ The following shows the customization shape without prescribing the implementati
       public override ServiceInfo GetServiceName(string upstreamUrlPath)
           => base.GetServiceName(upstreamUrlPath); // Wanna be a super star? Just utilize base implementation!
 
-      protected override string DownstreamPath(string upstreamUrlPath)
-          => base.DownstreamPath(upstreamUrlPath); // Don't hack this software! Just utilize base implementation!
+      public override string GetDownstreamPath(string upstreamUrlPath)
+          => base.GetDownstreamPath(upstreamUrlPath); // Don't hack this software! Just utilize base implementation!
   }
 
 .. note::

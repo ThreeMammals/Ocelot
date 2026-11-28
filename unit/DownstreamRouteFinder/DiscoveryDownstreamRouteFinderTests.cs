@@ -28,7 +28,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     private IHeaderDictionary _upstreamHeaders;
     private IInternalConfiguration _configuration;
     private readonly Mock<IUpstreamHeaderTemplatePatternCreator> _headerTemplatePatternCreator = new();
-    private readonly Mock<IDynamicRouting> _dynamicRouting = new();
+    private readonly Mock<IUrlPathDynamicRouting> _dynamicRouting = new();
     private readonly HttpHandlerOptions _handlerOptions;
     private readonly MetadataOptions _metadataOptions;
     private readonly RateLimitOptions _rateLimitOptions;
@@ -305,8 +305,9 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
     public void GetServiceName_ReturnsServiceFromCurrentRequest()
     {
         // Arrange
-        var expected = new ServiceInfo("orders", "catalog");
+        var expected = new ServiceInfo(TestName(), GetType().Name);
         _dynamicRouting.Setup(x => x.GetServiceName()).Returns(expected);
+        _dynamicRouting.Setup(x => x.GetServiceName(It.IsAny<string>())).Returns(expected);
 
         // Act
         var actual = GetServiceName("/ignored");
@@ -314,7 +315,8 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         // Assert
         Assert.Equal(expected.Name, actual.Name);
         Assert.Equal(expected.Namespace, actual.Namespace);
-        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Never);
+        _dynamicRouting.Verify(x => x.GetServiceName(), Times.Never);
+        _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Once);
     }
 
     [Fact]

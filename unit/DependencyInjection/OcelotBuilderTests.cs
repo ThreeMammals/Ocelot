@@ -214,8 +214,9 @@ public class OcelotBuilderTests : UnitTest
         _serviceProvider = _services.BuildServiceProvider(true);
 
         // Assert
-        var actual = _serviceProvider.GetRequiredService<IDynamicRouting>()
-            .GetServiceName("/authorization/api#details");
+        var router = _serviceProvider.GetRequiredService<IDynamicRouting>() as IUrlPathDynamicRouting;
+        Assert.NotNull(router);
+        var actual = router.GetServiceName("/authorization/api#details");
         Assert.Equal("authorization/api", actual.Name);
         Assert.Equal('#', _serviceProvider
             .GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRouterOptions>>()

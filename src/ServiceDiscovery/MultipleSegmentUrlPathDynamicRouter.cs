@@ -25,7 +25,7 @@ public class MultipleSegmentUrlPathDynamicRouter(
     protected virtual char Delimiter => options?.Value?.Delimiter ?? DefaultDelimiter;
     protected virtual int Segments => options?.Value?.Segments ?? DefaultSegments;
 
-    protected override string DownstreamPath(string upstreamUrlPath)
+    public override string GetDownstreamPath(string upstreamUrlPath)
     {
         ReadOnlySpan<char> path = Decode(upstreamUrlPath);
         if (path.Length <= 1)
@@ -33,7 +33,7 @@ public class MultipleSegmentUrlPathDynamicRouter(
 
         int index = FindDelimiter(path);
         if (index < 0)
-            return base.DownstreamPath(path.ToString());
+            return base.GetDownstreamPath(path.ToString());
 
         var downstreamPath = path[++index..];
         return downstreamPath.Length == 0 || downstreamPath[0] == Slash

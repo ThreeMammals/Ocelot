@@ -139,12 +139,10 @@ public class DiscoveryDownstreamRouteFinder : IDownstreamRouteProvider
     /// <returns>A <see cref="ServiceInfo"/> value.</returns>
     protected virtual ServiceInfo GetServiceName(PathString upstreamUrlPath)
     {
-        var service = _routing.GetServiceName();
-        if (service.Name.IsNotEmpty())
-            return service;
+        if (_routing is IUrlPathDynamicRouting routing)
+            return routing.GetServiceName(upstreamUrlPath);
 
-        service = _routing.GetServiceName(upstreamUrlPath);
-        return service;
+        return _routing.GetServiceName();
     }
 
     protected virtual HostString UpstreamHost(HttpRequest request) => request.Host;

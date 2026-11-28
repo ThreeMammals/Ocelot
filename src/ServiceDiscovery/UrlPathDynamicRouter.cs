@@ -11,7 +11,7 @@ namespace Ocelot.ServiceDiscovery;
 /// <para>Example: the <c>http://ocelot.net/namespace.service-name/path</c> URL.</para>
 /// </remarks>
 /// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
-public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IDynamicRouting
+public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IUrlPathDynamicRouting
 {
     public const char Dot = '.';
     public const char Slash = '/';
@@ -22,7 +22,7 @@ public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IDynam
     public HttpRequest Request => _contextAccessor.HttpContext.Request;
 
     public virtual string GetDownstreamPath()
-        => DownstreamPath(Request.Path);
+        => GetDownstreamPath(Request.Path);
 
     /// <summary>
     /// Gets the downstream path part of the URL without the service name.
@@ -31,9 +31,9 @@ public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IDynam
     /// <param name="request">The request URL with the service name in the first segment.</param>
     /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
     public virtual string GetDownstreamPath(HttpRequest request)
-        => DownstreamPath(request.Path);
+        => GetDownstreamPath(request.Path);
 
-    protected virtual string DownstreamPath(string upstreamUrlPath)
+    public virtual string GetDownstreamPath(string upstreamUrlPath)
     {
         int index = upstreamUrlPath.IndexOf(Slash, 1);
         return index != -1
@@ -61,9 +61,9 @@ public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IDynam
     }
 
     public virtual object SetServiceName(object state, ServiceInfo service)
-        => SetServiceName(state.ToString(), service.Name, service.Namespace);
+        => CreateUpstreamPath(state.ToString(), service.Name, service.Namespace);
 
-    protected virtual string SetServiceName(string path, string serviceName, string serviceNamespace = null)
+    protected virtual string CreateUpstreamPath(string path, string serviceName, string serviceNamespace = null)
         => UpstreamPath(path, serviceName, serviceNamespace);
 
     /// <summary>
