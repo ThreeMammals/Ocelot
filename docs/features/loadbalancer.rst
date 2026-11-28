@@ -118,7 +118,7 @@ You can configure the following options in the ``GlobalConfiguration`` section o
     }
   }
 
-:doc:`../features/servicediscovery` dynamic routes intentionally override the global :ref:`dynamic routing <sd-dynamic-routing>` configuration:
+:doc:`../features/dynamic-routing` dynamic routes intentionally override the global :doc:`../features/dynamic-routing` configuration:
 
 .. code-block:: json
   :emphasize-lines: 5-7, 16-19
@@ -153,7 +153,7 @@ However, for the "my-service" service, the load balancer type has been explicitl
   If the array contains route keys, it defines a single group of routes to which the global options apply.
   Routes excluded from this group must specify their own route-level ``LoadBalancerOptions``.
 
-  2. Prior to version `24.1`_, global ``LoadBalancerOptions`` were only accessible in the special :ref:`Dynamic Routing <routing-dynamic>` mode.
+  2. Prior to version `24.1`_, global ``LoadBalancerOptions`` were only accessible in the special :doc:`../features/dynamic-routing` mode.
   Since version `24.1`_, global configuration has been available for both static and dynamic routes.
   As a team, we would consider the idea of implementing such a global configuration for aggregated routes.
   However, an aggregated route is essentially a combination of static routes.

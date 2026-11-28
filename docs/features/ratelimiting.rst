@@ -183,7 +183,7 @@ Notes
 
 .. note::
 
-  1. Prior to version `24.1`_, global options were only accessible in the special :ref:`Dynamic Routing <routing-dynamic>` mode.
+  1. Prior to version `24.1`_, global options were only accessible in the special :doc:`../features/dynamic-routing` mode.
   Since version `24.1`_, global configuration has been available for both static and dynamic routes.
   As a team, we would consider the idea of implementing such a global configuration for aggregated routes.
   However, an aggregated route is essentially a combination of static routes.

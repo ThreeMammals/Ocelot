@@ -29,6 +29,7 @@ using Ocelot.Multiplexer;
 using Ocelot.QualityOfService;
 using Ocelot.Requester;
 using Ocelot.Responses;
+using Ocelot.ServiceDiscovery;
 using Ocelot.ServiceDiscovery.Providers;
 using Ocelot.UnitTests.Multiplexer;
 using Ocelot.UnitTests.Requester;
@@ -186,6 +187,60 @@ public class OcelotBuilderTests : UnitTest
     }
 
     [Fact]
+    [Trait("PR", "1198")]
+    public void AddDynamicRouting_RegistersCustomImplementation()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDynamicRouting<FakeDynamicRouting>();
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        Assert.IsType<FakeDynamicRouting>(_serviceProvider.GetRequiredService<IDynamicRouting>());
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public void AddDynamicRouting_RegistersConfiguredOptions()
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(
+            options => options.Delimiter = '#');
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        var router = _serviceProvider.GetRequiredService<IDynamicRouting>() as IUrlPathDynamicRouting;
+        Assert.NotNull(router);
+        var actual = router.GetServiceName("/authorization/api#details");
+        Assert.Equal("authorization/api", actual.Name);
+        Assert.Equal('#', _serviceProvider
+            .GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRouterOptions>>()
+            .Value.Delimiter);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddDynamicRouting_ConfiguresHeaderManagement(bool isHeaderManagement)
+    {
+        // Arrange
+        _ocelotBuilder = _services.AddOcelot(_configRoot);
+
+        // Act
+        _ocelotBuilder.AddDynamicRouting<MultipleSegmentUrlPathDynamicRouter>(isHeaderManagement);
+        _serviceProvider = _services.BuildServiceProvider(true);
+
+        // Assert
+        Assert.IsType<MultipleSegmentUrlPathDynamicRouter>(_serviceProvider.GetRequiredService<IDynamicRouting>());
+        Assert.Equal(isHeaderManagement, _serviceProvider.GetRequiredService<IOptions<MultipleSegmentUrlPathDynamicRouterOptions>>().Value.IsHeaderManagement);
+    }
+
+    [Fact]
     public void Should_add_singleton_defined_aggregators()
     {
         // Arrange
@@ -204,6 +259,15 @@ public class OcelotBuilderTests : UnitTest
         aggregators = _serviceProvider.GetServices<IDefinedAggregator>().ToList();
         var second = aggregators[0];
         first.ShouldBe(second);
+    }
+
+    private sealed class FakeDynamicRouting : IDynamicRouting
+    {
+        public HttpRequest Request => null;
+        public string GetDownstreamPath() => string.Empty;
+        public ServiceInfo GetServiceName() => new(string.Empty);
+        public ServiceInfo GetServiceName(string upstreamUrlPath) => new(string.Empty);
+        public object SetServiceName(object state, ServiceInfo service) => state;
     }
 
     [Fact]

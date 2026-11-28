@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamPathManipulation.Middleware;
+using Ocelot.DownstreamPathManipulation;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
-using Ocelot.PathManipulation;
 using Ocelot.Request.Middleware;
 using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 using Ocelot.Values;
 using System.Security.Claims;
 
@@ -23,6 +24,7 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
     private readonly ClaimsToDownstreamPathMiddleware _middleware;
     private readonly RequestDelegate _next;
     private readonly DefaultHttpContext _httpContext;
+    private bool _nextCalled;
 
     public ClaimsToDownstreamPathMiddlewareTests()
     {
@@ -30,7 +32,11 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
         _loggerFactory = new Mock<IOcelotLoggerFactory>();
         _logger = new Mock<IOcelotLogger>();
         _loggerFactory.Setup(x => x.CreateLogger<ClaimsToDownstreamPathMiddleware>()).Returns(_logger.Object);
-        _next = context => Task.CompletedTask;
+        _next = context =>
+        {
+            _nextCalled = true;
+            return Task.CompletedTask;
+        };
         _changePath = new Mock<IChangeDownstreamPathTemplate>();
         _httpContext.Items.UpsertDownstreamRequest(new DownstreamRequest(new HttpRequestMessage(HttpMethod.Get, "http://test.com")));
         _middleware = new ClaimsToDownstreamPathMiddleware(_next, _loggerFactory.Object, _changePath.Object);
@@ -71,5 +77,51 @@ public class ClaimsToDownstreamPathMiddlewareTests : UnitTest
                 It.IsAny<IEnumerable<Claim>>(),
                 _httpContext.Items.DownstreamRoute().DownstreamPathTemplate,
                 _httpContext.Items.TemplatePlaceholderNameAndValues()), Times.Once);
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public async Task Should_call_next_when_route_has_no_claims_to_path()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/api")
+            .WithUpstreamHttpMethod(["Get"])
+            .Build();
+        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.True(_nextCalled);
+        _changePath.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    [Trait("PR", "1198")]
+    public async Task Should_store_errors_when_claim_path_change_fails()
+    {
+        // Arrange
+        var downstreamRoute = new DownstreamRouteBuilder()
+            .WithDownstreamPathTemplate("/api")
+            .WithClaimsToDownstreamPath([new("UserId", "Subject", string.Empty, 0)])
+            .WithUpstreamHttpMethod(["Get"])
+            .Build();
+        _httpContext.Items.UpsertDownstreamRoute(downstreamRoute);
+        _changePath
+            .Setup(x => x.ChangeDownstreamPath(
+                It.IsAny<List<ClaimToThing>>(),
+                It.IsAny<IEnumerable<Claim>>(),
+                It.IsAny<DownstreamPathTemplate>(),
+                It.IsAny<List<PlaceholderNameAndValue>>()))
+            .Returns(new ErrorResponse(new AnyError()));
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.False(_nextCalled);
+        Assert.NotEmpty(_httpContext.Items.Errors());
     }
 }

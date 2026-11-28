@@ -433,7 +433,7 @@ Please **note**:
 * [#f7]_ *Security Options* can be configured *globally* in the ``GlobalConfiguration`` JSON. However, they are ignored if overriding options are specified at the route level.
 
 .. warning::
-  1. The *Security Options* feature is designed for :ref:`static routes <config-route-schema>` only, and it is not supported in :ref:`Dynamic Routing <routing-dynamic>` mode.
+  1. The *Security Options* feature is designed for :ref:`static routes <config-route-schema>` only, and it is not supported in :doc:`../features/dynamic-routing` mode.
   2. :doc:`../features/websockets` support and its ``ws`` scheme have been available since version `25.0`_.
      IP allowed/blocked lists are enforced on *WebSocket* upgrade requests (also known as `CONNECT method <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/CONNECT>`_).
 
@@ -443,7 +443,7 @@ Dynamic Routing [#f8]_
 ----------------------
 
 The concept of dynamic *routing* allows you to use a :doc:`../features/servicediscovery` provider, eliminating the need to manually configure *route* settings.
-For more details, refer to the :ref:`Dynamic Routing <sd-dynamic-routing>` complete reference in the ":doc:`../features/servicediscovery`" chapter.
+For more details, refer to the :doc:`../features/dynamic-routing` complete reference.
 
 Errors and Gotchas
 ------------------
@@ -495,9 +495,9 @@ If your case is not included, feel free to open a "`Show and tell`_" discussion.
 .. [#f6] The ":ref:`Security Options <routing-security-options>`" feature was requested in issue `628`_ (version `12.0.1`_), documented in version `20.0`_, and redesigned in issue `1400`_ (version `23.4.1`_).
   :doc:`../features/websockets` support, requested via bug `2403`_ (pull request `2406`_), was released in version `25.0`_.
 .. [#f7] The global ":ref:`Security Options <routing-security-options>`" feature was requested in issue `2165`_ and released in version `23.4.1`_.
-  However, this feature is only available for :ref:`static routes <config-route-schema>` and is not supported by :ref:`dynamic routing <routing-dynamic>` (refer to the :ref:`schema <config-dynamic-route-schema>`).
-.. [#f8] The ":ref:`Dynamic Routing <routing-dynamic>`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
-  Refer to complete reference in the ":doc:`../features/servicediscovery`" chapter: :ref:`Dynamic Routing <sd-dynamic-routing>`.
+  However, this feature is only available for :ref:`static routes <config-route-schema>` and is not supported by :doc:`../features/dynamic-routing` (refer to the :ref:`schema <config-dynamic-route-schema>`).
+.. [#f8] The ":doc:`../features/dynamic-routing`" feature was requested as part of issue `340`_, and released in version `7.0.1`_.
+  Refer to the complete reference in the :doc:`../features/dynamic-routing` chapter.
 
 .. _model binding: https://learn.microsoft.com/en-us/aspnet/core/mvc/models/model-binding?view=aspnetcore-8.0#collections
 .. _Bind arrays and string values from headers and query strings: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-8.0#bind-arrays-and-string-values-from-headers-and-query-strings

@@ -1,0 +1,84 @@
+﻿using Microsoft.AspNetCore.Http;
+using Ocelot.Infrastructure.Extensions;
+
+namespace Ocelot.ServiceDiscovery;
+
+/// <summary>
+/// Default dynamic routing utilities based on the "URL path first segment" as a service name.
+/// </summary>
+/// <remarks>It supports service namespaces as a prefix to a dot character that delimits the namespace from the service name.<br/>
+/// The namespace value <b>must not</b> contain dots at all; thus, only the service name is allowed to have dots in its value.
+/// <para>Example: the <c>http://ocelot.net/namespace.service-name/path</c> URL.</para>
+/// </remarks>
+/// <param name="contextAccessor">The current <see cref="HttpContext"/> to access.</param>
+public class UrlPathDynamicRouter(IHttpContextAccessor contextAccessor) : IUrlPathDynamicRouting
+{
+    public const char Dot = '.';
+    public const char Slash = '/';
+    public const string SlashStr = "/";
+
+    private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
+
+    public HttpRequest Request => _contextAccessor.HttpContext.Request;
+
+    public virtual string GetDownstreamPath()
+        => GetDownstreamPath(Request.Path);
+
+    /// <summary>
+    /// Gets the downstream path part of the URL without the service name.
+    /// Thus, the first segment of the upstream URL is removed.
+    /// </summary>
+    /// <param name="request">The request URL with the service name in the first segment.</param>
+    /// <returns>A <see cref="string"/> object containing the downstream path.</returns>
+    public virtual string GetDownstreamPath(HttpRequest request)
+        => GetDownstreamPath(request.Path);
+
+    public virtual string GetDownstreamPath(string upstreamUrlPath)
+    {
+        int index = upstreamUrlPath.IndexOf(Slash, 1);
+        return index != -1
+            ? upstreamUrlPath[index..]
+            : SlashStr;
+    }
+
+    public virtual ServiceInfo GetServiceName()
+        => GetServiceName(Request.Path);
+
+    public virtual ServiceInfo GetServiceName(string upstreamUrlPath)
+    {
+        ReadOnlySpan<char> path = upstreamUrlPath.IsNotEmpty()
+            ? upstreamUrlPath.AsSpan()
+            : [Slash];
+        int index = path[1..].IndexOf(Slash);
+        ReadOnlySpan<char> name = index == -1
+            ? path[1..]
+            : path.Slice(1, index).TrimEnd(Slash);
+
+        index = name.IndexOf(Dot);
+        return (index != -1)
+            ? new(name[++index..], name[..--index])
+            : new(name); // service namespace -> string.Empty
+    }
+
+    public virtual object SetServiceName(object state, ServiceInfo service)
+        => CreateUpstreamPath(state.ToString(), service.Name, service.Namespace);
+
+    protected virtual string CreateUpstreamPath(string path, string serviceName, string serviceNamespace = null)
+        => UpstreamPath(path, serviceName, serviceNamespace);
+
+    /// <summary>
+    /// Creates Dynamic Routing upstream path.
+    /// </summary>
+    public static string UpstreamPath(string path, string serviceName, string serviceNamespace = null)
+    {
+        path ??= string.Empty;
+        // var pth = path.TrimStart(Slash); // Skip TrimStart allocation when not needed
+        ReadOnlySpan<char> pth = path.AsSpan();
+        if (pth.Length > 0 && pth[0] == Slash)
+            pth = pth[1..];
+
+        return serviceNamespace.IsEmpty()
+            ? string.Concat(SlashStr, serviceName, SlashStr, pth)
+            : string.Concat(SlashStr, serviceNamespace, Dot, serviceName, SlashStr, pth.ToString());
+    }
+}

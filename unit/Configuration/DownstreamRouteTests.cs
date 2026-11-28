@@ -12,7 +12,7 @@ public class DownstreamRouteTests
         // Arrange
         var route = new DownstreamRouteBuilder()
             .WithUpstreamPathTemplate(null)
-            .WithDownstreamPathTemplate(null)
+            .WithDownstreamPathTemplate(string.Empty)
             .Build();
 
         // Act

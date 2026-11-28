@@ -3,9 +3,11 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.Finder;
+using Ocelot.Errors;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using Ocelot.Responses;
+using Ocelot.UnitTests.Responder;
 
 namespace Ocelot.UnitTests.DownstreamRouteFinder;
 
@@ -13,7 +15,7 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
 {
     private readonly Mock<IDownstreamRouteProvider> _finder;
     private readonly Mock<IDownstreamRouteProviderFactory> _factory;
-    private Response<Route> _route;
+    private Route _route;
     private IInternalConfiguration _config;
     private readonly Mock<IOcelotLoggerFactory> _loggerFactory;
     private readonly Mock<IOcelotLogger> _logger;
@@ -53,6 +55,44 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
         ThenTheScopedDataRepositoryIsCalledCorrectly();
     }
 
+    [Fact]
+    [Trait("PR", "1198")]
+    public async Task Should_store_errors_when_route_cannot_be_found()
+    {
+        // Arrange
+        var errors = new List<Error> { new AnyError() };
+        GivenTheFollowingConfig(new InternalConfiguration());
+        _finder
+            .Setup(x => x.Get(It.IsAny<HttpRequest>(), out It.Ref<IEnumerable<Error>>.IsAny))
+            .Returns(new GetCallback((HttpRequest request, out IEnumerable<Error> returnedErrors) =>
+            {
+                returnedErrors = errors;
+                return null;
+            }));
+
+        // Act
+        await _middleware.Invoke(_httpContext);
+
+        // Assert
+        Assert.Equal(errors, _httpContext.Items.Errors());
+    }
+
+    [Theory]
+    [Trait("PR", "1198")]
+    [InlineData("localhost", "localhost")]
+    [InlineData("localhost:5000", "localhost")]
+    public void UpstreamHost_ReturnsHostNameWithoutPort(string host, string expected)
+    {
+        // Arrange
+        _httpContext.Request.Headers.Host = host;
+
+        // Act
+        var actual = DownstreamRouteFinderMiddleware.UpstreamHost(_httpContext.Request);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     private void GivenTheFollowingConfig(IInternalConfiguration config)
     {
         _config = config;
@@ -61,15 +101,20 @@ public class DownstreamRouteFinderMiddlewareTests : UnitTest
 
     private void GivenTheDownStreamRouteFinderReturns(Route route)
     {
-        _route = new OkResponse<Route>(route);
+        _route = route;
         _finder
-            .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IInternalConfiguration>(), It.IsAny<string>(), It.IsAny<IHeaderDictionary>()))
-            .Returns(_route);
+            .Setup(x => x.Get(It.IsAny<HttpRequest>(), out It.Ref<IEnumerable<Error>>.IsAny))
+            .Returns(new GetCallback((HttpRequest request, out IEnumerable<Error> errors) =>
+            {
+                errors = [];
+                return _route;
+            }));
     }
+    delegate Route GetCallback(HttpRequest request, out IEnumerable<Error> errors);
 
     private void ThenTheScopedDataRepositoryIsCalledCorrectly()
     {
-        _httpContext.Items.TemplatePlaceholderNameAndValues().ShouldBe(_route.Data.TemplatePlaceholderNameAndValues);
+        _httpContext.Items.TemplatePlaceholderNameAndValues().ShouldBe(_route.TemplatePlaceholderNameAndValues);
         _httpContext.Items.IInternalConfiguration().ServiceProviderConfiguration.ShouldBe(_config.ServiceProviderConfiguration);
     }
 }

@@ -17,11 +17,11 @@ public class DiscoverySteps : ConcurrentSteps
     public virtual string ServiceName([CallerMemberName] string? serviceName = null)
         => serviceName ?? GetType().Name;
     public virtual string ServiceNamespace()
-        => GetType().Namespace?.Replace(DynamicRouting.Dot, '_') ?? string.Empty;
+        => GetType().Namespace?.Replace(UrlPathDynamicRouter.Dot, '_') ?? string.Empty;
 
     /// <summary>Dynamic Routing upstream path.</summary>
     public virtual string UpstreamPath(string path = "/", [CallerMemberName] string? serviceName = null, string? serviceNamespace = null)
-        => DynamicRouting.Path(path, serviceName, serviceNamespace);
+        => UrlPathDynamicRouter.UpstreamPath(path, serviceName, serviceNamespace);
 
     public FileConfiguration GivenStaticRouting(Dictionary<string, IEnumerable<string>> services, params FileRoute[] routes)
     {

@@ -6,7 +6,7 @@ using Ocelot.Responses;
 using Ocelot.Values;
 using System.Security.Claims;
 
-namespace Ocelot.PathManipulation;
+namespace Ocelot.DownstreamPathManipulation;
 
 public class ChangeDownstreamPathTemplate : IChangeDownstreamPathTemplate
 {

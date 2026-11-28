@@ -64,6 +64,7 @@ We adhere to a :doc:`../building/devprocess` which is a part of :doc:`../buildin
     features/ratelimiting
     features/request-proxying
     features/routing
+    features/dynamic-routing
     features/servicediscovery
     features/servicefabric
     features/tracing

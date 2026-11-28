@@ -53,7 +53,7 @@ public class ServiceDiscoveryProviderFactory : IServiceDiscoveryProviderFactory
 
         if (_delegates != null)
         {
-            var provider = _delegates?.Invoke(_provider, config, route);
+            var provider = _delegates.Invoke(_provider, config, route);
             if (provider.GetType().Name.Equals(config.Type, StringComparison.OrdinalIgnoreCase))
             {
                 return new OkResponse<IServiceDiscoveryProvider>(provider);
