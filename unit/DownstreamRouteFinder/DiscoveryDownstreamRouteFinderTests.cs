@@ -302,7 +302,7 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
 
     [Fact]
     [Trait("PR", "1198")]
-    public void GetServiceName_ReturnsServiceFromCurrentRequest()
+    public void GetServiceName_Called_IUrlPathDynamicRouting_OrFallsBackToParameterlessVersion()
     {
         // Arrange
         var expected = new ServiceInfo(TestName(), GetType().Name);
@@ -317,6 +317,16 @@ public class DiscoveryDownstreamRouteFinderTests : UnitTest
         Assert.Equal(expected.Namespace, actual.Namespace);
         _dynamicRouting.Verify(x => x.GetServiceName(), Times.Never);
         _dynamicRouting.Verify(x => x.GetServiceName(It.IsAny<string>()), Times.Once);
+
+        //-----------------------------------------------------------------------------------------
+        // Scenario 2: Parameterless Version is called when is NOT IUrlPathDynamicRouting
+        Mock<IDynamicRouting> routing = new();
+        routing.Setup(x => x.GetServiceName()).Returns(expected);
+        _finder = new(new RouteKeyCreator(), _headerTemplatePatternCreator.Object, routing.Object);
+
+        // Act, Assert
+        actual = GetServiceName("/ignored");
+        routing.Verify(x => x.GetServiceName(), Times.Once);
     }
 
     [Fact]
